@@ -2,7 +2,9 @@ package dasel_test
 
 import (
 	"errors"
+	"fmt"
 	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
 )
@@ -112,6 +114,63 @@ func TestNode_Query(t *testing.T) {
 		if exp, got := "Tom", got.Value.(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
+	})
+
+	t.Run("File", func(t *testing.T) {
+		tests := []struct {
+			Name     string
+			Selector string
+			Exp      string
+		}{
+			{Name: "Property", Selector: "name", Exp: "Tom"},
+			{Name: "ChildProperty", Selector: "preferences.favouriteColour", Exp: "red"},
+			{Name: "Index", Selector: "colours.[0]", Exp: "red"},
+			{Name: "Index", Selector: "colours.[1]", Exp: "green"},
+			{Name: "Index", Selector: "colours.[2]", Exp: "blue"},
+			{Name: "IndexProperty", Selector: "colourCodes.[0].name", Exp: "red"},
+			{Name: "IndexProperty", Selector: "colourCodes.[1].name", Exp: "green"},
+			{Name: "IndexProperty", Selector: "colourCodes.[2].name", Exp: "blue"},
+			{Name: "DynamicProperty", Selector: "colourCodes.(name=red).rgb", Exp: "ff0000"},
+			{Name: "DynamicProperty", Selector: "colourCodes.(name=green).rgb", Exp: "00ff00"},
+			{Name: "DynamicProperty", Selector: "colourCodes.(name=blue).rgb", Exp: "0000ff"},
+			{Name: "MultipleDynamicProperty", Selector: "colourCodes.(name=red)(rgb=ff0000).name", Exp: "red"},
+			{Name: "MultipleDynamicProperty", Selector: "colourCodes.(name=green)(rgb=00ff00).name", Exp: "green"},
+			{Name: "MultipleDynamicProperty", Selector: "colourCodes.(name=blue)(rgb=0000ff).name", Exp: "blue"},
+		}
+
+		fileTest := func(filename string) func(t *testing.T) {
+			return func(t *testing.T) {
+				parser, err := storage.NewParserFromFilename(filename)
+				if err != nil {
+					t.Errorf("could not get parser: %s", err)
+					return
+				}
+
+				value, err := storage.LoadFromFile(filename, parser)
+				if err != nil {
+					t.Errorf("could not load value from file: %s", err)
+					return
+				}
+
+				for _, testCase := range tests {
+					tc := testCase
+					t.Run(tc.Name, func(t *testing.T) {
+						node, err := dasel.New(value).Query(tc.Selector)
+						if err != nil {
+							t.Errorf("unexpected error: %s", err)
+							return
+						}
+
+						if exp, got := tc.Exp, fmt.Sprint(node.Value); exp != got {
+							t.Errorf("expected value `%s`, got `%s`", exp, got)
+						}
+					})
+				}
+			}
+		}
+
+		t.Run("JSON", fileTest("./tests/assets/example.json"))
+		t.Run("YAML", fileTest("./tests/assets/example.yaml"))
 	})
 
 	t.Run("Traversal", func(t *testing.T) {

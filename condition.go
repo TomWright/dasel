@@ -2,11 +2,15 @@ package dasel
 
 import "fmt"
 
+// EqualCondition lets you check for an exact match.
 type EqualCondition struct {
-	Key   string
+	// Key is the key of the value to check against.
+	Key string
+	// Value is the value we are looking for.
 	Value string
 }
 
+// Check checks to see if other contains the required key value pair.
 func (c EqualCondition) Check(other interface{}) (bool, error) {
 	switch o := other.(type) {
 	case map[string]string:
@@ -20,6 +24,7 @@ func (c EqualCondition) Check(other interface{}) (bool, error) {
 	}
 }
 
+// Condition defines a Check we can use within dynamic selectors.
 type Condition interface {
 	Check(other interface{}) (bool, error)
 }
