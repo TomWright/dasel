@@ -33,9 +33,14 @@ func selectCommand() *cobra.Command {
 				return fmt.Errorf("could not load file: %w", err)
 			}
 			rootNode := dasel.New(value)
-			res, err := rootNode.Query(selectorFlag)
-			if err != nil {
-				return fmt.Errorf("could not query node: %w", err)
+			var res *dasel.Node
+			if selectorFlag == "." {
+				res = rootNode
+			} else {
+				res, err = rootNode.Query(selectorFlag)
+				if err != nil {
+					return fmt.Errorf("could not query node: %w", err)
+				}
 			}
 
 			fmt.Printf("%v\n", res.Value)

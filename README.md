@@ -8,15 +8,27 @@
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
 ## Usage 
+
+### Select
+The following should select the image within a kubernetes deployment manifest.
+```
+$ dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
+tomwright/auth:v1.0.0
+```
+
+### Update
+Coming soon.
+
+### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
-### Import
+#### Import
 As with any other go package, just use `go get`.
 ```
 go get github.com/tomwright/dasel/cmd/dasel
 ```
 
-### Command line
+#### Command line
 You can `go get` the `main` package and go should automatically build and install dasel for you.
 ```
 go get github.com/tomwright/dasel/cmd/dasel
@@ -28,7 +40,7 @@ This one liner should work for you - be sure to change the targeted release exec
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
 ```
 
-## Support data types
+## Supported data types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
 - YAML - `-p yaml`
@@ -95,13 +107,13 @@ Dynamic selectors are used with lists when you don't know the index of the item,
 
 Look ups are defined in brackets. You can use multiple dynamic selectors within the same part to perform multiple checks.
 ```
-$ dasel select -f ./tests/assets/example.yaml -s ".colourCodes.(name=red).rgb"
+$ dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=red).rgb"
 ff0000
 
-$ dasel select -f ./tests/assets/example.yaml -s ".colourCodes.(name=blue)(rgb=0000ff)"
+$ dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=blue)(rgb=0000ff)"
 map[name:blue rgb:0000ff]
 ```
-- `.colourCodes.(name=red).rgb` == `ff0000`
-- `.colourCodes.(name=green).rgb` == `00ff00`
-- `.colourCodes.(name=blue).rgb` == `0000ff`
-- `.colourCodes.(name=blue)(rgb=0000ff).rgb` == `0000ff`
+- `colourCodes.(name=red).rgb` == `ff0000`
+- `colourCodes.(name=green).rgb` == `00ff00`
+- `colourCodes.(name=blue).rgb` == `0000ff`
+- `colourCodes.(name=blue)(rgb=0000ff).rgb` == `0000ff`
