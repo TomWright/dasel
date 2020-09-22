@@ -201,50 +201,38 @@ func findValueIndex(n *Node) (interface{}, error) {
 	case nil:
 		return nil, &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	case []map[interface{}]interface{}:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []map[string]interface{}:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case map[interface{}]interface{}:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case map[int]interface{}:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[int(n.Selector.Index)], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []interface{}:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []string:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []int:
-		l := int64(len(p))
-		if n.Selector.Index >= 0 && n.Selector.Index < l {
+		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	default:
 		return nil, &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 	}
+
+	return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 }
 
 // processFindDynamicItem is used by findValueDynamic.
@@ -284,7 +272,6 @@ func findValueDynamic(n *Node) (interface{}, error) {
 				return value, nil
 			}
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []map[string]interface{}:
 		for _, object := range p {
 			value, found, err := processFindDynamicItem(n, object)
@@ -295,7 +282,6 @@ func findValueDynamic(n *Node) (interface{}, error) {
 				return value, nil
 			}
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []map[string]string:
 		for _, object := range p {
 			value, found, err := processFindDynamicItem(n, object)
@@ -306,7 +292,6 @@ func findValueDynamic(n *Node) (interface{}, error) {
 				return value, nil
 			}
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []interface{}:
 		for _, object := range p {
 			value, found, err := processFindDynamicItem(n, object)
@@ -317,10 +302,11 @@ func findValueDynamic(n *Node) (interface{}, error) {
 				return value, nil
 			}
 		}
-		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	default:
 		return nil, &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 	}
+
+	return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 }
 
 // FindValue finds the value for the given node.
