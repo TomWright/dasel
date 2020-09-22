@@ -38,7 +38,7 @@ The following should work on a kubernetes deployment manifest. While kubernetes 
 
 ##### Change the image for a container named `auth`
 ```
-$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "v2.0.0"
+$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "tomwright/x:v2.0.0"
 updated string
 ```
 
