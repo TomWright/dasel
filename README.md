@@ -10,10 +10,25 @@ Dasel (short for data-selector) allows you to query and modify data structures u
 ## Usage 
 
 ### Select
+```
+$ dasel select -h
+```
+
 The following should select the image within a kubernetes deployment manifest.
 ```
 $ dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
 tomwright/auth:v1.0.0
+```
+
+### Put
+```
+$ dasel put -h
+```
+
+The following should update the image within a kubernetes deployment manifest.
+```
+$ dasel put -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "v2.0.0"
+tomwright/auth:v2.0.0
 ```
 
 ### Update
@@ -97,10 +112,6 @@ green
 - `colours.[0]` == `red`
 - `colours.[1]` == `green`
 - `colours.[2]` == `blue`
-
-#### Next Available Index - WIP
-Next available index selector is used when adding to a list of items. It allows you to append to a list.
-- `colours.[]`
 
 #### Dynamic
 Dynamic selectors are used with lists when you don't know the index of the item, but instead know the value of a property of an object within the list. 

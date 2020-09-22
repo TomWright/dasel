@@ -32,34 +32,6 @@ var (
 	}
 )
 
-type processFn func(t *testing.T, n *dasel.Node) (*dasel.Node, bool)
-type checkFn func(t *testing.T, n *dasel.Node) bool
-
-type parseTest struct {
-	Selector   string
-	Input      interface{}
-	ProcessFns []processFn
-	CheckFns   []checkFn
-	Names      []string
-	Err        error
-}
-
-func (pt parseTest) Add(name string, p processFn, c checkFn) parseTest {
-	if pt.ProcessFns == nil {
-		pt.ProcessFns = make([]processFn, 0)
-	}
-	if pt.CheckFns == nil {
-		pt.CheckFns = make([]checkFn, 0)
-	}
-	if pt.Names == nil {
-		pt.Names = make([]string, 0)
-	}
-	pt.Names = append(pt.Names, name)
-	pt.ProcessFns = append(pt.ProcessFns, p)
-	pt.CheckFns = append(pt.CheckFns, c)
-	return pt
-}
-
 func TestNode_Query_File(t *testing.T) {
 	tests := []struct {
 		Name     string
@@ -170,4 +142,113 @@ func TestNode_Query_Data(t *testing.T) {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
+}
+
+func TestNode_Put(t *testing.T) {
+	data := map[string]interface{}{
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+	}
+	rootNode := dasel.New(data)
+
+	{
+		// Change the name
+
+		err := rootNode.Put("people.(id=1).name", "Thomas")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("people.(id=1).name")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := "Thomas", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	}
+
+	{
+		// Change the id
+
+		err := rootNode.Put("people.[0].id", 3)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("people.[0].id")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := 3, got.Value.(int); exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+		}
+	}
+
+	{
+		// Append object
+
+		err := rootNode.Put("people.[]", map[string]interface{}{
+			"id":   1,
+			"name": "Bob",
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("people.[2].id")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if exp, got := 1, got.Value.(int); exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+		}
+		got, err = rootNode.Query("people.[2].name")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if exp, got := "Bob", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	}
+
+	{
+		// Append string
+
+		err := rootNode.Put("names.[]", "Bob")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("names.[2]")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+		if exp, got := "Bob", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	}
 }
