@@ -1,0 +1,42 @@
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+name: Build
+jobs:
+  publish:
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os:
+          - ubuntu-latest
+          - windows-latest
+          - macos-latest
+        include:
+          - os: ubuntu-latest
+            artifact_name: dasel
+            asset_name: dasel_linux_amd64
+          - os: windows-latest
+            artifact_name: dasel.exe
+            asset_name: dasel_windows_amd64.exe
+          - os: macos-latest
+            artifact_name: dasel
+            asset_name: dasel_macos_amd64
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2-beta
+        with:
+          go-version: '^1.15.0' # The Go version to download (if necessary) and use.
+      - name: Set env
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+      - name: Build
+        run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+      - name: Upload binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/${{ matrix.artifact_name }}
+          asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}

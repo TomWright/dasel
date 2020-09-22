@@ -1,0 +1,14 @@
+name: Tom
+preferences:
+  favouriteColour: red
+colours:
+  - red
+  - green
+  - blue
+colourCodes:
+  - name: red
+    rgb: ff0000
+  - name: green
+    rgb: 00ff00
+  - name: blue
+    rgb: 0000ff
