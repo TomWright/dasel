@@ -7,6 +7,27 @@
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
+### Installation
+You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
+
+#### Import
+As with any other go package, just use `go get`.
+```
+go get github.com/tomwright/dasel/cmd/dasel
+```
+
+#### Command line
+You can `go get` the `main` package and go should automatically build and install dasel for you.
+```
+go get github.com/tomwright/dasel/cmd/dasel
+```
+
+Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest):
+This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
+```
+curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
+```
+
 ## Usage 
 
 ### Select
@@ -58,27 +79,6 @@ updated object
 ```
 $ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
 updated string
-```
-
-### Installation
-You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
-
-#### Import
-As with any other go package, just use `go get`.
-```
-go get github.com/tomwright/dasel/cmd/dasel
-```
-
-#### Command line
-You can `go get` the `main` package and go should automatically build and install dasel for you.
-```
-go get github.com/tomwright/dasel/cmd/dasel
-```
-
-Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest):
-This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
-```
-curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
 ```
 
 ## Supported data types
