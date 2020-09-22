@@ -3,7 +3,6 @@ package command
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	dasel "github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
 	"strconv"
 	"strings"
@@ -33,55 +32,43 @@ func parseValue(value string, valueType string) (interface{}, error) {
 	}
 }
 
+func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
+	if parserFlag == "" {
+		parser, err := storage.NewParserFromFilename(fileFlag)
+		if err != nil {
+			return nil, fmt.Errorf("could not get parser from filename: %w", err)
+		}
+		return parser, nil
+	} else {
+		parser, err := storage.NewParserFromString(parserFlag)
+		if err != nil {
+			return nil, fmt.Errorf("could not get parser: %w", err)
+		}
+		return parser, nil
+	}
+}
+
 func putCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, typeFlag string
+	var fileFlag, selectorFlag, parserFlag string
 
 	cmd := &cobra.Command{
-		Use:   "put -f <file> -s <selector> -t <string|int|bool> <value>",
+		Use:   "put -f <file> -s <selector>",
 		Short: "Update properties in the given file.",
-		Args:  cobra.ExactArgs(1),
-		RunE: func(cmd *cobra.Command, args []string) error {
-			var parser storage.Parser
-			var err error
-			if parserFlag == "" {
-				parser, err = storage.NewParserFromFilename(fileFlag)
-				if err != nil {
-					return fmt.Errorf("could not get parser from filename: %w", err)
-				}
-			} else {
-				parser, err = storage.NewParserFromString(parserFlag)
-				if err != nil {
-					return fmt.Errorf("could not get parser: %w", err)
-				}
-			}
-			value, err := storage.LoadFromFile(fileFlag, parser)
-			if err != nil {
-				return fmt.Errorf("could not load file: %w", err)
-			}
-			rootNode := dasel.New(value)
-
-			updateValue, err := parseValue(args[0], typeFlag)
-			if err != nil {
-				return fmt.Errorf("invalid value: %w", err)
-			}
-
-			if err := rootNode.Put(selectorFlag, updateValue); err != nil {
-				return fmt.Errorf("could not put value: %w", err)
-			}
-
-			fmt.Println("updated")
-
-			return nil
-		},
 	}
 
-	cmd.Flags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
-	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
-	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
-	cmd.Flags().StringVarP(&parserFlag, "type", "t", "string", "The type of variable we are updating.")
+	cmd.AddCommand(
+		putStringCommand(),
+		putBoolCommand(),
+		putIntCommand(),
+		putObjectCommand(),
+	)
 
-	for _, f := range []string{"file", "selector", "type"} {
-		if err := cmd.MarkFlagRequired(f); err != nil {
+	cmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
+	cmd.PersistentFlags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
+	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
+
+	for _, f := range []string{"file", "selector"} {
+		if err := cmd.MarkPersistentFlagRequired(f); err != nil {
 			panic("could not mark flag as required: " + f)
 		}
 	}

@@ -17,3 +17,8 @@ func (p *YAMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	}
 	return data, nil
 }
+
+// ToBytes returns a slice of bytes that represents the given value.
+func (p *YAMLParser) ToBytes(value interface{}) ([]byte, error) {
+	return yaml.Marshal(value)
+}

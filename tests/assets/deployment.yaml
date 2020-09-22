@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: auth-deployment
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      component: auth
+  template:
+    metadata:
+      labels:
+        component: auth
+    spec:
+      containers:
+      - env:
+        - name: BUSINESS_SERVICE
+          value: business-cluster-ip:9000
+        - name: PASSWORD
+          valueFrom:
+            secretKeyRef:
+              key: pgpassword
+              name: PGPASSWORD
+        - name: MY_NEW_ENV_VAR
+          value: NEW_VALUE
+        image: tomwright/auth:dev
+        name: auth
+        ports:
+        - containerPort: 9000
+        - containerPort: 8000

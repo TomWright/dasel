@@ -3,7 +3,7 @@ package command
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	dasel "github.com/tomwright/dasel"
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
 )
 

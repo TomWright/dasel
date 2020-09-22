@@ -25,14 +25,40 @@ tomwright/auth:v1.0.0
 $ dasel put -h
 ```
 
-The following should update the image within a kubernetes deployment manifest.
+Basic usage is:
 ```
-$ dasel put -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "v2.0.0"
-tomwright/auth:v2.0.0
+dasel put <string|int|bool|object> -f <file> -s "<selector>" <value>
 ```
 
-### Update
-Coming soon.
+If putting an object, you can pass multiple arguments in the format of `KEY=VALUE`, each of which needs a related `-t <string|int|bool>` flag passed in the same order as the arguments.
+This tells dasel which data types to parse the values as.
+
+#### Kubernetes
+The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give me some good example use-cases. 
+
+##### Change the image for a container named `auth`
+```
+$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "v2.0.0"
+updated string
+```
+
+##### Update replicas to 3
+```
+$ dasel put int -f deployment.yaml -s "spec.replicas" 3
+updated int
+```
+
+##### Add a new env var
+```
+$ dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.[]" -t string -t string name=MY_NEW_ENV_VAR value=MY_NEW_VALUE
+updated object
+```
+
+##### Update an existing env var
+```
+$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
+updated string
+```
 
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.

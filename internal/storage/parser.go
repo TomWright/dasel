@@ -19,7 +19,10 @@ func (e UnknownParserErr) Error() string {
 
 // Parser can be used to load and save files from/to disk.
 type Parser interface {
+	// FromBytes returns some Data that is represented by the given bytes.
 	FromBytes(byteData []byte) (interface{}, error)
+	// ToBytes returns a slice of bytes that represents the given value.
+	ToBytes(value interface{}) ([]byte, error)
 }
 
 // NewParserFromFilename returns a Parser from the given filename.
@@ -51,7 +54,19 @@ func NewParserFromString(parser string) (Parser, error) {
 func LoadFromFile(filename string, p Parser) (interface{}, error) {
 	byteData, err := ioutil.ReadFile(filename)
 	if err != nil {
-		return nil, fmt.Errorf("could not read config file: %w", err)
+		return nil, fmt.Errorf("could not read file: %w", err)
 	}
 	return p.FromBytes(byteData)
+}
+
+// WriteToFile saves data to the given file.
+func WriteToFile(filename string, p Parser, value interface{}) error {
+	byteData, err := p.ToBytes(value)
+	if err != nil {
+		return fmt.Errorf("could not get byte data for file: %w", err)
+	}
+	if err := ioutil.WriteFile(filename, byteData, 0644); err != nil {
+		return fmt.Errorf("could not write file: %w", err)
+	}
+	return nil
 }
