@@ -181,16 +181,14 @@ func findValueProperty(n *Node) (interface{}, error) {
 		v, ok := p[n.Selector.Property]
 		if ok {
 			return v, nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case map[interface{}]interface{}:
 		v, ok := p[n.Selector.Property]
 		if ok {
 			return v, nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	default:
 		return nil, &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 	}
@@ -206,51 +204,44 @@ func findValueIndex(n *Node) (interface{}, error) {
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []map[string]interface{}:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case map[interface{}]interface{}:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case map[int]interface{}:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[int(n.Selector.Index)], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []interface{}:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []string:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	case []int:
 		l := int64(len(p))
 		if n.Selector.Index >= 0 && n.Selector.Index < l {
 			return p[n.Selector.Index], nil
-		} else {
-			return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 		}
+		return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	default:
 		return nil, &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 	}
