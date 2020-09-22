@@ -163,9 +163,7 @@ func TestNode_Put(t *testing.T) {
 	}
 	rootNode := dasel.New(data)
 
-	{
-		// Change the name
-
+	t.Run("ExistingValue", func(t *testing.T) {
 		err := rootNode.Put("people.(id=1).name", "Thomas")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -181,11 +179,8 @@ func TestNode_Put(t *testing.T) {
 		if exp, got := "Thomas", got.Value.(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
-	}
-
-	{
-		// Change the id
-
+	})
+	t.Run("ExistingIntValue", func(t *testing.T) {
 		err := rootNode.Put("people.[0].id", 3)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -201,11 +196,25 @@ func TestNode_Put(t *testing.T) {
 		if exp, got := 3, got.Value.(int); exp != got {
 			t.Errorf("expected %d, got %d", exp, got)
 		}
-	}
+	})
+	t.Run("NewPropertyOnExistingObject", func(t *testing.T) {
+		err := rootNode.Put("people.(id=3).age", 27)
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
 
-	{
-		// Append object
+		got, err := rootNode.Query("people.(id=3).age")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
 
+		if exp, got := 27, got.Value.(int); exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+		}
+	})
+	t.Run("AppendObjectToList", func(t *testing.T) {
 		err := rootNode.Put("people.[]", map[string]interface{}{
 			"id":   1,
 			"name": "Bob",
@@ -231,11 +240,8 @@ func TestNode_Put(t *testing.T) {
 		if exp, got := "Bob", got.Value.(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
-	}
-
-	{
-		// Append string
-
+	})
+	t.Run("AppendStringToList", func(t *testing.T) {
 		err := rootNode.Put("names.[]", "Bob")
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -250,5 +256,5 @@ func TestNode_Put(t *testing.T) {
 		if exp, got := "Bob", got.Value.(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
-	}
+	})
 }
