@@ -15,5 +15,6 @@ func init() {
 	RootCMD.Version = internal.Version
 	RootCMD.AddCommand(
 		selectCommand(),
+		putCommand(),
 	)
 }
