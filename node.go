@@ -140,10 +140,7 @@ func (n Node) Query(selector string) (*Node, error) {
 	var err error
 
 	for {
-		if previousNode == nil {
-			break
-		}
-		if previousNode.Selector.Remaining == "" {
+		if previousNode == nil || previousNode.Selector.Remaining == "" {
 			break
 		}
 
@@ -212,19 +209,7 @@ func findValueIndex(n *Node) (interface{}, error) {
 		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
-	case map[int]interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
-			return p[int(n.Selector.Index)], nil
-		}
 	case []interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
-			return p[n.Selector.Index], nil
-		}
-	case []string:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
-			return p[n.Selector.Index], nil
-		}
-	case []int:
 		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
 			return p[n.Selector.Index], nil
 		}
