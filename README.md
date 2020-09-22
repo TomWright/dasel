@@ -113,6 +113,10 @@ green
 - `colours.[1]` == `green`
 - `colours.[2]` == `blue`
 
+#### Next Available Index
+Next available index selector is used when adding to a list of items. It allows you to append to a list.
+- `colours.[]`
+
 #### Dynamic
 Dynamic selectors are used with lists when you don't know the index of the item, but instead know the value of a property of an object within the list. 
 
