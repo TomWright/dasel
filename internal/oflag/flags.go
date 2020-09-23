@@ -17,10 +17,8 @@ func NewStringList() *StringList {
 }
 
 // Type returns the type of flag.
-// As far as I can tell this isn't used...
-// todo : figure out what this is supposed to return.
 func (o *StringList) Type() string {
-	panic("implement me")
+	return "Pass multiple times to add multiple values."
 }
 
 // String returns a string representation of all Override's within the OverrideFlag.
