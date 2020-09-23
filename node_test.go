@@ -49,6 +49,43 @@ func TestParseSelector(t *testing.T) {
 	})
 }
 
+func TestNode_Query(t *testing.T) {
+	parser, err := storage.NewParserFromFilename("./tests/assets/example.json")
+	if err != nil {
+		t.Errorf("could not get parser: %s", err)
+		return
+	}
+
+	value, err := storage.LoadFromFile("./tests/assets/example.json", parser)
+	if err != nil {
+		t.Errorf("could not load value from file: %s", err)
+		return
+	}
+
+	t.Run("Valid", func(t *testing.T) {
+		node, err := dasel.New(value).Query("preferences.favouriteColour")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+		if exp, got := "red", fmt.Sprint(node.InterfaceValue()); exp != got {
+			t.Errorf("expected value `%s`, got `%s`", exp, got)
+		}
+	})
+	t.Run("InvalidSelector", func(t *testing.T) {
+		_, err := dasel.New(value).Query(".colours.[a]")
+		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
+}
+
 func TestNode_Query_File(t *testing.T) {
 	tests := []struct {
 		Name     string
@@ -90,11 +127,11 @@ func TestNode_Query_File(t *testing.T) {
 				t.Run(tc.Name, func(t *testing.T) {
 					node, err := dasel.New(value).Query(tc.Selector)
 					if err != nil {
-						t.Errorf("unexpected error: %s", err)
+						t.Errorf("unexpected query error: %s", err)
 						return
 					}
 
-					if exp, got := tc.Exp, fmt.Sprint(node.Value); exp != got {
+					if exp, got := tc.Exp, fmt.Sprint(node.InterfaceValue()); exp != got {
 						t.Errorf("expected value `%s`, got `%s`", exp, got)
 					}
 				})
@@ -112,11 +149,11 @@ func TestNode_Query_Data(t *testing.T) {
 
 		got, err := rootNode.Query(".a.b.c.thing")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "1", got.Value.(string); exp != got {
+		if exp, got := "1", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -125,11 +162,11 @@ func TestNode_Query_Data(t *testing.T) {
 
 		got, err := rootNode.Query(".a.b.people.[1].name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Amelia", got.Value.(string); exp != got {
+		if exp, got := "Amelia", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -138,11 +175,11 @@ func TestNode_Query_Data(t *testing.T) {
 
 		got, err := rootNode.Query(".a.b.people.(name=Tom).name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Tom", got.Value.(string); exp != got {
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -151,11 +188,11 @@ func TestNode_Query_Data(t *testing.T) {
 
 		got, err := rootNode.Query(".a.b.people.(name=Tom)(age=28).name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Tom", got.Value.(string); exp != got {
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -180,54 +217,66 @@ func TestNode_Put(t *testing.T) {
 	}
 	rootNode := dasel.New(data)
 
+	t.Run("InvalidSelector", func(t *testing.T) {
+		err := rootNode.Put("people.[a].name", "Thomas")
+		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
 	t.Run("ExistingValue", func(t *testing.T) {
 		err := rootNode.Put("people.(id=1).name", "Thomas")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("people.(id=1).name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Thomas", got.Value.(string); exp != got {
+		if exp, got := "Thomas", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
 	t.Run("ExistingIntValue", func(t *testing.T) {
 		err := rootNode.Put("people.[0].id", 3)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("people.[0].id")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := 3, got.Value.(int); exp != got {
+		if exp, got := 3, got.InterfaceValue().(int); exp != got {
 			t.Errorf("expected %d, got %d", exp, got)
 		}
 	})
 	t.Run("NewPropertyOnExistingObject", func(t *testing.T) {
 		err := rootNode.Put("people.(id=3).age", 27)
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("people.(id=3).age")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := 27, got.Value.(int); exp != got {
+		if exp, got := 27, got.InterfaceValue().(int); exp != got {
 			t.Errorf("expected %d, got %d", exp, got)
 		}
 	})
@@ -237,40 +286,40 @@ func TestNode_Put(t *testing.T) {
 			"name": "Bob",
 		})
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("people.[2].id")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query [1] error: %v", err)
 			return
 		}
-		if exp, got := 1, got.Value.(int); exp != got {
+		if exp, got := 1, got.InterfaceValue().(int); exp != got {
 			t.Errorf("expected %d, got %d", exp, got)
 		}
 		got, err = rootNode.Query("people.[2].name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query [2] error: %v", err)
 			return
 		}
-		if exp, got := "Bob", got.Value.(string); exp != got {
+		if exp, got := "Bob", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
 	t.Run("AppendStringToList", func(t *testing.T) {
 		err := rootNode.Put("names.[]", "Bob")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("names.[2]")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
-		if exp, got := "Bob", got.Value.(string); exp != got {
+		if exp, got := "Bob", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -278,17 +327,17 @@ func TestNode_Put(t *testing.T) {
 		rootNode := dasel.New(nil)
 		err := rootNode.Put("name", "Thomas")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Thomas", got.Value.(string); exp != got {
+		if exp, got := "Thomas", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -296,17 +345,17 @@ func TestNode_Put(t *testing.T) {
 		rootNode := dasel.New(nil)
 		err := rootNode.Put("my.name", "Thomas")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("my.name")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Thomas", got.Value.(string); exp != got {
+		if exp, got := "Thomas", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -314,17 +363,17 @@ func TestNode_Put(t *testing.T) {
 		rootNode := dasel.New(nil)
 		err := rootNode.Put("my.favourite.people.[0]", "Tom")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("my.favourite.people.[0]")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Tom", got.Value.(string); exp != got {
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
@@ -332,17 +381,17 @@ func TestNode_Put(t *testing.T) {
 		rootNode := dasel.New(nil)
 		err := rootNode.Put("my.favourite.people.[]", "Tom")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected put error: %v", err)
 			return
 		}
 
 		got, err := rootNode.Query("my.favourite.people.[0]")
 		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected query error: %v", err)
 			return
 		}
 
-		if exp, got := "Tom", got.Value.(string); exp != got {
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})

@@ -1,6 +1,9 @@
 package dasel
 
-import "fmt"
+import (
+	"fmt"
+	"reflect"
+)
 
 // EqualCondition lets you check for an exact match.
 type EqualCondition struct {
@@ -11,20 +14,29 @@ type EqualCondition struct {
 }
 
 // Check checks to see if other contains the required key value pair.
-func (c EqualCondition) Check(other interface{}) (bool, error) {
-	switch o := other.(type) {
-	case map[string]string:
-		return o[c.Key] == c.Value, nil
-	case map[string]interface{}:
-		return fmt.Sprint(o[c.Key]) == c.Value, nil
-	case map[interface{}]interface{}:
-		return fmt.Sprint(o[c.Key]) == c.Value, nil
-	default:
-		return false, &UnhandledCheckType{Value: other}
+func (c EqualCondition) Check(other reflect.Value) (bool, error) {
+	if !other.IsValid() {
+		return false, &UnhandledCheckType{Value: nil}
 	}
+
+	value := other
+	if value.Kind() == reflect.Interface {
+		value = value.Elem()
+	}
+
+	if value.Kind() == reflect.Map {
+		for _, key := range value.MapKeys() {
+			if fmt.Sprint(key.Interface()) == c.Key {
+				return fmt.Sprint(value.MapIndex(key).Interface()) == c.Value, nil
+			}
+		}
+		return false, nil
+	}
+
+	return false, &UnhandledCheckType{Value: value.Kind().String()}
 }
 
 // Condition defines a Check we can use within dynamic selectors.
 type Condition interface {
-	Check(other interface{}) (bool, error)
+	Check(other reflect.Value) (bool, error)
 }

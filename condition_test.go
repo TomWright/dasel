@@ -2,12 +2,13 @@ package dasel_test
 
 import (
 	"github.com/tomwright/dasel"
+	"reflect"
 	"testing"
 )
 
 func conditionTest(c dasel.Condition, input interface{}, exp bool, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
-		got, err := c.Check(input)
+		got, err := c.Check(reflect.ValueOf(input))
 		if expErr == nil && err != nil {
 			t.Errorf("expected err %v, got %v", expErr, err)
 			return
@@ -45,6 +46,11 @@ func TestEqualCondition_Check(t *testing.T) {
 		true, nil,
 	))
 
+	t.Run("NoMatchMissingKey", conditionTest(
+		c,
+		map[string]string{},
+		false, nil,
+	))
 	t.Run("NoMatchMapStringString", conditionTest(
 		c,
 		map[string]string{"name": "Wrong"},
@@ -61,9 +67,14 @@ func TestEqualCondition_Check(t *testing.T) {
 		false, nil,
 	))
 
-	t.Run("UnsupportedType", conditionTest(
+	t.Run("Nil", conditionTest(
 		c,
 		nil,
 		false, &dasel.UnhandledCheckType{Value: nil},
+	))
+	t.Run("String", conditionTest(
+		c,
+		"",
+		false, &dasel.UnhandledCheckType{Value: ""},
 	))
 }

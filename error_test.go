@@ -2,6 +2,7 @@ package dasel_test
 
 import (
 	"github.com/tomwright/dasel"
+	"reflect"
 	"testing"
 )
 
@@ -36,7 +37,7 @@ func TestErrorMessages(t *testing.T) {
 			Selector: ".name",
 			Node: &dasel.Node{
 				Previous: &dasel.Node{
-					Value: map[string]interface{}{},
+					Value: reflect.ValueOf(map[string]interface{}{}),
 				},
 				Selector: dasel.Selector{
 					Current: ".name",

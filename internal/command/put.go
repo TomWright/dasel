@@ -79,11 +79,11 @@ func writeNodeToOutput(n *dasel.Node, parser storage.Parser, fileFlag string, ou
 	}
 	switch outFlag {
 	case "":
-		return storage.WriteToFile(fileFlag, parser, n.Value)
+		return storage.WriteToFile(fileFlag, parser, n.InterfaceValue())
 	case "stdout":
-		return storage.WriteToStdout(parser, n.Value)
+		return storage.WriteToStdout(parser, n.InterfaceValue())
 	default:
-		return storage.WriteToFile(outFlag, parser, n.Value)
+		return storage.WriteToFile(outFlag, parser, n.InterfaceValue())
 	}
 }
 
