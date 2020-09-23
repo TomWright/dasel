@@ -57,12 +57,42 @@ Basic usage is:
 dasel put <string|int|bool|object> -f <file> -s "<selector>" <value>
 ```
 
+#### Piping Data
+You can pipe data both in and out of dasel.
+
+```
+$ echo "name: Tom" | ./dasel put string -p yaml -s "name" Jim
+name: Jim
+```
+
+It's important to remember than if you are piping data you must provide a parser using the `-p` flag.
+
+##### Input
+Input is taken from `stdin` if you do not pass a file using the `-f` flag.
+
+##### Output
+The `select` commands will always output to `stdout`.
+
+The default functionality for `put` commands is to edit the file in place, unless input is from stdin in which case it will be written to stdout.
+
+You can choose a new output file by passing `-o <filepath>`. Alternatively passing `-o stdout` will result in the results being written to stdout.
+
+#### Putting Objects
 If putting an object, you can pass multiple arguments in the format of `KEY=VALUE`, each of which needs a related `-t <string|int|bool>` flag passed in the same order as the arguments.
 This tells dasel which data types to parse the values as.
 
-The default functionality is to edit the file in place, unless input is from stdin in which case it will be written to stdout.
+```
+$ dasel put object -f preferences.yaml -s "my.favourites" -t string -t int colour=red number=3
+```
 
-You can choose a new output destination by passing `-o <filepath>`, alternatively passing `-o stdout` will result in the results being written to stdout.
+Results in the following:
+
+```
+my:
+  favourites:
+    colour: red
+    number: 3
+```
 
 #### Kubernetes
 The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give me some good example use-cases. 
