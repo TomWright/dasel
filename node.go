@@ -75,6 +75,13 @@ func nilValue() reflect.Value {
 	return reflect.ValueOf(nil)
 }
 
+func unwrapValue(value reflect.Value) reflect.Value {
+	if value.Kind() == reflect.Interface {
+		return value.Elem()
+	}
+	return value
+}
+
 // ParseSelector parses the given selector string and returns a Selector.
 func ParseSelector(selector string) (Selector, error) {
 	sel := Selector{
@@ -263,10 +270,7 @@ func findValueProperty(n *Node) (reflect.Value, error) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Map {
 		for _, key := range value.MapKeys() {
@@ -288,10 +292,7 @@ func propagateValueProperty(n *Node) error {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Map {
 		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), n.Value)
@@ -308,10 +309,7 @@ func findValueIndex(n *Node) (reflect.Value, error) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		if n.Selector.Index >= 0 && n.Selector.Index < int64(value.Len()) {
@@ -330,10 +328,7 @@ func putNextAvailableIndex(n *Node) (reflect.Value, error) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		if value.Len() == 0 {
@@ -353,10 +348,7 @@ func propagateValueIndex(n *Node) error {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		if n.Selector.Index >= 0 && n.Selector.Index < int64(value.Len()) {
@@ -378,10 +370,7 @@ func propagateValueNextAvailableIndex(n *Node) error {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		n.Previous.Value = reflect.Append(value, n.Value)
@@ -419,10 +408,7 @@ func findValueDynamic(n *Node) (reflect.Value, error) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		for i := 0; i < value.Len(); i++ {
@@ -449,10 +435,7 @@ func propagateValueDynamic(n *Node) error {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
 
-	value := n.Previous.Value
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
 		for i := 0; i < value.Len(); i++ {

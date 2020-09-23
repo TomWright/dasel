@@ -19,10 +19,7 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 		return false, &UnhandledCheckType{Value: nil}
 	}
 
-	value := other
-	if value.Kind() == reflect.Interface {
-		value = value.Elem()
-	}
+	value := unwrapValue(other)
 
 	if value.Kind() == reflect.Map {
 		for _, key := range value.MapKeys() {

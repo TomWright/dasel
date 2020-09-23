@@ -72,6 +72,18 @@ func TestNode_Query(t *testing.T) {
 			t.Errorf("expected value `%s`, got `%s`", exp, got)
 		}
 	})
+	t.Run("NotFound", func(t *testing.T) {
+		_, err := dasel.New(value).Query(".colours.[0].a")
+		expErr := fmt.Errorf("could not find value: selector [PROPERTY] does not support value: reflect.Kind: interface")
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
 	t.Run("InvalidSelector", func(t *testing.T) {
 		_, err := dasel.New(value).Query(".colours.[a]")
 		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
