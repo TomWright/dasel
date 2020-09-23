@@ -24,6 +24,19 @@ func TestJSONParser_FromBytes(t *testing.T) {
 	}
 }
 
+func TestJSONParser_FromBytes_Error(t *testing.T) {
+	_, err := (&storage.JSONParser{}).FromBytes(nil)
+	if err == nil {
+		t.Errorf("expected error but got none")
+		return
+	}
+	_, err = (&storage.JSONParser{}).FromBytes(yamlBytes)
+	if err == nil {
+		t.Errorf("expected error but got none")
+		return
+	}
+}
+
 func TestJSONParser_ToBytes(t *testing.T) {
 	got, err := (&storage.JSONParser{}).ToBytes(jsonMap)
 	if err != nil {
