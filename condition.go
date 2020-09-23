@@ -20,7 +20,7 @@ func (c EqualCondition) Check(other interface{}) (bool, error) {
 	case map[interface{}]interface{}:
 		return fmt.Sprint(o[c.Key]) == c.Value, nil
 	default:
-		return false, fmt.Errorf("unhandled check type: %T", other)
+		return false, &UnhandledCheckType{Value: other}
 	}
 }
 

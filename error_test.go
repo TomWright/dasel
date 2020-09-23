@@ -44,6 +44,7 @@ func TestErrorMessages(t *testing.T) {
 			},
 		}, Out: "no value found for selector: .name: map[]"},
 		{In: &dasel.UnexpectedPreviousNilValue{Selector: ".name"}, Out: "previous value is nil: .name"},
+		{In: &dasel.UnhandledCheckType{Value: ""}, Out: "unhandled check type: string"},
 	}
 
 	for _, testCase := range tests {

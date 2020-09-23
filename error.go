@@ -73,3 +73,13 @@ type UnexpectedPreviousNilValue struct {
 func (e UnexpectedPreviousNilValue) Error() string {
 	return fmt.Sprintf("previous value is nil: %s", e.Selector)
 }
+
+// UnhandledCheckType is returned when the a check doesn't know how to deal with the given type
+type UnhandledCheckType struct {
+	Value interface{}
+}
+
+// Error returns the error message.
+func (e UnhandledCheckType) Error() string {
+	return fmt.Sprintf("unhandled check type: %T", e.Value)
+}
