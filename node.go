@@ -40,15 +40,6 @@ type Node struct {
 	Selector Selector `json:"selector"`
 }
 
-// String returns a string representation of the node. It does this by marshaling it.
-func (n *Node) String() string {
-	b, err := json.MarshalIndent(n, "", "  ")
-	if err != nil {
-		panic(err)
-	}
-	return string(b)
-}
-
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
 	indexSelector    = `\[(?P<index>[0-9]*?)\]`
