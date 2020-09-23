@@ -38,7 +38,7 @@ func shouldReadFromStdin(fileFlag string) bool {
 }
 
 func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
-	useStdin := !shouldReadFromStdin(fileFlag)
+	useStdin := shouldReadFromStdin(fileFlag)
 	if useStdin && parserFlag == "" {
 		return nil, fmt.Errorf("parser flag required when reading from stdin")
 	}
