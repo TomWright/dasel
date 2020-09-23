@@ -3,8 +3,6 @@ package command
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/internal/storage"
 )
 
 func putBoolCommand() *cobra.Command {
@@ -14,6 +12,7 @@ func putBoolCommand() *cobra.Command {
 		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fileFlag := cmd.Flag("file").Value.String()
+			outFlag := cmd.Flag("out").Value.String()
 			parserFlag := cmd.Flag("parser").Value.String()
 			selectorFlag := cmd.Flag("selector").Value.String()
 
@@ -21,11 +20,10 @@ func putBoolCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			value, err := storage.LoadFromFile(fileFlag, parser)
+			rootNode, err := getRootNode(fileFlag, parser)
 			if err != nil {
-				return fmt.Errorf("could not load file: %w", err)
+				return err
 			}
-			rootNode := dasel.New(value)
 
 			updateValue, err := parseValue(args[0], "bool")
 			if err != nil {
@@ -36,11 +34,9 @@ func putBoolCommand() *cobra.Command {
 				return fmt.Errorf("could not put value: %w", err)
 			}
 
-			if err := storage.WriteToFile(fileFlag, parser, rootNode.Value); err != nil {
-				return fmt.Errorf("could not write file: %w", err)
+			if err := writeNodeToOutput(rootNode, parser, fileFlag, outFlag); err != nil {
+				return fmt.Errorf("could not write output: %w", err)
 			}
-
-			fmt.Println("updated bool")
 
 			return nil
 		},

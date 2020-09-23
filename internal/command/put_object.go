@@ -3,9 +3,7 @@ package command
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/oflag"
-	"github.com/tomwright/dasel/internal/storage"
 	"strings"
 )
 
@@ -18,6 +16,7 @@ func putObjectCommand() *cobra.Command {
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			fileFlag := cmd.Flag("file").Value.String()
+			outFlag := cmd.Flag("out").Value.String()
 			parserFlag := cmd.Flag("parser").Value.String()
 			selectorFlag := cmd.Flag("selector").Value.String()
 
@@ -25,11 +24,10 @@ func putObjectCommand() *cobra.Command {
 			if err != nil {
 				return err
 			}
-			value, err := storage.LoadFromFile(fileFlag, parser)
+			rootNode, err := getRootNode(fileFlag, parser)
 			if err != nil {
-				return fmt.Errorf("could not load file: %w", err)
+				return err
 			}
-			rootNode := dasel.New(value)
 
 			if len(typeList.Strings) != len(args) {
 				return fmt.Errorf("exactly %d types are required, got %d", len(args), len(typeList.Strings))
@@ -52,11 +50,9 @@ func putObjectCommand() *cobra.Command {
 				return fmt.Errorf("could not put value: %w", err)
 			}
 
-			if err := storage.WriteToFile(fileFlag, parser, rootNode.Value); err != nil {
-				return fmt.Errorf("could not write file: %w", err)
+			if err := writeNodeToOutput(rootNode, parser, fileFlag, outFlag); err != nil {
+				return fmt.Errorf("could not write output: %w", err)
 			}
-
-			fmt.Println("updated object")
 
 			return nil
 		},

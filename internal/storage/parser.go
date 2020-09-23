@@ -3,6 +3,7 @@ package storage
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 )
@@ -59,6 +60,15 @@ func LoadFromFile(filename string, p Parser) (interface{}, error) {
 	return p.FromBytes(byteData)
 }
 
+// LoadFromStdin loads data from the given file.
+func LoadFromStdin(p Parser) (interface{}, error) {
+	byteData, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		return nil, fmt.Errorf("could not read stdin: %w", err)
+	}
+	return p.FromBytes(byteData)
+}
+
 // WriteToFile saves data to the given file.
 func WriteToFile(filename string, p Parser, value interface{}) error {
 	byteData, err := p.ToBytes(value)
@@ -67,6 +77,18 @@ func WriteToFile(filename string, p Parser, value interface{}) error {
 	}
 	if err := ioutil.WriteFile(filename, byteData, 0644); err != nil {
 		return fmt.Errorf("could not write file: %w", err)
+	}
+	return nil
+}
+
+// WriteToStdout saves data to the given file.
+func WriteToStdout(p Parser, value interface{}) error {
+	byteData, err := p.ToBytes(value)
+	if err != nil {
+		return fmt.Errorf("could not get byte data for file: %w", err)
+	}
+	if _, err := os.Stdout.Write(byteData); err != nil {
+		return fmt.Errorf("could not write to stdout: %w", err)
 	}
 	return nil
 }

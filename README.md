@@ -41,6 +41,12 @@ $ dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).
 tomwright/auth:v1.0.0
 ```
 
+You can also pipe data into dasel, although you then need to tell dasel which parser to use with the `-p` flag.
+```
+$ cat deployment.yaml | dasel select -p yaml -s "spec.template.spec.containers.(name=auth).image"
+tomwright/auth:v1.0.0
+```
+
 ### Put
 ```
 $ dasel put -h
@@ -54,31 +60,31 @@ dasel put <string|int|bool|object> -f <file> -s "<selector>" <value>
 If putting an object, you can pass multiple arguments in the format of `KEY=VALUE`, each of which needs a related `-t <string|int|bool>` flag passed in the same order as the arguments.
 This tells dasel which data types to parse the values as.
 
+The default functionality is to edit the file in place, unless input is from stdin in which case it will be written to stdout.
+
+You can choose a new output destination by passing `-o <filepath>`, alternatively passing `-o stdout` will result in the results being written to stdout.
+
 #### Kubernetes
 The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give me some good example use-cases. 
 
 ##### Change the image for a container named `auth`
 ```
 $ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "tomwright/x:v2.0.0"
-updated string
 ```
 
 ##### Update replicas to 3
 ```
 $ dasel put int -f deployment.yaml -s "spec.replicas" 3
-updated int
 ```
 
 ##### Add a new env var
 ```
 $ dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.[]" -t string -t string name=MY_NEW_ENV_VAR value=MY_NEW_VALUE
-updated object
 ```
 
 ##### Update an existing env var
 ```
 $ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
-updated string
 ```
 
 ## Supported data types
