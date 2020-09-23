@@ -1,7 +1,7 @@
 # dasel
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/TomWright/dasel)](https://goreportcard.com/report/github.com/TomWright/dasel)
-[![Documentation](https://godoc.org/github.com/TomWright/dasel?status.svg)](https://godoc.org/github.com/TomWright/dasel)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel)
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
 ![Build](https://github.com/TomWright/dasel/workflows/Build/badge.svg)
 
