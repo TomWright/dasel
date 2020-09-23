@@ -40,6 +40,7 @@ type Node struct {
 	Selector Selector `json:"selector"`
 }
 
+// InterfaceValue returns the value stored within the node as an interface{}.
 func (n *Node) InterfaceValue() interface{} {
 	return n.Value.Interface()
 }
