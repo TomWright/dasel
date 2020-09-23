@@ -13,7 +13,7 @@ You can import dasel as a package and use it in your applications, or you can us
 #### Import
 As with any other go package, just use `go get`.
 ```
-go get github.com/tomwright/dasel/cmd/dasel
+go get github.com/tomwright/dasel
 ```
 
 #### Command line
