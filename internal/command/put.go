@@ -49,13 +49,12 @@ func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
 			return nil, fmt.Errorf("could not get parser from filename: %w", err)
 		}
 		return parser, nil
-	} else {
-		parser, err := storage.NewParserFromString(parserFlag)
-		if err != nil {
-			return nil, fmt.Errorf("could not get parser: %w", err)
-		}
-		return parser, nil
 	}
+	parser, err := storage.NewParserFromString(parserFlag)
+	if err != nil {
+		return nil, fmt.Errorf("could not get parser: %w", err)
+	}
+	return parser, nil
 }
 
 func getRootNode(fileFlag string, parser storage.Parser) (*dasel.Node, error) {
