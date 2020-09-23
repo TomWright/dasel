@@ -10,12 +10,12 @@ import (
 
 // UnknownParserErr is returned when an invalid parser name is given.
 type UnknownParserErr struct {
-	parser string
+	Parser string
 }
 
 // Error returns the error message.
 func (e UnknownParserErr) Error() string {
-	return fmt.Sprintf("unknown parser: %s", e.parser)
+	return fmt.Sprintf("unknown parser: %s", e.Parser)
 }
 
 // Parser can be used to load and save files from/to disk.
@@ -35,7 +35,7 @@ func NewParserFromFilename(filename string) (Parser, error) {
 	case ".json":
 		return &JSONParser{}, nil
 	default:
-		return nil, &UnknownParserErr{parser: ext}
+		return nil, &UnknownParserErr{Parser: ext}
 	}
 }
 
@@ -47,7 +47,7 @@ func NewParserFromString(parser string) (Parser, error) {
 	case "json":
 		return &JSONParser{}, nil
 	default:
-		return nil, &UnknownParserErr{parser: parser}
+		return nil, &UnknownParserErr{Parser: parser}
 	}
 }
 
