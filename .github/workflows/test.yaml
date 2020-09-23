@@ -21,4 +21,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-go-
       - name: Test
-        run: go test -cover -race ./...
+        run: go test -coverprofile=coverage.txt -covermode=atomic -race ./...
+      - uses: codecov/codecov-action@v1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
+          file: ./coverage.xml # optional
+          flags: unittests # optional
+          fail_ci_if_error: true # optional (default = false)
