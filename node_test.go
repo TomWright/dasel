@@ -257,4 +257,76 @@ func TestNode_Put(t *testing.T) {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
+	t.Run("NilRootNode", func(t *testing.T) {
+		rootNode := dasel.New(nil)
+		err := rootNode.Put("name", "Thomas")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("name")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := "Thomas", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("NilChain", func(t *testing.T) {
+		rootNode := dasel.New(nil)
+		err := rootNode.Put("my.name", "Thomas")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("my.name")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := "Thomas", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("NilChainToListIndex", func(t *testing.T) {
+		rootNode := dasel.New(nil)
+		err := rootNode.Put("my.favourite.people.[0]", "Tom")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("my.favourite.people.[0]")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("NilChainToListNextAvailableIndex", func(t *testing.T) {
+		rootNode := dasel.New(nil)
+		err := rootNode.Put("my.favourite.people.[]", "Tom")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("my.favourite.people.[0]")
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.Value.(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
 }

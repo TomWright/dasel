@@ -132,6 +132,19 @@ func New(value interface{}) *Node {
 	return rootNode
 }
 
+// Initialise sets up the node to ensure it has a value.
+func (n *Node) Initialise(selector Selector) {
+	if n.Value == nil {
+		// Set an initial value based off of the selector type.
+		switch selector.Type {
+		case "ROOT", "PROPERTY":
+			n.Value = make(map[string]interface{})
+		case "NEXT_AVAILABLE_INDEX", "INDEX", "DYNAMIC":
+			n.Value = make([]interface{}, 0)
+		}
+	}
+}
+
 // Put finds the node using the given selector and updates it's value.
 // It then attempts to propagate the value back up the chain to the root element.
 func (n *Node) Put(selector string, newValue interface{}) error {
@@ -154,12 +167,14 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 			return fmt.Errorf("failed to parse selector: %w", err)
 		}
 
+		previousNode.Initialise(nextNode.Selector)
+
 		// Link the nodes.
 		previousNode.Next = nextNode
 		nextNode.Previous = previousNode
 
 		// Populate the value for the new node.
-		nextNode.Value, err = FindValue(nextNode)
+		nextNode.Value, err = findValue(nextNode)
 		if err != nil {
 			var valueNotFoundErr *ValueNotFound
 			if errors.As(err, &valueNotFoundErr) {
@@ -170,7 +185,7 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 					}
 				}
 			} else {
-				return err
+				return fmt.Errorf("could not find value: %w", err)
 			}
 		}
 
@@ -183,7 +198,7 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 		if previousNode.Previous == nil {
 			break
 		}
-		if err := PropagateValue(previousNode); err != nil {
+		if err := propagateValue(previousNode); err != nil {
 			return fmt.Errorf("could not propagate value: %w", err)
 		}
 		previousNode = previousNode.Previous
@@ -217,7 +232,7 @@ func (n *Node) Query(selector string) (*Node, error) {
 		previousNode.Next = nextNode
 		nextNode.Previous = previousNode
 
-		nextNode.Value, err = FindValue(nextNode)
+		nextNode.Value, err = findValue(nextNode)
 		// Populate the value for the new node.
 		if err != nil {
 			return nil, err
@@ -303,27 +318,23 @@ func findValueIndex(n *Node) (interface{}, error) {
 	return nil, &ValueNotFound{Selector: n.Selector.Current, Node: n}
 }
 
-// findValueNextAvailableIndex finds the value for the given node using the index selector
+// putNextAvailableIndex finds the value for the given node using the index selector
 // information.
 func putNextAvailableIndex(n *Node) (interface{}, error) {
-	switch p := n.Previous.Value.(type) {
+	switch n.Previous.Value.(type) {
 	case nil:
 		return nil, &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	case []map[interface{}]interface{}:
 		val := make(map[interface{}]interface{})
-		p = append(p, val)
 		return val, nil
 	case []map[string]interface{}:
 		val := make(map[string]interface{})
-		p = append(p, val)
 		return val, nil
 	case []interface{}:
 		val := ""
-		p = append(p, val)
 		return val, nil
 	case []string:
 		val := ""
-		p = append(p, val)
 		return val, nil
 	default:
 		return nil, &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
@@ -338,28 +349,46 @@ func propagateValueIndex(n *Node) error {
 	case nil:
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	case []map[interface{}]interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
+		length := int64(len(p))
+		if n.Selector.Index >= 0 && n.Selector.Index < length {
 			p[n.Selector.Index] = n.Value.(map[interface{}]interface{})
 			return nil
 		}
+		if n.Selector.Index >= length {
+			n.Previous.Value = append(p, n.Value.(map[interface{}]interface{}))
+			return nil
+		}
 	case []map[string]interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
+		length := int64(len(p))
+		if n.Selector.Index >= 0 && n.Selector.Index < length {
 			p[n.Selector.Index] = n.Value.(map[string]interface{})
 			return nil
 		}
+		if n.Selector.Index >= length {
+			n.Previous.Value = append(p, n.Value.(map[string]interface{}))
+			return nil
+		}
 	case map[interface{}]interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
+		p[n.Selector.Index] = n.Value
+		return nil
+	case []interface{}:
+		length := int64(len(p))
+		if n.Selector.Index >= 0 && n.Selector.Index < length {
 			p[n.Selector.Index] = n.Value
 			return nil
 		}
-	case []interface{}:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
-			p[n.Selector.Index] = n.Value
+		if n.Selector.Index >= length {
+			n.Previous.Value = append(p, n.Value)
 			return nil
 		}
 	case []string:
-		if n.Selector.Index >= 0 && n.Selector.Index < int64(len(p)) {
+		length := int64(len(p))
+		if n.Selector.Index >= 0 && n.Selector.Index < length {
 			p[n.Selector.Index] = n.Value.(string)
+			return nil
+		}
+		if n.Selector.Index >= length {
+			n.Previous.Value = append(p, n.Value.(string))
 			return nil
 		}
 	default:
@@ -525,10 +554,10 @@ func propagateValueDynamic(n *Node) error {
 	return &ValueNotFound{Selector: n.Selector.Current, Node: n}
 }
 
-// FindValue finds the value for the given node.
+// findValue finds the value for the given node.
 // The value is essentially pulled from the previous node, using the (already parsed) selector
 // information stored on the current node.
-func FindValue(n *Node) (interface{}, error) {
+func findValue(n *Node) (interface{}, error) {
 	if n.Previous == nil {
 		// previous node is required to get it's value.
 		return nil, ErrMissingPreviousNode
@@ -548,10 +577,10 @@ func FindValue(n *Node) (interface{}, error) {
 	}
 }
 
-// FindValue finds the value for the given node.
-// The value is essentially pulled from the previous node, using the (already parsed) selector
-// information stored on the current node.
-func PropagateValue(n *Node) error {
+// propagateValue sends the value of the current node up the chain.
+// It finds the element in the parent the this node was created from and sets it's
+// value to the value of the current node.
+func propagateValue(n *Node) error {
 	if n.Previous == nil {
 		return nil
 	}

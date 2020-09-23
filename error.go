@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ErrMissingPreviousNode is returned when FindValue doesn't have access to the previous node.
+// ErrMissingPreviousNode is returned when findValue doesn't have access to the previous node.
 var ErrMissingPreviousNode = errors.New("missing previous node")
 
 // UnknownComparisonOperatorErr is returned when
