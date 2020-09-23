@@ -41,8 +41,8 @@ type Node struct {
 
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
-	indexSelector    = `\[(?P<index>[0-9]*?)\]`
-	dynamicSelector  = `\((?P<name>[a-zA-Z\-_]+)(?P<comparison>=)(?P<name>.*?)\)`
+	indexSelector    = `\[(?P<index>[0-9a-zA-Z]*?)\]`
+	dynamicSelector  = `\((?P<name>[a-zA-Z\-_]+)(?P<comparison>=|<|>)(?P<name>.*?)\)`
 )
 
 var (

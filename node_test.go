@@ -32,6 +32,23 @@ var (
 	}
 )
 
+func TestParseSelector(t *testing.T) {
+	t.Run("NonIntIndex", func(t *testing.T) {
+		_, err := dasel.ParseSelector(".[a]")
+		exp := &dasel.InvalidIndexErr{Index: "a"}
+		if err == nil || err.Error() != exp.Error() {
+			t.Errorf("expected error %v, got %v", exp, err)
+		}
+	})
+	t.Run("InvalidDynamicComparison", func(t *testing.T) {
+		_, err := dasel.ParseSelector(".(x<2)")
+		exp := &dasel.UnknownComparisonOperatorErr{Operator: "<"}
+		if err == nil || err.Error() != exp.Error() {
+			t.Errorf("expected error %v, got %v", exp, err)
+		}
+	})
+}
+
 func TestNode_Query_File(t *testing.T) {
 	tests := []struct {
 		Name     string
