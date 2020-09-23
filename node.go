@@ -1,7 +1,6 @@
 package dasel
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"regexp"
