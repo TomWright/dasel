@@ -47,11 +47,8 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
 	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
 
-	for _, f := range []string{"selector"} {
-		if err := cmd.MarkFlagRequired(f); err != nil {
-			panic("could not mark flag as required: " + f)
-		}
-	}
+	_ = cmd.MarkFlagFilename("file")
+	_ = cmd.MarkFlagRequired("selector")
 
 	return cmd
 }

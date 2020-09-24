@@ -107,11 +107,57 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 
-	for _, f := range []string{"selector"} {
-		if err := cmd.MarkPersistentFlagRequired(f); err != nil {
-			panic("could not mark flag as required: " + f)
-		}
-	}
+	_ = cmd.MarkPersistentFlagFilename("file")
+	_ = cmd.MarkPersistentFlagRequired("selector")
 
 	return cmd
+}
+
+type genericPutOptions struct {
+	File      string
+	Out       string
+	Parser    string
+	Selector  string
+	Value     string
+	ValueType string
+	Init      func(genericPutOptions) genericPutOptions
+}
+
+func getGenericInit(cmd *cobra.Command) func(options genericPutOptions) genericPutOptions {
+	return func(opts genericPutOptions) genericPutOptions {
+		opts.File = cmd.Flag("file").Value.String()
+		opts.Out = cmd.Flag("out").Value.String()
+		opts.Parser = cmd.Flag("parser").Value.String()
+		opts.Selector = cmd.Flag("selector").Value.String()
+		return opts
+	}
+}
+
+func runGenericPutCommand(opts genericPutOptions) error {
+	if opts.Init != nil {
+		opts = opts.Init(opts)
+	}
+	parser, err := getParser(opts.File, opts.Parser)
+	if err != nil {
+		return err
+	}
+	rootNode, err := getRootNode(opts.File, parser)
+	if err != nil {
+		return err
+	}
+
+	updateValue, err := parseValue(opts.Value, opts.ValueType)
+	if err != nil {
+		return err
+	}
+
+	if err := rootNode.Put(opts.Selector, updateValue); err != nil {
+		return fmt.Errorf("could not put value: %w", err)
+	}
+
+	if err := writeNodeToOutput(rootNode, parser, opts.File, opts.Out); err != nil {
+		return fmt.Errorf("could not write output: %w", err)
+	}
+
+	return nil
 }
