@@ -226,13 +226,14 @@ func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}
 		}
 
 		if !reflect.DeepEqual(newValue, got.InterfaceValue()) {
-			t.Errorf("expected %v, got %v", newValue, got)
+			t.Errorf("expected %v, got %v", newValue, got.InterfaceValue())
 		}
 	}
 }
 
 func TestNode_Put(t *testing.T) {
 	data := map[string]interface{}{
+		"id": "123",
 		"people": []map[string]interface{}{
 			{
 				"id":   1,
@@ -262,7 +263,8 @@ func TestNode_Put(t *testing.T) {
 			return
 		}
 	})
-	t.Run("ExistingValue", putQueryTest(rootNode, "people.(id=1).name", "Thomas", "people.(id=1).name"))
+	t.Run("ExistingSingleString", putQueryTest(rootNode, "id", "456", "id"))
+	t.Run("ExistingStringValue", putQueryTest(rootNode, "people.[0].name", "Thomas", "people.(id=1).name"))
 	t.Run("ExistingIntValue", putQueryTest(rootNode, "people.[0].id", 3, "people.[0].id"))
 	t.Run("NewPropertyOnExistingObject", putQueryTest(rootNode, "people.(id=3).age", 27, "people.(id=3).age"))
 	t.Run("AppendObjectToList", func(t *testing.T) {

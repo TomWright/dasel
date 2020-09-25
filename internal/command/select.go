@@ -4,29 +4,47 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
+	"io"
+	"os"
 )
 
-func runSelectCommand(fileFlag string, parserFlag string, selectorFlag string) error {
-	parser, err := getParser(fileFlag, parserFlag)
+type selectOptions struct {
+	File     string
+	Parser   string
+	Selector string
+	Reader   io.Reader
+	Writer   io.Writer
+}
+
+func runSelectCommand(opts selectOptions) error {
+	parser, err := getParser(opts.File, opts.Parser)
 	if err != nil {
 		return err
 	}
-	rootNode, err := getRootNode(fileFlag, parser)
+	rootNode, err := getRootNode(getRootNodeOpts{
+		File:   opts.File,
+		Parser: parser,
+		Reader: opts.Reader,
+	})
 	if err != nil {
 		return err
 	}
 
 	var res *dasel.Node
-	if selectorFlag == "." {
+	if opts.Selector == "." {
 		res = rootNode
 	} else {
-		res, err = rootNode.Query(selectorFlag)
+		res, err = rootNode.Query(opts.Selector)
 		if err != nil {
 			return fmt.Errorf("could not query node: %w", err)
 		}
 	}
 
-	fmt.Printf("%v\n", res.Value)
+	if opts.Writer == nil {
+		opts.Writer = os.Stdout
+	}
+
+	_, _ = fmt.Fprintf(opts.Writer, "%v", res.InterfaceValue())
 
 	return nil
 }
@@ -39,7 +57,11 @@ func selectCommand() *cobra.Command {
 		Short: "Select properties from the given file.",
 		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runSelectCommand(fileFlag, parserFlag, selectorFlag)
+			return runSelectCommand(selectOptions{
+				File:     fileFlag,
+				Parser:   parserFlag,
+				Selector: selectorFlag,
+			})
 		},
 	}
 

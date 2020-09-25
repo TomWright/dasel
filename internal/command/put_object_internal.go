@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/internal/oflag"
+	"io"
 	"strings"
 )
 
@@ -14,6 +15,8 @@ type putObjectOpts struct {
 	Selector    string
 	InputTypes  []string
 	InputValues []string
+	Reader      io.Reader
+	Writer      io.Writer
 }
 
 func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[string]interface{}, error) {
@@ -42,7 +45,11 @@ func runPutObjectCommand(opts putObjectOpts) error {
 	if err != nil {
 		return err
 	}
-	rootNode, err := getRootNode(opts.File, parser)
+	rootNode, err := getRootNode(getRootNodeOpts{
+		File:   opts.File,
+		Parser: parser,
+		Reader: opts.Reader,
+	})
 	if err != nil {
 		return err
 	}
@@ -56,7 +63,13 @@ func runPutObjectCommand(opts putObjectOpts) error {
 		return fmt.Errorf("could not put value: %w", err)
 	}
 
-	if err := writeNodeToOutput(rootNode, parser, opts.File, opts.Out); err != nil {
+	if err := writeNodeToOutput(writeNoteToOutputOpts{
+		Node:   rootNode,
+		Parser: parser,
+		File:   opts.File,
+		Out:    opts.Out,
+		Writer: opts.Writer,
+	}); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 
