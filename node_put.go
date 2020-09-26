@@ -8,14 +8,32 @@ import (
 // Initialise sets up the node to ensure it has a value.
 func (n *Node) Initialise(selector Selector) {
 	if !isValid(n.Value) {
+		if n.Next == nil {
+			var err error
+			var val interface{}
+			n.Value, err = putValue(n, reflect.ValueOf(val), true)
+			if err != nil {
+				panic(err)
+			}
+			return
+		}
+
 		// Set an initial value based off of the selector type.
-		switch selector.Type {
+		switch n.Next.Selector.Type {
 		case "ROOT":
 			n.Value = reflect.ValueOf(make(map[string]interface{}))
 		case "PROPERTY":
-			n.Value = reflect.ValueOf(make(map[string]interface{}))
+			var err error
+			n.Value, err = putValue(n, reflect.ValueOf(make(map[string]interface{})), true)
+			if err != nil {
+				panic(err)
+			}
 		case "NEXT_AVAILABLE_INDEX", "INDEX", "DYNAMIC":
-			n.Value = reflect.ValueOf(make([]interface{}, 0))
+			var err error
+			n.Value, err = putValue(n, reflect.ValueOf(make([]interface{}, 0)), true)
+			if err != nil {
+				panic(err)
+			}
 		}
 	}
 }
@@ -33,10 +51,12 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 }
 
 func buildPutChain(n *Node, newValue reflect.Value) error {
-	if n.Selector.Remaining == "" {
+	if n.IsFinal() {
 		// We've reached the end
 		return nil
 	}
+
+	n.Initialise(n.Selector)
 
 	var err error
 	nextNode := &Node{}
@@ -52,7 +72,7 @@ func buildPutChain(n *Node, newValue reflect.Value) error {
 	nextNode.Previous = n
 
 	// Populate the value for the new node.
-	nextNode.Value, err = putValue(nextNode, newValue)
+	nextNode.Value, err = putValue(nextNode, newValue, nextNode.IsFinal())
 	if err != nil {
 		return fmt.Errorf("could not find value: %w", err)
 	}
@@ -60,7 +80,7 @@ func buildPutChain(n *Node, newValue reflect.Value) error {
 	return buildPutChain(nextNode, newValue)
 }
 
-func putValue(n *Node, newValue reflect.Value) (reflect.Value, error) {
+func putValue(n *Node, newValue reflect.Value, writeNewValue bool) (reflect.Value, error) {
 	if n.Previous == nil {
 		// previous node is required to get it's value.
 		return nilValue(), ErrMissingPreviousNode
@@ -68,20 +88,20 @@ func putValue(n *Node, newValue reflect.Value) (reflect.Value, error) {
 
 	switch n.Selector.Type {
 	case "PROPERTY":
-		return putValueProperty(n, newValue)
+		return putValueProperty(n, newValue, writeNewValue)
 	case "INDEX":
-		return putValueIndex(n, newValue)
+		return putValueIndex(n, newValue, writeNewValue)
 	case "NEXT_AVAILABLE_INDEX":
-		return putNextAvailableIndex(n, newValue)
+		return putNextAvailableIndex(n, newValue, writeNewValue)
 	case "DYNAMIC":
-		return putValueDynamic(n, newValue)
+		return putValueDynamic(n, newValue, writeNewValue)
 	default:
 		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Type}
 	}
 }
 
 // putValueProperty writes the new value to the given node using the selector information.
-func putValueProperty(n *Node, newValue reflect.Value) (reflect.Value, error) {
+func putValueProperty(n *Node, newValue reflect.Value, writeNewValue bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -90,7 +110,7 @@ func putValueProperty(n *Node, newValue reflect.Value) (reflect.Value, error) {
 
 	if value.Kind() == reflect.Map {
 		key := reflect.ValueOf(n.Selector.Property)
-		if n.IsFinal() {
+		if writeNewValue {
 			value.SetMapIndex(key, newValue)
 		}
 		return value.MapIndex(key), nil
@@ -100,7 +120,7 @@ func putValueProperty(n *Node, newValue reflect.Value) (reflect.Value, error) {
 }
 
 // putValueIndex writes the new value to the given node using the selector information.
-func putValueIndex(n *Node, newValue reflect.Value) (reflect.Value, error) {
+func putValueIndex(n *Node, newValue reflect.Value, writeNewValue bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -111,10 +131,10 @@ func putValueIndex(n *Node, newValue reflect.Value) (reflect.Value, error) {
 		valueLen := value.Len()
 		if n.Selector.Index < 0 || n.Selector.Index >= valueLen {
 			// If the requested index isn't within the range of the slice, let's append to it instead.
-			return putNextAvailableIndex(n, newValue)
+			return putNextAvailableIndex(n, newValue, writeNewValue)
 		}
 		val := value.Index(n.Selector.Index)
-		if n.IsFinal() {
+		if writeNewValue {
 			val.Set(newValue)
 		}
 		return val, nil
@@ -124,7 +144,7 @@ func putValueIndex(n *Node, newValue reflect.Value) (reflect.Value, error) {
 }
 
 // putNextAvailableIndex writes the new value to the given node using the selector information.
-func putNextAvailableIndex(n *Node, newValue reflect.Value) (reflect.Value, error) {
+func putNextAvailableIndex(n *Node, newValue reflect.Value, writeNewValue bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -136,7 +156,7 @@ func putNextAvailableIndex(n *Node, newValue reflect.Value) (reflect.Value, erro
 			n.Previous.Value = reflect.Append(value, newValue)
 			return newValue, nil
 		}
-		newValue := reflect.New(value.Index(0).Type())
+		newValue := reflect.Indirect(reflect.New(value.Index(0).Type()))
 		n.Previous.Value = reflect.Append(value, newValue)
 		return newValue, nil
 	}
@@ -145,8 +165,8 @@ func putNextAvailableIndex(n *Node, newValue reflect.Value) (reflect.Value, erro
 }
 
 // putValueDynamic writes the new value to the given node using the selector information.
-func putValueDynamic(n *Node, newValue reflect.Value) (reflect.Value, error) {
-	if n.IsFinal() {
+func putValueDynamic(n *Node, newValue reflect.Value, writeNewValue bool) (reflect.Value, error) {
+	if writeNewValue {
 		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Current}
 	}
 
