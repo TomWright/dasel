@@ -47,6 +47,23 @@ details:
     postcode: YYY YYY
 `
 
+var tomlData = `id = "1111"
+[details]
+  name = "Tom"
+  age = 27
+  [[details.addresses]]
+    street =  "101 Some Street"
+    town = "Some Town"
+    county = "Some County"
+    postcode = "XXX XXX"
+    primary = true
+  [[details.addresses]]
+    street = "34 Another Street"
+    town = "Another Town"
+    county = "Another County"
+    postcode = "YYY YYY"
+`
+
 func selectTest(in string, parser string, selector string, out string, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
 		outputBuffer := bytes.NewBuffer([]byte{})
@@ -97,4 +114,5 @@ func selectTestForParser(parser string, data string) func(t *testing.T) {
 func TestSelect(t *testing.T) {
 	t.Run("JSON", selectTestForParser("json", jsonData))
 	t.Run("YAML", selectTestForParser("yaml", yamlData))
+	t.Run("TOML", selectTestForParser("toml", tomlData))
 }

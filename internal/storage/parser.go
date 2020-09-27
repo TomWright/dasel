@@ -33,6 +33,8 @@ func NewParserFromFilename(filename string) (Parser, error) {
 	switch ext {
 	case ".yaml", ".yml":
 		return &YAMLParser{}, nil
+	case ".toml":
+		return &TOMLParser{}, nil
 	case ".json":
 		return &JSONParser{}, nil
 	default:
@@ -47,6 +49,8 @@ func NewParserFromString(parser string) (Parser, error) {
 		return &YAMLParser{}, nil
 	case "json":
 		return &JSONParser{}, nil
+	case "toml":
+		return &TOMLParser{}, nil
 	default:
 		return nil, &UnknownParserErr{Parser: parser}
 	}
