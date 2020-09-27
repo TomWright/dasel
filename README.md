@@ -23,10 +23,17 @@ You can `go get` the `main` package and go should automatically build and instal
 go get github.com/tomwright/dasel/cmd/dasel
 ```
 
-Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest):
+Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
+##### Linux amd64
 This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
 ```
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
+```
+
+##### Mac OS amd64
+You may have to `brew install wget` in order for this to work.
+```
+curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
 ```
 
 ## Usage 
