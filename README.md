@@ -195,3 +195,5 @@ map[name:blue rgb:0000ff]
 - `colourCodes.(name=green).rgb` == `00ff00`
 - `colourCodes.(name=blue).rgb` == `0000ff`
 - `colourCodes.(name=blue)(rgb=0000ff).rgb` == `0000ff`
+
+If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>`) instead.
