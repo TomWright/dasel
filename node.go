@@ -41,16 +41,6 @@ type Node struct {
 	wasInitialised bool
 }
 
-// IsRoot returns true if this is the first node in the chain.
-func (n *Node) IsRoot() bool {
-	return n.Selector.Type == "ROOT" || n.Previous == nil
-}
-
-// IsFinal returns true if this is the last node in the chain.
-func (n *Node) IsFinal() bool {
-	return n.Selector.Remaining == "" || n.Next == nil
-}
-
 // InterfaceValue returns the value stored within the node as an interface{}.
 func (n *Node) InterfaceValue() interface{} {
 	return n.Value.Interface()
@@ -63,7 +53,6 @@ const (
 )
 
 var (
-	// firstNodeRegexp = regexp.MustCompile(`(.+\.?)*?`)
 	propertyRegexp        = regexp.MustCompile(fmt.Sprintf("^\\.?%s", propertySelector))
 	indexRegexp           = regexp.MustCompile(fmt.Sprintf("^\\.?%s", indexSelector))
 	dynamicRegexp         = regexp.MustCompile(fmt.Sprintf("^\\.?(?:%s)+", dynamicSelector))

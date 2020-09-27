@@ -157,16 +157,36 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 				return nilValue(), err
 			}
 			if found {
+				n.Selector.Type = "INDEX"
+				n.Selector.Index = i
 				return object, nil
 			}
 		}
 		if createIfNotExists {
+			n.Selector.Type = "NEXT_AVAILABLE_INDEX"
 			return nilValue(), nil
 		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
+}
+
+func initialiseEmptyValue(n *Node) {
+	switch n.Selector.Type {
+	case "PROPERTY":
+		n.wasInitialised = true
+		n.Previous.Value = reflect.ValueOf(map[interface{}]interface{}{})
+	case "INDEX":
+		n.wasInitialised = true
+		n.Previous.Value = reflect.ValueOf([]interface{}{})
+	case "NEXT_AVAILABLE_INDEX":
+		n.wasInitialised = true
+		n.Previous.Value = reflect.ValueOf([]interface{}{})
+	case "DYNAMIC":
+		n.wasInitialised = true
+		n.Previous.Value = reflect.ValueOf([]interface{}{})
+	}
 }
 
 // findValue finds the value for the given node.
@@ -179,20 +199,7 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	}
 
 	if createIfNotExists && !isValid(n.Previous.Value) {
-		switch n.Selector.Type {
-		case "PROPERTY":
-			n.wasInitialised = true
-			n.Previous.Value = reflect.ValueOf(map[interface{}]interface{}{})
-		case "INDEX":
-			n.wasInitialised = true
-			n.Previous.Value = reflect.ValueOf([]interface{}{})
-		case "NEXT_AVAILABLE_INDEX":
-			n.wasInitialised = true
-			n.Previous.Value = reflect.ValueOf([]interface{}{})
-		case "DYNAMIC":
-			n.wasInitialised = true
-			n.Previous.Value = reflect.ValueOf([]interface{}{})
-		}
+		initialiseEmptyValue(n)
 	}
 
 	switch n.Selector.Type {

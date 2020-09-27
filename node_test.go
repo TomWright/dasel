@@ -219,8 +219,6 @@ func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}
 			return
 		}
 
-		fmt.Println(rootNode.InterfaceValue())
-
 		got, err := rootNode.Query(querySelector)
 		if err != nil {
 			t.Errorf("unexpected query error: %v", err)
@@ -267,8 +265,8 @@ func TestNode_Put(t *testing.T) {
 	})
 	t.Run("ExistingSingleString", putQueryTest(rootNode, "id", "456", "id"))
 	t.Run("ExistingStringValue", putQueryTest(rootNode, "people.[0].name", "Thomas", "people.(id=1).name"))
-	t.Run("ExistingIntValue", putQueryTest(rootNode, "people.[0].id", 3, "people.(id=3).id"))
-	t.Run("NewPropertyOnExistingObject", putQueryTest(rootNode, "people.[0].age", 27, "people.[0].age"))
+	t.Run("ExistingIntValue", putQueryTest(rootNode, "people.(id=1).id", 3, "people.(id=3).id"))
+	t.Run("NewPropertyOnExistingObject", putQueryTest(rootNode, "people.(id=3).age", 27, "people.[0].age"))
 	t.Run("AppendObjectToList", func(t *testing.T) {
 		err := rootNode.Put("people.[]", map[string]interface{}{
 			"id":   1,

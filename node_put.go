@@ -22,8 +22,6 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 		return err
 	}
 
-	fmt.Println(n.InterfaceValue())
-
 	return nil
 }
 

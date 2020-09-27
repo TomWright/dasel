@@ -19,9 +19,7 @@ func propagate(n *Node) error {
 	return propagate(n.Previous)
 }
 
-// propagateValue sends the value of the current node up the chain.
-// It finds the element in the parent the this node was created from and sets it's
-// value to the value of the current node.
+// propagateValue sends the value of the current node up to the previous node in the chain.
 func propagateValue(n *Node) error {
 	if n.Previous == nil {
 		return nil
@@ -32,8 +30,8 @@ func propagateValue(n *Node) error {
 		return propagateValueProperty(n)
 	case "INDEX":
 		return propagateValueIndex(n)
-	case "DYNAMIC":
-		return propagateValueDynamic(n)
+	// case "DYNAMIC":
+	// 	return propagateValueDynamic(n)
 	case "NEXT_AVAILABLE_INDEX":
 		return propagateValueNextAvailableIndex(n)
 	default:
@@ -41,9 +39,7 @@ func propagateValue(n *Node) error {
 	}
 }
 
-// propagateValueProperty does the opposite of findValueProperty.
-// It finds the element in the parent the this node was created from and sets it's
-// value to the value of the current node.
+// propagateValueProperty sends the value of the current node up to the previous node in the chain.
 func propagateValueProperty(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
@@ -53,6 +49,7 @@ func propagateValueProperty(n *Node) error {
 
 	if value.Kind() == reflect.Map {
 		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), n.Value)
+		// Set propagated to true here since we modified the previous value by reference.
 		n.Previous.propagated = true
 		return nil
 	}
@@ -60,9 +57,7 @@ func propagateValueProperty(n *Node) error {
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 }
 
-// propagateValueIndex does the opposite of findValueIndex.
-// It finds the element in the parent the this node was created from and sets it's
-// value to the value of the current node.
+// propagateValueIndex sends the value of the current node up to the previous node in the chain.
 func propagateValueIndex(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
@@ -82,9 +77,7 @@ func propagateValueIndex(n *Node) error {
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
 }
 
-// propagateValueNextAvailableIndex does the opposite of findValueNextAvailableIndex.
-// It finds the element in the parent the this node was created from and sets it's
-// value to the value of the current node.
+// propagateValueNextAvailableIndex sends the value of the current node up to the previous node in the chain.
 func propagateValueNextAvailableIndex(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
@@ -100,8 +93,7 @@ func propagateValueNextAvailableIndex(n *Node) error {
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
 }
 
-// propagateValueDynamic finds the value for the given node using the dynamic selector
-// information.
+// propagateValueDynamic sends the value of the current node up to the previous node in the chain.
 func propagateValueDynamic(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}

@@ -132,8 +132,52 @@ func putTest(in string, parser string, selector string, value string, valueType 
 			return
 		}
 
-		if out != string(output) {
-			t.Errorf("expected result %v, got %v", out, string(output))
+		out = strings.TrimSpace(out)
+		got := strings.TrimSpace(string(output))
+
+		if out != got {
+			t.Errorf("expected result:\n%s\ngot:\n%s", out, got)
+		}
+	}
+}
+
+func putObjectTest(in string, parser string, selector string, values []string, valueTypes []string, out string, expErr error) func(t *testing.T) {
+	return func(t *testing.T) {
+		outputBuffer := bytes.NewBuffer([]byte{})
+
+		err := runPutObjectCommand(putObjectOpts{
+			Parser:      parser,
+			Selector:    selector,
+			InputValues: values,
+			InputTypes:  valueTypes,
+			Reader:      strings.NewReader(in),
+			Writer:      outputBuffer,
+		})
+
+		if expErr == nil && err != nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err != nil && err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+
+		output, err := ioutil.ReadAll(outputBuffer)
+		if err != nil {
+			t.Errorf("unexpected error reading output buffer: %s", err)
+			return
+		}
+
+		out = strings.TrimSpace(out)
+		got := strings.TrimSpace(string(output))
+
+		if out != got {
+			t.Errorf("expected result:\n%s\ngot:\n%s", out, got)
 		}
 	}
 }
@@ -170,7 +214,7 @@ func TestPut(t *testing.T) {
 
 		t.Run("ObjectPropertyInt", putTest(`{
   "details": {
-    "age": 27,
+    "age": 20,
     "name": "Tom"
   },
   "id": "1111"
@@ -193,6 +237,34 @@ func TestPut(t *testing.T) {
     "one",
     "four",
     "three"
+  ]
+}`, nil))
+
+		t.Run("DynamicString", putTest(`{
+  "numbers": [
+	"one",
+	"two",
+	"three"
+  ]
+}`, "json", ".numbers.(value=three)", "four", "string", `{
+  "numbers": [
+    "one",
+    "two",
+    "four"
+  ]
+}`, nil))
+
+		t.Run("DynamicInt", putTest(`{
+  "numbers": [
+	1,
+	2,
+	3
+  ]
+}`, "json", ".numbers.(value=3)", "4", "int", `{
+  "numbers": [
+    1,
+    2,
+    4
   ]
 }`, nil))
 
@@ -273,5 +345,234 @@ func TestPut(t *testing.T) {
     }
   ]
 }`, nil))
+
+		t.Run("OverwriteObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
+  "numbers": [
+    {
+      "number": "five",
+      "rank": 5
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    }
+  ]
+}`, nil))
+
+		t.Run("AppendObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {
+      "number": "five",
+      "rank": 5
+    }
+  ]
+}`, nil))
+
+	})
+
+	t.Run("YAML", func(t *testing.T) {
+		t.Run("SingleProperty", putTest(`
+details:
+  age: 27
+  name: Tom
+id: 1111
+`, "yaml", ".id", "2222", "string", `
+details:
+  age: 27
+  name: Tom
+id: "2222"
+`, nil))
+
+		t.Run("ObjectPropertyString", putTest(`
+details:
+  age: 27
+  name: Tom
+id: 1111
+`, "yaml", ".details.name", "Frank", "string", `details:
+  age: 27
+  name: Frank
+id: 1111
+`, nil))
+
+		t.Run("ObjectPropertyInt", putTest(`
+details:
+  age: 20
+  name: Tom
+id: 1111
+`, "yaml", ".details.age", "27", "int", `
+details:
+  age: 27
+  name: Tom
+id: 1111
+`, nil))
+
+		t.Run("IndexString", putTest(`
+numbers:
+- one
+- two
+- three
+`, "yaml", ".numbers.[1]", "four", "string", `
+numbers:
+- one
+- four
+- three
+`, nil))
+
+		t.Run("DynamicString", putTest(`
+numbers:
+- one
+- two
+- three
+`, "yaml", ".numbers.(value=three)", "four", "string", `
+numbers:
+- one
+- two
+- four
+`, nil))
+
+		t.Run("DynamicInt", putTest(`
+numbers:
+- 1
+- 2
+- 3
+`, "yaml", ".numbers.(value=3)", "4", "int", `
+numbers:
+- 1
+- 2
+- 4
+`, nil))
+
+		t.Run("IndexInt", putTest(`
+numbers:
+- 1
+- 2
+- 3
+`, "yaml", ".numbers.[1]", "4", "int", `
+numbers:
+- 1
+- 4
+- 3
+`, nil))
+
+		t.Run("DynamicString", putTest(`
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, "yaml", ".numbers.(number=two).number", "four", "string", `
+numbers:
+- number: one
+  rank: 1
+- number: four
+  rank: 2
+- number: three
+  rank: 3
+`, nil))
+
+		t.Run("DynamicInt", putTest(`
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, "yaml", ".numbers.(rank=2).rank", "4", "int", `
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 4
+- number: three
+  rank: 3
+`, nil))
+
+		t.Run("OverwriteObject", putObjectTest(`
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, "yaml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
+numbers:
+- number: five
+  rank: 5
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, nil))
+
+		t.Run("AppendObject", putObjectTest(`
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, "yaml", ".numbers.[]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+- number: five
+  rank: 5
+`, nil))
+
 	})
 }
