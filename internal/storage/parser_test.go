@@ -19,6 +19,7 @@ func TestNewParserFromString(t *testing.T) {
 	}{
 		{In: "json", Out: &storage.JSONParser{}},
 		{In: "yaml", Out: &storage.YAMLParser{}},
+		{In: "toml", Out: &storage.TOMLParser{}},
 		{In: "bad", Out: nil, Err: &storage.UnknownParserErr{Parser: "bad"}},
 	}
 
@@ -54,6 +55,7 @@ func TestNewParserFromFilename(t *testing.T) {
 		{In: "a.json", Out: &storage.JSONParser{}},
 		{In: "a.yaml", Out: &storage.YAMLParser{}},
 		{In: "a.yml", Out: &storage.YAMLParser{}},
+		{In: "a.toml", Out: &storage.TOMLParser{}},
 		{In: "a.txt", Out: nil, Err: &storage.UnknownParserErr{Parser: ".txt"}},
 	}
 

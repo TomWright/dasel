@@ -121,8 +121,9 @@ $ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=au
 ## Supported data types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
-- YAML - `-p yaml`
 - JSON - `-p json`
+- TOML - `-p toml`
+- YAML - `-p yaml`
 
 ## Selectors
 
