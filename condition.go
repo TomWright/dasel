@@ -28,6 +28,8 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 			}
 		}
 		return false, nil
+	} else if c.Key == "value" {
+		return fmt.Sprint(value.Interface()) == c.Value, nil
 	}
 
 	return false, &UnhandledCheckType{Value: value.Kind().String()}

@@ -5,6 +5,8 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
+	"io"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -57,34 +59,78 @@ func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
 	return parser, nil
 }
 
-func getRootNode(fileFlag string, parser storage.Parser) (*dasel.Node, error) {
-	useStdin := shouldReadFromStdin(fileFlag)
-	if useStdin {
-		value, err := storage.LoadFromStdin(parser)
-		if err != nil {
-			return nil, fmt.Errorf("could not load file: %w", err)
+type getRootNodeOpts struct {
+	File   string
+	Reader io.Reader
+	Parser storage.Parser
+}
+
+func getRootNode(opts getRootNodeOpts) (*dasel.Node, error) {
+	if opts.Reader == nil {
+		if shouldReadFromStdin(opts.File) {
+			opts.Reader = os.Stdin
+		} else {
+			f, err := os.Open(opts.File)
+			if err != nil {
+				return nil, fmt.Errorf("could not open input file: %w", err)
+			}
+			defer f.Close()
+			opts.Reader = f
 		}
-		return dasel.New(value), nil
 	}
-	value, err := storage.LoadFromFile(fileFlag, parser)
+
+	value, err := storage.Load(opts.Parser, opts.Reader)
 	if err != nil {
-		return nil, fmt.Errorf("could not load file: %w", err)
+		return nil, fmt.Errorf("could not load input: %w", err)
 	}
+
 	return dasel.New(value), nil
 }
 
-func writeNodeToOutput(n *dasel.Node, parser storage.Parser, fileFlag string, outFlag string) error {
-	if shouldReadFromStdin(fileFlag) && outFlag == "" {
-		outFlag = "stdout"
+type writeNoteToOutputOpts struct {
+	Node   *dasel.Node
+	Parser storage.Parser
+	File   string
+	Out    string
+	Writer io.Writer
+}
+
+func writeNodeToOutput(opts writeNoteToOutputOpts) error {
+	if opts.Writer == nil {
+		switch {
+		case opts.Out == "" && shouldReadFromStdin(opts.File):
+			// No out flag and we read from stdin.
+			opts.Writer = os.Stdout
+
+		case opts.Out == "stdout":
+			// Out flag wants to write to stdout.
+			opts.Writer = os.Stdout
+
+		case opts.Out == "":
+			// No out flag... write to the file we read from.
+			f, err := os.Create(opts.File)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+
+		case opts.Out != "":
+			// Out flag was set.
+			f, err := os.Create(opts.Out)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+		}
 	}
-	switch outFlag {
-	case "":
-		return storage.WriteToFile(fileFlag, parser, n.InterfaceValue())
-	case "stdout":
-		return storage.WriteToStdout(parser, n.InterfaceValue())
-	default:
-		return storage.WriteToFile(outFlag, parser, n.InterfaceValue())
+
+	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Writer); err != nil {
+		return fmt.Errorf("could not write to output file: %w", err)
 	}
+
+	return nil
 }
 
 func putCommand() *cobra.Command {
@@ -121,6 +167,8 @@ type genericPutOptions struct {
 	Value     string
 	ValueType string
 	Init      func(genericPutOptions) genericPutOptions
+	Reader    io.Reader
+	Writer    io.Writer
 }
 
 func getGenericInit(cmd *cobra.Command) func(options genericPutOptions) genericPutOptions {
@@ -141,7 +189,11 @@ func runGenericPutCommand(opts genericPutOptions) error {
 	if err != nil {
 		return err
 	}
-	rootNode, err := getRootNode(opts.File, parser)
+	rootNode, err := getRootNode(getRootNodeOpts{
+		File:   opts.File,
+		Parser: parser,
+		Reader: opts.Reader,
+	})
 	if err != nil {
 		return err
 	}
@@ -155,7 +207,13 @@ func runGenericPutCommand(opts genericPutOptions) error {
 		return fmt.Errorf("could not put value: %w", err)
 	}
 
-	if err := writeNodeToOutput(rootNode, parser, opts.File, opts.Out); err != nil {
+	if err := writeNodeToOutput(writeNoteToOutputOpts{
+		Node:   rootNode,
+		Parser: parser,
+		File:   opts.File,
+		Out:    opts.Out,
+		Writer: opts.Writer,
+	}); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 

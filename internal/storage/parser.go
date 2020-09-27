@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -53,42 +54,30 @@ func NewParserFromString(parser string) (Parser, error) {
 
 // LoadFromFile loads data from the given file.
 func LoadFromFile(filename string, p Parser) (interface{}, error) {
-	byteData, err := ioutil.ReadFile(filename)
+	f, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("could not read file: %w", err)
+		return nil, fmt.Errorf("could not open file: %w", err)
+	}
+	return Load(p, f)
+}
+
+// Load loads data from the given io.Reader.
+func Load(p Parser, reader io.Reader) (interface{}, error) {
+	byteData, err := ioutil.ReadAll(reader)
+	if err != nil {
+		return nil, fmt.Errorf("could not read data: %w", err)
 	}
 	return p.FromBytes(byteData)
 }
 
-// LoadFromStdin loads data from the given file.
-func LoadFromStdin(p Parser) (interface{}, error) {
-	byteData, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		return nil, fmt.Errorf("could not read stdin: %w", err)
-	}
-	return p.FromBytes(byteData)
-}
-
-// WriteToFile saves data to the given file.
-func WriteToFile(filename string, p Parser, value interface{}) error {
+// Write writes the value to the given io.Writer.
+func Write(p Parser, value interface{}, writer io.Writer) error {
 	byteData, err := p.ToBytes(value)
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
 	}
-	if err := ioutil.WriteFile(filename, byteData, 0644); err != nil {
-		return fmt.Errorf("could not write file: %w", err)
-	}
-	return nil
-}
-
-// WriteToStdout saves data to the given file.
-func WriteToStdout(p Parser, value interface{}) error {
-	byteData, err := p.ToBytes(value)
-	if err != nil {
-		return fmt.Errorf("could not get byte data for file: %w", err)
-	}
-	if _, err := os.Stdout.Write(byteData); err != nil {
-		return fmt.Errorf("could not write to stdout: %w", err)
+	if _, err := writer.Write(byteData); err != nil {
+		return fmt.Errorf("could not write data: %w", err)
 	}
 	return nil
 }

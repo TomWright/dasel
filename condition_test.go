@@ -30,11 +30,6 @@ func conditionTest(c dasel.Condition, input interface{}, exp bool, expErr error)
 func TestEqualCondition_Check(t *testing.T) {
 	c := &dasel.EqualCondition{Key: "name", Value: "Tom"}
 
-	t.Run("MatchMapStringString", conditionTest(
-		c,
-		map[string]string{"name": "Tom"},
-		true, nil,
-	))
 	t.Run("MatchMapStringInterface", conditionTest(
 		c,
 		map[string]interface{}{"name": "Tom"},
@@ -48,12 +43,7 @@ func TestEqualCondition_Check(t *testing.T) {
 
 	t.Run("NoMatchMissingKey", conditionTest(
 		c,
-		map[string]string{},
-		false, nil,
-	))
-	t.Run("NoMatchMapStringString", conditionTest(
-		c,
-		map[string]string{"name": "Wrong"},
+		map[string]interface{}{},
 		false, nil,
 	))
 	t.Run("NoMatchMapStringInterface", conditionTest(
