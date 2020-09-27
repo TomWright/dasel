@@ -36,12 +36,19 @@ type Node struct {
 	// Value is the value of the current node.
 	Value reflect.Value `json:"value"`
 	// Selector is the selector for the current node.
-	Selector Selector `json:"selector"`
+	Selector       Selector `json:"selector"`
+	propagated     bool
+	wasInitialised bool
+}
+
+// IsRoot returns true if this is the first node in the chain.
+func (n *Node) IsRoot() bool {
+	return n.Selector.Type == "ROOT" || n.Previous == nil
 }
 
 // IsFinal returns true if this is the last node in the chain.
 func (n *Node) IsFinal() bool {
-	return n.Selector.Remaining == ""
+	return n.Selector.Remaining == "" || n.Next == nil
 }
 
 // InterfaceValue returns the value stored within the node as an interface{}.

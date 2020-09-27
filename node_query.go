@@ -26,7 +26,7 @@ func lastNode(n *Node) *Node {
 	}
 }
 
-func buildFindChain(n *Node) error {
+func buildFindChain(n *Node, modifiers ...func(n *Node) error) error {
 	if n.Selector.Remaining == "" {
 		// We've reached the end
 		return nil
@@ -45,18 +45,26 @@ func buildFindChain(n *Node) error {
 	n.Next = nextNode
 	nextNode.Previous = n
 
+	if len(modifiers) > 0 {
+		for _, m := range modifiers {
+			if err := m(nextNode); err != nil {
+				return fmt.Errorf("could not run modifier: %w", err)
+			}
+		}
+	}
+
 	// Populate the value for the new node.
-	nextNode.Value, err = findValue(nextNode)
+	nextNode.Value, err = findValue(nextNode, false)
 	if err != nil {
 		return fmt.Errorf("could not find value: %w", err)
 	}
 
-	return buildFindChain(nextNode)
+	return buildFindChain(nextNode, modifiers...)
 }
 
 // findValueProperty finds the value for the given node using the property selector
 // information.
-func findValueProperty(n *Node) (reflect.Value, error) {
+func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -69,6 +77,9 @@ func findValueProperty(n *Node) (reflect.Value, error) {
 				return value.MapIndex(key), nil
 			}
 		}
+		if createIfNotExists {
+			return nilValue(), nil
+		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	}
 
@@ -77,7 +88,7 @@ func findValueProperty(n *Node) (reflect.Value, error) {
 
 // findValueIndex finds the value for the given node using the index selector
 // information.
-func findValueIndex(n *Node) (reflect.Value, error) {
+func findValueIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -89,6 +100,9 @@ func findValueIndex(n *Node) (reflect.Value, error) {
 		if n.Selector.Index >= 0 && n.Selector.Index < valueLen {
 			return value.Index(n.Selector.Index), nil
 		}
+		if createIfNotExists {
+			return nilValue(), nil
+		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	}
 
@@ -97,9 +111,12 @@ func findValueIndex(n *Node) (reflect.Value, error) {
 
 // findNextAvailableIndex finds the value for the given node using the index selector
 // information.
-func findNextAvailableIndex(n *Node) (reflect.Value, error) {
-	// Next available index isn't supported unless it's creating the item.
-	return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+func findNextAvailableIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
+	if !createIfNotExists {
+		// Next available index isn't supported unless it's creating the item.
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+	}
+	return nilValue(), nil
 }
 
 // processFindDynamicItem is used by findValueDynamic.
@@ -125,7 +142,7 @@ func processFindDynamicItem(n *Node, object reflect.Value) (bool, error) {
 
 // findValueDynamic finds the value for the given node using the dynamic selector
 // information.
-func findValueDynamic(n *Node) (reflect.Value, error) {
+func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
@@ -143,6 +160,9 @@ func findValueDynamic(n *Node) (reflect.Value, error) {
 				return object, nil
 			}
 		}
+		if createIfNotExists {
+			return nilValue(), nil
+		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	}
 
@@ -152,21 +172,38 @@ func findValueDynamic(n *Node) (reflect.Value, error) {
 // findValue finds the value for the given node.
 // The value is essentially pulled from the previous node, using the (already parsed) selector
 // information stored on the current node.
-func findValue(n *Node) (reflect.Value, error) {
+func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if n.Previous == nil {
 		// previous node is required to get it's value.
 		return nilValue(), ErrMissingPreviousNode
 	}
 
+	if createIfNotExists && !isValid(n.Previous.Value) {
+		switch n.Selector.Type {
+		case "PROPERTY":
+			n.wasInitialised = true
+			n.Previous.Value = reflect.ValueOf(map[interface{}]interface{}{})
+		case "INDEX":
+			n.wasInitialised = true
+			n.Previous.Value = reflect.ValueOf([]interface{}{})
+		case "NEXT_AVAILABLE_INDEX":
+			n.wasInitialised = true
+			n.Previous.Value = reflect.ValueOf([]interface{}{})
+		case "DYNAMIC":
+			n.wasInitialised = true
+			n.Previous.Value = reflect.ValueOf([]interface{}{})
+		}
+	}
+
 	switch n.Selector.Type {
 	case "PROPERTY":
-		return findValueProperty(n)
+		return findValueProperty(n, createIfNotExists)
 	case "INDEX":
-		return findValueIndex(n)
+		return findValueIndex(n, createIfNotExists)
 	case "NEXT_AVAILABLE_INDEX":
-		return findNextAvailableIndex(n)
+		return findNextAvailableIndex(n, createIfNotExists)
 	case "DYNAMIC":
-		return findValueDynamic(n)
+		return findValueDynamic(n, createIfNotExists)
 	default:
 		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Type}
 	}
