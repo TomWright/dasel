@@ -30,8 +30,6 @@ func propagateValue(n *Node) error {
 		return propagateValueProperty(n)
 	case "INDEX":
 		return propagateValueIndex(n)
-	// case "DYNAMIC":
-	// 	return propagateValueDynamic(n)
 	case "NEXT_AVAILABLE_INDEX":
 		return propagateValueNextAvailableIndex(n)
 	default:
@@ -88,32 +86,6 @@ func propagateValueNextAvailableIndex(n *Node) error {
 	if value.Kind() == reflect.Slice {
 		n.Previous.Value = reflect.Append(value, n.Value)
 		return nil
-	}
-
-	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
-}
-
-// propagateValueDynamic sends the value of the current node up to the previous node in the chain.
-func propagateValueDynamic(n *Node) error {
-	if !isValid(n.Previous.Value) {
-		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
-	}
-
-	value := unwrapValue(n.Previous.Value)
-
-	if value.Kind() == reflect.Slice {
-		for i := 0; i < value.Len(); i++ {
-			object := value.Index(i)
-			found, err := processFindDynamicItem(n, object)
-			if err != nil {
-				return err
-			}
-			if found {
-				object.Set(n.Value)
-				return nil
-			}
-		}
-		return &ValueNotFound{Selector: n.Selector.Current, Node: n}
 	}
 
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
