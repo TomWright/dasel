@@ -2,6 +2,8 @@ package storage_test
 
 import (
 	"github.com/tomwright/dasel/internal/storage"
+	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -80,4 +82,46 @@ func TestNewParserFromFilename(t *testing.T) {
 			}
 		})
 	}
+}
+
+var jsonData = map[string]interface{}{
+	"name": "Tom",
+	"preferences": map[string]interface{}{
+		"favouriteColour": "red",
+	},
+	"colours": []interface{}{"red", "green", "blue"},
+	"colourCodes": []interface{}{
+		map[string]interface{}{
+			"name": "red",
+			"rgb": "ff0000",
+		},
+		map[string]interface{}{
+			"name": "green",
+			"rgb": "00ff00",
+		},
+		map[string]interface{}{
+			"name": "blue",
+			"rgb": "0000ff",
+		},
+	},
+}
+
+func TestLoadFromFile(t *testing.T) {
+	t.Run("ValidJSON", func(t *testing.T) {
+		data, err := storage.LoadFromFile("../../tests/assets/example.json", &storage.JSONParser{})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(jsonData, data) {
+			t.Errorf("data does not match")
+		}
+	})
+	t.Run("BaseFilePath", func(t *testing.T) {
+		_, err := storage.LoadFromFile("x.json", &storage.JSONParser{})
+		if err == nil || !strings.Contains(err.Error(), "could not open file") {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+	})
 }
