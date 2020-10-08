@@ -2,7 +2,6 @@ package command_test
 
 import (
 	"bytes"
-	"fmt"
 	"github.com/tomwright/dasel/internal/command"
 	"io/ioutil"
 	"strings"
@@ -17,7 +16,6 @@ func putTest(in string, varType string, parser string, selector string, value st
 		args := []string{
 			"put", varType, "-p", parser, "-s", selector, value,
 		}
-		fmt.Println(args)
 
 		cmd.SetOut(outputBuffer)
 		cmd.SetIn(strings.NewReader(in))
