@@ -299,4 +299,5 @@ func TestNode_Put(t *testing.T) {
 	t.Run("NilChain", putQueryTest(dasel.New(nil), "my.name", "Thomas", "my.name"))
 	t.Run("NilChainToListIndex", putQueryTest(dasel.New(nil), "my.favourite.people.[0]", "Tom", "my.favourite.people.[0]"))
 	t.Run("NilChainToListNextAvailableIndex", putQueryTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
+	t.Run("NilChainToDynamic", putQueryTest(dasel.New(nil), "(name=Jim).name", "Tom", "[0].name"))
 }
