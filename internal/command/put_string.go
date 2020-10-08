@@ -14,7 +14,7 @@ func putStringCommand() *cobra.Command {
 				Value:     args[0],
 				ValueType: "string",
 				Init:      getGenericInit(cmd),
-			})
+			}, cmd)
 		},
 	}
 

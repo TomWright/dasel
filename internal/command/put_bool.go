@@ -14,7 +14,7 @@ func putBoolCommand() *cobra.Command {
 				Value:     args[0],
 				ValueType: "bool",
 				Init:      getGenericInit(cmd),
-			})
+			}, cmd)
 		},
 	}
 

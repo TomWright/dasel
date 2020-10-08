@@ -65,10 +65,10 @@ type getRootNodeOpts struct {
 	Parser storage.Parser
 }
 
-func getRootNode(opts getRootNodeOpts) (*dasel.Node, error) {
+func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) {
 	if opts.Reader == nil {
 		if shouldReadFromStdin(opts.File) {
-			opts.Reader = os.Stdin
+			opts.Reader = cmd.InOrStdin()
 		} else {
 			f, err := os.Open(opts.File)
 			if err != nil {
@@ -95,16 +95,16 @@ type writeNoteToOutputOpts struct {
 	Writer io.Writer
 }
 
-func writeNodeToOutput(opts writeNoteToOutputOpts) error {
+func writeNodeToOutput(opts writeNoteToOutputOpts, cmd *cobra.Command) error {
 	if opts.Writer == nil {
 		switch {
 		case opts.Out == "" && shouldReadFromStdin(opts.File):
 			// No out flag and we read from stdin.
-			opts.Writer = os.Stdout
+			opts.Writer = cmd.OutOrStdout()
 
 		case opts.Out == "stdout":
 			// Out flag wants to write to stdout.
-			opts.Writer = os.Stdout
+			opts.Writer = cmd.OutOrStdout()
 
 		case opts.Out == "":
 			// No out flag... write to the file we read from.
@@ -181,7 +181,7 @@ func getGenericInit(cmd *cobra.Command) func(options genericPutOptions) genericP
 	}
 }
 
-func runGenericPutCommand(opts genericPutOptions) error {
+func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 	if opts.Init != nil {
 		opts = opts.Init(opts)
 	}
@@ -193,7 +193,7 @@ func runGenericPutCommand(opts genericPutOptions) error {
 		File:   opts.File,
 		Parser: parser,
 		Reader: opts.Reader,
-	})
+	}, cmd)
 	if err != nil {
 		return err
 	}
@@ -213,7 +213,7 @@ func runGenericPutCommand(opts genericPutOptions) error {
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
-	}); err != nil {
+	}, cmd); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 

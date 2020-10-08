@@ -40,7 +40,7 @@ func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[strin
 	return updateValue, nil
 }
 
-func runPutObjectCommand(opts putObjectOpts) error {
+func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 	parser, err := getParser(opts.File, opts.Parser)
 	if err != nil {
 		return err
@@ -49,7 +49,7 @@ func runPutObjectCommand(opts putObjectOpts) error {
 		File:   opts.File,
 		Parser: parser,
 		Reader: opts.Reader,
-	})
+	}, cmd)
 	if err != nil {
 		return err
 	}
@@ -69,7 +69,7 @@ func runPutObjectCommand(opts putObjectOpts) error {
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
-	}); err != nil {
+	}, cmd); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 
@@ -91,7 +91,7 @@ func putObjectCommand() *cobra.Command {
 				Selector:    cmd.Flag("selector").Value.String(),
 				InputTypes:  typeList.Strings,
 				InputValues: args,
-			})
+			}, cmd)
 		},
 	}
 

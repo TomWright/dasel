@@ -5,7 +5,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
 	"io"
-	"os"
 )
 
 type selectOptions struct {
@@ -16,7 +15,7 @@ type selectOptions struct {
 	Writer   io.Writer
 }
 
-func runSelectCommand(opts selectOptions) error {
+func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	parser, err := getParser(opts.File, opts.Parser)
 	if err != nil {
 		return err
@@ -25,7 +24,7 @@ func runSelectCommand(opts selectOptions) error {
 		File:   opts.File,
 		Parser: parser,
 		Reader: opts.Reader,
-	})
+	}, cmd)
 	if err != nil {
 		return err
 	}
@@ -41,7 +40,7 @@ func runSelectCommand(opts selectOptions) error {
 	}
 
 	if opts.Writer == nil {
-		opts.Writer = os.Stdout
+		opts.Writer = cmd.OutOrStdout()
 	}
 
 	_, _ = fmt.Fprintf(opts.Writer, "%v", res.InterfaceValue())
@@ -61,7 +60,7 @@ func selectCommand() *cobra.Command {
 				File:     fileFlag,
 				Parser:   parserFlag,
 				Selector: selectorFlag,
-			})
+			}, cmd)
 		},
 	}
 

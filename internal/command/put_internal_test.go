@@ -111,7 +111,7 @@ func putTest(in string, parser string, selector string, value string, valueType 
 			ValueType: valueType,
 			Reader:    strings.NewReader(in),
 			Writer:    outputBuffer,
-		})
+		}, nil)
 
 		if expErr == nil && err != nil {
 			t.Errorf("expected err %v, got %v", expErr, err)
@@ -152,7 +152,7 @@ func putObjectTest(in string, parser string, selector string, values []string, v
 			InputTypes:  valueTypes,
 			Reader:      strings.NewReader(in),
 			Writer:      outputBuffer,
-		})
+		}, nil)
 
 		if expErr == nil && err != nil {
 			t.Errorf("expected err %v, got %v", expErr, err)

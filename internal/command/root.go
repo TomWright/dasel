@@ -5,16 +5,16 @@ import (
 	"github.com/tomwright/dasel/internal"
 )
 
-// RootCMD is the root command for use with cobra.
-var RootCMD = &cobra.Command{
-	Use:   "dasel",
-	Short: "Query and modify data structures using selector strings.",
-}
-
-func init() {
-	RootCMD.Version = internal.Version
-	RootCMD.AddCommand(
+// NewRootCMD returns the root command for use with cobra.
+func NewRootCMD() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "dasel",
+		Short: "Query and modify data structures using selector strings.",
+	}
+	cmd.Version = internal.Version
+	cmd.AddCommand(
 		selectCommand(),
 		putCommand(),
 	)
+	return cmd
 }
