@@ -3,6 +3,7 @@ package storage_test
 import (
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -13,14 +14,23 @@ var yamlMap = map[interface{}]interface{}{
 }
 
 func TestYAMLParser_FromBytes(t *testing.T) {
-	got, err := (&storage.YAMLParser{}).FromBytes(yamlBytes)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(yamlMap, got) {
-		t.Errorf("expected %v, got %v", yamlMap, got)
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).FromBytes(yamlBytes)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(yamlMap, got) {
+			t.Errorf("expected %v, got %v", yamlMap, got)
+		}
+	})
+	t.Run("Invalid", func(t *testing.T) {
+		_, err := (&storage.TOMLParser{}).FromBytes([]byte(`x=x`))
+		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
 }
 
 func TestYAMLParser_ToBytes(t *testing.T) {

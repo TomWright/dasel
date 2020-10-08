@@ -3,6 +3,7 @@ package storage_test
 import (
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
+	"strings"
 	"testing"
 )
 
@@ -19,14 +20,23 @@ var tomlMap = map[string]interface{}{
 }
 
 func TestTOMLParser_FromBytes(t *testing.T) {
-	got, err := (&storage.TOMLParser{}).FromBytes(tomlBytes)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(tomlMap, got) {
-		t.Errorf("expected %v, got %v", tomlMap, got)
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.TOMLParser{}).FromBytes(tomlBytes)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(tomlMap, got) {
+			t.Errorf("expected %v, got %v", tomlMap, got)
+		}
+	})
+	t.Run("Invalid", func(t *testing.T) {
+		_, err := (&storage.TOMLParser{}).FromBytes([]byte(`x:x`))
+		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
 }
 
 func TestTOMLParser_ToBytes(t *testing.T) {

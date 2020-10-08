@@ -120,7 +120,7 @@ func TestLoadFromFile(t *testing.T) {
 	t.Run("BaseFilePath", func(t *testing.T) {
 		_, err := storage.LoadFromFile("x.json", &storage.JSONParser{})
 		if err == nil || !strings.Contains(err.Error(), "could not open file") {
-			t.Errorf("unexpected error: %s", err)
+			t.Errorf("unexpected error: %v", err)
 			return
 		}
 	})
