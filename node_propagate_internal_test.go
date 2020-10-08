@@ -36,6 +36,22 @@ func TestPropagateValueIndex(t *testing.T) {
 		err := propagateValueIndex(n)
 		assertErrResult(t, &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, err)
 	})
+	t.Run("ExistingIndex", func(t *testing.T) {
+		val := []interface{}{
+			"hello",
+		}
+		n := getNodeWithValue(val)
+		n.Selector.Current = "[0]"
+		n.Selector.Index = 0
+		n.Value = reflect.ValueOf("world")
+		err := propagateValueIndex(n)
+		if !assertErrResult(t, nil, err) {
+			return
+		}
+		if !reflect.DeepEqual(val[0], "world") {
+			t.Errorf("expected val %v, got %v", "world", val[0])
+		}
+	})
 }
 
 func TestPropagateValueNextAvailableIndex(t *testing.T) {
