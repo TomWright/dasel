@@ -5,7 +5,7 @@ import (
 	"testing"
 )
 
-func assertQueryResult(t *testing.T, exp reflect.Value, expErr error, got reflect.Value, gotErr error) bool {
+func assertErrResult(t *testing.T, expErr error, gotErr error) bool {
 	if expErr == nil && gotErr != nil {
 		t.Errorf("expected err %v, got %v", expErr, gotErr)
 		return false
@@ -16,6 +16,13 @@ func assertQueryResult(t *testing.T, exp reflect.Value, expErr error, got reflec
 	}
 	if expErr != nil && gotErr != nil && gotErr.Error() != expErr.Error() {
 		t.Errorf("expected err %v, got %v", expErr, gotErr)
+		return false
+	}
+	return true
+}
+
+func assertQueryResult(t *testing.T, exp reflect.Value, expErr error, got reflect.Value, gotErr error) bool {
+	if !assertErrResult(t, expErr, gotErr) {
 		return false
 	}
 	if !reflect.DeepEqual(exp, got) {
@@ -145,7 +152,7 @@ func TestFindValue(t *testing.T) {
 		got, err := findValue(n, false)
 		assertQueryResult(t, nilValue(), ErrMissingPreviousNode, got, err)
 	})
-	t.Run("NotFound", func(t *testing.T) {
+	t.Run("UnsupportedSelector", func(t *testing.T) {
 		n := getNodeWithValue([]interface{}{})
 		n.Selector.Type = "BAD"
 		got, err := findValue(n, false)
