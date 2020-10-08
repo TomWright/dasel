@@ -32,3 +32,9 @@ func TestStringList(t *testing.T) {
 		return
 	}
 }
+
+func TestStringList_Type(t *testing.T) {
+	if exp, got := "Pass multiple times to add multiple values.", (&oflag.StringList{}).Type(); exp != got {
+		t.Errorf("expected %s, got %s", exp, got)
+	}
+}
