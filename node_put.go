@@ -25,7 +25,7 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 	return nil
 }
 
-func buildPutChain(n *Node, modifiers ...func(n *Node) error) error {
+func buildPutChain(n *Node) error {
 	if n.Selector.Remaining == "" {
 		// We've reached the end
 		return nil
@@ -44,19 +44,11 @@ func buildPutChain(n *Node, modifiers ...func(n *Node) error) error {
 	n.Next = nextNode
 	nextNode.Previous = n
 
-	if len(modifiers) > 0 {
-		for _, m := range modifiers {
-			if err := m(nextNode); err != nil {
-				return fmt.Errorf("could not run modifier: %w", err)
-			}
-		}
-	}
-
 	// Populate the value for the new node.
 	nextNode.Value, err = findValue(nextNode, true)
 	if err != nil {
 		return fmt.Errorf("could not find value: %w", err)
 	}
 
-	return buildPutChain(nextNode, modifiers...)
+	return buildPutChain(nextNode)
 }
