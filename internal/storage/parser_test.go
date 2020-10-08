@@ -94,15 +94,15 @@ var jsonData = map[string]interface{}{
 	"colourCodes": []interface{}{
 		map[string]interface{}{
 			"name": "red",
-			"rgb": "ff0000",
+			"rgb":  "ff0000",
 		},
 		map[string]interface{}{
 			"name": "green",
-			"rgb": "00ff00",
+			"rgb":  "00ff00",
 		},
 		map[string]interface{}{
 			"name": "blue",
-			"rgb": "0000ff",
+			"rgb":  "0000ff",
 		},
 	},
 }
