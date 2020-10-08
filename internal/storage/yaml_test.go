@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"fmt"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -25,7 +26,8 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 		}
 	})
 	t.Run("Invalid", func(t *testing.T) {
-		_, err := (&storage.TOMLParser{}).FromBytes([]byte(`x=x`))
+		d, err := (&storage.YAMLParser{}).FromBytes([]byte(`{1:asd`))
+		fmt.Println(d)
 		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
 			t.Errorf("unexpected error: %v", err)
 			return
