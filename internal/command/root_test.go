@@ -30,6 +30,24 @@ func TestRootCMD(t *testing.T) {
 				return
 			}
 		})
+		t.Run("MissingParser", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			args := []string{
+				"select", "-s", "x",
+			}
+
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err == nil || !strings.Contains(err.Error(), "parser flag required when reading from stdin") {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
 	})
 	t.Run("PutString", func(t *testing.T) {
 		t.Run("JSON", putStringTestForParserJSON())
@@ -49,6 +67,24 @@ func TestRootCMD(t *testing.T) {
 			err := cmd.Execute()
 
 			if err == nil || !strings.Contains(err.Error(), "could not open input file") {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+		})
+		t.Run("MissingParser", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			args := []string{
+				"put", "string", "-s", "x", "y",
+			}
+
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err == nil || !strings.Contains(err.Error(), "parser flag required when reading from stdin") {
 				t.Errorf("unexpected error: %v", err)
 				return
 			}
