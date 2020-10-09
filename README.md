@@ -5,6 +5,7 @@
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
 [![codecov](https://codecov.io/gh/TomWright/dasel/branch/master/graph/badge.svg)](https://codecov.io/gh/TomWright/dasel)
 ![Build](https://github.com/TomWright/dasel/workflows/Build/badge.svg)
+[![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
