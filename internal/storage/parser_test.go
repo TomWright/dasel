@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"bytes"
+	"errors"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -127,6 +128,46 @@ func TestLoadFromFile(t *testing.T) {
 	})
 }
 
+func TestLoad(t *testing.T) {
+	t.Run("ReaderErrHandled", func(t *testing.T) {
+		if _, err := storage.Load(&storage.JSONParser{}, &failingReader{}); !errors.Is(err, errFailingReaderErr) {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
+}
+
+var errFailingParserErr = errors.New("i am meant to fail at parsing")
+
+type failingParser struct {
+}
+
+func (fp *failingParser) FromBytes(_ []byte) (interface{}, error) {
+	return nil, errFailingParserErr
+}
+
+func (fp *failingParser) ToBytes(_ interface{}) ([]byte, error) {
+	return nil, errFailingParserErr
+}
+
+var errFailingWriterErr = errors.New("i am meant to fail at writing")
+
+type failingWriter struct {
+}
+
+func (fp *failingWriter) Write(_ []byte) (int, error) {
+	return 0, errFailingWriterErr
+}
+
+var errFailingReaderErr = errors.New("i am meant to fail at reading")
+
+type failingReader struct {
+}
+
+func (fp *failingReader) Read(_ []byte) (n int, err error) {
+	return 0, errFailingReaderErr
+}
+
 func TestWrite(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		var buf bytes.Buffer
@@ -139,6 +180,21 @@ func TestWrite(t *testing.T) {
   "name": "Tom"
 }`, buf.String(); exp != got {
 			t.Errorf("unexpected output:\n%s\ngot:\n%s", exp, got)
+		}
+	})
+
+	t.Run("ParserErrHandled", func(t *testing.T) {
+		var buf bytes.Buffer
+		if err := storage.Write(&failingParser{}, map[string]interface{}{"name": "Tom"}, &buf); !errors.Is(err, errFailingParserErr) {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	})
+
+	t.Run("WriterErrHandled", func(t *testing.T) {
+		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, &failingWriter{}); !errors.Is(err, errFailingWriterErr) {
+			t.Errorf("unexpected error: %v", err)
+			return
 		}
 	})
 }

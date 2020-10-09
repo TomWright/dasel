@@ -183,6 +183,28 @@ func putObjectTest(in string, parser string, selector string, values []string, v
 }
 
 func TestPut(t *testing.T) {
+	t.Run("MissingParserFlag", func(t *testing.T) {
+		err := runGenericPutCommand(genericPutOptions{}, nil)
+		if err == nil || err.Error() != "parser flag required when reading from stdin" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("ObjectMissingParserFlag", func(t *testing.T) {
+		err := runPutObjectCommand(putObjectOpts{}, nil)
+		if err == nil || err.Error() != "parser flag required when reading from stdin" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("ObjectInvalidTypes", func(t *testing.T) {
+		err := runPutObjectCommand(putObjectOpts{
+			File:        "../../tests/assets/example.json",
+			InputTypes:  []string{"string"},
+			InputValues: []string{"x", "y"},
+		}, nil)
+		if err == nil || err.Error() != "exactly 2 types are required, got 1" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
 	t.Run("JSON", func(t *testing.T) {
 		t.Run("SingleProperty", putTest(`{
   "details": {
