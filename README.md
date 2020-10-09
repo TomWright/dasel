@@ -36,6 +36,12 @@ You may have to `brew install wget` in order for this to work.
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
 ```
 
+## Notes
+
+The formatting of files can be changed while being processed. Dasel itself doesn't make these changes, rather the act of marshaling the results.
+
+In short, the output files may have properties in a different order but the actual contents will be as expected.
+
 ## Usage 
 
 ### Select
