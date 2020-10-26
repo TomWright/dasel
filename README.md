@@ -9,14 +9,19 @@
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
+# Table of contents
+* [Dasel](#dasel)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Select](#select)
+  * [Put](#put)
+  * [Put Object](#put-object)
+* [Supported file types](#supported-file-types)
+* [Selectors](#selectors)
+* [Kubernetes examples](#kubernetes-examples)
+
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
-
-#### Import
-As with any other go package, just use `go get`.
-```
-go get github.com/tomwright/dasel
-```
 
 #### Command line
 You can `go get` the `main` package and go should automatically build and install dasel for you.
@@ -37,6 +42,12 @@ You may have to `brew install wget` in order for this to work.
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
 ```
 
+#### Import
+As with any other go package, just use `go get`.
+```
+go get github.com/tomwright/dasel
+```
+
 ## Notes
 
 The formatting of files can be changed while being processed. Dasel itself doesn't make these changes, rather the act of marshaling the results.
@@ -45,94 +56,166 @@ In short, the output files may have properties in a different order but the actu
 
 ## Usage 
 
-### Select
-```
-$ dasel select -h
+```bash
+dasel -h
 ```
 
-The following should select the image within a kubernetes deployment manifest.
+### Select
+```bash
+dasel select -f <file> -p <json|yaml|toml> -s <selector>
 ```
-$ dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
+
+#### Arguments
+
+##### `-f`, `--file`
+
+Specify the file to query. This is required unless you are piping in data.
+
+If piping in data you can optionally pass `-f stdin`.
+
+##### `-p`, `--parser`
+
+Specify the parser to use when reading the file.
+
+This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+##### `-s`, `--selector`
+
+Specify the selector to use. See [Selectors](#selectors) for more information.
+
+This is required.
+
+#### Example
+
+Select the image within a kubernetes deployment manifest file:
+```bash
+dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
 tomwright/auth:v1.0.0
 ```
 
-You can also pipe data into dasel, although you then need to tell dasel which parser to use with the `-p` flag.
-```
-$ cat deployment.yaml | dasel select -p yaml -s "spec.template.spec.containers.(name=auth).image"
+Piping data into the select:
+```bash
+cat deployment.yaml | dasel select -p yaml -s "spec.template.spec.containers.(name=auth).image"
 tomwright/auth:v1.0.0
 ```
 
 ### Put
-```
-$ dasel put -h
-```
-
-Basic usage is:
-```
-dasel put <string|int|bool|object> -f <file> -s "<selector>" <value>
+```bash
+dasel put <type> -f <file> -o <out> -p <parser> -s <selector> <value>
 ```
 
-#### Piping Data
-You can pipe data both in and out of dasel.
-
-```
-$ echo "name: Tom" | ./dasel put string -p yaml -s "name" Jim
+```bash
+echo "name: Tom" | ./dasel put string -p yaml -s "name" Jim
 name: Jim
 ```
 
-It's important to remember than if you are piping data you must provide a parser using the `-p` flag.
+#### Arguments
 
-##### Input
-Input is taken from `stdin` if you do not pass a file using the `-f` flag.
+##### `type`
 
-##### Output
-The `select` commands will always output to `stdout`.
+The type of value you want to put.
 
-The default functionality for `put` commands is to edit the file in place, unless input is from stdin in which case it will be written to stdout.
+Available arguments:
+- `string`
+- `int`
+- `bool`
+- `object` - see [Put Object](#put-object)
 
-You can choose a new output file by passing `-o <filepath>`. Alternatively passing `-o stdout` will result in the results being written to stdout.
+##### `-f`, `--file`
 
-#### Putting Objects
-If putting an object, you can pass multiple arguments in the format of `KEY=VALUE`, each of which needs a related `-t <string|int|bool>` flag passed in the same order as the arguments.
-This tells dasel which data types to parse the values as.
+Specify the file to query. This is required unless you are piping in data.
 
+If piping in data you can optionally pass `-f stdin`.
+
+##### `-o`, `--out`
+
+Specify the output file. If present, results will be written to the given file. If not present, results will be written to the input file (or stdout if none given).
+
+To force output to be written to stdout, pass `-o stdout`.
+
+##### `-p`, `--parser`
+
+Specify the parser to use when reading/writing the input/output files.
+
+This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+##### `-s`, `--selector`
+
+Specify the selector to use. See [Selectors](#selectors) for more information.
+
+##### `value`
+
+The value to write.
+
+Dasel will parse this value as a string, int, or bool from this value depending on the given `type`.
+
+This is required.
+
+### Put Object
+
+Putting objects works slightly differently to a standard put, but the same principles apply.
+
+```bash
+dasel put object -f <file> -o <out> -p <parser> -s <selector> -t <type> <values>
 ```
-$ dasel put object -f preferences.yaml -s "my.favourites" -t string -t int colour=red number=3
-```
 
+#### Arguments
+
+##### `-t`, `--type`
+
+The type of value you want to put.
+
+You must repeat this argument for each value provided.
+
+Available arguments:
+- `string`
+- `int`
+- `bool`
+
+##### `-f`, `--file`
+
+Specify the file to query. This is required unless you are piping in data.
+
+If piping in data you can optionally pass `-f stdin`.
+
+##### `-o`, `--out`
+
+Specify the output file. If present, results will be written to the given file. If not present, results will be written to the input file (or stdout if none given).
+
+To force output to be written to stdout, pass `-o stdout`.
+
+##### `-p`, `--parser`
+
+Specify the parser to use when reading/writing the input/output files.
+
+This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+##### `-s`, `--selector`
+
+Specify the selector to use. See [Selectors](#selectors) for more information.
+
+##### `values`
+
+A space separated list of `key=value` pairs.
+
+Dasel will parse each value as a string, int, or bool depending on the related `type`.
+
+This is required.
+
+#### Example
+
+```bash
+echo "" | dasel put object -s "my.favourites" -t string -t int colour=red number=3
+```
 Results in the following:
-
-```
+```yaml
 my:
   favourites:
     colour: red
     number: 3
 ```
 
-#### Kubernetes
-The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give me some good example use-cases. 
-
-##### Change the image for a container named `auth`
-```
-$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "tomwright/x:v2.0.0"
-```
-
-##### Update replicas to 3
-```
-$ dasel put int -f deployment.yaml -s "spec.replicas" 3
-```
-
-##### Add a new env var
-```
-$ dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.[]" -t string -t string name=MY_NEW_ENV_VAR value=MY_NEW_VALUE
-```
-
-##### Update an existing env var
-```
-$ dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
-```
-
-## Supported data types
+## Supported file types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
 - JSON - `-p json`
@@ -141,12 +224,12 @@ Dasel attempts to find the correct parser for the given file type, but if that f
 
 ## Selectors
 
-Selectors are used to define a path through a set of data. This path is usually defined as a chain of nodes.
+Selectors define a path through a set of data.
 
-A selector is made up of different parts separated by a dot `.`, each part being used to identify the next node in the chain.
+Selectors are made up of different parts separated by a dot `.`, each part being used to identify the next node in the chain.
 
 The following YAML data structure will be used as a reference in the following examples.
-```
+```yaml
 name: Tom
 preferences:
   favouriteColour: red
@@ -167,24 +250,24 @@ colourCodes:
 Property selectors are used to reference a single property of an object.
 
 Just use the property name as a string.
-```
-$ dasel select -f ./tests/assets/example.yaml -s "name"
+```bash
+dasel select -f ./tests/assets/example.yaml -s "name"
 Tom
 ```
 - `name` == `Tom`
 
 ### Child Elements
 Just separate the child element from the parent element using a `.`:
-```
-$ dasel select -f ./tests/assets/example.yaml -s "preferences.favouriteColour"
+```bash
+dasel select -f ./tests/assets/example.yaml -s "preferences.favouriteColour"
 red
 ```
 - `preferences.favouriteColour` == `red`
 
 #### Index
 When you have a list, you can use square brackets to access a specific item in the list by its index.
-```
-$ dasel select -f ./tests/assets/example.yaml -s "colours.[1]"
+```bash
+dasel select -f ./tests/assets/example.yaml -s "colours.[1]"
 green
 ```
 - `colours.[0]` == `red`
@@ -199,11 +282,11 @@ Next available index selector is used when adding to a list of items. It allows 
 Dynamic selectors are used with lists when you don't know the index of the item, but instead know the value of a property of an object within the list. 
 
 Look ups are defined in brackets. You can use multiple dynamic selectors within the same part to perform multiple checks.
-```
-$ dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=red).rgb"
+```bash
+dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=red).rgb"
 ff0000
 
-$ dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=blue)(rgb=0000ff)"
+dasel select -f ./tests/assets/example.yaml -s "colourCodes.(name=blue)(rgb=0000ff)"
 map[name:blue rgb:0000ff]
 ```
 - `colourCodes.(name=red).rgb` == `ff0000`
@@ -212,3 +295,32 @@ map[name:blue rgb:0000ff]
 - `colourCodes.(name=blue)(rgb=0000ff).rgb` == `0000ff`
 
 If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>)` instead.
+
+#### Kubernetes examples
+The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give some good example use-cases. 
+
+##### Select the image for a container named `auth`
+```bash
+dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
+tomwright/x:v2.0.0
+```
+
+##### Change the image for a container named `auth`
+```bash
+dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "tomwright/x:v2.0.0"
+```
+
+##### Update replicas to 3
+```bash
+dasel put int -f deployment.yaml -s "spec.replicas" 3
+```
+
+##### Add a new env var
+```bash
+dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.[]" -t string -t string name=MY_NEW_ENV_VAR value=MY_NEW_VALUE
+```
+
+##### Update an existing env var
+```bash
+dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
+```
