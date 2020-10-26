@@ -202,7 +202,7 @@ Dasel will parse each value as a string, int, or bool depending on the related `
 
 This is required.
 
-##### Example
+#### Example
 
 ```bash
 echo "" | dasel put object -s "my.favourites" -t string -t int colour=red number=3
