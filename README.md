@@ -9,6 +9,17 @@
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
+# Table of contents
+* [Dasel](#dasel)
+* [Installation](#installation)
+* [Usage](#usage)
+  * [Select](#select)
+  * [Put](#put)
+  * [Put Object](#put-object)
+* [Supported file types](#supported-file-types)
+* [Selectors](#selectors)
+* [Kubernetes examples](#kubernetes-examples)
+
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
@@ -106,7 +117,7 @@ Available arguments:
 - `string`
 - `int`
 - `bool`
-- `object` - see [Put Object](###put-object)
+- `object` - see [Put Object](#put-object)
 
 ##### `-f`, `--file`
 
@@ -200,7 +211,7 @@ Dasel will parse each value as a string, int, or bool depending on the related `
 
 This is required.
 
-## Supported data types
+## Supported file types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
 - JSON - `-p json`
