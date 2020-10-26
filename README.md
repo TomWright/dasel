@@ -79,7 +79,7 @@ This is required if you are piping in data, otherwise dasel will use the given f
 
 ##### `-s`, `--selector`
 
-Specify the selector to use.
+Specify the selector to use. See [Selectors](#selectors) for more information.
 
 This is required.
 
@@ -139,7 +139,7 @@ This is required if you are piping in data, otherwise dasel will use the given f
 
 ##### `-s`, `--selector`
 
-Specify the selector to use.
+Specify the selector to use. See [Selectors](#selectors) for more information.
 
 ##### `value`
 
@@ -201,7 +201,7 @@ This is required if you are piping in data, otherwise dasel will use the given f
 
 ##### `-s`, `--selector`
 
-Specify the selector to use.
+Specify the selector to use. See [Selectors](#selectors) for more information.
 
 ##### `values`
 
