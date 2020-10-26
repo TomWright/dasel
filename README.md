@@ -71,6 +71,8 @@ dasel select -f <file> -p <json|yaml|toml> -s <selector>
 
 Specify the file to query. This is required unless you are piping in data.
 
+If piping in data you can optionally pass `-f stdin`.
+
 ##### `-p`, `--parser`
 
 Specify the parser to use when reading the file.
@@ -157,17 +159,6 @@ Putting objects works slightly differently to a standard put, but the same princ
 dasel put object -f <file> -o <out> -p <parser> -s <selector> -t <type> <values>
 ```
 
-```bash
-echo "" | dasel put object -s "my.favourites" -t string -t int colour=red number=3
-```
-Results in the following:
-```yaml
-my:
-  favourites:
-    colour: red
-    number: 3
-```
-
 #### Arguments
 
 ##### `-t`, `--type`
@@ -210,6 +201,19 @@ A space separated list of `key=value` pairs.
 Dasel will parse each value as a string, int, or bool depending on the related `type`.
 
 This is required.
+
+##### Example
+
+```bash
+echo "" | dasel put object -s "my.favourites" -t string -t int colour=red number=3
+```
+Results in the following:
+```yaml
+my:
+  favourites:
+    colour: red
+    number: 3
+```
 
 ## Supported file types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
