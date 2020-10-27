@@ -31,6 +31,11 @@ jobs:
           go-version: '^1.15.0' # The Go version to download (if necessary) and use.
       - name: Set env
         run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+        if: runner.os != 'Windows'
+      - name: Set env (Windows)
+        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+        shell: bash
+        if: runner.os == 'Windows'
       - name: Build
         run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
       - name: Upload binaries to release
