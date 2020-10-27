@@ -80,6 +80,7 @@ func Write(p Parser, value interface{}, writer io.Writer) error {
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
 	}
+	byteData = append(byteData, []byte("\n")...)
 	if _, err := writer.Write(byteData); err != nil {
 		return fmt.Errorf("could not write data: %w", err)
 	}

@@ -43,7 +43,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		opts.Writer = cmd.OutOrStdout()
 	}
 
-	_, _ = fmt.Fprintf(opts.Writer, "%v", res.InterfaceValue())
+	_, _ = fmt.Fprintf(opts.Writer, "%v\n", res.InterfaceValue())
 
 	return nil
 }
