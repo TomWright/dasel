@@ -150,19 +150,19 @@ func selectTestFromFile(inputPath string, selector string, out string, expErr er
 
 func selectTestForParser(parser string, data string, singleData string) func(t *testing.T) {
 	return func(t *testing.T) {
-		t.Run("RootElement", selectTest(singleData, parser, ".", "map[x:asd]", nil))
-		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111", nil))
-		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street", nil))
+		t.Run("RootElement", selectTest(singleData, parser, ".", "map[x:asd]\n", nil))
+		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111\n", nil))
+		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom\n", nil))
+		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street\n", nil))
+		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street\n", nil))
+		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
+		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 
 		switch parser {
 		case "json":
-			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", "red", nil))
+			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", "red\n", nil))
 		case "yaml":
-			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.yaml", ".preferences.favouriteColour", "red", nil))
+			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.yaml", ".preferences.favouriteColour", "red\n", nil))
 		}
 	}
 }

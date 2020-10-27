@@ -178,7 +178,8 @@ func TestWrite(t *testing.T) {
 
 		if exp, got := `{
   "name": "Tom"
-}`, buf.String(); exp != got {
+}
+`, buf.String(); exp != got {
 			t.Errorf("unexpected output:\n%s\ngot:\n%s", exp, got)
 		}
 	})

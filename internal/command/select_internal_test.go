@@ -102,12 +102,12 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 
 func selectTestForParser(parser string, data string) func(t *testing.T) {
 	return func(t *testing.T) {
-		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111", nil))
-		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street", nil))
+		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111\n", nil))
+		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom\n", nil))
+		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street\n", nil))
+		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street\n", nil))
+		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
+		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	}
 }
 
