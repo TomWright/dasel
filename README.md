@@ -9,6 +9,8 @@
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
+Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML and TOML with zero dependencies.
+
 # Table of contents
 * [Dasel](#dasel)
 * [Installation](#installation)
