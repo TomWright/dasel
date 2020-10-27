@@ -311,44 +311,44 @@ The follow examples show a set of commands and the equivalent in dasel.
 #### Selecting a single value
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '{"name": "Tom"}' | jq '.name'``` | `"Tom"` |
-| dasel | ```echo '{"name": "Tom"}' | dasel select -p json -s '.name'``` | `Tom` |
+| jq | `echo '{"name": "Tom"}' | jq '.name'` | `"Tom"` |
+| dasel | `echo '{"name": "Tom"}' | dasel select -p json -s '.name'` | `Tom` |
 
 #### Selecting a nested value
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'``` | `27` |
-| dasel | ```echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'``` | `27` |
+| jq | `echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'` | `27` |
+| dasel | `echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'` | `27` |
 
 #### Selecting an array value
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '[1, 2, 3]' | jq '.[1]'``` | `2` |
-| dasel | ```echo '[1, 2, 3]' | dasel select -p json -s '.[1]'``` | `2` |
+| jq | `echo '[1, 2, 3]' | jq '.[1]'` | `2` |
+| dasel | `echo '[1, 2, 3]' | dasel select -p json -s '.[1]'` | `2` |
 
 #### Update an int value
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '[1, 2, 3]' | jq '.[1] = 5'``` | `[1, 5, 3]` |
-| dasel | ```echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5``` | `[1, 5, 3]` |
+| jq | `echo '[1, 2, 3]' | jq '.[1] = 5'` | `[1, 5, 3]` |
+| dasel | `echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5` | `[1, 5, 3]` |
 
 #### Update a string value
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '["a", "b", "c"]' | jq '.[1] = "d"'``` | `["a", "d", "c"]` |
-| dasel | ```echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d``` | `["a", "d", "c"]` |
+| jq | `echo '["a", "b", "c"]' | jq '.[1] = "d"'` | `["a", "d", "c"]` |
+| dasel | `echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d` | `["a", "d", "c"]` |
 
 #### Overwrite an object
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'``` | `{"user": {"name": "Frank", "age": 25}}` |
-| dasel | ```echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user' -t string -t int name=Frank age=25``` | `{"user": {"age": 25, "name": "Frank"}}` |
+| jq | `echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'` | `{"user": {"name": "Frank", "age": 25}}` |
+| dasel | `echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user' -t string -t int name=Frank age=25` | `{"user": {"age": 25, "name": "Frank"}}` |
 
 #### Append an array of objects
 | tool | command | output |
 | - | - | - |
-| jq | ```echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'``` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
-| dasel | ```echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank``` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
+| jq | `echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
+| dasel | `echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
 
 ### Kubernetes
 The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give some good example use-cases. 
