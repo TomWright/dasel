@@ -447,8 +447,6 @@ echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t 
 
 The follow examples show a set of [yq](https://github.com/kislyuk/yq) commands and the equivalent in dasel.
 
-You'll notice a difference in the way that objects get returned from yq and dasel. yq returns objects in JSON format whereas dasel returns objects in YAML format.
-
 #### Select a single value
 
 ```
@@ -492,13 +490,11 @@ echo '- 1
 ```
 echo '- a
 - b
-- c' | yq '. += ["d"]'
-[
-  "a",
-  "b",
-  "c",
-  "d"
-]
+- c' | yq --yaml-output '. += ["d"]'
+- a
+- b
+- c
+- d
 
 echo '- a
 - b
@@ -515,12 +511,10 @@ echo '- a
 ```
 echo '- a
 - b
-- c' | yq '.[1] = "d"'
-[
-  "a",
-  "d",
-  "c"
-]
+- c' | yq --yaml-output '.[1] = "d"'
+- a
+- d
+- c
 
 echo '- a
 - b
@@ -535,12 +529,10 @@ echo '- a
 ```
 echo '- 1
 - 2
-- 3' | yq '.[1] = 5'
-[
-  1,
-  5,
-  3
-]
+- 3' | yq --yaml-output '.[1] = 5'
+- 1
+- 5
+- 3
 
 echo '- 1
 - 2
@@ -555,13 +547,11 @@ echo '- 1
 ```
 echo 'user:
   name: Tom
-  age: 27' | yq '.user = {"name": "Frank", "age": 25}'
-{
-  "user": {
-    "name": "Frank",
-    "age": 25
-  }
-}
+  age: 27' | yq --yaml-output '.user = {"name": "Frank", "age": 25}'
+user:
+  name: Frank
+  age: 25
+
 
 echo 'user:
   name: Tom
@@ -575,17 +565,11 @@ user:
 
 ```
 echo 'users:
-- name: Tom' | yq '.users += [{"name": "Frank"}]'
-{
-  "users": [
-    {
-      "name": "Tom"
-    },
-    {
-      "name": "Frank"
-    }
-  ]
-}
+- name: Tom' | yq --yaml-output '.users += [{"name": "Frank"}]'
+users:
+  - name: Tom
+  - name: Frank
+
 
 echo 'users:
 - name: Tom' | dasel put object -p yaml -s '.users[]' -t string name=Frank
