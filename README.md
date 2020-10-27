@@ -308,47 +308,108 @@ If you want to dynamically target a value in a list when it isn't a list of obje
 
 The follow examples show a set of commands and the equivalent in dasel.
 
-#### Selecting a single value
-| tool | command | output |
-| - | - | - |
-| jq | `echo '{"name": "Tom"}' | jq '.name'` | `"Tom"` |
-| dasel | `echo '{"name": "Tom"}' | dasel select -p json -s '.name'` | `Tom` |
-
-#### Selecting a nested value
-| tool | command | output |
-| - | - | - |
-| jq | `echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'` | `27` |
-| dasel | `echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'` | `27` |
-
-#### Selecting an array value
-| tool | command | output |
-| - | - | - |
-| jq | `echo '[1, 2, 3]' | jq '.[1]'` | `2` |
-| dasel | `echo '[1, 2, 3]' | dasel select -p json -s '.[1]'` | `2` |
-
-#### Update an int value
-| tool | command | output |
-| - | - | - |
-| jq | `echo '[1, 2, 3]' | jq '.[1] = 5'` | `[1, 5, 3]` |
-| dasel | `echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5` | `[1, 5, 3]` |
-
-#### Update a string value
-| tool | command | output |
-| - | - | - |
-| jq | `echo '["a", "b", "c"]' | jq '.[1] = "d"'` | `["a", "d", "c"]` |
-| dasel | `echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d` | `["a", "d", "c"]` |
-
-#### Overwrite an object
-| tool | command | output |
-| - | - | - |
-| jq | `echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'` | `{"user": {"name": "Frank", "age": 25}}` |
-| dasel | `echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user' -t string -t int name=Frank age=25` | `{"user": {"age": 25, "name": "Frank"}}` |
-
-#### Append an array of objects
-| tool | command | output |
-| - | - | - |
-| jq | `echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
-| dasel | `echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
+<table>
+    <thead>
+        <tr>
+            <th>Tool</th>
+            <th>Input</th>
+            <th>Output</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <th style="text-align: center" colspan="3">Select a single value</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '{"name": "Tom"}' | jq '.name'</pre></td>
+            <td><pre>"Tom"</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '{"name": "Tom"}' | dasel select -p json -s '.name'</pre></td>
+            <td><pre>Tom</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Select a nested value</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'</pre></td>
+            <td><pre>27</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'</pre></td>
+            <td><pre>27</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Select an array index</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '[1, 2, 3]' | jq '.[1]'</pre></td>
+            <td><pre>2</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '[1, 2, 3]' | dasel select -p json -s '.[1]'</pre></td>
+            <td><pre>2</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Update a string value</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '["a", "b", "c"]' | jq '.[1] = "d"'</pre></td>
+            <td><pre>["a", "d", "c"]</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d</pre></td>
+            <td><pre>["a", "d", "c"]</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Update an int value</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '[1, 2, 3]' | jq '.[1] = 5'</pre></td>
+            <td><pre>[1, 5, 3]</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5</pre></td>
+            <td><pre>[1, 5, 3]</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Overwrite an object</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'</pre></td>
+            <td><pre>{"user": {"name": "Frank", "age": 25}}</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user' -t string -t int name=Frank age=25</pre></td>
+            <td><pre>{"user": {"name": "Frank", "age": 25}}</pre></td>
+        </tr>
+        <tr>
+            <th style="text-align: center" colspan="3">Append to an array of objects</th>
+        </tr>
+        <tr>
+            <td>jq</td>
+            <td><pre>echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'</pre></td>
+            <td><pre>{"users": [{"name": "Tom"}, {"name": "Frank"}]}</pre></td>
+        </tr>
+        <tr>
+            <td>dasel</td>
+            <td><pre>echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank</pre></td>
+            <td><pre>{"users": [{"name": "Tom"}, {"name": "Frank"}]}</pre></td>
+        </tr>
+    </tbody>
+</table>
 
 ### Kubernetes
 The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give some good example use-cases. 
