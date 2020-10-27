@@ -338,6 +338,26 @@ echo '[1, 2, 3]' | dasel select -p json -s '.[1]'
 2
 ```
 
+#### Append to an array of strings
+
+```
+echo '["a", "b", "c"]' | jq '. += ["d"]'
+[
+  "a",
+  "b",
+  "c",
+  "d"
+]
+
+echo '["a", "b", "c"]' | dasel put string -p json -s '.[]' d
+[
+  "a",
+  "b",
+  "c",
+  "d"
+]
+```
+
 #### Update a string value
 
 ```
