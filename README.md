@@ -20,7 +20,9 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Put Object](#put-object)
 * [Supported file types](#supported-file-types)
 * [Selectors](#selectors)
-* [Kubernetes examples](#kubernetes-examples)
+* [Examples](#examples)
+  * [jq to dasel](#jq-to-dasel)
+  * [Kubernetes](#kubernetes)
 
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
@@ -36,12 +38,14 @@ Alternatively you can download a compiled executable from the [latest release](h
 This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
 ```
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
+mv ./dasel /usr/local/bin/dasel
 ```
 
 ##### Mac OS amd64
 You may have to `brew install wget` in order for this to work.
 ```
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
+mv ./dasel /usr/local/bin/dasel
 ```
 
 #### Import
@@ -298,31 +302,79 @@ map[name:blue rgb:0000ff]
 
 If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>)` instead.
 
-#### Kubernetes examples
+## Examples
+
+### jq to dasel
+
+The follow examples show a set of commands and the equivalent in dasel.
+
+#### Selecting a single value
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '{"name": "Tom"}' | jq '.name'``` | `"Tom"` |
+| dasel | ```echo '{"name": "Tom"}' | dasel select -p json -s '.name'``` | `Tom` |
+
+#### Selecting a nested value
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'``` | `27` |
+| dasel | ```echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'``` | `27` |
+
+#### Selecting an array value
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '[1, 2, 3]' | jq '.[1]'``` | `2` |
+| dasel | ```echo '[1, 2, 3]' | dasel select -p json -s '.[1]'``` | `2` |
+
+#### Update an int value
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '[1, 2, 3]' | jq '.[1] = 5'``` | `[1, 5, 3]` |
+| dasel | ```echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5``` | `[1, 5, 3]` |
+
+#### Update a string value
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '["a", "b", "c"]' | jq '.[1] = "d"'``` | `["a", "d", "c"]` |
+| dasel | ```echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d``` | `["a", "d", "c"]` |
+
+#### Overwrite an object
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'``` | `{"user": {"name": "Frank", "age": 25}}` |
+| dasel | ```echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user' -t string -t int name=Frank age=25``` | `{"user": {"age": 25, "name": "Frank"}}` |
+
+#### Append an array of objects
+| tool | command | output |
+| - | - | - |
+| jq | ```echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'``` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
+| dasel | ```echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank``` | `{"users": [{"name": "Tom"}, {"name": "Frank"}]}` |
+
+### Kubernetes
 The following should work on a kubernetes deployment manifest. While kubernetes isn't for everyone, it does give some good example use-cases. 
 
-##### Select the image for a container named `auth`
+#### Select the image for a container named `auth`
 ```bash
 dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
 tomwright/x:v2.0.0
 ```
 
-##### Change the image for a container named `auth`
+#### Change the image for a container named `auth`
 ```bash
 dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image" "tomwright/x:v2.0.0"
 ```
 
-##### Update replicas to 3
+#### Update replicas to 3
 ```bash
 dasel put int -f deployment.yaml -s "spec.replicas" 3
 ```
 
-##### Add a new env var
+#### Add a new env var
 ```bash
 dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.[]" -t string -t string name=MY_NEW_ENV_VAR value=MY_NEW_VALUE
 ```
 
-##### Update an existing env var
+#### Update an existing env var
 ```bash
 dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
 ```
