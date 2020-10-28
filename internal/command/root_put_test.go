@@ -8,14 +8,16 @@ import (
 	"testing"
 )
 
-func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
+func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
-			"put", varType, "-p", parser, "-s", selector, value,
+			"put", varType,
 		}
+		args = append(args, additionalArgs...)
+		args = append(args, "-p", parser, "-s", selector, value)
 
 		cmd.SetOut(outputBuffer)
 		cmd.SetIn(strings.NewReader(in))

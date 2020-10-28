@@ -36,7 +36,7 @@ func parseValue(value string, valueType string) (interface{}, error) {
 }
 
 func shouldReadFromStdin(fileFlag string) bool {
-	return fileFlag == ""
+	return fileFlag == "" || fileFlag == "stdin" || fileFlag == "-"
 }
 
 func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
@@ -102,7 +102,7 @@ func writeNodeToOutput(opts writeNoteToOutputOpts, cmd *cobra.Command) error {
 			// No out flag and we read from stdin.
 			opts.Writer = cmd.OutOrStdout()
 
-		case opts.Out == "stdout":
+		case opts.Out == "stdout", opts.Out == "-":
 			// Out flag wants to write to stdout.
 			opts.Writer = cmd.OutOrStdout()
 

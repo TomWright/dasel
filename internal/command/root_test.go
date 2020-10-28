@@ -48,6 +48,62 @@ func TestRootCMD(t *testing.T) {
 				return
 			}
 		})
+		t.Run("Stdin", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			in := []byte(`{"name": "Tom"}`)
+			exp := `Tom
+`
+
+			args := []string{
+				"select", "-f", "stdin", "-p", "json", "-s", ".name",
+			}
+
+			cmd.SetIn(bytes.NewReader(in))
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			got := outputBuffer.String()
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
+			}
+		})
+		t.Run("StdinAlias", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			in := []byte(`{"name": "Tom"}`)
+			exp := `Tom
+`
+
+			args := []string{
+				"select", "-f", "-", "-p", "json", "-s", ".name",
+			}
+
+			cmd.SetIn(bytes.NewReader(in))
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			got := outputBuffer.String()
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
+			}
+		})
 	})
 	t.Run("PutString", func(t *testing.T) {
 		t.Run("JSON", putStringTestForParserJSON())
@@ -87,6 +143,66 @@ func TestRootCMD(t *testing.T) {
 			if err == nil || !strings.Contains(err.Error(), "parser flag required when reading from stdin") {
 				t.Errorf("unexpected error: %v", err)
 				return
+			}
+		})
+		t.Run("StdinStdout", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			in := []byte(`{"name": "Tom"}`)
+			exp := `{
+  "name": "Frank"
+}
+`
+
+			args := []string{
+				"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-s", ".name", "Frank",
+			}
+
+			cmd.SetIn(bytes.NewReader(in))
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			got := outputBuffer.String()
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
+			}
+		})
+		t.Run("StdinStdoutAlias", func(t *testing.T) {
+			cmd := command.NewRootCMD()
+			outputBuffer := bytes.NewBuffer([]byte{})
+
+			in := []byte(`{"name": "Tom"}`)
+			exp := `{
+  "name": "Frank"
+}
+`
+
+			args := []string{
+				"put", "string", "-f", "-", "-o", "-", "-p", "json", "-s", ".name", "Frank",
+			}
+
+			cmd.SetIn(bytes.NewReader(in))
+			cmd.SetOut(outputBuffer)
+			cmd.SetArgs(args)
+
+			err := cmd.Execute()
+
+			if err != nil {
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+
+			got := outputBuffer.String()
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
 			}
 		})
 	})
