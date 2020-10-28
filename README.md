@@ -24,7 +24,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [jq to dasel](#jq-to-dasel)
   * [yq to dasel](#yq-to-dasel)
   * [Kubernetes](#kubernetes)
-  * [XML](#xml)
+  * [XML](#xml-examples)
 
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
@@ -261,6 +261,14 @@ Using [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2).
 -p xml
 ```
 Using [github.com/clbanning/mxj](https://github.com/clbanning/mxj).
+
+#### Arrays/Lists
+
+Due to the way that XML is decoded dasel can only detect something as a list if there are at least 2 items.
+
+If you try to use list operators (dynamic, index, append) when there are less than 2 items in the list you will get an error.
+
+There are no plans to introduce a workaround for this but if there is enough demand it may be worked on in the future.
 
 ## Selectors
 
@@ -640,7 +648,7 @@ dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth
 dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
 ```
 
-### XML
+### XML Examples
 
 XML has some slight differences (such as attributes) that should be documented.
 
@@ -674,12 +682,4 @@ echo '<data>
     </users>
 </data>' | go run cmd/dasel/main.go -p xml '.data.users.(-primary=true).name'
 Tom
-```
-
-#### Arrays/Lists
-
-Due to the way that XML is decoded dasel can only detect something as a list if there are at least 2 items.
-
-If you try to use list operators (dynamic, index, append) when there are less than 2 items in the list you will get an error.
-
-Currently there are no plans to introduce a workaround for this but if there is enough demand it may be worked on in the future. 
+``` 
