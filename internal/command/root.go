@@ -6,11 +6,6 @@ import (
 	"os"
 )
 
-type Command struct {
-	cobra.Command
-	DefaultSubCommand string
-}
-
 // NewRootCMD returns the root command for use with cobra.
 func NewRootCMD() *cobra.Command {
 	cmd := &cobra.Command{
