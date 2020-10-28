@@ -45,3 +45,15 @@ jobs:
           file: target/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
+      - name: Build docker image
+        if: runner.os == 'Linux'
+        run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel/dasel:latest .
+      - name: Docker login
+        if: runner.os == 'Linux'
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u TomWright --password-stdin
+      - name: Docker push latest
+        if: runner.os == 'Linux'
+        run: docker push tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:latest
+      - name: Docker push release
+        if: runner.os == 'Linux'
+        run: docker push tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}

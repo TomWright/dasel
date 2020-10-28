@@ -30,25 +30,38 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
 #### Command line
+
+##### Go
 You can `go get` the `main` package and go should automatically build and install dasel for you.
 ```bash
 go get github.com/tomwright/dasel/cmd/dasel
 ```
 
-Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
-##### Linux amd64
+##### Binary on release
+You can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
+
+###### Linux amd64
 This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
 ```bash
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
 mv ./dasel /usr/local/bin/dasel
 ```
 
-##### Mac OS amd64
+###### Mac OS amd64
 You may have to `brew install wget` in order for this to work.
 ```bash
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
 mv ./dasel /usr/local/bin/dasel
 ```
+
+##### Docker
+You also have the option of using the docker image to run dasel for you.
+```bash
+echo '{"name": "Tom"}' | docker run -i --rm docker.pkg.github.com/tomwright/dasel/dasel:latest -p json '.name'
+Tom
+```
+
+If you want to use a specific version of dasel simply change `latest` to the desired version.
 
 #### Import
 As with any other go package, just use `go get`.
