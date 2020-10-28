@@ -664,7 +664,7 @@ echo '<data>
     <users primary="false">
         <name>Frank</name>
     </users>
-</data>' | go run cmd/dasel/main.go -p xml '.data.users[0].-primary'
+</data>' | dasel -p xml '.data.users[0].-primary'
 true
 ```
 
@@ -680,6 +680,6 @@ echo '<data>
     <users primary="false">
         <name>Frank</name>
     </users>
-</data>' | go run cmd/dasel/main.go -p xml '.data.users.(-primary=true).name'
+</data>' | dasel -p xml '.data.users.(-primary=true).name'
 Tom
 ``` 
