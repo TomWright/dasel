@@ -2,7 +2,7 @@ package storage
 
 import (
 	"fmt"
-	"github.com/clbanning/mxj"
+	"github.com/clbanning/mxj/v2"
 )
 
 // XMLParser is a Parser implementation to handle yaml files.

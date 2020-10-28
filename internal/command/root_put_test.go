@@ -8,6 +8,54 @@ import (
 	"testing"
 )
 
+func TestRootCMD_Put(t *testing.T) {
+	t.Run("String", func(t *testing.T) {
+		t.Run("JSON", putStringTestForParserJSON())
+		t.Run("YAML", putStringTestForParserYAML())
+		t.Run("TOML", putStringTestForParserTOML())
+
+		t.Run("InvalidFile", expectErr(
+			[]string{"put", "string", "-f", "bad.json", "-s", "x", "y"},
+			"could not open input file",
+		))
+		t.Run("MissingParser", expectErr(
+			[]string{"put", "string", "-s", "x", "y"},
+			"parser flag required when reading from stdin",
+		))
+		t.Run("StdinStdout", expectOutput(
+			`{"name": "Tom"}`,
+			[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-s", ".name", "Frank"},
+			`{
+  "name": "Frank"
+}
+`,
+		))
+		t.Run("StdinStdoutAlias", expectOutput(
+			`{"name": "Tom"}`,
+			[]string{"put", "string", "-f", "-", "-o", "-", "-p", "json", "-s", ".name", "Frank"},
+			`{
+  "name": "Frank"
+}
+`,
+		))
+	})
+	t.Run("Int", func(t *testing.T) {
+		t.Run("JSON", putIntTestForParserJSON())
+		t.Run("YAML", putIntTestForParserYAML())
+		t.Run("TOML", putIntTestForParserTOML())
+	})
+	t.Run("Bool", func(t *testing.T) {
+		t.Run("JSON", putBoolTestForParserJSON())
+		t.Run("YAML", putBoolTestForParserYAML())
+		t.Run("TOML", putBoolTestForParserTOML())
+	})
+	t.Run("Object", func(t *testing.T) {
+		t.Run("JSON", putObjectTestForParserJSON())
+		t.Run("YAML", putObjectTestForParserYAML())
+		t.Run("TOML", putObjectTestForParserTOML())
+	})
+}
+
 func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()

@@ -37,6 +37,8 @@ func NewParserFromFilename(filename string) (Parser, error) {
 		return &TOMLParser{}, nil
 	case ".json":
 		return &JSONParser{}, nil
+	case ".xml":
+		return &XMLParser{}, nil
 	default:
 		return nil, &UnknownParserErr{Parser: ext}
 	}
@@ -51,6 +53,8 @@ func NewParserFromString(parser string) (Parser, error) {
 		return &JSONParser{}, nil
 	case "toml":
 		return &TOMLParser{}, nil
+	case "xml":
+		return &XMLParser{}, nil
 	default:
 		return nil, &UnknownParserErr{Parser: parser}
 	}

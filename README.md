@@ -9,7 +9,7 @@
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
-Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML and TOML with zero dependencies.
+Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML, TOML and XML with zero runtime dependencies.
 
 # Table of contents
 * [Dasel](#dasel)
@@ -24,34 +24,35 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [jq to dasel](#jq-to-dasel)
   * [yq to dasel](#yq-to-dasel)
   * [Kubernetes](#kubernetes)
+  * [XML](#xml)
 
 ### Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
 #### Command line
 You can `go get` the `main` package and go should automatically build and install dasel for you.
-```
+```bash
 go get github.com/tomwright/dasel/cmd/dasel
 ```
 
 Alternatively you can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
 ##### Linux amd64
 This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
-```
+```bash
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
 mv ./dasel /usr/local/bin/dasel
 ```
 
 ##### Mac OS amd64
 You may have to `brew install wget` in order for this to work.
-```
+```bash
 curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
 mv ./dasel /usr/local/bin/dasel
 ```
 
 #### Import
 As with any other go package, just use `go get`.
-```
+```bash
 go get github.com/tomwright/dasel
 ```
 
@@ -237,9 +238,29 @@ my:
 ## Supported file types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
-- JSON - `-p json`
-- TOML - `-p toml`
-- YAML - `-p yaml`
+### JSON
+```bash
+-p json
+```
+Using [golang.org/pkg/encoding/json](https://golang.org/pkg/encoding/json/).
+
+### TOML
+```bash
+-p toml
+```
+Using [github.com/pelletier/go-toml](https://github.com/pelletier/go-toml).
+
+### YAML
+```bash
+-p yaml
+```
+Using [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2).
+
+### XML
+```bash
+-p xml
+```
+Using [github.com/clbanning/mxj](https://github.com/clbanning/mxj).
 
 ## Selectors
 
@@ -323,7 +344,7 @@ The follow examples show a set of [jq](https://github.com/stedolan/jq) commands 
 
 #### Select a single value
 
-```
+```bash
 echo '{"name": "Tom"}' | jq '.name'
 "Tom"
 
@@ -333,7 +354,7 @@ Tom
 
 #### Select a nested value
 
-```
+```bash
 echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'
 27
 
@@ -343,7 +364,7 @@ echo '{"user": {"name": "Tom", "age": 27}}' | dasel -p json '.user.age'
 
 #### Select an array index
 
-```
+```bash
 echo '[1, 2, 3]' | jq '.[1]'
 2
 
@@ -353,7 +374,7 @@ echo '[1, 2, 3]' | dasel -p json '.[1]'
 
 #### Append to an array of strings
 
-```
+```bash
 echo '["a", "b", "c"]' | jq '. += ["d"]'
 [
   "a",
@@ -373,7 +394,7 @@ echo '["a", "b", "c"]' | dasel put string -p json -s '.[]' d
 
 #### Update a string value
 
-```
+```bash
 echo '["a", "b", "c"]' | jq '.[1] = "d"'
 [
   "a",
@@ -391,7 +412,7 @@ echo '["a", "b", "c"]' | dasel put string -p json -s '.[1]' d
 
 #### Update an int value
 
-```
+```bash
 echo '[1, 2, 3]' | jq '.[1] = 5'
 [
   1,
@@ -409,7 +430,7 @@ echo '[1, 2, 3]' | dasel put int -p json -s '.[1]' 5
 
 #### Overwrite an object
 
-```
+```bash
 echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user = {"name": "Frank", "age": 25}'
 {
   "user": {
@@ -429,7 +450,7 @@ echo '{"user": {"name": "Tom", "age": 27}}' | dasel put object -p json -s '.user
 
 #### Append to an array of objects
 
-```
+```bash
 echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'
 {
   "users": [
@@ -461,7 +482,7 @@ The follow examples show a set of [yq](https://github.com/kislyuk/yq) commands a
 
 #### Select a single value
 
-```
+```bash
 echo 'name: Tom' | yq '.name'
 "Tom"
 
@@ -471,7 +492,7 @@ Tom
 
 #### Select a nested value
 
-```
+```bash
 echo 'user:
   name: Tom
   age: 27' | yq '.user.age'
@@ -485,7 +506,7 @@ echo 'user:
 
 #### Select an array index
 
-```
+```bash
 echo '- 1
 - 2
 - 3' | yq '.[1]'
@@ -499,7 +520,7 @@ echo '- 1
 
 #### Append to an array of strings
 
-```
+```bash
 echo '- a
 - b
 - c' | yq --yaml-output '. += ["d"]'
@@ -520,7 +541,7 @@ echo '- a
 
 #### Update a string value
 
-```
+```bash
 echo '- a
 - b
 - c' | yq --yaml-output '.[1] = "d"'
@@ -538,7 +559,7 @@ echo '- a
 
 #### Update an int value
 
-```
+```bash
 echo '- 1
 - 2
 - 3' | yq --yaml-output '.[1] = 5'
@@ -556,7 +577,7 @@ echo '- 1
 
 #### Overwrite an object
 
-```
+```bash
 echo 'user:
   name: Tom
   age: 27' | yq --yaml-output '.user = {"name": "Frank", "age": 25}'
@@ -575,7 +596,7 @@ user:
 
 #### Append to an array of objects
 
-```
+```bash
 echo 'users:
 - name: Tom' | yq --yaml-output '.users += [{"name": "Frank"}]'
 users:
@@ -617,4 +638,40 @@ dasel put object -f deployment.yaml -s "spec.template.spec.containers.(name=auth
 #### Update an existing env var
 ```bash
 dasel put string -f deployment.yaml -s "spec.template.spec.containers.(name=auth).env.(name=MY_NEW_ENV_VAR).value" NEW_VALUE
+```
+
+### XML
+
+XML has some slight differences (such as attributes) that should be documented.
+
+#### Query attributes
+
+Decoded attributes are set as properties on the related object with a prefix of `-`.
+
+```bash
+echo '<data>
+    <users primary="true">
+        <name>Tom</name>
+    </users>
+    <users primary="false">
+        <name>Frank</name>
+    </users>
+</data>' | go run cmd/dasel/main.go -p xml '.data.users[0].-primary'
+true
+```
+
+#### Filtering on attributes
+
+We can also filter on attributes since they are defined against the related object.
+
+```bash
+echo '<data>
+    <users primary="true">
+        <name>Tom</name>
+    </users>
+    <users primary="false">
+        <name>Frank</name>
+    </users>
+</data>' | go run cmd/dasel/main.go -p xml '.data.users.(-primary=true).name'
+Tom
 ```
