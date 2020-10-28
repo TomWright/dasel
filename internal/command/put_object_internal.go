@@ -84,14 +84,19 @@ func putObjectCommand() *cobra.Command {
 		Short: "Update a string property in the given file.",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
-			return runPutObjectCommand(putObjectOpts{
+			opts := putObjectOpts{
 				File:        cmd.Flag("file").Value.String(),
 				Out:         cmd.Flag("out").Value.String(),
 				Parser:      cmd.Flag("parser").Value.String(),
 				Selector:    cmd.Flag("selector").Value.String(),
 				InputTypes:  typeList.Strings,
 				InputValues: args,
-			}, cmd)
+			}
+			if opts.Selector == "" && len(opts.InputValues) > 0 {
+				opts.Selector = opts.InputValues[0]
+				opts.InputValues = opts.InputValues[1:]
+			}
+			return runPutObjectCommand(opts, cmd)
 		},
 	}
 
