@@ -51,9 +51,15 @@ jobs:
       - name: Docker login
         if: runner.os == 'Linux'
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u TomWright --password-stdin
+      - name: Docker tag latest
+        if: runner.os == 'Linux'
+        run: docker tag tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:latest
+      - name: Docker tag release
+        if: runner.os == 'Linux'
+        run: docker tag tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}
       - name: Docker push latest
         if: runner.os == 'Linux'
-        run: docker push tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:latest
+        run: docker push docker.pkg.github.com/tomwright/dasel/dasel:latest
       - name: Docker push release
         if: runner.os == 'Linux'
-        run: docker push tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}
+        run: docker push docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}
