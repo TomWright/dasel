@@ -8,6 +8,33 @@ import (
 	"testing"
 )
 
+func TestRootCMD_Put(t *testing.T) {
+	t.Run("InvalidFile", expectErr(
+		[]string{"put", "string", "-f", "bad.json", "-s", "x", "y"},
+		"could not open input file",
+	))
+	t.Run("MissingParser", expectErr(
+		[]string{"put", "string", "-s", "x", "y"},
+		"parser flag required when reading from stdin",
+	))
+	t.Run("StdinStdout", expectOutput(
+		`{"name": "Tom"}`,
+		[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-s", ".name", "Frank"},
+		`{
+  "name": "Frank"
+}
+`,
+	))
+	t.Run("StdinStdoutAlias", expectOutput(
+		`{"name": "Tom"}`,
+		[]string{"put", "string", "-f", "-", "-o", "-", "-p", "json", "-s", ".name", "Frank"},
+		`{
+  "name": "Frank"
+}
+`,
+	))
+}
+
 func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
@@ -50,6 +77,165 @@ func putTest(in string, varType string, parser string, selector string, value st
 			t.Errorf("expected result %v, got %v", out, outputStr)
 		}
 	}
+}
+
+func TestRootCMD_Put_JSON(t *testing.T) {
+	t.Run("String", putStringTest(`{
+  "id": "x"
+}`, "json", "id", "y", `{
+  "id": "y"
+}`, nil))
+	t.Run("Int", putIntTest(`{
+  "id": 123
+}`, "json", "id", "456", `{
+  "id": 456
+}`, nil))
+	t.Run("Bool", putBoolTest(`{
+  "id": true
+}`, "json", "id", "false", `{
+  "id": false
+}`, nil))
+	t.Run("OverwriteObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
+  "numbers": [
+    {
+      "number": "five",
+      "rank": 5
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    }
+  ]
+}`, nil))
+}
+
+func TestRootCMD_Put_YAML(t *testing.T) {
+	t.Run("String", putStringTest(`
+id: "x"
+`, "yaml", "id", "y", `
+id: "y"
+`, nil))
+	t.Run("Int", putIntTest(`
+id: 123
+`, "yaml", "id", "456", `
+id: 456
+`, nil))
+	t.Run("Bool", putBoolTest(`
+id: true
+`, "yaml", "id", "false", `
+id: false
+`, nil))
+	t.Run("OverwriteObject", putObjectTest(`
+numbers:
+- number: one
+  rank: 1
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, "yaml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
+numbers:
+- number: five
+  rank: 5
+- number: two
+  rank: 2
+- number: three
+  rank: 3
+`, nil))
+}
+
+func TestRootCMD_Put_TOML(t *testing.T) {
+	t.Run("String", putStringTest(`
+id = "x"
+`, "toml", "id", "y", `
+id = "y"
+`, nil))
+	t.Run("Int", putIntTest(`
+id = 123
+`, "toml", "id", "456", `
+id = 456
+`, nil))
+	t.Run("Bool", putBoolTest(`
+id = true
+`, "toml", "id", "false", `
+id = false
+`, nil))
+	t.Run("OverwriteObject", putObjectTest(`
+[[numbers]]
+  number = "one"
+  rank = 1
+
+[[numbers]]
+  number = "two"
+  rank = 2
+
+[[numbers]]
+  number = "three"
+  rank = 3
+`, "toml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
+[[numbers]]
+  number = "five"
+  rank = 5
+
+[[numbers]]
+  number = "two"
+  rank = 2
+
+[[numbers]]
+  number = "three"
+  rank = 3
+`, nil))
+}
+
+func TestRootCMD_Put_XML(t *testing.T) {
+	t.Run("String", putStringTest(`<data><id>x</id></data>`, "xml", ".data.id", "y", `<data>
+  <id>y</id>
+</data>
+`, nil))
+	t.Run("Int", putIntTest(`<data><id>1</id></data>`, "xml", ".data.id", "2", `<data>
+  <id>2</id>
+</data>
+`, nil))
+	t.Run("Bool", putBoolTest(`<data><id>false</id></data>`, "xml", ".data.id", "true", `<data>
+  <id>true</id>
+</data>
+`, nil))
+	t.Run("OverwriteObject", putObjectTest(`<data><id>x</id></data>`, "xml", ".data", []string{"id=y", "rank=5"}, []string{"string", "int"}, `<data>
+  <id>y</id>
+  <rank>5</rank>
+</data>
+`, nil))
+	t.Run("AppendObject", putObjectTest(`<data><item><value>1</value></item><item><value>2</value></item></data>`, "xml", ".data.item.[]", []string{"value=3"}, []string{"int"}, `<data>
+  <item>
+    <value>1</value>
+  </item>
+  <item>
+    <value>2</value>
+  </item>
+  <item>
+    <value>3</value>
+  </item>
+</data>
+`, nil))
 }
 
 func putObjectTest(in string, parser string, selector string, values []string, types []string, out string, expErr error) func(t *testing.T) {
@@ -108,184 +294,4 @@ func putIntTest(in string, parser string, selector string, value string, out str
 
 func putBoolTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
 	return putTest(in, "bool", parser, selector, value, out, expErr)
-}
-
-func putStringTestForParserJSON() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putStringTest(`{
-  "id": "x"
-}`, "json", "id", "y", `{
-  "id": "y"
-}`, nil))
-	}
-}
-
-func putIntTestForParserJSON() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putIntTest(`{
-  "id": 123
-}`, "json", "id", "456", `{
-  "id": 456
-}`, nil))
-	}
-}
-
-func putBoolTestForParserJSON() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putBoolTest(`{
-  "id": true
-}`, "json", "id", "false", `{
-  "id": false
-}`, nil))
-	}
-}
-
-func putObjectTestForParserJSON() func(t *testing.T) {
-	return func(t *testing.T) {
-
-		t.Run("OverwriteObject", putObjectTest(`{
-  "numbers": [
-    {
-      "rank": 1,
-      "number": "one"
-    },
-    {
-      "rank": 2,
-      "number": "two"
-    },
-    {
-      "rank": 3,
-      "number": "three"
-    }
-  ]
-}`, "json", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
-  "numbers": [
-    {
-      "number": "five",
-      "rank": 5
-    },
-    {
-      "number": "two",
-      "rank": 2
-    },
-    {
-      "number": "three",
-      "rank": 3
-    }
-  ]
-}`, nil))
-
-	}
-}
-
-func putStringTestForParserYAML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putStringTest(`
-id: "x"
-`, "yaml", "id", "y", `
-id: "y"
-`, nil))
-	}
-}
-
-func putIntTestForParserYAML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putIntTest(`
-id: 123
-`, "yaml", "id", "456", `
-id: 456
-`, nil))
-	}
-}
-
-func putBoolTestForParserYAML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putBoolTest(`
-id: true
-`, "yaml", "id", "false", `
-id: false
-`, nil))
-	}
-}
-
-func putObjectTestForParserYAML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("OverwriteObject", putObjectTest(`
-numbers:
-- number: one
-  rank: 1
-- number: two
-  rank: 2
-- number: three
-  rank: 3
-`, "yaml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
-numbers:
-- number: five
-  rank: 5
-- number: two
-  rank: 2
-- number: three
-  rank: 3
-`, nil))
-	}
-}
-
-func putStringTestForParserTOML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putStringTest(`
-id = "x"
-`, "toml", "id", "y", `
-id = "y"
-`, nil))
-	}
-}
-
-func putIntTestForParserTOML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putIntTest(`
-id = 123
-`, "toml", "id", "456", `
-id = 456
-`, nil))
-	}
-}
-
-func putBoolTestForParserTOML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("Property", putBoolTest(`
-id = true
-`, "toml", "id", "false", `
-id = false
-`, nil))
-	}
-}
-
-func putObjectTestForParserTOML() func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("OverwriteObject", putObjectTest(`
-[[numbers]]
-  number = "one"
-  rank = 1
-
-[[numbers]]
-  number = "two"
-  rank = 2
-
-[[numbers]]
-  number = "three"
-  rank = 3
-`, "toml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
-[[numbers]]
-  number = "five"
-  rank = 5
-
-[[numbers]]
-  number = "two"
-  rank = 2
-
-[[numbers]]
-  number = "three"
-  rank = 3
-`, nil))
-	}
 }

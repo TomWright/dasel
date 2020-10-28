@@ -1,0 +1,21 @@
+<data>
+    <name>Tom</name>
+    <preferences>
+        <favouriteColour>red</favouriteColour>
+    </preferences>
+    <colours>red</colours>
+    <colours>green</colours>
+    <colours>blue</colours>
+    <colourCodes>
+        <name>red</name>
+        <rgb>ff0000</rgb>
+    </colourCodes>
+    <colourCodes>
+        <name>green</name>
+        <rgb>00ff00</rgb>
+    </colourCodes>
+    <colourCodes>
+        <name>blue</name>
+        <rgb>0000ff</rgb>
+    </colourCodes>
+</data>
