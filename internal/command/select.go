@@ -54,8 +54,11 @@ func selectCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
 		Short: "Select properties from the given file.",
-		Args:  cobra.ExactArgs(0),
 		RunE: func(cmd *cobra.Command, args []string) error {
+			if selectorFlag == "" && len(args) > 0 {
+				selectorFlag = args[0]
+				args = args[1:]
+			}
 			return runSelectCommand(selectOptions{
 				File:     fileFlag,
 				Parser:   parserFlag,
@@ -69,7 +72,6 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
 
 	_ = cmd.MarkFlagFilename("file")
-	_ = cmd.MarkFlagRequired("selector")
 
 	return cmd
 }

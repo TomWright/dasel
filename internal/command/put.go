@@ -154,7 +154,6 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
-	_ = cmd.MarkPersistentFlagRequired("selector")
 
 	return cmd
 }
@@ -171,12 +170,22 @@ type genericPutOptions struct {
 	Writer    io.Writer
 }
 
-func getGenericInit(cmd *cobra.Command) func(options genericPutOptions) genericPutOptions {
+func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
 	return func(opts genericPutOptions) genericPutOptions {
 		opts.File = cmd.Flag("file").Value.String()
 		opts.Out = cmd.Flag("out").Value.String()
 		opts.Parser = cmd.Flag("parser").Value.String()
 		opts.Selector = cmd.Flag("selector").Value.String()
+
+		if opts.Selector == "" && len(args) > 0 {
+			opts.Selector = args[0]
+			args = args[1:]
+		}
+
+		if len(args) > 0 {
+			opts.Value = args[0]
+		}
+
 		return opts
 	}
 }

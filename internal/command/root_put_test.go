@@ -17,7 +17,7 @@ func putTest(in string, varType string, parser string, selector string, value st
 			"put", varType,
 		}
 		args = append(args, additionalArgs...)
-		args = append(args, "-p", parser, "-s", selector, value)
+		args = append(args, "-p", parser, selector, value)
 
 		cmd.SetOut(outputBuffer)
 		cmd.SetIn(strings.NewReader(in))
@@ -58,7 +58,7 @@ func putObjectTest(in string, parser string, selector string, values []string, t
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
-			"put", "object", "-p", parser, "-o", "stdout", "-s", selector,
+			"put", "object", "-p", parser, "-o", "stdout", selector,
 		}
 		for _, t := range types {
 			args = append(args, "-t", t)

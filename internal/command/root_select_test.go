@@ -75,7 +75,7 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
-			"select", "-p", parser, "-s", selector,
+			"select", "-p", parser, selector,
 		}
 
 		cmd.SetOut(outputBuffer)

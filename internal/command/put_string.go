@@ -8,12 +8,11 @@ func putStringCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "string -f <file> -s <selector> <value>",
 		Short: "Update a string property in the given file.",
-		Args:  cobra.ExactArgs(1),
+		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runGenericPutCommand(genericPutOptions{
-				Value:     args[0],
 				ValueType: "string",
-				Init:      getGenericInit(cmd),
+				Init:      getGenericInit(cmd, args),
 			}, cmd)
 		},
 	}
