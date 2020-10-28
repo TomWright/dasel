@@ -3,9 +3,57 @@ package command_test
 import (
 	"bytes"
 	"github.com/tomwright/dasel/internal/command"
+	"os"
+	"reflect"
 	"strings"
 	"testing"
 )
+
+func TestChangeDefaultCommand(t *testing.T) {
+	cachedArgs := os.Args
+	defer func() {
+		os.Args = cachedArgs
+	}()
+
+	t.Run("ChangeToSelect", func(t *testing.T) {
+		os.Args = []string{"dasel", "-p", "json", ".name"}
+		exp := []string{"dasel", "select", "-p", "json", ".name"}
+
+		cmd := command.NewRootCMD()
+		command.ChangeDefaultCommand(cmd, "select")
+
+		got := os.Args
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected args %v, got %v", exp, got)
+		}
+	})
+
+	t.Run("AlreadySelect", func(t *testing.T) {
+		os.Args = []string{"dasel", "select", "-p", "json", ".name"}
+		exp := []string{"dasel", "select", "-p", "json", ".name"}
+
+		cmd := command.NewRootCMD()
+		command.ChangeDefaultCommand(cmd, "select")
+
+		got := os.Args
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected args %v, got %v", exp, got)
+		}
+	})
+
+	t.Run("AlreadyPut", func(t *testing.T) {
+		os.Args = []string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"}
+		exp := []string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"}
+
+		cmd := command.NewRootCMD()
+		command.ChangeDefaultCommand(cmd, "select")
+
+		got := os.Args
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected args %v, got %v", exp, got)
+		}
+	})
+}
 
 func TestRootCMD(t *testing.T) {
 	t.Run("Select", func(t *testing.T) {
