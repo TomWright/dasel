@@ -67,6 +67,8 @@ In short, the output files may have properties in a different order but the actu
 dasel -h
 ```
 
+An imortant note is that if no sub-command is given, dasel will default to `select`.
+
 ### Select
 ```bash
 dasel select -f <file> -p <json|yaml|toml> <selector>
@@ -325,7 +327,7 @@ The follow examples show a set of [jq](https://github.com/stedolan/jq) commands 
 echo '{"name": "Tom"}' | jq '.name'
 "Tom"
 
-echo '{"name": "Tom"}' | dasel select -p json -s '.name'
+echo '{"name": "Tom"}' | dasel -p json '.name'
 Tom
 ```
 
@@ -335,7 +337,7 @@ Tom
 echo '{"user": {"name": "Tom", "age": 27}}' | jq '.user.age'
 27
 
-echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age'
+echo '{"user": {"name": "Tom", "age": 27}}' | dasel -p json '.user.age'
 27
 ```
 
@@ -345,7 +347,7 @@ echo '{"user": {"name": "Tom", "age": 27}}' | dasel select -p json -s '.user.age
 echo '[1, 2, 3]' | jq '.[1]'
 2
 
-echo '[1, 2, 3]' | dasel select -p json -s '.[1]'
+echo '[1, 2, 3]' | dasel -p json '.[1]'
 2
 ```
 
@@ -463,7 +465,7 @@ The follow examples show a set of [yq](https://github.com/kislyuk/yq) commands a
 echo 'name: Tom' | yq '.name'
 "Tom"
 
-echo 'name: Tom' | dasel select -p yaml -s '.name'
+echo 'name: Tom' | dasel -p yaml '.name'
 Tom
 ```
 
@@ -477,7 +479,7 @@ echo 'user:
 
 echo 'user:
        name: Tom
-       age: 27' | dasel select -p yaml -s '.user.age'
+       age: 27' | dasel -p yaml '.user.age'
 27
 ```
 
@@ -491,7 +493,7 @@ echo '- 1
 
 echo '- 1
 - 2
-- 3' | dasel select -p yaml -s '.[1]'
+- 3' | dasel -p yaml '.[1]'
 2
 ```
 
