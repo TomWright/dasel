@@ -69,7 +69,7 @@ dasel -h
 
 ### Select
 ```bash
-dasel select -f <file> -p <json|yaml|toml> -s <selector>
+dasel select -f <file> -p <json|yaml|toml> <selector>
 ```
 
 #### Arguments
@@ -78,7 +78,7 @@ dasel select -f <file> -p <json|yaml|toml> -s <selector>
 
 Specify the file to query. This is required unless you are piping in data.
 
-If piping in data you can optionally pass `-f stdin`.
+If piping in data you can optionally pass `-f stdin`/`-f -`.
 
 ##### `-p`, `--parser`
 
@@ -86,9 +86,11 @@ Specify the parser to use when reading the file.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-##### `-s`, `--selector`
+##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
+
+If no selector flag is given, dasel assumes the first argument given is the selector.
 
 This is required.
 
@@ -96,23 +98,23 @@ This is required.
 
 Select the image within a kubernetes deployment manifest file:
 ```bash
-dasel select -f deployment.yaml -s "spec.template.spec.containers.(name=auth).image"
+dasel select -f deployment.yaml "spec.template.spec.containers.(name=auth).image"
 tomwright/auth:v1.0.0
 ```
 
 Piping data into the select:
 ```bash
-cat deployment.yaml | dasel select -p yaml -s "spec.template.spec.containers.(name=auth).image"
+cat deployment.yaml | dasel select -p yaml "spec.template.spec.containers.(name=auth).image"
 tomwright/auth:v1.0.0
 ```
 
 ### Put
 ```bash
-dasel put <type> -f <file> -o <out> -p <parser> -s <selector> <value>
+dasel put <type> -f <file> -o <out> -p <parser> <selector> <value>
 ```
 
 ```bash
-echo "name: Tom" | ./dasel put string -p yaml -s "name" Jim
+echo "name: Tom" | ./dasel put string -p yaml "name" Jim
 name: Jim
 ```
 
@@ -132,13 +134,13 @@ Available arguments:
 
 Specify the file to query. This is required unless you are piping in data.
 
-If piping in data you can optionally pass `-f stdin`.
+If piping in data you can optionally pass `-f stdin`/`-f -`.
 
 ##### `-o`, `--out`
 
 Specify the output file. If present, results will be written to the given file. If not present, results will be written to the input file (or stdout if none given).
 
-To force output to be written to stdout, pass `-o stdout`.
+To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
 ##### `-p`, `--parser`
 
@@ -146,9 +148,13 @@ Specify the parser to use when reading/writing the input/output files.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-##### `-s`, `--selector`
+##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
+
+If no selector flag is given, dasel assumes the first argument given is the selector.
+
+This is required.
 
 ##### `value`
 
@@ -163,7 +169,7 @@ This is required.
 Putting objects works slightly differently to a standard put, but the same principles apply.
 
 ```bash
-dasel put object -f <file> -o <out> -p <parser> -s <selector> -t <type> <values>
+dasel put object -f <file> -o <out> -p <parser> -t <type> <selector> <values>
 ```
 
 #### Arguments
@@ -183,13 +189,13 @@ Available arguments:
 
 Specify the file to query. This is required unless you are piping in data.
 
-If piping in data you can optionally pass `-f stdin`.
+If piping in data you can optionally pass `-f stdin`/`-f -`.
 
 ##### `-o`, `--out`
 
 Specify the output file. If present, results will be written to the given file. If not present, results will be written to the input file (or stdout if none given).
 
-To force output to be written to stdout, pass `-o stdout`.
+To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
 ##### `-p`, `--parser`
 
@@ -197,9 +203,13 @@ Specify the parser to use when reading/writing the input/output files.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-##### `-s`, `--selector`
+##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
+
+If no selector flag is given, dasel assumes the first argument given is the selector.
+
+This is required.
 
 ##### `values`
 
@@ -212,7 +222,7 @@ This is required.
 #### Example
 
 ```bash
-echo "" | dasel put object -s "my.favourites" -t string -t int colour=red number=3
+echo "" | dasel put object -p yaml -t string -t int "my.favourites" colour=red number=3
 ```
 Results in the following:
 ```yaml
