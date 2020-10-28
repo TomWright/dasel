@@ -675,3 +675,11 @@ echo '<data>
 </data>' | go run cmd/dasel/main.go -p xml '.data.users.(-primary=true).name'
 Tom
 ```
+
+#### Arrays/Lists
+
+Due to the way that XML is decoded dasel can only detect something as a list if there are at least 2 items.
+
+If you try to use list operators (dynamic, index, append) when there are less than 2 items in the list you will get an error.
+
+Currently there are no plans to introduce a workaround for this but if there is enough demand it may be worked on in the future. 
