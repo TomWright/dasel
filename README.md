@@ -14,6 +14,9 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 # Table of contents
 * [Dasel](#dasel)
 * [Installation](#installation)
+* [Notes](#notes)
+  * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
+  * [Memory Usage](#memory-usage)
 * [Usage](#usage)
   * [Select](#select)
   * [Put](#put)
@@ -71,9 +74,17 @@ go get github.com/tomwright/dasel
 
 ## Notes
 
+### Preserved formatting and ordering
+
 The formatting of files can be changed while being processed. Dasel itself doesn't make these changes, rather the act of marshaling the results.
 
 In short, the output files may have properties in a different order but the actual contents will be as expected.
+
+### Memory usage
+
+Dasels method of querying data requires that the entire input document is stored in memory.
+
+You should keep this in mind as the maximum filesize it can process will be limited by your systems available resources (specifically RAM).
 
 ## Usage 
 
