@@ -60,6 +60,7 @@ func TestNewParserFromFilename(t *testing.T) {
 		{In: "a.yaml", Out: &storage.YAMLParser{}},
 		{In: "a.yml", Out: &storage.YAMLParser{}},
 		{In: "a.toml", Out: &storage.TOMLParser{}},
+		{In: "a.xml", Out: &storage.XMLParser{}},
 		{In: "a.txt", Out: nil, Err: &storage.UnknownParserErr{Parser: ".txt"}},
 	}
 

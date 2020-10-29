@@ -9,7 +9,8 @@ import (
 
 var xmlBytes = []byte(`<user>
   <name>Tom</name>
-</user>`)
+</user>
+`)
 var xmlMap = map[string]interface{}{
 	"user": map[string]interface{}{
 		"name": "Tom",

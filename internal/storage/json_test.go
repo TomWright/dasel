@@ -8,7 +8,8 @@ import (
 
 var jsonBytes = []byte(`{
   "name": "Tom"
-}`)
+}
+`)
 var jsonMap = map[string]interface{}{
 	"name": "Tom",
 }

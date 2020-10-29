@@ -100,19 +100,33 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 	}
 }
 
-func selectTestForParser(parser string, data string) func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111\n", nil))
-		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom\n", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street\n", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street\n", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
-	}
+func newline(x string) string {
+	return x + "\n"
 }
 
-func TestSelect(t *testing.T) {
-	t.Run("JSON", selectTestForParser("json", jsonData))
-	t.Run("YAML", selectTestForParser("yaml", yamlData))
-	t.Run("TOML", selectTestForParser("toml", tomlData))
+func TestSelect_JSON(t *testing.T) {
+	t.Run("SingleProperty", selectTest(jsonData, "json", ".id", newline(`"1111"`), nil))
+	t.Run("ObjectProperty", selectTest(jsonData, "json", ".details.name", newline(`"Tom"`), nil))
+	t.Run("Index", selectTest(jsonData, "json", ".details.addresses.[0].street", newline(`"101 Some Street"`), nil))
+	t.Run("Index", selectTest(jsonData, "json", ".details.addresses.[1].street", newline(`"34 Another Street"`), nil))
+	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=XXX XXX).street", newline(`"101 Some Street"`), nil))
+	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=YYY YYY).street", newline(`"34 Another Street"`), nil))
+}
+
+func TestSelect_YAML(t *testing.T) {
+	t.Run("SingleProperty", selectTest(yamlData, "yaml", ".id", newline(`1111`), nil))
+	t.Run("ObjectProperty", selectTest(yamlData, "yaml", ".details.name", newline(`Tom`), nil))
+	t.Run("Index", selectTest(yamlData, "yaml", ".details.addresses.[0].street", newline(`101 Some Street`), nil))
+	t.Run("Index", selectTest(yamlData, "yaml", ".details.addresses.[1].street", newline(`34 Another Street`), nil))
+	t.Run("DynamicString", selectTest(yamlData, "yaml", ".details.addresses.(postcode=XXX XXX).street", newline(`101 Some Street`), nil))
+	t.Run("DynamicString", selectTest(yamlData, "yaml", ".details.addresses.(postcode=YYY YYY).street", newline(`34 Another Street`), nil))
+}
+
+func TestSelect_TOML(t *testing.T) {
+	t.Run("SingleProperty", selectTest(tomlData, "toml", ".id", newline(`1111`), nil))
+	t.Run("ObjectProperty", selectTest(tomlData, "toml", ".details.name", newline(`Tom`), nil))
+	t.Run("Index", selectTest(tomlData, "toml", ".details.addresses.[0].street", newline(`101 Some Street`), nil))
+	t.Run("Index", selectTest(tomlData, "toml", ".details.addresses.[1].street", newline(`34 Another Street`), nil))
+	t.Run("DynamicString", selectTest(tomlData, "toml", ".details.addresses.(postcode=XXX XXX).street", newline(`101 Some Street`), nil))
+	t.Run("DynamicString", selectTest(tomlData, "toml", ".details.addresses.(postcode=YYY YYY).street", newline(`34 Another Street`), nil))
 }

@@ -43,7 +43,13 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		opts.Writer = cmd.OutOrStdout()
 	}
 
-	_, _ = fmt.Fprintf(opts.Writer, "%v\n", res.InterfaceValue())
+	if err := writeNodeToOutput(writeNoteToOutputOpts{
+		Node:   res,
+		Parser: parser,
+		Writer: opts.Writer,
+	}, cmd); err != nil {
+		return fmt.Errorf("could not write output: %w", err)
+	}
 
 	return nil
 }

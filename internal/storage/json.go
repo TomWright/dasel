@@ -20,5 +20,9 @@ func (p *JSONParser) FromBytes(byteData []byte) (interface{}, error) {
 
 // ToBytes returns a slice of bytes that represents the given value.
 func (p *JSONParser) ToBytes(value interface{}) ([]byte, error) {
-	return json.MarshalIndent(value, "", "  ")
+	byteData, err := json.MarshalIndent(value, "", "  ")
+	if err == nil {
+		byteData = append(byteData, []byte("\n")...)
+	}
+	return byteData, err
 }

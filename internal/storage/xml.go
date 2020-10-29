@@ -22,11 +22,15 @@ func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 func (p *XMLParser) ToBytes(value interface{}) ([]byte, error) {
 	m, ok := value.(map[string]interface{})
 	if !ok {
-		return nil, fmt.Errorf("cannot marshal type `%T` to xml", value)
+		return []byte(fmt.Sprintf("%v\n", value)), nil
 	}
 	mv := mxj.New()
 	for k, v := range m {
 		mv[k] = v
 	}
-	return mv.XmlIndent("", "  ")
+	byteData, err := mv.XmlIndent("", "  ")
+	if err == nil {
+		byteData = append(byteData, []byte("\n")...)
+	}
+	return byteData, err
 }
