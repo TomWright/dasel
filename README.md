@@ -96,7 +96,7 @@ An imortant note is that if no sub-command is given, dasel will default to `sele
 
 ### Select
 ```bash
-dasel select -f <file> -p <json|yaml|toml> <selector>
+dasel select -f <file> -p <parser> <selector>
 ```
 
 #### Arguments
@@ -112,6 +112,8 @@ If piping in data you can optionally pass `-f stdin`/`-f -`.
 Specify the parser to use when reading the file.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+See [supported file types](#supported-file-types).
 
 ##### `-s`, `--selector`, `<selector>`
 
@@ -175,6 +177,8 @@ Specify the parser to use when reading/writing the input/output files.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
+See [supported file types](#supported-file-types).
+
 ##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
@@ -229,6 +233,8 @@ To force output to be written to stdout, pass `-o stdout`/`-o -`.
 Specify the parser to use when reading/writing the input/output files.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+See [supported file types](#supported-file-types).
 
 ##### `-s`, `--selector`, `<selector>`
 
