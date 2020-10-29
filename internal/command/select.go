@@ -13,6 +13,7 @@ type selectOptions struct {
 	Selector string
 	Reader   io.Reader
 	Writer   io.Writer
+	Plain    bool
 }
 
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
@@ -43,10 +44,11 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		opts.Writer = cmd.OutOrStdout()
 	}
 
-	if err := writeNodeToOutput(writeNoteToOutputOpts{
+	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   res,
 		Parser: parser,
 		Writer: opts.Writer,
+		Plain:  opts.Plain,
 	}, cmd); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -56,6 +58,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag string
+	var plainFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -69,6 +72,7 @@ func selectCommand() *cobra.Command {
 				File:     fileFlag,
 				Parser:   parserFlag,
 				Selector: selectorFlag,
+				Plain:    plainFlag,
 			}, cmd)
 		},
 	}
@@ -76,6 +80,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
 	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
 	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
+	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Do not format output to the output data format.")
 
 	_ = cmd.MarkFlagFilename("file")
 

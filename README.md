@@ -27,6 +27,8 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 * [Supported file types](#supported-file-types)
 * [Selectors](#selectors)
 * [Examples](#examples)
+  * [General](#general)
+    * [Filter JSON API results](#filter-json-api-results)
   * [jq to dasel](#jq-to-dasel)
   * [yq to dasel](#yq-to-dasel)
   * [Kubernetes](#kubernetes)
@@ -126,15 +128,21 @@ If no selector flag is given, dasel assumes the first argument given is the sele
 
 This is required.
 
+##### `--plain`
+
+By default dasel formats the output using the specified parser.
+
+If this flag is used no formatting occurs and the results output as a string.
+
 #### Example
 
-Select the image within a kubernetes deployment manifest file:
+##### Select the image within a kubernetes deployment manifest file:
 ```bash
 dasel select -f deployment.yaml "spec.template.spec.containers.(name=auth).image"
 "tomwright/auth:v1.0.0"
 ```
 
-Piping data into the select:
+##### Piping data into the select:
 ```bash
 cat deployment.yaml | dasel select -p yaml "spec.template.spec.containers.(name=auth).image"
 "tomwright/auth:v1.0.0"
@@ -378,6 +386,16 @@ map[name:blue rgb:0000ff]
 If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>)` instead.
 
 ## Examples
+
+### General
+
+#### Filter JSON API results
+
+The following line will return the download URL for the latest macos dasel release:
+
+```bash
+curl https://api.github.com/repos/tomwright/dasel/releases/latest | dasel -p json --plain '.assets.(name=dasel_macos_amd64).browser_download_url'
+```
 
 ### jq to dasel
 

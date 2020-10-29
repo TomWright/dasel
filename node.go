@@ -137,7 +137,7 @@ func ParseSelector(selector string) (Selector, error) {
 	return sel, nil
 }
 
-// New returns a new root note with the given value.
+// New returns a new root node with the given value.
 func New(value interface{}) *Node {
 	baseValue := reflect.ValueOf(value)
 	rootNode := &Node{
