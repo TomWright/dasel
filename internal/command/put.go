@@ -87,15 +87,16 @@ func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) 
 	return dasel.New(value), nil
 }
 
-type writeNoteToOutputOpts struct {
+type writeNodeToOutputOpts struct {
 	Node   *dasel.Node
 	Parser storage.Parser
 	File   string
 	Out    string
 	Writer io.Writer
+	Plain  bool
 }
 
-func writeNodeToOutput(opts writeNoteToOutputOpts, cmd *cobra.Command) error {
+func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 	if opts.Writer == nil {
 		switch {
 		case opts.Out == "" && shouldReadFromStdin(opts.File):
@@ -124,6 +125,13 @@ func writeNodeToOutput(opts writeNoteToOutputOpts, cmd *cobra.Command) error {
 			defer f.Close()
 			opts.Writer = f
 		}
+	}
+
+	if opts.Plain {
+		if _, err := fmt.Fprintf(opts.Writer, "%v\n", opts.Node.InterfaceValue()); err != nil {
+			return fmt.Errorf("could not write output: %w", err)
+		}
+		return nil
 	}
 
 	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Writer); err != nil {
@@ -216,7 +224,7 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		return fmt.Errorf("could not put value: %w", err)
 	}
 
-	if err := writeNodeToOutput(writeNoteToOutputOpts{
+	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
 		Parser: parser,
 		File:   opts.File,

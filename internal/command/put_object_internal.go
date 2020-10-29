@@ -63,7 +63,7 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		return fmt.Errorf("could not put value: %w", err)
 	}
 
-	if err := writeNodeToOutput(writeNoteToOutputOpts{
+	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
 		Parser: parser,
 		File:   opts.File,
