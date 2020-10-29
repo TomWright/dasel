@@ -20,5 +20,9 @@ func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
 
 // ToBytes returns a slice of bytes that represents the given value.
 func (p *TOMLParser) ToBytes(value interface{}) ([]byte, error) {
-	return toml.Marshal(value)
+	byteData, err := toml.Marshal(value)
+	if err != nil && err.Error() == "Only a struct or map can be marshaled to TOML" {
+		return []byte(fmt.Sprintf("%v\n", value)), nil
+	}
+	return byteData, err
 }

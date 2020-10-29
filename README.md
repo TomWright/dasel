@@ -64,7 +64,7 @@ mv ./dasel /usr/local/bin/dasel
 You also have the option of using the docker image to run dasel for you.
 ```bash
 echo '{"name": "Tom"}' | docker run -i --rm docker.pkg.github.com/tomwright/dasel/dasel:latest -p json '.name'
-Tom
+"Tom"
 ```
 
 If you want to use a specific version of dasel simply change `latest` to the desired version.
@@ -131,13 +131,13 @@ This is required.
 Select the image within a kubernetes deployment manifest file:
 ```bash
 dasel select -f deployment.yaml "spec.template.spec.containers.(name=auth).image"
-tomwright/auth:v1.0.0
+"tomwright/auth:v1.0.0"
 ```
 
 Piping data into the select:
 ```bash
 cat deployment.yaml | dasel select -p yaml "spec.template.spec.containers.(name=auth).image"
-tomwright/auth:v1.0.0
+"tomwright/auth:v1.0.0"
 ```
 
 ### Put
@@ -390,7 +390,7 @@ echo '{"name": "Tom"}' | jq '.name'
 "Tom"
 
 echo '{"name": "Tom"}' | dasel -p json '.name'
-Tom
+"Tom"
 ```
 
 #### Select a nested value

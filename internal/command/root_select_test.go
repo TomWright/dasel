@@ -91,10 +91,11 @@ var xmlData = `<data>
 </data>
 `
 
+func newline(x string) string {
+	return x + "\n"
+}
+
 func TestRootCMD_Select(t *testing.T) {
-	t.Run("JSON", selectTestForParser("json", jsonData, jsonDataSingle))
-	t.Run("YAML", selectTestForParser("yaml", yamlData, yamlDataSingle))
-	t.Run("TOML", selectTestForParser("toml", tomlData, tomlDataSingle))
 	t.Run("InvalidFile", expectErr(
 		[]string{"select", "-f", "bad.json", "-s", "x"},
 		"could not open input file",
@@ -106,13 +107,13 @@ func TestRootCMD_Select(t *testing.T) {
 	t.Run("Stdin", expectOutput(
 		`{"name": "Tom"}`,
 		[]string{"select", "-f", "stdin", "-p", "json", "-s", ".name"},
-		`Tom
+		`"Tom"
 `,
 	))
 	t.Run("StdinAlias", expectOutput(
 		`{"name": "Tom"}`,
 		[]string{"select", "-f", "-", "-p", "json", "-s", ".name"},
-		`Tom
+		`"Tom"
 `,
 	))
 }
@@ -196,8 +197,42 @@ func selectTestFromFile(inputPath string, selector string, out string, expErr er
 	}
 }
 
+func TestRootCmd_Select_JSON(t *testing.T) {
+	t.Run("RootElement", selectTest(jsonDataSingle, "json", ".", newline(`{
+  "x": "asd"
+}`), nil))
+	t.Run("SingleProperty", selectTest(jsonData, "json", ".id", newline(`"1111"`), nil))
+	t.Run("ObjectProperty", selectTest(jsonData, "json", ".details.name", newline(`"Tom"`), nil))
+	t.Run("Index", selectTest(jsonData, "json", ".details.addresses.[0].street", newline(`"101 Some Street"`), nil))
+	t.Run("Index", selectTest(jsonData, "json", ".details.addresses.[1].street", newline(`"34 Another Street"`), nil))
+	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=XXX XXX).street", newline(`"101 Some Street"`), nil))
+	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=YYY YYY).street", newline(`"34 Another Street"`), nil))
+	t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", newline(`"red"`), nil))
+}
+
+func TestRootCmd_Select_YAML(t *testing.T) {
+	t.Run("RootElement", selectTest(yamlDataSingle, "yaml", ".", newline(`x: asd`), nil))
+	t.Run("SingleProperty", selectTest(yamlData, "yaml", ".id", newline(`1111`), nil))
+	t.Run("ObjectProperty", selectTest(yamlData, "yaml", ".details.name", newline(`Tom`), nil))
+	t.Run("Index", selectTest(yamlData, "yaml", ".details.addresses.[0].street", newline(`101 Some Street`), nil))
+	t.Run("Index", selectTest(yamlData, "yaml", ".details.addresses.[1].street", newline(`34 Another Street`), nil))
+	t.Run("DynamicString", selectTest(yamlData, "yaml", ".details.addresses.(postcode=XXX XXX).street", newline(`101 Some Street`), nil))
+	t.Run("DynamicString", selectTest(yamlData, "yaml", ".details.addresses.(postcode=YYY YYY).street", newline(`34 Another Street`), nil))
+	t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.yaml", ".preferences.favouriteColour", newline(`red`), nil))
+}
+
+func TestRootCmd_Select_TOML(t *testing.T) {
+	t.Run("RootElement", selectTest(tomlDataSingle, "toml", ".", newline(`x = "asd"`), nil))
+	t.Run("SingleProperty", selectTest(tomlData, "toml", ".id", newline(`1111`), nil))
+	t.Run("ObjectProperty", selectTest(tomlData, "toml", ".details.name", newline(`Tom`), nil))
+	t.Run("Index", selectTest(tomlData, "toml", ".details.addresses.[0].street", newline(`101 Some Street`), nil))
+	t.Run("Index", selectTest(tomlData, "toml", ".details.addresses.[1].street", newline(`34 Another Street`), nil))
+	t.Run("DynamicString", selectTest(tomlData, "toml", ".details.addresses.(postcode=XXX XXX).street", newline(`101 Some Street`), nil))
+	t.Run("DynamicString", selectTest(tomlData, "toml", ".details.addresses.(postcode=YYY YYY).street", newline(`34 Another Street`), nil))
+}
+
 func TestRootCMD_Select_XML(t *testing.T) {
-	t.Run("RootElement", selectTest(xmlDataSingle, "xml", ".", "map[x:asd]\n", nil))
+	t.Run("RootElement", selectTest(xmlDataSingle, "xml", ".", newline(`<x>asd</x>`), nil))
 	t.Run("SingleProperty", selectTest(xmlData, "xml", ".data.id", "1111\n", nil))
 	t.Run("ObjectProperty", selectTest(xmlData, "xml", ".data.details.name", "Tom\n", nil))
 	t.Run("Index", selectTest(xmlData, "xml", ".data.details.addresses.[0].street", "101 Some Street\n", nil))
@@ -205,23 +240,4 @@ func TestRootCMD_Select_XML(t *testing.T) {
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	t.Run("Attribute", selectTest(xmlData, "xml", ".data.details.addresses.(-primary=true).street", "101 Some Street\n", nil))
-}
-
-func selectTestForParser(parser string, data string, singleData string) func(t *testing.T) {
-	return func(t *testing.T) {
-		t.Run("RootElement", selectTest(singleData, parser, ".", "map[x:asd]\n", nil))
-		t.Run("SingleProperty", selectTest(data, parser, ".id", "1111\n", nil))
-		t.Run("ObjectProperty", selectTest(data, parser, ".details.name", "Tom\n", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[0].street", "101 Some Street\n", nil))
-		t.Run("Index", selectTest(data, parser, ".details.addresses.[1].street", "34 Another Street\n", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
-		t.Run("DynamicString", selectTest(data, parser, ".details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
-
-		switch parser {
-		case "json":
-			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", "red\n", nil))
-		case "yaml":
-			t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.yaml", ".preferences.favouriteColour", "red\n", nil))
-		}
-	}
 }
