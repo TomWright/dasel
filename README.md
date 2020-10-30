@@ -14,6 +14,8 @@ Dasel (short for data-selector) allows you to query and modify data structures u
 
 Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML, TOML and XML with zero runtime dependencies.
 
+![Update Kubernetes Manifest](update_kubernetes.gif)
+
 # Table of contents
 * [Dasel](#dasel)
 * [Installation](#installation)
