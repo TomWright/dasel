@@ -1,7 +1,7 @@
 ---
 name: How do I do this?
 about: Ask how to perform an action with dasel.
-title: ''
+title: 'How do I ...?'
 labels: 'question'
 assignees: ''
 
