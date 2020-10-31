@@ -89,9 +89,9 @@ In short, the output files may have properties in a different order but the actu
 
 ### Memory usage
 
-Dasels method of querying data requires that the entire input document is stored in memory.
+Dasel's method of querying data requires that the entire input document is stored in memory.
 
-You should keep this in mind as the maximum filesize it can process will be limited by your systems available resources (specifically RAM).
+You should keep this in mind as the maximum filesize it can process will be limited by your system's available resources (specifically RAM).
 
 ## Usage 
 
@@ -99,7 +99,7 @@ You should keep this in mind as the maximum filesize it can process will be limi
 dasel -h
 ```
 
-An imortant note is that if no sub-command is given, dasel will default to `select`.
+An important note is that if no sub-command is given, dasel will default to `select`.
 
 ### Select
 ```bash
@@ -132,7 +132,7 @@ This is required.
 
 ##### `--plain`
 
-By default dasel formats the output using the specified parser.
+By default, dasel formats the output using the specified parser.
 
 If this flag is used no formatting occurs and the results output as a string.
 
@@ -259,7 +259,7 @@ This is required.
 
 ##### `values`
 
-A space separated list of `key=value` pairs.
+A space-separated list of `key=value` pairs.
 
 Dasel will parse each value as a string, int, or bool depending on the related `type`.
 
@@ -307,7 +307,7 @@ Using [github.com/clbanning/mxj](https://github.com/clbanning/mxj).
 
 #### Arrays/Lists
 
-Due to the way that XML is decoded dasel can only detect something as a list if there are at least 2 items.
+Due to the way that XML is decoded, dasel can only detect something as a list if there are at least 2 items.
 
 If you try to use list selectors (dynamic, index, append) when there are less than 2 items in the list you will get an error.
 
@@ -393,7 +393,7 @@ If you want to dynamically target a value in a list when it isn't a list of obje
 
 #### Filter JSON API results
 
-The following line will return the download URL for the latest macos dasel release:
+The following line will return the download URL for the latest macOS dasel release:
 
 ```bash
 curl https://api.github.com/repos/tomwright/dasel/releases/latest | dasel -p json --plain '.assets.(name=dasel_macos_amd64).browser_download_url'
