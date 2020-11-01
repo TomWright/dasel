@@ -33,7 +33,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Index](#index)
   * [Next available index](#next-available-index)
   * [Dynamic](#dynamic)
-    * [Using queries in dynamic selectors](#Using queries in dynamic selectors)
+    * [Using queries in dynamic selectors](#using-queries-in-dynamic-selectors)
 * [Examples](#examples)
   * [General](#general)
     * [Filter JSON API results](#filter-json-api-results)
