@@ -122,7 +122,6 @@ func ParseSelector(selector string) (Selector, error) {
 
 		for _, g := range dynamicGroups {
 			m := dynamicSelectorRegexp.FindStringSubmatch(g)
-			fmt.Println(g, m)
 
 			var cond Condition
 			switch m[2] {
