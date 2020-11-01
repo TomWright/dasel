@@ -387,6 +387,47 @@ map[name:blue rgb:0000ff]
 
 If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>)` instead.
 
+##### Queryable root nodes
+When performing a check dasel creates a new root node at the current position and then selects data using the given key as the query.
+
+This allows you to perform complex queries such as...
+
+```bash
+echo `{
+  "users": [
+    {
+      "name": {
+        "first": "Tom",
+        "last": "Wright"
+      },
+      "addresses": [
+        {
+          "primary": true,
+          "number": 123
+        },
+        {
+          "primary": false,
+          "number": 456
+        }
+      ]
+   }
+  ]
+}` | dasel -p json '.users.(.addresses.(.primary=true).number=123).name.first'
+"Tom"
+```
+
+The above query in plain English may read as...
+
+> Give me the first name of the user
+> who's primary address is at number 123
+
+The resolution of that query looks something like this:
+```
+.users.(.addresses.(.primary=true).number=123).name.first
+.users.(.addresses.[0].number=123).name.first
+.users.[0].name.first
+```
+
 ## Examples
 
 ### General
