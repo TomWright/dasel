@@ -305,6 +305,10 @@ Using [github.com/pelletier/go-toml](https://github.com/pelletier/go-toml).
 ```
 Using [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2).
 
+#### Multi-document files
+
+Multi-document files are not supported. This is due to [limitations in the yaml parser used](https://github.com/go-yaml/yaml/tree/v2.3.0#compatibility).
+
 ### XML
 ```bash
 -p xml
