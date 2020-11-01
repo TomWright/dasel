@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 )
@@ -21,15 +22,24 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 
 	value := unwrapValue(other)
 
-	if value.Kind() == reflect.Map {
-		for _, key := range value.MapKeys() {
-			if fmt.Sprint(key.Interface()) == c.Key {
-				return fmt.Sprint(value.MapIndex(key).Interface()) == c.Value, nil
-			}
-		}
-		return false, nil
-	} else if c.Key == "value" {
+	if c.Key == "value" || c.Key == "." {
 		return fmt.Sprint(value.Interface()) == c.Value, nil
+	}
+
+	switch value.Kind() {
+	case reflect.Map, reflect.Slice:
+		subRootNode := New(value.Interface())
+		foundNode, err := subRootNode.Query(c.Key)
+		if err != nil {
+			var valueNotFound = &ValueNotFound{}
+			if errors.As(err, &valueNotFound) {
+				return false, nil
+			}
+
+			return false, fmt.Errorf("subquery failed: %w", err)
+		}
+
+		return fmt.Sprint(foundNode.InterfaceValue()) == c.Value, nil
 	}
 
 	return false, &UnhandledCheckType{Value: value.Kind().String()}

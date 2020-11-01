@@ -28,6 +28,12 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Put Object](#put-object)
 * [Supported file types](#supported-file-types)
 * [Selectors](#selectors)
+  * [Property](#property)
+  * [Child](#child-elements)
+  * [Index](#index)
+  * [Next available index](#next-available-index)
+  * [Dynamic](#dynamic)
+    * [Using queries in dynamic selectors](#using-queries-in-dynamic-selectors)
 * [Examples](#examples)
   * [General](#general)
     * [Filter JSON API results](#filter-json-api-results)
@@ -366,11 +372,13 @@ green
 - `colours.[2]` == `blue`
 
 #### Next Available Index
-Next available index selector is used when adding to a list of items. It allows you to append to a list.
+The next available index selector is used when adding to a list of items. It allows you to append to a list.
 - `colours.[]`
 
 #### Dynamic
-Dynamic selectors are used with lists when you don't know the index of the item, but instead know the value of a property of an object within the list. 
+Dynamic selectors are used with lists when you don't know the index of the item, but instead want to find the index based on some other criteria.
+ 
+Dasel currently supports `key/query=value` checks but I aim to support more check types in the future.
 
 Look ups are defined in brackets. You can use multiple dynamic selectors within the same part to perform multiple checks.
 ```bash
@@ -385,7 +393,48 @@ map[name:blue rgb:0000ff]
 - `colourCodes.(name=blue).rgb` == `0000ff`
 - `colourCodes.(name=blue)(rgb=0000ff).rgb` == `0000ff`
 
-If you want to dynamically target a value in a list when it isn't a list of objects, just define the dynamic selector with `(value=<some_value>)` instead.
+If you want to refer to the value of a non-object value in a list, just define the key as `value` or `.`, meaning the current value. This may look something like `(value=2)`.
+
+##### Using queries in dynamic selectors
+When performing a check dasel creates a new root node at the current position and then selects data using the given key as the query.
+
+This allows you to perform complex queries such as...
+
+```bash
+echo `{
+  "users": [
+    {
+      "name": {
+        "first": "Tom",
+        "last": "Wright"
+      },
+      "addresses": [
+        {
+          "primary": true,
+          "number": 123
+        },
+        {
+          "primary": false,
+          "number": 456
+        }
+      ]
+   }
+  ]
+}` | dasel -p json '.users.(.addresses.(.primary=true).number=123).name.first'
+"Tom"
+```
+
+The above query in plain English may read as...
+
+> Give me the first name of the user
+> who's primary address is at number 123
+
+The resolution of that query looks something like this:
+```
+.users.(.addresses.(.primary=true).number=123).name.first
+.users.(.addresses.[0].number=123).name.first
+.users.[0].name.first
+```
 
 ## Examples
 

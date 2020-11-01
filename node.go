@@ -49,14 +49,14 @@ func (n *Node) InterfaceValue() interface{} {
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
 	indexSelector    = `\[(?P<index>[0-9a-zA-Z]*?)\]`
-	dynamicSelector  = `\((?P<name>[a-zA-Z\-_]+)(?P<comparison>=|<|>)(?P<value>.*?)\)`
+	dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
 )
 
 var (
 	propertyRegexp        = regexp.MustCompile(fmt.Sprintf("^\\.?%s", propertySelector))
 	indexRegexp           = regexp.MustCompile(fmt.Sprintf("^\\.?%s", indexSelector))
-	dynamicRegexp         = regexp.MustCompile(fmt.Sprintf("^\\.?(?:%s)+", dynamicSelector))
-	multipleDynamicRegexp = regexp.MustCompile(fmt.Sprintf("%s+", dynamicSelector))
+	dynamicSelectorRegexp = regexp.MustCompile(fmt.Sprintf("%s", dynamicSelector))
+	newDynamicRegexp      = regexp.MustCompile(fmt.Sprintf("^\\.?((?:\\(.*\\))+)"))
 )
 
 func isValid(value reflect.Value) bool {
@@ -112,10 +112,17 @@ func ParseSelector(selector string) (Selector, error) {
 			}
 			sel.Index = int(index)
 		}
-	} else if match := dynamicRegexp.FindString(selector); match != "" {
+	} else if match := newDynamicRegexp.FindString(selector); len(match) != 0 {
 		sel.Current = match
-		matches := multipleDynamicRegexp.FindAllStringSubmatch(match, -1)
-		for _, m := range matches {
+
+		dynamicGroups, err := DynamicSelectorToGroups(match)
+		if err != nil {
+			return sel, err
+		}
+
+		for _, g := range dynamicGroups {
+			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+
 			var cond Condition
 			switch m[2] {
 			case "=":
@@ -129,6 +136,7 @@ func ParseSelector(selector string) (Selector, error) {
 
 			sel.Conditions = append(sel.Conditions, cond)
 		}
+
 		sel.Type = "DYNAMIC"
 	}
 
