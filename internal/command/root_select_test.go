@@ -208,6 +208,67 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=XXX XXX).street", newline(`"101 Some Street"`), nil))
 	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=YYY YYY).street", newline(`"34 Another Street"`), nil))
 	t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", newline(`"red"`), nil))
+
+	t.Run("SubSelector", selectTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".users.(name.first=Tom).primary", newline(`true`), nil))
+
+	t.Run("SubSubSelector", selectTest(`{
+  "users": [
+	{
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  },
+      "addresses": [
+        {
+          "primary": true,
+          "number": 123
+        },
+        {
+          "primary": false,
+          "number": 456
+        }
+      ]
+	}
+  ]
+}`, "json", ".users.(.addresses.(.primary=true).number=123).name.first", newline(`"Tom"`), nil))
+
+	t.Run("SubSubAndSelector", selectTest(`{
+  "users": [
+	{
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  },
+      "addresses": [
+        {
+          "primary": true,
+          "number": 123
+        },
+        {
+          "primary": false,
+          "number": 456
+        }
+      ]
+	}
+  ]
+}`, "json", ".users.(.addresses.(.primary=true).number=123)(.name.last=Wright).name.first", newline(`"Tom"`), nil))
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
