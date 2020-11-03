@@ -89,6 +89,10 @@ echo '{"name": "Tom"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -p js
 
 If you want to use a specific version of dasel simply change `latest` to the desired version.
 
+- `latest` - The latest released version.
+- `dev` - The latest build from `master` branch.
+- `v*.*.*` - The build from the given release.
+
 ### Go get
 As with any other go package, just use `go get`.
 ```bash
