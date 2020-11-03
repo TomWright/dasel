@@ -19,8 +19,8 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2-beta
-      with:
-        go-version: '^1.15.0' # The Go version to download (if necessary) and use.
+        with:
+          go-version: '^1.15.0' # The Go version to download (if necessary) and use.
       - name: Build
         run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=development'" ./cmd/dasel
       - name: Build docker image
