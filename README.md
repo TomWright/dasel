@@ -22,8 +22,9 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 - [Supports multiple data formats/types](#supported-file-types).
 - Uses a [standard query/selector syntax](#selectors) across all data formats.
 - Zero runtime dependencies.
-- Available on Linux, Mac and Windows.
-- Available to import and use in your own projects.
+- [Available on Linux, Mac and Windows](#binary-on-release).
+- Available to [import and use in your own projects](#go-get).
+- [Run via Docker](#docker).
 
 ## Table of contents
 * [Dasel](#dasel)
