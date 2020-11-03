@@ -47,19 +47,19 @@ jobs:
           tag: ${{ github.ref }}
       - name: Build docker image
         if: runner.os == 'Linux'
-        run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel/dasel:latest .
+        run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
       - name: Docker login
         if: runner.os == 'Linux'
-        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login docker.pkg.github.com -u TomWright --password-stdin
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
       - name: Docker tag latest
         if: runner.os == 'Linux'
-        run: docker tag tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:latest
+        run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
       - name: Docker tag release
         if: runner.os == 'Linux'
-        run: docker tag tomwright/dasel/dasel:latest docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}
+        run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
       - name: Docker push latest
         if: runner.os == 'Linux'
-        run: docker push docker.pkg.github.com/tomwright/dasel/dasel:latest
+        run: docker push ghcr.io/tomwright/dasel:latest
       - name: Docker push release
         if: runner.os == 'Linux'
-        run: docker push docker.pkg.github.com/tomwright/dasel/dasel:${{ env.RELEASE_VERSION }}
+        run: docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}

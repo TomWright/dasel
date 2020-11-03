@@ -83,11 +83,15 @@ mv ./dasel /usr/local/bin/dasel
 #### Docker
 You also have the option of using the docker image to run dasel for you.
 ```bash
-echo '{"name": "Tom"}' | docker run -i --rm docker.pkg.github.com/tomwright/dasel/dasel:latest -p json '.name'
+echo '{"name": "Tom"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -p json '.name'
 "Tom"
 ```
 
 If you want to use a specific version of dasel simply change `latest` to the desired version.
+
+- `latest` - The latest released version.
+- `dev` - The latest build from `master` branch.
+- `v*.*.*` - The build from the given release.
 
 ### Go get
 As with any other go package, just use `go get`.

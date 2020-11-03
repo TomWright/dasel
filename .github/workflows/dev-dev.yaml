@@ -1,0 +1,33 @@
+on:
+  push:
+    branches:
+      - master
+      - main
+name: Build Dev
+jobs:
+  publish:
+    strategy:
+      matrix:
+        go-version: [1.15.x]
+        os:
+          - ubuntu-latest
+        include:
+          - os: ubuntu-latest
+            artifact_name: dasel
+    name: Publish for ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/setup-go@v2-beta
+      with:
+        go-version: '^1.15.0' # The Go version to download (if necessary) and use.
+      - name: Build
+        run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=development'" ./cmd/dasel
+      - name: Build docker image
+        run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
+      - name: Docker login
+        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
+      - name: Docker tag dev
+        run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:dev
+      - name: Docker push dev
+        run: docker push ghcr.io/tomwright/dasel:dev
