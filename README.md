@@ -81,15 +81,14 @@ mv ./dasel /usr/local/bin/dasel
 ```
 
 #### Docker
-Docker images are released on the github container repository: [tomwright/dasel](https://github.com/users/TomWright/packages/container/package/dasel).
-
-You can use the images pushed to the repository packages but they are no longer maintained.
-
 You also have the option of using the docker image to run dasel for you.
+
 ```bash
 echo '{"name": "Tom"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -p json '.name'
 "Tom"
 ```
+
+Docker images are pushed to the github container repository: [tomwright/dasel](https://github.com/users/TomWright/packages/container/package/dasel).
 
 If you want to use a specific version of dasel simply change `latest` to the desired version.
 
