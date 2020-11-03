@@ -106,7 +106,7 @@ func ParseSelector(selector string) (Selector, error) {
 		} else {
 			sel.Type = "INDEX"
 			var err error
-			index, err := strconv.ParseInt(match[1], 10, 64)
+			index, err := strconv.ParseInt(match[1], 10, 32)
 			if err != nil {
 				return sel, &InvalidIndexErr{Index: match[1]}
 			}
