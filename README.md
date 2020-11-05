@@ -56,9 +56,9 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 
 ## Playground
 
-You can test out dasel commands using the [playground](https://github.com/TomWright/daselplayground).
+You can test out dasel commands using the [playground](https://dasel.tomwright.me).
 
-It's not hosted anywhere yet but you can run it locally using docker.
+Source code for the playground can be found at  [github.com/TomWright/daselplayground](https://github.com/TomWright/daselplayground).
 
 ## Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
