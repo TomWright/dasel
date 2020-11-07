@@ -99,7 +99,7 @@ func Write(p Parser, value interface{}, originalValue interface{}, writer io.Wri
 // OriginalRequired can be used in conjunction with RealValue to allow parsers to be more intelligent
 // with the data they read/write.
 type OriginalRequired interface {
-	// OriginalRequired tells dasel if if the parser requires the original value when converting to bytes.
+	// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
 	OriginalRequired() bool
 }
 
@@ -113,7 +113,7 @@ type RealValue interface {
 type originalRequired struct {
 }
 
-// OriginalRequired tells dasel if if the parser requires the original value when converting to bytes.
+// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
 func (d originalRequired) OriginalRequired() bool {
 	return true
 }
