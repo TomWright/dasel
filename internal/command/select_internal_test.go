@@ -2,7 +2,6 @@ package command
 
 import (
 	"bytes"
-	"fmt"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -96,7 +95,6 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 		}
 
 		if out != string(output) {
-			fmt.Printf("%T, %T", out, string(output))
 			t.Errorf("expected result %v, got %v", out, string(output))
 		}
 	}
