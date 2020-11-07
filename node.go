@@ -153,10 +153,8 @@ func ParseSelector(selector string) (Selector, error) {
 func New(value interface{}) *Node {
 	var baseValue reflect.Value
 	switch typed := value.(type) {
-	case *storage.YAMLSingleDocument:
-		baseValue = reflect.ValueOf(typed.Value)
-	case *storage.YAMLMultiDocument:
-		baseValue = reflect.ValueOf(typed.Values)
+	case storage.RealValue:
+		baseValue = reflect.ValueOf(typed.RealValue())
 	default:
 		baseValue = reflect.ValueOf(value)
 	}

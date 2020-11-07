@@ -12,11 +12,21 @@ type YAMLParser struct {
 }
 
 type YAMLSingleDocument struct {
+	originalRequired
 	Value interface{}
 }
 
+func (d *YAMLSingleDocument) RealValue() interface{} {
+	return d.Value
+}
+
 type YAMLMultiDocument struct {
+	originalRequired
 	Values []interface{}
+}
+
+func (d *YAMLMultiDocument) RealValue() interface{} {
+	return d.Values
 }
 
 // FromBytes returns some Data that is represented by the given bytes.

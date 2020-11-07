@@ -79,7 +79,13 @@ func Load(p Parser, reader io.Reader) (interface{}, error) {
 }
 
 // Write writes the value to the given io.Writer.
-func Write(p Parser, value interface{}, writer io.Writer) error {
+func Write(p Parser, value interface{}, originalValue interface{}, writer io.Writer) error {
+	switch typed := originalValue.(type) {
+	case OriginalRequired:
+		if typed.OriginalRequired() {
+			value = originalValue
+		}
+	}
 	byteData, err := p.ToBytes(value)
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
@@ -90,14 +96,20 @@ func Write(p Parser, value interface{}, writer io.Writer) error {
 	return nil
 }
 
-// WriteWithOriginal writes the value to the given io.Writer.
-// This differs from Write because it handles some specific original value types from parsers
-// when they require special handling.
-func WriteWithOriginal(p Parser, value interface{}, originalValue interface{}, writer io.Writer) error {
-	switch originalValue.(type) {
-	case *YAMLSingleDocument, *YAMLMultiDocument:
-		return Write(p, originalValue, writer)
-	default:
-		return Write(p, value, writer)
-	}
+// OriginalRequired tells dasel that the parser requires the original value to function correctly.
+type OriginalRequired interface {
+	OriginalRequired() bool
+}
+
+// RealValue returns the real value that dasel should use when processing data.
+// This is usually used in conjunction with OriginalRequired.
+type RealValue interface {
+	RealValue() interface{}
+}
+
+type originalRequired struct {
+}
+
+func (d originalRequired) OriginalRequired() bool {
+	return true
 }
