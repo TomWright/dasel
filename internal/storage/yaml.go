@@ -11,20 +11,24 @@ import (
 type YAMLParser struct {
 }
 
+// YAMLSingleDocument represents a decoded single-document YAML file.
 type YAMLSingleDocument struct {
 	originalRequired
 	Value interface{}
 }
 
+// RealValue returns the real value that dasel should use when processing data.
 func (d *YAMLSingleDocument) RealValue() interface{} {
 	return d.Value
 }
 
+// YAMLMultiDocument represents a decoded multi-document YAML file.
 type YAMLMultiDocument struct {
 	originalRequired
 	Values []interface{}
 }
 
+// RealValue returns the real value that dasel should use when processing data.
 func (d *YAMLMultiDocument) RealValue() interface{} {
 	return d.Values
 }
