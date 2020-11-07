@@ -2,7 +2,6 @@ package storage_test
 
 import (
 	"fmt"
-	"github.com/google/go-cmp/cmp"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -68,6 +67,6 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		return
 	}
 	if string(yamlBytes) != string(got) {
-		t.Errorf("expected %s, got %s\n%s", yamlBytes, got, cmp.Diff(string(yamlBytes), string(got)))
+		t.Errorf("expected %s, got %s", yamlBytes, got)
 	}
 }
