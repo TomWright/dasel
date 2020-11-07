@@ -89,3 +89,15 @@ func Write(p Parser, value interface{}, writer io.Writer) error {
 	}
 	return nil
 }
+
+// WriteWithOriginal writes the value to the given io.Writer.
+// This differs from Write because it handles some specific original value types from parsers
+// when they require special handling.
+func WriteWithOriginal(p Parser, value interface{}, originalValue interface{}, writer io.Writer) error {
+	switch originalValue.(type) {
+	case *YAMLSingleDocument, *YAMLMultiDocument:
+		return Write(p, originalValue, writer)
+	default:
+		return Write(p, value, writer)
+	}
+}

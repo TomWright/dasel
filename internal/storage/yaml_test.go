@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"fmt"
+	"github.com/google/go-cmp/cmp"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -21,8 +22,33 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(yamlMap, got) {
-			t.Errorf("expected %v, got %v", yamlMap, got)
+		fmt.Printf("%T", got)
+		exp := &storage.YAMLSingleDocument{Value: yamlMap}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+	t.Run("ValidMultiDocument", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).FromBytes([]byte(`
+name: Tom
+---
+name: Jim
+`))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.YAMLMultiDocument{Values: []interface{}{
+			map[interface{}]interface{}{
+				"name": "Tom",
+			},
+			map[interface{}]interface{}{
+				"name": "Jim",
+			},
+		}}
+
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
 	t.Run("Invalid", func(t *testing.T) {
@@ -42,6 +68,6 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		return
 	}
 	if string(yamlBytes) != string(got) {
-		t.Errorf("expected %s, got %s", yamlBytes, got)
+		t.Errorf("expected %s, got %s\n%s", yamlBytes, got, cmp.Diff(string(yamlBytes), string(got)))
 	}
 }
