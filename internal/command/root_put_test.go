@@ -131,8 +131,10 @@ func TestRootCMD_Put_JSON(t *testing.T) {
 func TestRootCMD_Put_YAML(t *testing.T) {
 	t.Run("String", putStringTest(`
 id: "x"
+name: "Tom"
 `, "yaml", "id", "y", `
 id: "y"
+name: Tom
 `, nil))
 	t.Run("Int", putIntTest(`
 id: 123
@@ -160,6 +162,19 @@ numbers:
   rank: 2
 - number: three
   rank: 3
+`, nil))
+	t.Run("StringInMultiDocument", putStringTest(`
+id: "x"
+---
+id: "y"
+---
+id: "z"
+`, "yaml", "[1].id", "1", `
+id: x
+---
+id: "1"
+---
+id: z
 `, nil))
 }
 

@@ -39,6 +39,10 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Put](#put)
   * [Put Object](#put-object)
 * [Supported file types](#supported-file-types)
+  * [JSON](#json)
+  * [TOML](#toml)
+  * [YAML](#yaml)
+  * [XML](#xml)
 * [Selectors](#selectors)
   * [Property](#property)
   * [Child](#child-elements)
@@ -334,7 +338,9 @@ Using [gopkg.in/yaml.v2](https://gopkg.in/yaml.v2).
 
 #### Multi-document files
 
-Multi-document files are not supported. This is due to [limitations in the yaml parser used](https://github.com/go-yaml/yaml/tree/v2.3.0#compatibility).
+Multi-document files are decoded into an array, with `[0]` being the first document, `[1]` being the second and so on.
+
+Once decoded, you can access them using any of the standard selectors provided by Dasel.
 
 ### XML
 ```bash

@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"regexp"
 	"strconv"
@@ -32,7 +33,10 @@ type Node struct {
 	Previous *Node `json:"-"`
 	// Next is the next node in the chain.
 	Next *Node `json:"next,omitempty"`
-
+	// OriginalValue is the value returned from the parser.
+	// In most cases this is the same as Value, but is different for thr YAML parser
+	// as it contains information on the original document.
+	OriginalValue interface{} `json:"-"`
 	// Value is the value of the current node.
 	Value reflect.Value `json:"value"`
 	// Selector is the selector for the current node.
@@ -147,11 +151,18 @@ func ParseSelector(selector string) (Selector, error) {
 
 // New returns a new root node with the given value.
 func New(value interface{}) *Node {
-	baseValue := reflect.ValueOf(value)
+	var baseValue reflect.Value
+	switch typed := value.(type) {
+	case storage.RealValue:
+		baseValue = reflect.ValueOf(typed.RealValue())
+	default:
+		baseValue = reflect.ValueOf(value)
+	}
 	rootNode := &Node{
-		Previous: nil,
-		Next:     nil,
-		Value:    baseValue,
+		Previous:      nil,
+		Next:          nil,
+		OriginalValue: value,
+		Value:         baseValue,
 		Selector: Selector{
 			Raw:       ".",
 			Current:   ".",

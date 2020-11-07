@@ -79,7 +79,13 @@ func Load(p Parser, reader io.Reader) (interface{}, error) {
 }
 
 // Write writes the value to the given io.Writer.
-func Write(p Parser, value interface{}, writer io.Writer) error {
+func Write(p Parser, value interface{}, originalValue interface{}, writer io.Writer) error {
+	switch typed := originalValue.(type) {
+	case OriginalRequired:
+		if typed.OriginalRequired() {
+			value = originalValue
+		}
+	}
 	byteData, err := p.ToBytes(value)
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
@@ -88,4 +94,26 @@ func Write(p Parser, value interface{}, writer io.Writer) error {
 		return fmt.Errorf("could not write data: %w", err)
 	}
 	return nil
+}
+
+// OriginalRequired can be used in conjunction with RealValue to allow parsers to be more intelligent
+// with the data they read/write.
+type OriginalRequired interface {
+	// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
+	OriginalRequired() bool
+}
+
+// RealValue can be used in conjunction with OriginalRequired to allow parsers to be more intelligent
+// with the data they read/write.
+type RealValue interface {
+	// RealValue returns the real value that dasel should use when processing data.
+	RealValue() interface{}
+}
+
+type originalRequired struct {
+}
+
+// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
+func (d originalRequired) OriginalRequired() bool {
+	return true
 }

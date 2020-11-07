@@ -133,8 +133,7 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 		}
 		return nil
 	}
-
-	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Writer); err != nil {
+	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
 	}
 

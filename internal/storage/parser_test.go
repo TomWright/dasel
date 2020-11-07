@@ -172,7 +172,7 @@ func (fp *failingReader) Read(_ []byte) (n int, err error) {
 func TestWrite(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		var buf bytes.Buffer
-		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, &buf); err != nil {
+		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, nil, &buf); err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
@@ -187,14 +187,14 @@ func TestWrite(t *testing.T) {
 
 	t.Run("ParserErrHandled", func(t *testing.T) {
 		var buf bytes.Buffer
-		if err := storage.Write(&failingParser{}, map[string]interface{}{"name": "Tom"}, &buf); !errors.Is(err, errFailingParserErr) {
+		if err := storage.Write(&failingParser{}, map[string]interface{}{"name": "Tom"}, nil, &buf); !errors.Is(err, errFailingParserErr) {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}
 	})
 
 	t.Run("WriterErrHandled", func(t *testing.T) {
-		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, &failingWriter{}); !errors.Is(err, errFailingWriterErr) {
+		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, nil, &failingWriter{}); !errors.Is(err, errFailingWriterErr) {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}
