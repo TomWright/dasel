@@ -17,6 +17,7 @@ type putObjectOpts struct {
 	InputValues []string
 	Reader      io.Reader
 	Writer      io.Writer
+	Multi       bool
 }
 
 func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[string]interface{}, error) {
@@ -59,8 +60,14 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		return err
 	}
 
-	if err := rootNode.Put(opts.Selector, updateValue); err != nil {
-		return fmt.Errorf("could not put value: %w", err)
+	if opts.Multi {
+		if err := rootNode.PutMultiple(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put object multi value: %w", err)
+		}
+	} else {
+		if err := rootNode.Put(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put object value: %w", err)
+		}
 	}
 
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
@@ -92,6 +99,8 @@ func putObjectCommand() *cobra.Command {
 				InputTypes:  typeList.Strings,
 				InputValues: args,
 			}
+			opts.Multi, _ = cmd.Flags().GetBool("multiple")
+
 			if opts.Selector == "" && len(opts.InputValues) > 0 {
 				opts.Selector = opts.InputValues[0]
 				opts.InputValues = opts.InputValues[1:]

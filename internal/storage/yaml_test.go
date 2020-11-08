@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"fmt"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -21,7 +20,6 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		fmt.Printf("%T", got)
 		exp := &storage.YAMLSingleDocument{Value: yamlMap}
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
@@ -51,11 +49,20 @@ name: Jim
 		}
 	})
 	t.Run("Invalid", func(t *testing.T) {
-		d, err := (&storage.YAMLParser{}).FromBytes([]byte(`{1:asd`))
-		fmt.Println(d)
+		_, err := (&storage.YAMLParser{}).FromBytes([]byte(`{1:asd`))
 		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
 			t.Errorf("unexpected error: %v", err)
 			return
+		}
+	})
+	t.Run("Empty", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).FromBytes([]byte(``))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(nil, got) {
+			t.Errorf("expected %v, got %v", nil, got)
 		}
 	})
 }

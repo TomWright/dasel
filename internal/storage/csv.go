@@ -10,7 +10,7 @@ import (
 type CSVParser struct {
 }
 
-// YAMLSingleDocument represents a CSV file.
+// CSVDocument represents a CSV file.
 // This is required to keep headers in the expected order.
 type CSVDocument struct {
 	originalRequired

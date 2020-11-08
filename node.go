@@ -31,8 +31,13 @@ type Selector struct {
 type Node struct {
 	// Previous is the previous node in the chain.
 	Previous *Node `json:"-"`
-	// Next is the next node in the chain.
+	// Next contains the next node in the chain.
+	// This is used with Query and Put requests.
 	Next *Node `json:"next,omitempty"`
+	// NextMultiple contains the next nodes in the chain.
+	// This is used with QueryMultiple and PutMultiple requests.
+	// When a major version change occurs this will completely replace Next.
+	NextMultiple []*Node `json:"nextMultiple,omitempty"`
 	// OriginalValue is the value returned from the parser.
 	// In most cases this is the same as Value, but is different for thr YAML parser
 	// as it contains information on the original document.
@@ -52,7 +57,7 @@ func (n *Node) InterfaceValue() interface{} {
 
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
-	indexSelector    = `\[(?P<index>[0-9a-zA-Z]*?)\]`
+	indexSelector    = `\[(?P<index>[0-9a-zA-Z\*]*?)\]`
 	dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
 )
 
@@ -105,9 +110,12 @@ func ParseSelector(selector string) (Selector, error) {
 		sel.Property = match[1]
 	} else if match := indexRegexp.FindStringSubmatch(selector); len(match) != 0 {
 		sel.Current = match[0]
-		if match[1] == "" {
+		switch match[1] {
+		case "":
 			sel.Type = "NEXT_AVAILABLE_INDEX"
-		} else {
+		case "*":
+			sel.Type = "INDEX_ANY"
+		default:
 			sel.Type = "INDEX"
 			var err error
 			index, err := strconv.ParseInt(match[1], 10, 32)
@@ -161,6 +169,7 @@ func New(value interface{}) *Node {
 	rootNode := &Node{
 		Previous:      nil,
 		Next:          nil,
+		NextMultiple:  nil,
 		OriginalValue: value,
 		Value:         baseValue,
 		Selector: Selector{

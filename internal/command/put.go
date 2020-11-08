@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
@@ -140,8 +141,70 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 	return nil
 }
 
+type writeNodesToOutputOpts struct {
+	Nodes  []*dasel.Node
+	Parser storage.Parser
+	File   string
+	Out    string
+	Writer io.Writer
+	Plain  bool
+}
+
+func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
+	if opts.Writer == nil {
+		switch {
+		case opts.Out == "" && shouldReadFromStdin(opts.File):
+			// No out flag and we read from stdin.
+			opts.Writer = cmd.OutOrStdout()
+
+		case opts.Out == "stdout", opts.Out == "-":
+			// Out flag wants to write to stdout.
+			opts.Writer = cmd.OutOrStdout()
+
+		case opts.Out == "":
+			// No out flag... write to the file we read from.
+			f, err := os.Create(opts.File)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+
+		case opts.Out != "":
+			// Out flag was set.
+			f, err := os.Create(opts.Out)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+		}
+	}
+
+	buf := new(bytes.Buffer)
+
+	for i, n := range opts.Nodes {
+		subOpts := writeNodeToOutputOpts{
+			Node:   n,
+			Parser: opts.Parser,
+			Writer: buf,
+			Plain:  opts.Plain,
+		}
+		if err := writeNodeToOutput(subOpts, cmd); err != nil {
+			return fmt.Errorf("could not write node %d to output: %w", i, err)
+		}
+	}
+
+	if _, err := io.Copy(opts.Writer, buf); err != nil {
+		return fmt.Errorf("could not copy buffer to real output: %w", err)
+	}
+
+	return nil
+}
+
 func putCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, outFlag string
+	var multiFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "put -f <file> -s <selector>",
@@ -159,6 +222,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
 	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
+	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 
@@ -175,6 +239,7 @@ type genericPutOptions struct {
 	Init      func(genericPutOptions) genericPutOptions
 	Reader    io.Reader
 	Writer    io.Writer
+	Multi     bool
 }
 
 func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
@@ -183,6 +248,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.Out = cmd.Flag("out").Value.String()
 		opts.Parser = cmd.Flag("parser").Value.String()
 		opts.Selector = cmd.Flag("selector").Value.String()
+		opts.Multi, _ = cmd.Flags().GetBool("multiple")
 
 		if opts.Selector == "" && len(args) > 0 {
 			opts.Selector = args[0]
@@ -219,8 +285,14 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	if err := rootNode.Put(opts.Selector, updateValue); err != nil {
-		return fmt.Errorf("could not put value: %w", err)
+	if opts.Multi {
+		if err := rootNode.PutMultiple(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put multi value: %w", err)
+		}
+	} else {
+		if err := rootNode.Put(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put value: %w", err)
+		}
 	}
 
 	if err := writeNodeToOutput(writeNodeToOutputOpts{

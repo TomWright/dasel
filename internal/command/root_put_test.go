@@ -33,6 +33,28 @@ func TestRootCMD_Put(t *testing.T) {
 }
 `,
 	))
+
+	t.Run("InvalidSingleSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-s", "[-]", "Frank"},
+		"selector is not supported here: [-]",
+	))
+	t.Run("InvalidMultiSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-m", "-s", "[-]", "Frank"},
+		"selector is not supported here: [-]",
+	))
+
+	t.Run("InvalidObjectSingleSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"put", "object", "-f", "stdin", "-o", "stdout", "-p", "json", "-t", "string", "-s", "[-]", "Frank"},
+		"selector is not supported here: [-]",
+	))
+	t.Run("InvalidMultiSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"put", "object", "-f", "stdin", "-o", "stdout", "-p", "json", "-m", "-t", "string", "-s", "[-]", "Frank"},
+		"selector is not supported here: [-]",
+	))
 }
 
 func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
@@ -126,6 +148,126 @@ func TestRootCMD_Put_JSON(t *testing.T) {
     }
   ]
 }`, nil))
+
+	t.Run("MultipleObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[*]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
+  "numbers": [
+    {
+      "number": "five",
+      "rank": 5
+    },
+    {
+      "number": "five",
+      "rank": 5
+    },
+    {
+      "number": "five",
+      "rank": 5
+    }
+  ]
+}`, nil, "-m"))
+
+	t.Run("AppendObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{"rank=4", "number=four"}, []string{"int", "string"}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {
+      "number": "four",
+      "rank": 4
+    }
+  ]
+}`, nil))
+
+	t.Run("AppendObjectMulti", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{"rank=4", "number=four"}, []string{"int", "string"}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {
+      "number": "four",
+      "rank": 4
+    }
+  ]
+}`, nil, "-m"))
+
+	t.Run("MultipleString", putStringTest(`[
+  {"value": "A"},
+  {"value": "B"},
+  {"value": "C"}
+]`, "json", "[*].value", "X", `[
+  {
+    "value": "X"
+  },
+  {
+    "value": "X"
+  },
+  {
+    "value": "X"
+  }
+]`, nil, "-m"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
@@ -270,17 +412,19 @@ func TestRootCMD_Put_CSV(t *testing.T) {
 `, nil))
 }
 
-func putObjectTest(in string, parser string, selector string, values []string, types []string, out string, expErr error) func(t *testing.T) {
+func putObjectTest(in string, parser string, selector string, values []string, types []string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
-			"put", "object", "-p", parser, "-o", "stdout", selector,
+			"put", "object", "-p", parser, "-o", "stdout",
 		}
 		for _, t := range types {
 			args = append(args, "-t", t)
 		}
+		args = append(args, additionalArgs...)
+		args = append(args, selector)
 		args = append(args, values...)
 
 		cmd.SetOut(outputBuffer)
@@ -316,14 +460,14 @@ func putObjectTest(in string, parser string, selector string, values []string, t
 	}
 }
 
-func putStringTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
-	return putTest(in, "string", parser, selector, value, out, expErr)
+func putStringTest(in string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return putTest(in, "string", parser, selector, value, out, expErr, additionalArgs...)
 }
 
-func putIntTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
-	return putTest(in, "int", parser, selector, value, out, expErr)
+func putIntTest(in string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return putTest(in, "int", parser, selector, value, out, expErr, additionalArgs...)
 }
 
-func putBoolTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
-	return putTest(in, "bool", parser, selector, value, out, expErr)
+func putBoolTest(in string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return putTest(in, "bool", parser, selector, value, out, expErr, additionalArgs...)
 }

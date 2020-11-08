@@ -15,12 +15,12 @@ func TestChangeDefaultCommand(t *testing.T) {
 		os.Args = cachedArgs
 	}()
 
-	testArgs := func(in []string, exp []string) func(t *testing.T) {
+	testArgs := func(in []string, exp []string, blacklistedArgs ...string) func(t *testing.T) {
 		return func(t *testing.T) {
 			os.Args = in
 
 			cmd := command.NewRootCMD()
-			command.ChangeDefaultCommand(cmd, "select")
+			command.ChangeDefaultCommand(cmd, "select", blacklistedArgs...)
 
 			got := os.Args
 			if !reflect.DeepEqual(exp, got) {
@@ -43,6 +43,18 @@ func TestChangeDefaultCommand(t *testing.T) {
 		[]string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"},
 		[]string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"},
 	))
+
+	t.Run("IgnoreBlacklisted", testArgs(
+		[]string{"dasel", "-v"},
+		[]string{"dasel", "-v"},
+		"-v",
+	))
+
+	t.Run("IgnoreBlacklisted", testArgs(
+		[]string{"dasel", "select", "-v"},
+		[]string{"dasel", "select", "-v"},
+		"-v",
+	))
 }
 
 func expectErr(args []string, expErr string) func(t *testing.T) {
@@ -50,6 +62,24 @@ func expectErr(args []string, expErr string) func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
 
+		cmd.SetOut(outputBuffer)
+		cmd.SetArgs(args)
+
+		err := cmd.Execute()
+
+		if err == nil || !strings.Contains(err.Error(), expErr) {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+	}
+}
+
+func expectErrFromInput(in string, args []string, expErr string) func(t *testing.T) {
+	return func(t *testing.T) {
+		cmd := command.NewRootCMD()
+		outputBuffer := bytes.NewBuffer([]byte{})
+
+		cmd.SetIn(bytes.NewReader([]byte(in)))
 		cmd.SetOut(outputBuffer)
 		cmd.SetArgs(args)
 
