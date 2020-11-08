@@ -1,7 +1,6 @@
 package storage_test
 
 import (
-	"fmt"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
@@ -15,21 +14,6 @@ var xmlMap = map[string]interface{}{
 	"user": map[string]interface{}{
 		"name": "Tom",
 	},
-}
-
-func TestXMLParser_FromBytes2(t *testing.T) {
-	got, err := (&storage.XMLParser{}).FromBytes([]byte(`<data>
-	<names>
-		<name>Tom</name>
-		<name>Jim</name>
-	</names>
-</data>`))
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-
-	fmt.Println(got)
 }
 
 func TestXMLParser_FromBytes(t *testing.T) {
