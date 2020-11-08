@@ -189,6 +189,6 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	case "DYNAMIC":
 		return findValueDynamic(n, createIfNotExists)
 	default:
-		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Type}
+		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Raw}
 	}
 }

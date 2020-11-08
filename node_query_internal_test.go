@@ -154,7 +154,7 @@ func TestFindValue(t *testing.T) {
 	})
 	t.Run("UnsupportedSelector", func(t *testing.T) {
 		n := getNodeWithValue([]interface{}{})
-		n.Selector.Type = "BAD"
+		n.Selector.Raw = "BAD"
 		got, err := findValue(n, false)
 		assertQueryResult(t, nilValue(), &UnsupportedSelector{Selector: "BAD"}, got, err)
 	})

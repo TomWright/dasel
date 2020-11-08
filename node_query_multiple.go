@@ -265,7 +265,7 @@ func findNodes(selector Selector, previousValue reflect.Value, createIfNotExists
 	case "DYNAMIC":
 		res, err = findNodesDynamic(selector, previousValue, createIfNotExists)
 	default:
-		err = &UnsupportedSelector{Selector: selector.Type}
+		err = &UnsupportedSelector{Selector: selector.Raw}
 	}
 
 	if err != nil {

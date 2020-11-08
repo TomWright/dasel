@@ -121,6 +121,17 @@ func TestRootCMD_Select(t *testing.T) {
 		`"Tom"
 `,
 	))
+
+	t.Run("InvalidSingleSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"select", "-p", "json", "-s", "[-]"},
+		"selector is not supported here: [-]",
+	))
+	t.Run("InvalidMultiSelector", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"select", "-p", "json", "-m", "-s", "[-]"},
+		"selector is not supported here: [-]",
+	))
 }
 
 func selectTest(in string, parser string, selector string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
@@ -220,6 +231,10 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 
 	t.Run("MultiProperty", selectTest(jsonData, "json", ".details.addresses[*].street", newline(`"101 Some Street"
 "34 Another Street"`), nil, "-m"))
+
+	t.Run("MultiRoot", selectTest(jsonDataSingle, "json", ".", newline(`{
+  "x": "asd"
+}`), nil, "-m"))
 
 	t.Run("SubSelector", selectTest(`{
   "users": [

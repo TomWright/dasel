@@ -2,6 +2,7 @@ package command
 
 import (
 	"bytes"
+	"errors"
 	"io/ioutil"
 	"strings"
 	"testing"
@@ -64,6 +65,15 @@ var tomlData = `id = "1111"
     postcode = "YYY YYY"
 `
 
+var errFailingWriterErr = errors.New("i am meant to fail at writing")
+
+type failingWriter struct {
+}
+
+func (fp *failingWriter) Write(_ []byte) (int, error) {
+	return 0, errFailingWriterErr
+}
+
 func selectTest(in string, parser string, selector string, out string, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
 		outputBuffer := bytes.NewBuffer([]byte{})
@@ -102,6 +112,36 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 
 func newline(x string) string {
 	return x + "\n"
+}
+
+func TestSelect(t *testing.T) {
+	t.Run("SingleFailingWriter", func(t *testing.T) {
+		err := runSelectCommand(selectOptions{
+			Parser:   "json",
+			Selector: ".",
+			Reader:   strings.NewReader(`{"name": "Tom"}`),
+			Writer:   &failingWriter{},
+		}, nil)
+
+		if err == nil || !errors.Is(err, errFailingWriterErr) {
+			t.Errorf("expected error %v, got %v", errFailingWriterErr, err)
+			return
+		}
+	})
+	t.Run("MultiFailingWriter", func(t *testing.T) {
+		err := runSelectCommand(selectOptions{
+			Parser:   "json",
+			Selector: ".",
+			Reader:   strings.NewReader(`{"name": "Tom"}`),
+			Writer:   &failingWriter{},
+			Multi:    true,
+		}, nil)
+
+		if err == nil || !errors.Is(err, errFailingWriterErr) {
+			t.Errorf("expected error %v, got %v", errFailingWriterErr, err)
+			return
+		}
+	})
 }
 
 func TestSelect_JSON(t *testing.T) {
