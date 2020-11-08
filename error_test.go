@@ -27,22 +27,10 @@ func TestErrorMessages(t *testing.T) {
 		}, Out: "selector [INDEX] does not support value: map[string]interface {}: map[]"},
 		{In: &dasel.ValueNotFound{
 			Selector: ".name",
-			Node: &dasel.Node{
-				Selector: dasel.Selector{
-					Current: ".name",
-				},
-			},
-		}, Out: "no value found for selector: .name: <nil>"},
+		}, Out: "no value found for selector: .name: <invalid reflect.Value>"},
 		{In: &dasel.ValueNotFound{
-			Selector: ".name",
-			Node: &dasel.Node{
-				Previous: &dasel.Node{
-					Value: reflect.ValueOf(map[string]interface{}{}),
-				},
-				Selector: dasel.Selector{
-					Current: ".name",
-				},
-			},
+			Selector:      ".name",
+			PreviousValue: reflect.ValueOf(map[string]interface{}{}),
 		}, Out: "no value found for selector: .name: map[]"},
 		{In: &dasel.UnexpectedPreviousNilValue{Selector: ".name"}, Out: "previous value is nil: .name"},
 		{In: &dasel.UnhandledCheckType{Value: ""}, Out: "unhandled check type: string"},

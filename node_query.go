@@ -28,21 +28,6 @@ func lastNode(n *Node) *Node {
 	}
 }
 
-// lastNodes returns a list of all of the last nodes.
-func lastNodes(n *Node) []*Node {
-	if n.Next == nil {
-		return []*Node{n}
-	}
-	if len(n.Next) == 0 {
-		return []*Node{}
-	}
-	var res []*Node
-	for _, nextNode := range n.Next {
-		res = append(res, lastNodes(nextNode)...)
-	}
-	return res
-}
-
 func buildFindChain(n *Node) error {
 	if n.Selector.Remaining == "" {
 		// We've reached the end
@@ -89,7 +74,7 @@ func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		if createIfNotExists {
 			return nilValue(), nil
 		}
-		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value.Type().Kind()}
@@ -112,7 +97,7 @@ func findValueIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		if createIfNotExists {
 			return nilValue(), nil
 		}
-		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
@@ -123,7 +108,7 @@ func findValueIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
 func findNextAvailableIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if !createIfNotExists {
 		// Next available index isn't supported unless it's creating the item.
-		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 	return nilValue(), nil
 }
@@ -175,27 +160,10 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 			n.Selector.Type = "NEXT_AVAILABLE_INDEX"
 			return nilValue(), nil
 		}
-		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
-}
-
-func initialiseEmptyValue(n *Node) {
-	switch n.Selector.Type {
-	case "PROPERTY":
-		n.wasInitialised = true
-		n.Previous.Value = reflect.ValueOf(map[interface{}]interface{}{})
-	case "INDEX":
-		n.wasInitialised = true
-		n.Previous.Value = reflect.ValueOf([]interface{}{})
-	case "NEXT_AVAILABLE_INDEX":
-		n.wasInitialised = true
-		n.Previous.Value = reflect.ValueOf([]interface{}{})
-	case "DYNAMIC":
-		n.wasInitialised = true
-		n.Previous.Value = reflect.ValueOf([]interface{}{})
-	}
 }
 
 // findValue finds the value for the given node.
@@ -208,7 +176,7 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	}
 
 	if createIfNotExists && !isValid(n.Previous.Value) {
-		initialiseEmptyValue(n)
+		n.Previous.Value, n.wasInitialised = initialiseEmptyValue(n.Selector, n.Previous.Value)
 	}
 
 	switch n.Selector.Type {

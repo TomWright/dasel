@@ -3,6 +3,7 @@ package dasel
 import (
 	"errors"
 	"fmt"
+	"reflect"
 )
 
 // ErrMissingPreviousNode is returned when findValue doesn't have access to the previous node.
@@ -51,17 +52,13 @@ func (e UnsupportedTypeForSelector) Error() string {
 
 // ValueNotFound is returned when a selector string cannot be fully resolved.
 type ValueNotFound struct {
-	Selector string
-	Node     *Node
+	Selector      string
+	PreviousValue reflect.Value
 }
 
 // Error returns the error message.
 func (e ValueNotFound) Error() string {
-	var previousValue interface{}
-	if e.Node != nil && e.Node.Previous != nil {
-		previousValue = e.Node.Previous.Value
-	}
-	return fmt.Sprintf("no value found for selector: %s: %v", e.Selector, previousValue)
+	return fmt.Sprintf("no value found for selector: %s: %v", e.Selector, e.PreviousValue)
 }
 
 // UnexpectedPreviousNilValue is returned when the previous node contains a nil value.

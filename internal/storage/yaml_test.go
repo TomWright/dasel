@@ -51,8 +51,7 @@ name: Jim
 		}
 	})
 	t.Run("Invalid", func(t *testing.T) {
-		d, err := (&storage.YAMLParser{}).FromBytes([]byte(`{1:asd`))
-		fmt.Println(d)
+		_, err := (&storage.YAMLParser{}).FromBytes([]byte(`{1:asd`))
 		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
 			t.Errorf("unexpected error: %v", err)
 			return

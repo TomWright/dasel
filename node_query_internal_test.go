@@ -52,7 +52,7 @@ func TestFindValueProperty(t *testing.T) {
 		n := getNodeWithValue(map[string]interface{}{})
 		n.Selector.Current = "x"
 		got, err := findValueProperty(n, false)
-		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}, got, err)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
 }
 
@@ -68,7 +68,7 @@ func TestFindValueIndex(t *testing.T) {
 		n.Selector.Current = "[0]"
 		n.Selector.Index = 0
 		got, err := findValueIndex(n, false)
-		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}, got, err)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
 	t.Run("UnsupportedType", func(t *testing.T) {
 		val := map[string]interface{}{}
@@ -86,7 +86,7 @@ func TestFindValueNextAvailableIndex(t *testing.T) {
 		n.Selector.Current = "[0]"
 		n.Selector.Index = 0
 		got, err := findNextAvailableIndex(n, false)
-		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}, got, err)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
 }
 
@@ -104,7 +104,7 @@ func TestFindValueDynamic(t *testing.T) {
 			&EqualCondition{Key: "name", Value: "x"},
 		}
 		got, err := findValueDynamic(n, false)
-		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, Node: n}, got, err)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
 	t.Run("NotFoundWithCreate", func(t *testing.T) {
 		n := getNodeWithValue([]interface{}{})

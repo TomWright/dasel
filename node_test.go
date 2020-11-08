@@ -50,6 +50,202 @@ func TestParseSelector(t *testing.T) {
 	})
 }
 
+func TestNode_QueryMultiple(t *testing.T) {
+	value := []map[string]interface{}{
+		{
+			"name": "Tom",
+			"age":  "27",
+		},
+		{
+			"name": "Jim",
+			"age":  "27",
+		},
+		{
+			"name": "Amelia",
+			"age":  "25",
+		},
+	}
+	extractValues := func(nodes []*dasel.Node) []interface{} {
+		gotValues := make([]interface{}, len(nodes))
+		for i, n := range nodes {
+			gotValues[i] = n.InterfaceValue()
+		}
+		return gotValues
+	}
+	t.Run("SingleResult", func(t *testing.T) {
+		nodes, err := dasel.New(value).QueryMultiple(".[0].name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Tom",
+		}
+
+		if !reflect.DeepEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+	t.Run("SingleResultDynamic", func(t *testing.T) {
+		nodes, err := dasel.New(value).QueryMultiple(".(age=25).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Amelia",
+		}
+
+		if !reflect.DeepEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+	t.Run("MultipleResultDynamic", func(t *testing.T) {
+		nodes, err := dasel.New(value).QueryMultiple(".(age=27).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Tom",
+			"Jim",
+		}
+
+		if !reflect.DeepEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+}
+
+func TestNode_PutMultiple(t *testing.T) {
+	t.Run("SingleResult", func(t *testing.T) {
+		value := []map[string]interface{}{
+			{
+				"name": "Tom",
+				"age":  "27",
+			},
+			{
+				"name": "Jim",
+				"age":  "27",
+			},
+			{
+				"name": "Amelia",
+				"age":  "25",
+			},
+		}
+		err := dasel.New(value).PutMultiple(".[0].name", "Frank")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		exp := []map[string]interface{}{
+			{
+				"name": "Frank",
+				"age":  "27",
+			},
+			{
+				"name": "Jim",
+				"age":  "27",
+			},
+			{
+				"name": "Amelia",
+				"age":  "25",
+			},
+		}
+
+		if !reflect.DeepEqual(exp, value) {
+			t.Errorf("expected %v, got %v", exp, value)
+		}
+	})
+	t.Run("SingleResultDynamic", func(t *testing.T) {
+		value := []map[string]interface{}{
+			{
+				"name": "Frank",
+				"age":  "27",
+			},
+			{
+				"name": "Jim",
+				"age":  "27",
+			},
+			{
+				"name": "Amelia",
+				"age":  "25",
+			},
+		}
+		err := dasel.New(value).PutMultiple(".(age=25).name", "Frank")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		exp := []map[string]interface{}{
+			{
+				"name": "Frank",
+				"age":  "27",
+			},
+			{
+				"name": "Jim",
+				"age":  "27",
+			},
+			{
+				"name": "Frank",
+				"age":  "25",
+			},
+		}
+
+		if !reflect.DeepEqual(exp, value) {
+			t.Errorf("expected %v, got %v", exp, value)
+		}
+	})
+	t.Run("MultipleResultDynamic", func(t *testing.T) {
+		value := []map[string]interface{}{
+			{
+				"name": "Tom",
+				"age":  "27",
+			},
+			{
+				"name": "Jim",
+				"age":  "27",
+			},
+			{
+				"name": "Amelia",
+				"age":  "25",
+			},
+		}
+		err := dasel.New(value).PutMultiple(".(age=27).name", "Frank")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		exp := []map[string]interface{}{
+			{
+				"name": "Frank",
+				"age":  "27",
+			},
+			{
+				"name": "Frank",
+				"age":  "27",
+			},
+			{
+				"name": "Amelia",
+				"age":  "25",
+			},
+		}
+
+		if !reflect.DeepEqual(exp, value) {
+			t.Errorf("expected %v, got %v", exp, value)
+		}
+	})
+}
+
 func TestNode_Query(t *testing.T) {
 	parser, err := storage.NewParserFromFilename("./tests/assets/example.json")
 	if err != nil {
