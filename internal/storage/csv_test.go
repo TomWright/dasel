@@ -9,7 +9,6 @@ import (
 var csvBytes = []byte(`id,name
 1,Tom
 2,Jim
-
 `)
 var csvMap = []map[string]string{
 	{
