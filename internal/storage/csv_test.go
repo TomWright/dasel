@@ -10,7 +10,7 @@ var csvBytes = []byte(`id,name
 1,Tom
 2,Jim
 `)
-var csvMap = []map[string]string{
+var csvMap = []map[string]interface{}{
 	{
 		"id":   "1",
 		"name": "Tom",
@@ -27,7 +27,10 @@ func TestCSVParser_FromBytes(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if !reflect.DeepEqual(csvMap, got) {
+	if !reflect.DeepEqual(&storage.CSVDocument{
+		Value:   csvMap,
+		Headers: []string{"id", "name"},
+	}, got) {
 		t.Errorf("expected %v, got %v", csvMap, got)
 	}
 }
@@ -53,7 +56,10 @@ a,b`))
 }
 
 func TestCSVParser_ToBytes(t *testing.T) {
-	got, err := (&storage.CSVParser{}).ToBytes(csvMap)
+	got, err := (&storage.CSVParser{}).ToBytes(&storage.CSVDocument{
+		Value:   csvMap,
+		Headers: []string{"id", "name"},
+	})
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return

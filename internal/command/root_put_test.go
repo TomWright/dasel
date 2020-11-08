@@ -261,6 +261,13 @@ func TestRootCMD_Put_CSV(t *testing.T) {
 3,Tom
 2,Jim
 `, nil))
+	t.Run("NewString", putStringTest(`id,name
+1,Tom
+2,Jim
+`, "csv", ".[0].age", "27", `id,name,age
+1,Tom,27
+2,Jim,
+`, nil))
 }
 
 func putObjectTest(in string, parser string, selector string, values []string, types []string, out string, expErr error) func(t *testing.T) {
