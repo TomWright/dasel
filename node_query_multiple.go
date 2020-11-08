@@ -19,9 +19,6 @@ func (n *Node) QueryMultiple(selector string) ([]*Node, error) {
 
 // lastNodes returns a list of all of the last nodes.
 func lastNodes(n *Node) []*Node {
-	if n.NextMultiple == nil {
-		return []*Node{n}
-	}
 	if len(n.NextMultiple) == 0 {
 		return []*Node{n}
 	}
