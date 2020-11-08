@@ -141,7 +141,7 @@ An important note is that if no sub-command is given, dasel will default to `sel
 
 ### Select
 ```bash
-dasel select -f <file> -p <parser> <selector>
+dasel select -f <file> -p <parser> -m <selector>
 ```
 
 #### Arguments
@@ -159,6 +159,22 @@ Specify the parser to use when reading the file.
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
 See [supported file types](#supported-file-types).
+
+##### `-m`, `--multiple`
+
+Tells dasel to select all multiple items.
+
+This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
+
+All matches will be output on a new line.
+
+E.g.
+
+```
+echo '[{"name": "Tom"}, {"name": "Jim"}]' | dasel -p json -m '.[*].name'
+"Tom"
+"Jim"
+```
 
 ##### `-s`, `--selector`, `<selector>`
 
@@ -423,6 +439,12 @@ green
 #### Next Available Index
 The next available index selector is used when adding to a list of items. It allows you to append to a list.
 - `colours.[]`
+
+#### Any Index
+The any index selector is used to select *all* items of a list.
+- `colours[*]`
+
+This must be used in conjunction with `-m`,`--multiple`.
 
 #### Dynamic
 Dynamic selectors are used with lists when you don't know the index of the item, but instead want to find the index based on some other criteria.

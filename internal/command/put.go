@@ -1,6 +1,7 @@
 package command
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
@@ -135,6 +136,67 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 	}
 	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
+	}
+
+	return nil
+}
+
+type writeNodesToOutputOpts struct {
+	Nodes  []*dasel.Node
+	Parser storage.Parser
+	File   string
+	Out    string
+	Writer io.Writer
+	Plain  bool
+}
+
+func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
+	if opts.Writer == nil {
+		switch {
+		case opts.Out == "" && shouldReadFromStdin(opts.File):
+			// No out flag and we read from stdin.
+			opts.Writer = cmd.OutOrStdout()
+
+		case opts.Out == "stdout", opts.Out == "-":
+			// Out flag wants to write to stdout.
+			opts.Writer = cmd.OutOrStdout()
+
+		case opts.Out == "":
+			// No out flag... write to the file we read from.
+			f, err := os.Create(opts.File)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+
+		case opts.Out != "":
+			// Out flag was set.
+			f, err := os.Create(opts.Out)
+			if err != nil {
+				return fmt.Errorf("could not open output file: %w", err)
+			}
+			defer f.Close()
+			opts.Writer = f
+		}
+	}
+
+	buf := new(bytes.Buffer)
+
+	for i, n := range opts.Nodes {
+		subOpts := writeNodeToOutputOpts{
+			Node:   n,
+			Parser: opts.Parser,
+			Writer: buf,
+			Plain:  opts.Plain,
+		}
+		if err := writeNodeToOutput(subOpts, cmd); err != nil {
+			return fmt.Errorf("could not write node %d to output: %w", i, err)
+		}
+	}
+
+	if _, err := io.Copy(opts.Writer, buf); err != nil {
+		return fmt.Errorf("could not copy buffer to real output: %w", err)
 	}
 
 	return nil

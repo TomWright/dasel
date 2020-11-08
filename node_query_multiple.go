@@ -49,7 +49,7 @@ func buildFindMultipleChain(n *Node) error {
 	// Populate the value for the new node.
 	n.Next, err = findNodes(nextSelector, n.Value, false)
 	if err != nil {
-		return fmt.Errorf("could not find value: %w", err)
+		return fmt.Errorf("could not find multiple value: %w", err)
 	}
 
 	for _, next := range n.Next {

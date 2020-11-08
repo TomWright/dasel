@@ -123,14 +123,18 @@ func TestRootCMD_Select(t *testing.T) {
 	))
 }
 
-func selectTest(in string, parser string, selector string, out string, expErr error) func(t *testing.T) {
+func selectTest(in string, parser string, selector string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
-			"select", "-p", parser, selector,
+			"select", "-p", parser,
 		}
+		if additionalArgs != nil {
+			args = append(args, additionalArgs...)
+		}
+		args = append(args, selector)
 
 		cmd.SetOut(outputBuffer)
 		cmd.SetIn(strings.NewReader(in))
@@ -213,6 +217,9 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=XXX XXX).street", newline(`"101 Some Street"`), nil))
 	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=YYY YYY).street", newline(`"34 Another Street"`), nil))
 	t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", newline(`"red"`), nil))
+
+	t.Run("MultiProperty", selectTest(jsonData, "json", ".details.addresses[*].street", newline(`"101 Some Street"
+"34 Another Street"`), nil, "-m"))
 
 	t.Run("SubSelector", selectTest(`{
   "users": [
