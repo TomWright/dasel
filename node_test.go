@@ -1,6 +1,7 @@
 package dasel_test
 
 import (
+	"errors"
 	"fmt"
 	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
@@ -38,6 +39,13 @@ func TestParseSelector(t *testing.T) {
 		_, err := dasel.ParseSelector(".[a]")
 		exp := &dasel.InvalidIndexErr{Index: "a"}
 		if err == nil || err.Error() != exp.Error() {
+			t.Errorf("expected error %v, got %v", exp, err)
+		}
+	})
+	t.Run("InvalidDynamicBracketCount", func(t *testing.T) {
+		_, err := dasel.ParseSelector(".((name=x)")
+		exp := dasel.ErrDynamicSelectorBracketMismatch
+		if err == nil || !errors.Is(err, exp) {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
