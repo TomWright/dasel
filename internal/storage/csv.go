@@ -74,5 +74,5 @@ func (p *CSVParser) ToBytes(value interface{}) ([]byte, error) {
 		writer.Flush()
 	}
 
-	return append(buffer.Bytes(), []byte("\n")...), nil
+	return append(buffer.Bytes()), nil
 }

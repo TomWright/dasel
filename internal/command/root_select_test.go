@@ -8,12 +8,12 @@ import (
 	"testing"
 )
 
-var jsonDataSingle = `{"x": "asd"}`
-var yamlDataSingle = `x: asd`
-var tomlDataSingle = `x="asd"`
-var xmlDataSingle = `<x>asd</x>`
+const jsonDataSingle = `{"x": "asd"}`
+const yamlDataSingle = `x: asd`
+const tomlDataSingle = `x="asd"`
+const xmlDataSingle = `<x>asd</x>`
 
-var jsonData = `{
+const jsonData = `{
   "id": "1111",
   "details": {
     "name": "Tom",
@@ -36,7 +36,7 @@ var jsonData = `{
   }
 }`
 
-var yamlData = `
+const yamlData = `
 id: 1111
 details:
   name: Tom
@@ -53,7 +53,7 @@ details:
     postcode: YYY YYY
 `
 
-var tomlData = `id = "1111"
+const tomlData = `id = "1111"
 [details]
   name = "Tom"
   age = 27
@@ -70,7 +70,7 @@ var tomlData = `id = "1111"
     postcode = "YYY YYY"
 `
 
-var xmlData = `<data>
+const xmlData = `<data>
 	<id>1111</id>
 	<details>
 		<name>Tom</name>
@@ -89,6 +89,11 @@ var xmlData = `<data>
 		</addresses>
 	</details>
 </data>
+`
+
+const csvData = `id,name
+1,Tom
+2,Jim
 `
 
 func newline(x string) string {
@@ -301,4 +306,10 @@ func TestRootCMD_Select_XML(t *testing.T) {
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	t.Run("Attribute", selectTest(xmlData, "xml", ".data.details.addresses.(-primary=true).street", "101 Some Street\n", nil))
+}
+
+func TestRootCMD_Select_CSV(t *testing.T) {
+	t.Run("RootElement", selectTest(csvData, "csv", ".", csvData, nil))
+	t.Run("SingleProperty", selectTest(csvData, "csv", ".[0].id", "1\n", nil))
+	t.Run("SingleProperty", selectTest(csvData, "csv", ".[1].id", "2\n", nil))
 }
