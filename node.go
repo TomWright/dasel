@@ -31,8 +31,8 @@ type Selector struct {
 type Node struct {
 	// Previous is the previous node in the chain.
 	Previous *Node `json:"-"`
-	// Next is the next node in the chain.
-	Next *Node `json:"next,omitempty"`
+	// Next contains the next nodes in the chain.
+	Next []*Node `json:"next,omitempty"`
 	// OriginalValue is the value returned from the parser.
 	// In most cases this is the same as Value, but is different for thr YAML parser
 	// as it contains information on the original document.

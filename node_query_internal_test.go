@@ -37,7 +37,7 @@ func getNodeWithValue(value interface{}) *Node {
 	nextNode := &Node{
 		Previous: rootNode,
 	}
-	rootNode.Next = nextNode
+	rootNode.Next = []*Node{nextNode}
 	return nextNode
 }
 

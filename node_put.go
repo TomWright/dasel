@@ -41,7 +41,7 @@ func buildPutChain(n *Node) error {
 	}
 
 	// Link the nodes.
-	n.Next = nextNode
+	n.Next = []*Node{nextNode}
 	nextNode.Previous = n
 
 	// Populate the value for the new node.

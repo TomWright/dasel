@@ -17,12 +17,14 @@ func (n *Node) Query(selector string) (*Node, error) {
 	return lastNode(rootNode), nil
 }
 
+// lastNode returns the last node in the chain.
+// If a node contains multiple next nodes, the first node is taken.
 func lastNode(n *Node) *Node {
 	for {
-		if n.Next == nil {
+		if n.Next == nil || len(n.Next) == 0 {
 			return n
 		}
-		n = n.Next
+		n = n.Next[0]
 	}
 }
 
@@ -42,7 +44,7 @@ func buildFindChain(n *Node) error {
 	}
 
 	// Link the nodes.
-	n.Next = nextNode
+	n.Next = []*Node{nextNode}
 	nextNode.Previous = n
 
 	// Populate the value for the new node.
