@@ -253,6 +253,23 @@ func TestRootCMD_Put_XML(t *testing.T) {
 `, nil))
 }
 
+func TestRootCMD_Put_CSV(t *testing.T) {
+	t.Run("String", putStringTest(`id,name
+1,Tom
+2,Jim
+`, "csv", ".[0].id", "3", `id,name
+3,Tom
+2,Jim
+`, nil))
+	t.Run("NewString", putStringTest(`id,name
+1,Tom
+2,Jim
+`, "csv", ".[0].age", "27", `id,name,age
+1,Tom,27
+2,Jim,
+`, nil))
+}
+
 func putObjectTest(in string, parser string, selector string, values []string, types []string, out string, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()

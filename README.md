@@ -43,6 +43,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [TOML](#toml)
   * [YAML](#yaml)
   * [XML](#xml)
+  * [CSV](#csv)
 * [Selectors](#selectors)
   * [Property](#property)
   * [Child](#child-elements)
@@ -355,6 +356,17 @@ Due to the way that XML is decoded, dasel can only detect something as a list if
 If you try to use list selectors (dynamic, index, append) when there are less than 2 items in the list you will get an error.
 
 There are no plans to introduce a workaround for this but if there is enough demand it may be worked on in the future.
+
+### CSV
+```bash
+-p csv
+```
+Using [golang.org/pkg/encoding/csv](https://golang.org/pkg/encoding/csv/).
+
+#### Adding data
+New columns will be detected and added to the end of the CSV output.
+
+Column deletion is not supported.
 
 ## Selectors
 
