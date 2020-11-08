@@ -204,6 +204,7 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
 
 func putCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, outFlag string
+	var multiFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "put -f <file> -s <selector>",
@@ -221,6 +222,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
 	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
+	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 
@@ -237,6 +239,7 @@ type genericPutOptions struct {
 	Init      func(genericPutOptions) genericPutOptions
 	Reader    io.Reader
 	Writer    io.Writer
+	Multi     bool
 }
 
 func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
@@ -245,6 +248,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.Out = cmd.Flag("out").Value.String()
 		opts.Parser = cmd.Flag("parser").Value.String()
 		opts.Selector = cmd.Flag("selector").Value.String()
+		opts.Multi, _ = cmd.Flags().GetBool("multiple")
 
 		if opts.Selector == "" && len(args) > 0 {
 			opts.Selector = args[0]
@@ -281,8 +285,14 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	if err := rootNode.Put(opts.Selector, updateValue); err != nil {
-		return fmt.Errorf("could not put value: %w", err)
+	if opts.Multi {
+		if err := rootNode.PutMultiple(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put multi value: %w", err)
+		}
+	} else {
+		if err := rootNode.Put(opts.Selector, updateValue); err != nil {
+			return fmt.Errorf("could not put value: %w", err)
+		}
 	}
 
 	if err := writeNodeToOutput(writeNodeToOutputOpts{

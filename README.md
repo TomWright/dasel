@@ -162,7 +162,7 @@ See [supported file types](#supported-file-types).
 
 ##### `-m`, `--multiple`
 
-Tells dasel to select all multiple items.
+Tells dasel to select multiple items.
 
 This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
 
@@ -206,7 +206,7 @@ cat deployment.yaml | dasel select -p yaml "spec.template.spec.containers.(name=
 
 ### Put
 ```bash
-dasel put <type> -f <file> -o <out> -p <parser> <selector> <value>
+dasel put <type> -f <file> -o <out> -p <parser> -m <selector> <value>
 ```
 
 ```bash
@@ -246,6 +246,26 @@ This is required if you are piping in data, otherwise dasel will use the given f
 
 See [supported file types](#supported-file-types).
 
+##### `-m`, `--multiple`
+
+Tells dasel to put multiple items.
+
+This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
+
+E.g.
+
+```
+echo '[{"name": "Tom"}, {"name": "Jim"}]' | dasel put string -p json -m '.[*].name' Frank
+[
+  {
+    "name": "Frank"
+  },
+  {
+    "name": "Frank"
+  }
+]
+```
+
 ##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
@@ -267,7 +287,7 @@ This is required.
 Putting objects works slightly differently to a standard put, but the same principles apply.
 
 ```bash
-dasel put object -f <file> -o <out> -p <parser> -t <type> <selector> <values>
+dasel put object -f <file> -o <out> -p <parser> -m -t <type> <selector> <values>
 ```
 
 #### Arguments
@@ -302,6 +322,26 @@ Specify the parser to use when reading/writing the input/output files.
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
 See [supported file types](#supported-file-types).
+
+##### `-m`, `--multiple`
+
+Tells dasel to put multiple items.
+
+This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
+
+E.g.
+
+```
+echo '[{"name": "Tom"}, {"name": "Jim"}]' | dasel put object -p json -m -t string '.[*]' 'name=Frank'
+[
+  {
+    "name": "Frank"
+  },
+  {
+    "name": "Frank"
+  }
+]
+```
 
 ##### `-s`, `--selector`, `<selector>`
 

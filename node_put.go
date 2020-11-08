@@ -70,7 +70,7 @@ func buildPutChain(n *Node) error {
 	// Populate the value for the new node.
 	nextNode.Value, err = findValue(nextNode, true)
 	if err != nil {
-		return fmt.Errorf("could not find value: %w", err)
+		return fmt.Errorf("could not find put value: %w", err)
 	}
 
 	return buildPutChain(nextNode)
@@ -94,7 +94,7 @@ func buildPutMultipleChain(n *Node) error {
 	n.Next, err = findNodes(nextSelector, n.Value, true)
 
 	if err != nil {
-		return fmt.Errorf("could not find value: %w", err)
+		return fmt.Errorf("could not find put multiple value: %w", err)
 	}
 
 	for _, next := range n.Next {
