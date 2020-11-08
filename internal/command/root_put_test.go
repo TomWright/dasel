@@ -181,6 +181,78 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   ]
 }`, nil, "-m"))
 
+	t.Run("AppendObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{"rank=4", "number=four"}, []string{"int", "string"}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {
+      "number": "four",
+      "rank": 4
+    }
+  ]
+}`, nil))
+
+	t.Run("AppendObjectMulti", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{"rank=4", "number=four"}, []string{"int", "string"}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {
+      "number": "four",
+      "rank": 4
+    }
+  ]
+}`, nil, "-m"))
+
 	t.Run("MultipleString", putStringTest(`[
   {"value": "A"},
   {"value": "B"},
@@ -392,10 +464,10 @@ func putStringTest(in string, parser string, selector string, value string, out 
 	return putTest(in, "string", parser, selector, value, out, expErr, additionalArgs...)
 }
 
-func putIntTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
-	return putTest(in, "int", parser, selector, value, out, expErr)
+func putIntTest(in string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return putTest(in, "int", parser, selector, value, out, expErr, additionalArgs...)
 }
 
-func putBoolTest(in string, parser string, selector string, value string, out string, expErr error) func(t *testing.T) {
-	return putTest(in, "bool", parser, selector, value, out, expErr)
+func putBoolTest(in string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return putTest(in, "bool", parser, selector, value, out, expErr, additionalArgs...)
 }

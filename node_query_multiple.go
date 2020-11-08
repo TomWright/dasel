@@ -47,7 +47,7 @@ func buildFindMultipleChain(n *Node) error {
 	}
 
 	// Populate the value for the new node.
-	n.Next, err = findNodes(nextSelector, n.Value, false)
+	n.Next, err = findNodes(nextSelector, n, false)
 	if err != nil {
 		return fmt.Errorf("could not find multiple value: %w", err)
 	}
@@ -121,9 +121,9 @@ func findNodesIndex(selector Selector, previousValue reflect.Value, createIfNotE
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
 }
 
-// findNextAvailableNodes finds the value for the given node using the index selector
+// findNextAvailableIndexNodes finds the value for the given node using the index selector
 // information.
-func findNextAvailableNodes(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
+func findNextAvailableIndexNodes(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
 	if !createIfNotExists {
 		// Next available index isn't supported unless it's creating the item.
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
@@ -244,10 +244,10 @@ func initialiseEmptyValue(selector Selector, previousValue reflect.Value) (refle
 }
 
 // findNodes returns all of the nodes from the previous value that match the given selector.
-func findNodes(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
+func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([]*Node, error) {
 	initialised := false
-	if createIfNotExists && !isValid(previousValue) {
-		previousValue, initialised = initialiseEmptyValue(selector, previousValue)
+	if createIfNotExists && !isValid(previousNode.Value) {
+		previousNode.Value, initialised = initialiseEmptyValue(selector, previousNode.Value)
 	}
 
 	var res []*Node
@@ -255,15 +255,15 @@ func findNodes(selector Selector, previousValue reflect.Value, createIfNotExists
 
 	switch selector.Type {
 	case "PROPERTY":
-		res, err = findNodesProperty(selector, previousValue, createIfNotExists)
+		res, err = findNodesProperty(selector, previousNode.Value, createIfNotExists)
 	case "INDEX":
-		res, err = findNodesIndex(selector, previousValue, createIfNotExists)
+		res, err = findNodesIndex(selector, previousNode.Value, createIfNotExists)
 	case "NEXT_AVAILABLE_INDEX":
-		res, err = findNextAvailableNodes(selector, previousValue, createIfNotExists)
+		res, err = findNextAvailableIndexNodes(selector, previousNode.Value, createIfNotExists)
 	case "INDEX_ANY":
-		res, err = findNodesAnyIndex(selector, previousValue)
+		res, err = findNodesAnyIndex(selector, previousNode.Value)
 	case "DYNAMIC":
-		res, err = findNodesDynamic(selector, previousValue, createIfNotExists)
+		res, err = findNodesDynamic(selector, previousNode.Value, createIfNotExists)
 	default:
 		err = &UnsupportedSelector{Selector: selector.Raw}
 	}

@@ -485,7 +485,29 @@ func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}
 	}
 }
 
-func TestNode_Put(t *testing.T) {
+func putQueryMultipleTest(rootNode *dasel.Node, putSelector string, newValue interface{}, querySelector string) func(t *testing.T) {
+	return func(t *testing.T) {
+		err := rootNode.PutMultiple(putSelector, newValue)
+		if err != nil {
+			t.Errorf("unexpected put error: %v", err)
+			return
+		}
+
+		got, err := rootNode.QueryMultiple(querySelector)
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		for _, n := range got {
+			if !reflect.DeepEqual(newValue, n.InterfaceValue()) {
+				t.Errorf("expected %v, got %v", newValue, n.InterfaceValue())
+			}
+		}
+	}
+}
+
+func TestNode_Put_Query(t *testing.T) {
 	data := map[string]interface{}{
 		"id": "123",
 		"people": []map[string]interface{}{
@@ -554,4 +576,75 @@ func TestNode_Put(t *testing.T) {
 	t.Run("NilChainToListIndex", putQueryTest(dasel.New(nil), "my.favourite.people.[0]", "Tom", "my.favourite.people.[0]"))
 	t.Run("NilChainToListNextAvailableIndex", putQueryTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
 	t.Run("NilChainToDynamic", putQueryTest(dasel.New(nil), "(name=Jim).name", "Tom", "[0].name"))
+}
+
+func TestNode_PutMultiple_Query(t *testing.T) {
+	data := map[string]interface{}{
+		"id": "123",
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+	}
+	rootNode := dasel.New(data)
+
+	t.Run("InvalidSelector", func(t *testing.T) {
+		err := rootNode.PutMultiple("people.[a].name", "Thomas")
+		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
+	t.Run("ExistingSingleString", putQueryMultipleTest(rootNode, "id", "456", "id"))
+	t.Run("ExistingStringValue", putQueryMultipleTest(rootNode, "people.[0].name", "Thomas", "people.(id=1).name"))
+	t.Run("ExistingIntValue", putQueryMultipleTest(rootNode, "people.(id=1).id", 3, "people.(id=3).id"))
+	t.Run("NewPropertyOnExistingObject", putQueryMultipleTest(rootNode, "people.(id=3).age", 27, "people.[0].age"))
+	t.Run("AppendObjectToList", func(t *testing.T) {
+		err := rootNode.PutMultiple("people.[]", map[string]interface{}{
+			"id":   1,
+			"name": "Bob",
+		})
+		if err != nil {
+			t.Errorf("unexpected put error: %v", err)
+			return
+		}
+
+		got, err := rootNode.Query("people.[2].id")
+		if err != nil {
+			t.Errorf("unexpected query [1] error: %v", err)
+			return
+		}
+		if exp, got := 1, got.InterfaceValue().(int); exp != got {
+			t.Errorf("expected %d, got %d", exp, got)
+		}
+		got, err = rootNode.Query("people.[2].name")
+		if err != nil {
+			t.Errorf("unexpected query [2] error: %v", err)
+			return
+		}
+		if exp, got := "Bob", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("AppendStringToList", putQueryMultipleTest(rootNode, "names.[]", "Bob", "names.[2]"))
+	t.Run("NilRootNode", putQueryMultipleTest(dasel.New(nil), "name", "Thomas", "name"))
+	t.Run("NilChain", putQueryMultipleTest(dasel.New(nil), "my.name", "Thomas", "my.name"))
+	t.Run("NilChainToListIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[0]", "Tom", "my.favourite.people.[0]"))
+	t.Run("NilChainToListNextAvailableIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
+	t.Run("NilChainToDynamic", putQueryMultipleTest(dasel.New(nil), "(name=Jim).name", "Tom", "[0].name"))
 }

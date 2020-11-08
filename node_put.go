@@ -91,7 +91,7 @@ func buildPutMultipleChain(n *Node) error {
 	}
 
 	// Populate the value for the new node.
-	n.Next, err = findNodes(nextSelector, n.Value, true)
+	n.Next, err = findNodes(nextSelector, n, true)
 
 	if err != nil {
 		return fmt.Errorf("could not find put multiple value: %w", err)
