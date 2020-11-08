@@ -49,6 +49,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Child](#child-elements)
   * [Index](#index)
   * [Next available index](#next-available-index)
+  * [Any index](#any-index)
   * [Dynamic](#dynamic)
     * [Using queries in dynamic selectors](#using-queries-in-dynamic-selectors)
 * [Examples](#examples)
