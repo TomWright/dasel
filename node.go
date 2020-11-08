@@ -31,8 +31,13 @@ type Selector struct {
 type Node struct {
 	// Previous is the previous node in the chain.
 	Previous *Node `json:"-"`
-	// Next contains the next nodes in the chain.
-	Next []*Node `json:"next,omitempty"`
+	// Next contains the next node in the chain.
+	// This is used with Query and Put requests.
+	Next *Node `json:"next,omitempty"`
+	// NextMultiple contains the next nodes in the chain.
+	// This is used with QueryMultiple and PutMultiple requests.
+	// When a major version change occurs this will completely replace Next.
+	NextMultiple []*Node `json:"nextMultiple,omitempty"`
 	// OriginalValue is the value returned from the parser.
 	// In most cases this is the same as Value, but is different for thr YAML parser
 	// as it contains information on the original document.
@@ -164,6 +169,7 @@ func New(value interface{}) *Node {
 	rootNode := &Node{
 		Previous:      nil,
 		Next:          nil,
+		NextMultiple:  nil,
 		OriginalValue: value,
 		Value:         baseValue,
 		Selector: Selector{

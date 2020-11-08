@@ -19,14 +19,14 @@ func (n *Node) QueryMultiple(selector string) ([]*Node, error) {
 
 // lastNodes returns a list of all of the last nodes.
 func lastNodes(n *Node) []*Node {
-	if n.Next == nil {
+	if n.NextMultiple == nil {
 		return []*Node{n}
 	}
-	if len(n.Next) == 0 {
-		return []*Node{}
+	if len(n.NextMultiple) == 0 {
+		return []*Node{n}
 	}
 	var res []*Node
-	for _, nextNode := range n.Next {
+	for _, nextNode := range n.NextMultiple {
 		res = append(res, lastNodes(nextNode)...)
 	}
 	return res
@@ -47,12 +47,12 @@ func buildFindMultipleChain(n *Node) error {
 	}
 
 	// Populate the value for the new node.
-	n.Next, err = findNodes(nextSelector, n, false)
+	n.NextMultiple, err = findNodes(nextSelector, n, false)
 	if err != nil {
 		return fmt.Errorf("could not find multiple value: %w", err)
 	}
 
-	for _, next := range n.Next {
+	for _, next := range n.NextMultiple {
 		// Add the back reference
 		next.Previous = n
 

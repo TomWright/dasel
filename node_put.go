@@ -64,7 +64,7 @@ func buildPutChain(n *Node) error {
 	}
 
 	// Link the nodes.
-	n.Next = []*Node{nextNode}
+	n.Next = nextNode
 	nextNode.Previous = n
 
 	// Populate the value for the new node.
@@ -91,13 +91,13 @@ func buildPutMultipleChain(n *Node) error {
 	}
 
 	// Populate the value for the new node.
-	n.Next, err = findNodes(nextSelector, n, true)
+	n.NextMultiple, err = findNodes(nextSelector, n, true)
 
 	if err != nil {
 		return fmt.Errorf("could not find put multiple value: %w", err)
 	}
 
-	for _, next := range n.Next {
+	for _, next := range n.NextMultiple {
 		// Add the back reference
 		next.Previous = n
 
