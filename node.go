@@ -52,7 +52,7 @@ func (n *Node) InterfaceValue() interface{} {
 
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
-	indexSelector    = `\[(?P<index>[0-9a-zA-Z]*?)\]`
+	indexSelector    = `\[(?P<index>[0-9a-zA-Z\*]*?)\]`
 	dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
 )
 
@@ -105,9 +105,12 @@ func ParseSelector(selector string) (Selector, error) {
 		sel.Property = match[1]
 	} else if match := indexRegexp.FindStringSubmatch(selector); len(match) != 0 {
 		sel.Current = match[0]
-		if match[1] == "" {
+		switch match[1] {
+		case "":
 			sel.Type = "NEXT_AVAILABLE_INDEX"
-		} else {
+		case "*":
+			sel.Type = "INDEX_ANY"
+		default:
 			sel.Type = "INDEX"
 			var err error
 			index, err := strconv.ParseInt(match[1], 10, 32)

@@ -200,6 +200,33 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
 }
 
+// findNodesAnyIndex returns a node for every value in the previous value list.
+func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	value := unwrapValue(previousValue)
+
+	if value.Kind() == reflect.Slice {
+		results := make([]*Node, 0)
+		for i := 0; i < value.Len(); i++ {
+			object := value.Index(i)
+			selector.Type = "INDEX"
+			selector.Index = i
+			results = append(results, &Node{
+				Value:    object,
+				Selector: selector,
+			})
+		}
+		if len(results) > 0 {
+			return results, nil
+		}
+		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+	}
+
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
+}
+
 func initialiseEmptyValue(selector Selector, previousValue reflect.Value) (reflect.Value, bool) {
 	switch selector.Type {
 	case "PROPERTY":
@@ -207,6 +234,8 @@ func initialiseEmptyValue(selector Selector, previousValue reflect.Value) (refle
 	case "INDEX":
 		return reflect.ValueOf([]interface{}{}), true
 	case "NEXT_AVAILABLE_INDEX":
+		return reflect.ValueOf([]interface{}{}), true
+	case "INDEX_ANY":
 		return reflect.ValueOf([]interface{}{}), true
 	case "DYNAMIC":
 		return reflect.ValueOf([]interface{}{}), true
@@ -231,6 +260,8 @@ func findNodes(selector Selector, previousValue reflect.Value, createIfNotExists
 		res, err = findNodesIndex(selector, previousValue, createIfNotExists)
 	case "NEXT_AVAILABLE_INDEX":
 		res, err = findNextAvailableNodes(selector, previousValue, createIfNotExists)
+	case "INDEX_ANY":
+		res, err = findNodesAnyIndex(selector, previousValue)
 	case "DYNAMIC":
 		res, err = findNodesDynamic(selector, previousValue, createIfNotExists)
 	default:

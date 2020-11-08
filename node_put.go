@@ -25,7 +25,7 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 	return nil
 }
 
-// PutMultiple finds the node using the given selector and updates it's value.
+// PutMultiple all applicable nodes for the given selector and updates all of their values to the given value.
 // It then attempts to propagate the value back up the chain to the root element.
 func (n *Node) PutMultiple(selector string, newValue interface{}) error {
 	n.Selector.Remaining = selector
