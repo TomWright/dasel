@@ -124,10 +124,19 @@ func ParseSelector(selector string) (Selector, error) {
 			}
 			sel.Index = int(index)
 		}
-	} else if match := newDynamicRegexp.FindString(selector); len(match) != 0 {
-		sel.Current = match
+	} else {
+		// todo : re-work this logic to base the entire parsing using ExtractNextSelector.
+		// This will be much easier instead of regex.
+		nextSelectorString := ExtractNextSelector(selector)
 
-		dynamicGroups, err := DynamicSelectorToGroups(match)
+		// Check if the selector starts with an open bracket.
+		if !strings.HasPrefix(strings.TrimPrefix(nextSelectorString, "."), "(") {
+			return sel, &UnsupportedSelector{Selector: nextSelectorString}
+		}
+
+		sel.Current = nextSelectorString
+
+		dynamicGroups, err := DynamicSelectorToGroups(nextSelectorString)
 		if err != nil {
 			return sel, err
 		}
