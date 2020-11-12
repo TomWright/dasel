@@ -449,6 +449,8 @@ colourCodes:
   rgb: 0000ff
 ```
 
+You can escape values in selectors using a backslash `\`. The main use for this is to allow you to target fields that contain a dot or space in their name.
+
 ### Property
 Property selectors are used to reference a single property of an object.
 
@@ -483,7 +485,7 @@ The next available index selector is used when adding to a list of items. It all
 
 #### Any Index
 The any index selector is used to select *all* items of a list.
-- `colours[*]`
+- `colours.[*]`
 
 This must be used in conjunction with `-m`,`--multiple`.
 

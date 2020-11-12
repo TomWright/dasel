@@ -9,22 +9,38 @@ import (
 var ErrDynamicSelectorBracketMismatch = errors.New("dynamic selector bracket mismatch")
 
 // ExtractNextSelector returns the next selector from the given input.
-func ExtractNextSelector(input string) string {
+func ExtractNextSelector(input string) (string, int) {
+	escapedIndex := -1
 	res := ""
 	i := 0
+	read := 0
 	for k, v := range input {
+		if escapedIndex == k-1 && k != 0 {
+			// last character was escape character
+			res += string(v)
+			read++
+			continue
+		}
+
 		if v == '(' || v == '[' {
 			i++
 		} else if v == ')' || v == ']' {
 			i--
 		}
 
+		if v == '\\' {
+			escapedIndex = k
+			read++
+			continue
+		}
+
 		if i == 0 && v == '.' && k != 0 {
 			break
 		}
 		res += string(v)
+		read++
 	}
-	return res
+	return res, read
 }
 
 // DynamicSelectorToGroups takes a dynamic selector and splits it into groups.
