@@ -125,12 +125,12 @@ func TestRootCMD_Select(t *testing.T) {
 	t.Run("InvalidSingleSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"select", "-p", "json", "-s", "[-]"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 	t.Run("InvalidMultiSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"select", "-p", "json", "-m", "-s", "[-]"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 }
 
@@ -229,7 +229,7 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	t.Run("DynamicString", selectTest(jsonData, "json", ".details.addresses.(postcode=YYY YYY).street", newline(`"34 Another Street"`), nil))
 	t.Run("QueryFromFile", selectTestFromFile("./../../tests/assets/example.json", ".preferences.favouriteColour", newline(`"red"`), nil))
 
-	t.Run("MultiProperty", selectTest(jsonData, "json", ".details.addresses[*].street", newline(`"101 Some Street"
+	t.Run("MultiProperty", selectTest(jsonData, "json", ".details.addresses.[*].street", newline(`"101 Some Street"
 "34 Another Street"`), nil, "-m"))
 
 	t.Run("MultiRoot", selectTest(jsonDataSingle, "json", ".", newline(`{

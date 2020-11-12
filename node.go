@@ -104,39 +104,18 @@ func ParseSelector(selector string) (Selector, error) {
 		Conditions: make([]Condition, 0),
 	}
 
-	if match := propertyRegexp.FindStringSubmatch(selector); len(match) != 0 {
-		sel.Type = "PROPERTY"
-		sel.Current = match[0]
-		sel.Property = match[1]
-	} else if match := indexRegexp.FindStringSubmatch(selector); len(match) != 0 {
-		sel.Current = match[0]
-		switch match[1] {
-		case "":
-			sel.Type = "NEXT_AVAILABLE_INDEX"
-		case "*":
-			sel.Type = "INDEX_ANY"
-		default:
-			sel.Type = "INDEX"
-			var err error
-			index, err := strconv.ParseInt(match[1], 10, 32)
-			if err != nil {
-				return sel, &InvalidIndexErr{Index: match[1]}
-			}
-			sel.Index = int(index)
-		}
-	} else {
-		// todo : re-work this logic to base the entire parsing using ExtractNextSelector.
-		// This will be much easier instead of regex.
-		nextSelectorString := ExtractNextSelector(selector)
+	{
+		nextSelector, read := ExtractNextSelector(sel.Raw)
+		sel.Current = nextSelector
+		sel.Remaining = sel.Raw[read:]
+	}
 
-		// Check if the selector starts with an open bracket.
-		if !strings.HasPrefix(strings.TrimPrefix(nextSelectorString, "."), "(") {
-			return sel, &UnsupportedSelector{Selector: nextSelectorString}
-		}
+	nextSel := strings.TrimPrefix(sel.Current, ".")
 
-		sel.Current = nextSelectorString
-
-		dynamicGroups, err := DynamicSelectorToGroups(nextSelectorString)
+	switch {
+	case strings.HasPrefix(nextSel, "(") && strings.HasSuffix(nextSel, ")"):
+		sel.Type = "DYNAMIC"
+		dynamicGroups, err := DynamicSelectorToGroups(nextSel)
 		if err != nil {
 			return sel, err
 		}
@@ -158,10 +137,25 @@ func ParseSelector(selector string) (Selector, error) {
 			sel.Conditions = append(sel.Conditions, cond)
 		}
 
-		sel.Type = "DYNAMIC"
-	}
+	case nextSel == "[]":
+		sel.Type = "NEXT_AVAILABLE_INDEX"
 
-	sel.Remaining = strings.TrimPrefix(sel.Raw, sel.Current)
+	case nextSel == "[*]":
+		sel.Type = "INDEX_ANY"
+
+	case strings.HasPrefix(nextSel, "[") && strings.HasSuffix(nextSel, "]"):
+		sel.Type = "INDEX"
+		indexStr := nextSel[1 : len(nextSel)-1]
+		index, err := strconv.ParseInt(indexStr, 10, 32)
+		if err != nil {
+			return sel, &InvalidIndexErr{Index: indexStr}
+		}
+		sel.Index = int(index)
+
+	default:
+		sel.Type = "PROPERTY"
+		sel.Property = nextSel
+	}
 
 	return sel, nil
 }

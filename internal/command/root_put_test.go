@@ -37,23 +37,23 @@ func TestRootCMD_Put(t *testing.T) {
 	t.Run("InvalidSingleSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-s", "[-]", "Frank"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 	t.Run("InvalidMultiSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"put", "string", "-f", "stdin", "-o", "stdout", "-p", "json", "-m", "-s", "[-]", "Frank"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 
 	t.Run("InvalidObjectSingleSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"put", "object", "-f", "stdin", "-o", "stdout", "-p", "json", "-t", "string", "-s", "[-]", "Frank"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 	t.Run("InvalidMultiSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
 		[]string{"put", "object", "-f", "stdin", "-o", "stdout", "-p", "json", "-m", "-t", "string", "-s", "[-]", "Frank"},
-		"selector is not supported here: [-]",
+		"invalid index: -",
 	))
 }
 
@@ -317,6 +317,14 @@ id: x
 id: "1"
 ---
 id: z
+`, nil))
+
+	t.Run("StringWithDotInName", putStringTest(`
+id: "asd"
+my.name: "Tom"
+`, "yaml", `my\.name`, "Jim", `
+id: asd
+my.name: Jim
 `, nil))
 }
 
