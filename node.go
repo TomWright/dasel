@@ -112,8 +112,6 @@ func ParseSelector(selector string) (Selector, error) {
 
 	nextSel := strings.TrimPrefix(sel.Current, ".")
 
-	fmt.Println(nextSel)
-
 	switch {
 	case strings.HasPrefix(nextSel, "(") && strings.HasSuffix(nextSel, ")"):
 		sel.Type = "DYNAMIC"

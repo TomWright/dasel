@@ -58,7 +58,6 @@ func buildPutChain(n *Node) error {
 	nextNode := &Node{}
 
 	// Parse the selector.
-	fmt.Println(n.Selector.Remaining)
 	nextNode.Selector, err = ParseSelector(n.Selector.Remaining)
 	if err != nil {
 		return fmt.Errorf("failed to parse selector: %w", err)
