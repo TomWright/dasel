@@ -19,6 +19,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 ## Features
 - [Query/select data from structured data files](#select).
 - [Update data in structured data files](#put).
+- [Create data files](#creating-properties).
 - [Supports multiple data formats/types](#supported-file-types).
 - Uses a [standard query/selector syntax](#selectors) across all data formats.
 - Zero runtime dependencies.
@@ -282,6 +283,20 @@ The value to write.
 Dasel will parse this value as a string, int, or bool from this value depending on the given `type`.
 
 This is required.
+
+#### Creating properties
+
+When putting data dasel will create items if they don't exist.
+
+You can create an entire record from scratch by piping in an empty record, and then piping dasel commands together.
+
+```
+echo '' | dasel put string -p yaml -s '.propa' A | dasel put string -p yaml -s '.propb' B
+propa: A
+propb: B
+```
+
+This can be used to change multiple values or to create an entire document.
 
 ### Put Object
 
