@@ -11,10 +11,8 @@ func propagate(n *Node) error {
 		return nil
 	}
 
-	if !n.propagated || n.wasInitialised {
-		if err := propagateValue(n); err != nil {
-			return fmt.Errorf("could not propagate value: %w", err)
-		}
+	if err := propagateValue(n); err != nil {
+		return fmt.Errorf("could not propagate value: %w", err)
 	}
 	return propagate(n.Previous)
 }
@@ -47,8 +45,6 @@ func propagateValueProperty(n *Node) error {
 
 	if value.Kind() == reflect.Map {
 		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), n.Value)
-		// Set propagated to true here since we modified the previous value by reference.
-		n.Previous.propagated = true
 		return nil
 	}
 

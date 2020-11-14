@@ -326,6 +326,20 @@ my.name: "Tom"
 id: asd
 my.name: Jim
 `, nil))
+
+	t.Run("NewValInExistingMap", putStringTest(`
+metadata:
+  annotations:
+    node.longhorn.io/default-disks-config: '[ { "name":"fast",  "path":"/mnt/data-fast1", "allowScheduling":true, "tags":["fast"]}, { "name":"slow",  "path":"/mnt/data-slow1", "allowScheduling":true, "tags":["slow"]} ]'
+`, "yaml", `metadata.labels.node\.longhorn\.io\/create-default-disk`, "config", `
+metadata:
+  annotations:
+    node.longhorn.io/default-disks-config: '[ { "name":"fast",  "path":"/mnt/data-fast1",
+      "allowScheduling":true, "tags":["fast"]}, { "name":"slow",  "path":"/mnt/data-slow1",
+      "allowScheduling":true, "tags":["slow"]} ]'
+  labels:
+    node.longhorn.io/create-default-disk: config
+`, nil))
 }
 
 func TestRootCMD_Put_TOML(t *testing.T) {

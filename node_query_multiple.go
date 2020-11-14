@@ -224,27 +224,26 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
 }
 
-func initialiseEmptyValue(selector Selector, previousValue reflect.Value) (reflect.Value, bool) {
+func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflect.Value {
 	switch selector.Type {
 	case "PROPERTY":
-		return reflect.ValueOf(map[interface{}]interface{}{}), true
+		return reflect.ValueOf(map[interface{}]interface{}{})
 	case "INDEX":
-		return reflect.ValueOf([]interface{}{}), true
+		return reflect.ValueOf([]interface{}{})
 	case "NEXT_AVAILABLE_INDEX":
-		return reflect.ValueOf([]interface{}{}), true
+		return reflect.ValueOf([]interface{}{})
 	case "INDEX_ANY":
-		return reflect.ValueOf([]interface{}{}), true
+		return reflect.ValueOf([]interface{}{})
 	case "DYNAMIC":
-		return reflect.ValueOf([]interface{}{}), true
+		return reflect.ValueOf([]interface{}{})
 	}
-	return previousValue, false
+	return previousValue
 }
 
 // findNodes returns all of the nodes from the previous value that match the given selector.
 func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([]*Node, error) {
-	initialised := false
 	if createIfNotExists && !isValid(previousNode.Value) {
-		previousNode.Value, initialised = initialiseEmptyValue(selector, previousNode.Value)
+		previousNode.Value = initialiseEmptyValue(selector, previousNode.Value)
 	}
 
 	var res []*Node
@@ -267,12 +266,6 @@ func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([
 
 	if err != nil {
 		return nil, err
-	}
-
-	if initialised && res != nil && len(res) > 0 {
-		for _, n := range res {
-			n.wasInitialised = initialised
-		}
 	}
 
 	return res, nil

@@ -177,7 +177,7 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	}
 
 	if createIfNotExists && !isValid(n.Previous.Value) {
-		n.Previous.Value, n.wasInitialised = initialiseEmptyValue(n.Selector, n.Previous.Value)
+		n.Previous.Value = initialiseEmptyValue(n.Selector, n.Previous.Value)
 	}
 
 	switch n.Selector.Type {

@@ -46,7 +46,6 @@ type Node struct {
 	Value reflect.Value `json:"value"`
 	// Selector is the selector for the current node.
 	Selector       Selector `json:"selector"`
-	propagated     bool
 	wasInitialised bool
 }
 
