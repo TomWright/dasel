@@ -75,6 +75,20 @@ func TestParseSelector(t *testing.T) {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
+	t.Run("UnknownComparisonOperator", func(t *testing.T) {
+		_, err := dasel.ParseSelector(".(a>b)")
+		exp := "unknown comparison operator: >"
+		if err == nil || err.Error() != exp {
+			t.Errorf("expected error %v, got %v", exp, err)
+		}
+	})
+	t.Run("UnknownSearchComparisonOperator", func(t *testing.T) {
+		_, err := dasel.ParseSelector(".(?:a>b)")
+		exp := "unknown comparison operator: >"
+		if err == nil || err.Error() != exp {
+			t.Errorf("expected error %v, got %v", exp, err)
+		}
+	})
 	t.Run("Search", testParseSelector(".(?:name=asd)", dasel.Selector{
 		Raw:       ".(?:name=asd)",
 		Current:   ".(?:name=asd)",

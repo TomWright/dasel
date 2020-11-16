@@ -200,6 +200,43 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
 }
 
+func findNodesSearchRecursiveSubNode(selector Selector, subNode *Node, key string, createIfNotExists bool) ([]*Node, error) {
+	subResults, err := findNodesSearchRecursive(selector, subNode, createIfNotExists, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not find nodes search recursive: %w", err)
+	}
+
+	// Loop through each condition.
+	allConditionsMatched := true
+sliceConditionLoop:
+	for _, c := range selector.Conditions {
+		found := false
+		var err error
+
+		switch cond := c.(type) {
+		case *KeyEqualCondition:
+			found, err = cond.Check(reflect.ValueOf(key))
+		default:
+			found, err = cond.Check(subNode.Value)
+		}
+		if err != nil || !found {
+			allConditionsMatched = false
+			break sliceConditionLoop
+		}
+	}
+
+	results := make([]*Node, 0)
+
+	if allConditionsMatched {
+		results = append(results, subNode)
+	}
+	if len(subResults) > 0 {
+		results = append(results, subResults...)
+	}
+
+	return results, nil
+}
+
 // findNodesSearchRecursive iterates through the value of the previous node and creates a new node for each element.
 // If any of those nodes match the checks they are returned.
 func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNotExists bool, firstNode bool) ([]*Node, error) {
@@ -223,39 +260,14 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 			subNode.Selector.Type = "INDEX"
 			subNode.Selector.Index = i
 
-			subResults, err := findNodesSearchRecursive(selector, subNode, createIfNotExists, false)
-			if err != nil {
-				return nil, fmt.Errorf("could not find nodes search recursive: %w", err)
-			}
-
-			// Loop through each condition.
-			allConditionsMatched := true
-		sliceConditionLoop:
-			for _, c := range selector.Conditions {
-				found := false
-				var err error
-
-				switch cond := c.(type) {
-				case *KeyEqualCondition:
-					found, err = cond.Check(reflect.ValueOf(fmt.Sprint(subNode.Selector.Index)))
-				default:
-					found, err = cond.Check(object)
-				}
-				if err != nil || !found {
-					allConditionsMatched = false
-					break sliceConditionLoop
-				}
-			}
-			if allConditionsMatched {
-				results = append(results, subNode)
-			}
-			if len(subResults) > 0 {
-				results = append(results, subResults...)
+			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Index), createIfNotExists); err != nil {
+				return nil, err
+			} else {
+				results = append(results, newResults...)
 			}
 		}
 
 	case reflect.Map:
-
 		for _, key := range value.MapKeys() {
 			object := value.MapIndex(key)
 
@@ -267,34 +279,10 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 			subNode.Selector.Type = "PROPERTY"
 			subNode.Selector.Property = fmt.Sprint(key.Interface())
 
-			subResults, err := findNodesSearchRecursive(selector, subNode, createIfNotExists, false)
-			if err != nil {
-				return nil, fmt.Errorf("could not find nodes search recursive: %w", err)
-			}
-
-			// Loop through each condition.
-			allConditionsMatched := true
-		mapConditionLoop:
-			for _, c := range selector.Conditions {
-				found := false
-				var err error
-
-				switch cond := c.(type) {
-				case *KeyEqualCondition:
-					found, err = cond.Check(reflect.ValueOf(subNode.Selector.Property))
-				default:
-					found, err = cond.Check(object)
-				}
-				if err != nil || !found {
-					allConditionsMatched = false
-					break mapConditionLoop
-				}
-			}
-			if allConditionsMatched {
-				results = append(results, subNode)
-			}
-			if len(subResults) > 0 {
-				results = append(results, subResults...)
+			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Property), createIfNotExists); err != nil {
+				return nil, err
+			} else {
+				results = append(results, newResults...)
 			}
 		}
 	}
