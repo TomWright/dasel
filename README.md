@@ -609,10 +609,18 @@ If `key` is:
 }
 ```
 
+Search for all objects with a key of `name` and output the first name of each:
 ```
 dasel -p json -m '.(?:-=name).first'
 "Tom"
 "Joe"
+"Jim"
+```
+
+Search for all objects with a last name of `Wright` and output the first name of each:
+```
+dasel -p json -m '.(?:name.last=Wright).name.first'
+"Tom"
 "Jim"
 ```
 
