@@ -4,7 +4,7 @@
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel)
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
 ![Build](https://github.com/TomWright/dasel/workflows/Build/badge.svg)
-[![Coverage Status](https://coveralls.io/repos/github/TomWright/dasel/badge.svg?branch=master)](https://coveralls.io/github/TomWright/dasel?branch=master)
+[![codecov](https://codecov.io/gh/TomWright/dasel/branch/master/graph/badge.svg)](https://codecov.io/gh/TomWright/dasel)
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 ![GitHub All Releases Downloads](https://img.shields.io/github/downloads/TomWright/dasel/total)
 ![GitHub License](https://img.shields.io/github/license/TomWright/dasel)
