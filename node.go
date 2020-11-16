@@ -138,6 +138,9 @@ func ParseSelector(selector string) (Selector, error) {
 
 		for _, g := range dynamicGroups {
 			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+			if m == nil {
+				return sel, fmt.Errorf("invalid search format")
+			}
 
 			m[1] = strings.TrimPrefix(m[1], "?:")
 
@@ -176,6 +179,9 @@ func ParseSelector(selector string) (Selector, error) {
 
 		for _, g := range dynamicGroups {
 			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+			if m == nil {
+				return sel, fmt.Errorf("invalid search format")
+			}
 
 			var cond Condition
 			switch m[2] {
