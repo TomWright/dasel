@@ -30,10 +30,10 @@ jobs:
         with:
           go-version: '^1.15.0' # The Go version to download (if necessary) and use.
       - name: Set env
-        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+        run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
         if: runner.os != 'Windows'
       - name: Set env (Windows)
-        run: echo ::set-env name=RELEASE_VERSION::${GITHUB_REF:10}
+        run: echo RELEASE_VERSION::${GITHUB_REF:10} >> $GITHUB_ENV
         shell: bash
         if: runner.os == 'Windows'
       - name: Build
