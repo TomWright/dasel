@@ -53,6 +53,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Any index](#any-index)
   * [Dynamic](#dynamic)
     * [Using queries in dynamic selectors](#using-queries-in-dynamic-selectors)
+  * [Search](#search)
 * [Examples](#examples)
   * [General](#general)
     * [Filter JSON API results](#filter-json-api-results)
@@ -563,6 +564,56 @@ The resolution of that query looks something like this:
 .users.(.addresses.(.primary=true).number=123).name.first
 .users.(.addresses.[0].number=123).name.first
 .users.[0].name.first
+```
+
+### Search
+
+Search selectors recursively search all the data below the current node and returns all the results - this means they can only be used in multi select/put commands.
+
+The syntax is as follows:
+```
+.(?:key=value)
+```
+
+If `key` is:
+- `.` or `value` - dasel checks if the current nodes value is `value`.
+- `-` or `keyValue` - dasel checks if the current nodes key/name/index value is `value`.
+- Else dasel uses the `key` as a selector itself and compares the result against `value`.
+
+#### Search Example
+
+```
+{
+  "users": [
+    {
+      "primary": true,
+      "name": {
+        "first": "Tom",
+        "last": "Wright"
+      }
+    },
+    {
+      "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Jim",
+        "last": "Wright"
+      }
+    }
+  ]
+}
+```
+
+```
+dasel -p json -m '.(?:-=name).first'
+"Tom"
+"Joe"
+"Jim"
 ```
 
 ## Examples
