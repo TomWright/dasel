@@ -189,6 +189,18 @@ func TestPut(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
+	t.Run("InvalidVarType", func(t *testing.T) {
+		err := runGenericPutCommand(genericPutOptions{Parser: "yaml", ValueType: "int", Value: "asd", Reader: bytes.NewBuffer([]byte{})}, nil)
+		if err == nil || err.Error() != "could not parse int [asd]: strconv.ParseInt: parsing \"asd\": invalid syntax" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("FailedWrite", func(t *testing.T) {
+		err := runGenericPutCommand(genericPutOptions{Parser: "yaml", ValueType: "string", Selector: ".name", Value: "asd", Reader: bytes.NewBuffer([]byte{}), Writer: &failingWriter{}}, nil)
+		if err == nil || err.Error() != "could not write output: could not write to output file: could not write data: i am meant to fail at writing" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
 	t.Run("ObjectMissingParserFlag", func(t *testing.T) {
 		err := runPutObjectCommand(putObjectOpts{}, nil)
 		if err == nil || err.Error() != "parser flag required when reading from stdin" {
