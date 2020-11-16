@@ -27,6 +27,19 @@ type Selector struct {
 	Conditions []Condition `json:"conditions,omitempty"`
 }
 
+// Copy returns a copy of the selector.
+func (s Selector) Copy() Selector {
+	return Selector{
+		Raw:        s.Raw,
+		Current:    s.Current,
+		Remaining:  s.Remaining,
+		Type:       s.Type,
+		Property:   s.Property,
+		Index:      s.Index,
+		Conditions: s.Conditions,
+	}
+}
+
 // Node represents a single node in the chain of nodes for a selector.
 type Node struct {
 	// Previous is the previous node in the chain.

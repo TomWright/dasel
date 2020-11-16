@@ -268,6 +268,54 @@ func TestRootCMD_Put_JSON(t *testing.T) {
     "value": "X"
   }
 ]`, nil, "-m"))
+
+	t.Run("KeySearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:-=name).first", "Bobby", `{
+  "users": [
+    {
+      "name": {
+        "first": "Bobby",
+        "last": "Wright"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Bobby",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Bobby",
+        "last": "Wright"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {

@@ -296,6 +296,33 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	}
   ]
 }`, "json", ".users.(.addresses.(.primary=true).number=123)(.name.last=Wright).name.first", newline(`"Tom"`), nil))
+
+	t.Run("KeySearch", selectTest(`{
+  "users": [
+    {
+      "primary": true,
+      "name": {
+        "first": "Tom",
+        "last": "Wright"
+      }
+    },
+    {
+      "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Jim",
+        "last": "Wright"
+      }
+    }
+  ]
+}`, "json", ".(?:-=name).first", newline(`"Tom"
+"Joe"
+"Jim"`), nil, "-m"))
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
