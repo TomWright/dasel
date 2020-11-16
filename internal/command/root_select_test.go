@@ -440,6 +440,24 @@ func TestRootCMD_Select_XML(t *testing.T) {
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=XXX XXX).street", "101 Some Street\n", nil))
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	t.Run("Attribute", selectTest(xmlData, "xml", ".data.details.addresses.(-primary=true).street", "101 Some Street\n", nil))
+
+	t.Run("KeySearch", selectTest(`
+<food>
+  <tart>
+    <apple color="yellow"/>
+  </tart>
+  <pie>
+    <crust quality="flaky"/>
+    <filling>
+      <apple color="red"/>
+    </filling>
+  </pie>
+  <apple color="green"/>
+</food>
+`, "xml", ".food.(?:keyValue=apple).-color", `yellow
+red
+green
+`, nil, "-m"))
 }
 
 func TestRootCMD_Select_CSV(t *testing.T) {

@@ -302,7 +302,7 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 				results = append(results, subNode)
 			}
 			if len(subResults) > 0 {
-				results = append(subResults)
+				results = append(results, subResults...)
 			}
 		}
 	}
