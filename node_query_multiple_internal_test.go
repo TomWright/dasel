@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"fmt"
 	"reflect"
 	"testing"
 )
@@ -124,6 +125,43 @@ func TestFindNodesDynamic(t *testing.T) {
 		}
 		got, err := findNodesDynamic(selector, previousValue, false)
 		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+	})
+}
+
+func TestFindNodesSearch(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		previousNode := New(nil)
+		selector := Selector{Raw: "."}
+		got, err := findNodesSearch(selector, previousNode, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnexpectedPreviousNilValue{Selector: "."}, got, err)
+	})
+	t.Run("NestedNilValue", func(t *testing.T) {
+		previousNode := New(map[string]interface{}{
+			"x": nil,
+		})
+		selector := Selector{
+			Type:    "SEARCH",
+			Raw:     ".(?:name=x)",
+			Current: ".(?:name=x)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "x"},
+			},
+		}
+		got, err := findNodesSearch(selector, previousNode, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, fmt.Errorf("could not find nodes search recursive: %w", &UnexpectedPreviousNilValue{Selector: selector.Current}), got, err)
+	})
+	t.Run("NotFound", func(t *testing.T) {
+		previousNode := New(map[string]interface{}{})
+		selector := Selector{
+			Type:    "SEARCH",
+			Raw:     ".(?:name=x)",
+			Current: ".(?:name=x)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "x"},
+			},
+		}
+		got, err := findNodesSearch(selector, previousNode, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousNode.Value}, got, err)
 	})
 }
 

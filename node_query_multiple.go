@@ -292,7 +292,17 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 
 // findNodesSearch finds all available nodes by recursively searching the previous value.
 func findNodesSearch(selector Selector, previousNode *Node, createIfNotExists bool) ([]*Node, error) {
-	return findNodesSearchRecursive(selector, previousNode, createIfNotExists, true)
+	res, err := findNodesSearchRecursive(selector, previousNode, createIfNotExists, true)
+	if err != nil {
+		return nil, err
+	}
+	if len(res) == 0 {
+		return nil, &ValueNotFound{
+			Selector:      selector.Current,
+			PreviousValue: previousNode.Value,
+		}
+	}
+	return res, nil
 }
 
 // findNodesAnyIndex returns a node for every value in the previous value list.
