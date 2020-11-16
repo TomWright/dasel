@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/tomwright/dasel/internal/command"
 	"io/ioutil"
 	"strings"
@@ -134,7 +135,16 @@ func TestRootCMD_Select(t *testing.T) {
 	))
 }
 
-func selectTest(in string, parser string, selector string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+func selectTest(in string, parser string, selector string, output string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return selectTestCheck(in, parser, selector, func(out string) error {
+		if out != output {
+			return fmt.Errorf("expected %v, got %v", output, out)
+		}
+		return nil
+	}, expErr, additionalArgs...)
+}
+
+func selectTestCheck(in string, parser string, selector string, checkFn func(out string) error, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
@@ -172,8 +182,8 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 			return
 		}
 
-		if out != string(output) {
-			t.Errorf("expected result %v, got %v", out, string(output))
+		if err := checkFn(string(output)); err != nil {
+			t.Errorf("unexpected output: %s", err)
 		}
 	}
 }
@@ -441,7 +451,7 @@ func TestRootCMD_Select_XML(t *testing.T) {
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	t.Run("Attribute", selectTest(xmlData, "xml", ".data.details.addresses.(-primary=true).street", "101 Some Street\n", nil))
 
-	t.Run("KeySearch", selectTest(`
+	t.Run("KeySearch", selectTestCheck(`
 <food>
   <tart>
     <apple color="yellow"/>
@@ -454,10 +464,22 @@ func TestRootCMD_Select_XML(t *testing.T) {
   </pie>
   <apple color="green"/>
 </food>
-`, "xml", ".food.(?:keyValue=apple).-color", `yellow
-red
-green
-`, nil, "-m"))
+`, "xml", ".food.(?:keyValue=apple).-color", func(out string) error {
+		splitOut := strings.Split(out, "\n")
+		for _, s := range []string{"yellow", "red", "green"} {
+			found := false
+			for _, got := range splitOut {
+				if s == got {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("required value not found: %s", s)
+			}
+		}
+		return nil
+	}, nil, "-m"))
 }
 
 func TestRootCMD_Select_CSV(t *testing.T) {
