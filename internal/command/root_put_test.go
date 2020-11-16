@@ -316,6 +316,102 @@ func TestRootCMD_Put_JSON(t *testing.T) {
     }
   ]
 }`, nil, "-m"))
+
+	t.Run("ValueSearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:.=Wright)", "Wrighto", `{
+  "users": [
+    {
+      "name": {
+        "first": "Tom",
+        "last": "Wrighto"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Jim",
+        "last": "Wrighto"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
+
+	t.Run("KeyValueSearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:.last=Wright).first", "Fred", `{
+  "users": [
+    {
+      "name": {
+        "first": "Fred",
+        "last": "Wright"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Fred",
+        "last": "Wright"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
