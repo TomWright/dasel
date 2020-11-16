@@ -346,13 +346,7 @@ func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflec
 	switch selector.Type {
 	case "PROPERTY":
 		return reflect.ValueOf(map[interface{}]interface{}{})
-	case "INDEX":
-		return reflect.ValueOf([]interface{}{})
-	case "NEXT_AVAILABLE_INDEX":
-		return reflect.ValueOf([]interface{}{})
-	case "INDEX_ANY":
-		return reflect.ValueOf([]interface{}{})
-	case "DYNAMIC":
+	case "INDEX", "NEXT_AVAILABLE_INDEX", "INDEX_ANY", "DYNAMIC":
 		return reflect.ValueOf([]interface{}{})
 	}
 	return previousValue
