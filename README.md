@@ -422,6 +422,40 @@ Once decoded, you can access them using any of the standard selectors provided b
 ```
 Using [github.com/clbanning/mxj](https://github.com/clbanning/mxj).
 
+#### XML Documents
+
+XML documents within dasel are stored as a map of values.
+
+This is just how dasel stores data and is required for the general functionality to work. An example of a simple documents representation is as follows:
+
+```
+<Person active="true">
+  <Name main="yes">Tom</Name>
+  <Age>27</Age>
+</Person>
+```
+
+```
+map[
+  Person:map[
+    -active:true
+    Age:27
+    Name:map[
+      #text:Tom
+      -main:true
+    ]
+  ]
+]
+```
+
+In general this won't affect you, but on the odd occasion in specific instances it could lead to unexpected output.
+
+If you are struggling with this please raise an issue for support. This will also help me know when the docs aren't sufficient.
+
+##### Debugging
+
+You can run select commands with the `--plain` flag to see the raw data that is stored within dasel. This can help you figure out the exact properties you may need to target when it isn't immediately obvious.
+
 #### Arrays/Lists
 
 Due to the way that XML is decoded, dasel can only detect something as a list if there are at least 2 items.
