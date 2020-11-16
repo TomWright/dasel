@@ -241,11 +241,7 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 				default:
 					found, err = cond.Check(object)
 				}
-				if err != nil {
-					allConditionsMatched = false
-					break sliceConditionLoop
-				}
-				if !found {
+				if err != nil || !found {
 					allConditionsMatched = false
 					break sliceConditionLoop
 				}
@@ -289,11 +285,7 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 				default:
 					found, err = cond.Check(object)
 				}
-				if err != nil {
-					allConditionsMatched = false
-					break mapConditionLoop
-				}
-				if !found {
+				if err != nil || !found {
 					allConditionsMatched = false
 					break mapConditionLoop
 				}

@@ -144,6 +144,25 @@ func selectTest(in string, parser string, selector string, output string, expErr
 	}, expErr, additionalArgs...)
 }
 
+func selectTestContainsLines(in string, parser string, selector string, output []string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return selectTestCheck(in, parser, selector, func(out string) error {
+		splitOut := strings.Split(out, "\n")
+		for _, s := range output {
+			found := false
+			for _, got := range splitOut {
+				if s == got {
+					found = true
+					break
+				}
+			}
+			if !found {
+				return fmt.Errorf("required value not found: %s", s)
+			}
+		}
+		return nil
+	}, expErr, additionalArgs...)
+}
+
 func selectTestCheck(in string, parser string, selector string, checkFn func(out string) error, expErr error, additionalArgs ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
@@ -307,7 +326,7 @@ func TestRootCmd_Select_JSON(t *testing.T) {
   ]
 }`, "json", ".users.(.addresses.(.primary=true).number=123)(.name.last=Wright).name.first", newline(`"Tom"`), nil))
 
-	t.Run("KeySearch", selectTest(`{
+	t.Run("KeySearch", selectTestContainsLines(`{
   "users": [
     {
       "primary": true,
@@ -330,9 +349,7 @@ func TestRootCmd_Select_JSON(t *testing.T) {
       }
     }
   ]
-}`, "json", ".(?:-=name).first", newline(`"Tom"
-"Joe"
-"Jim"`), nil, "-m"))
+}`, "json", ".(?:-=name).first", []string{`"Tom"`, `"Joe"`, `"Jim"`}, nil, "-m"))
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
@@ -451,7 +468,7 @@ func TestRootCMD_Select_XML(t *testing.T) {
 	t.Run("DynamicString", selectTest(xmlData, "xml", ".data.details.addresses.(postcode=YYY YYY).street", "34 Another Street\n", nil))
 	t.Run("Attribute", selectTest(xmlData, "xml", ".data.details.addresses.(-primary=true).street", "101 Some Street\n", nil))
 
-	t.Run("KeySearch", selectTestCheck(`
+	t.Run("KeySearch", selectTestContainsLines(`
 <food>
   <tart>
     <apple color="yellow"/>
@@ -464,22 +481,7 @@ func TestRootCMD_Select_XML(t *testing.T) {
   </pie>
   <apple color="green"/>
 </food>
-`, "xml", ".food.(?:keyValue=apple).-color", func(out string) error {
-		splitOut := strings.Split(out, "\n")
-		for _, s := range []string{"yellow", "red", "green"} {
-			found := false
-			for _, got := range splitOut {
-				if s == got {
-					found = true
-					break
-				}
-			}
-			if !found {
-				return fmt.Errorf("required value not found: %s", s)
-			}
-		}
-		return nil
-	}, nil, "-m"))
+`, "xml", ".food.(?:keyValue=apple).-color", []string{"yellow", "red", "green"}, nil, "-m"))
 }
 
 func TestRootCMD_Select_CSV(t *testing.T) {
