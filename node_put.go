@@ -99,7 +99,10 @@ func buildPutMultipleChain(n *Node) error {
 
 	for _, next := range n.NextMultiple {
 		// Add the back reference
-		next.Previous = n
+		if next.Previous == nil {
+			// This can already be set in some cases - SEARCH.
+			next.Previous = n
+		}
 
 		if err := buildPutMultipleChain(next); err != nil {
 			return err

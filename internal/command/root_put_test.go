@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"github.com/tomwright/dasel/internal/command"
 	"io/ioutil"
+	"os"
 	"strings"
 	"testing"
 )
@@ -90,6 +91,51 @@ func putTest(in string, varType string, parser string, selector string, value st
 		output, err := ioutil.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
+			return
+		}
+
+		out = strings.TrimSpace(out)
+		outputStr := strings.TrimSpace(string(output))
+		if out != outputStr {
+			t.Errorf("expected result %v, got %v", out, outputStr)
+		}
+	}
+}
+
+func putFileTest(in string, varType string, parser string, selector string, value string, out string, outFile string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return func(t *testing.T) {
+		defer func() {
+			_ = os.Remove(outFile)
+		}()
+		cmd := command.NewRootCMD()
+
+		args := []string{
+			"put", varType,
+		}
+		args = append(args, additionalArgs...)
+		args = append(args, "-p", parser, "-o", outFile, selector, value)
+
+		cmd.SetIn(strings.NewReader(in))
+		cmd.SetArgs(args)
+
+		err := cmd.Execute()
+
+		if expErr == nil && err != nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err != nil && err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+
+		output, err := ioutil.ReadFile(outFile)
+		if err != nil {
+			t.Errorf("could not read output file: %s", err)
 			return
 		}
 
@@ -268,6 +314,150 @@ func TestRootCMD_Put_JSON(t *testing.T) {
     "value": "X"
   }
 ]`, nil, "-m"))
+
+	t.Run("KeySearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:-=name).first", "Bobby", `{
+  "users": [
+    {
+      "name": {
+        "first": "Bobby",
+        "last": "Wright"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Bobby",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Bobby",
+        "last": "Wright"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
+
+	t.Run("ValueSearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:.=Wright)", "Wrighto", `{
+  "users": [
+    {
+      "name": {
+        "first": "Tom",
+        "last": "Wrighto"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Jim",
+        "last": "Wrighto"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
+
+	t.Run("KeyValueSearch", putStringTest(`{
+  "users": [
+	{
+	  "primary": true,
+	  "name": {
+		"first": "Tom",
+		"last": "Wright"
+	  }
+	},
+	{
+	  "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+	  "name": {
+		"first": "Jim",
+		"last": "Wright"
+	  }
+	}
+  ]
+}`, "json", ".(?:.last=Wright).first", "Fred", `{
+  "users": [
+    {
+      "name": {
+        "first": "Fred",
+        "last": "Wright"
+      },
+      "primary": true
+    },
+    {
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Fred",
+        "last": "Wright"
+      },
+      "primary": false
+    }
+  ]
+}`, nil, "-m"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
@@ -278,6 +468,13 @@ name: "Tom"
 id: "y"
 name: Tom
 `, nil))
+	t.Run("StringInFile", putFileTest(`
+id: "x"
+name: "Tom"
+`, "string", "yaml", "id", "y", `
+id: "y"
+name: Tom
+`, "TestRootCMD_Put_YAML_out.yaml", nil))
 	t.Run("Int", putIntTest(`
 id: 123
 `, "yaml", "id", "456", `

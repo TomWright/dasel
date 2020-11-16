@@ -51,7 +51,10 @@ func buildFindMultipleChain(n *Node) error {
 
 	for _, next := range n.NextMultiple {
 		// Add the back reference
-		next.Previous = n
+		if next.Previous == nil {
+			// This can already be set in some cases - SEARCH.
+			next.Previous = n
+		}
 
 		if err := buildFindMultipleChain(next); err != nil {
 			return err
@@ -197,6 +200,101 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
 }
 
+func findNodesSearchRecursiveSubNode(selector Selector, subNode *Node, key string, createIfNotExists bool) ([]*Node, error) {
+	subResults, err := findNodesSearchRecursive(selector, subNode, createIfNotExists, false)
+	if err != nil {
+		return nil, fmt.Errorf("could not find nodes search recursive: %w", err)
+	}
+
+	// Loop through each condition.
+	allConditionsMatched := true
+sliceConditionLoop:
+	for _, c := range selector.Conditions {
+		found := false
+		var err error
+
+		switch cond := c.(type) {
+		case *KeyEqualCondition:
+			found, err = cond.Check(reflect.ValueOf(key))
+		default:
+			found, err = cond.Check(subNode.Value)
+		}
+		if err != nil || !found {
+			allConditionsMatched = false
+			break sliceConditionLoop
+		}
+	}
+
+	results := make([]*Node, 0)
+
+	if allConditionsMatched {
+		results = append(results, subNode)
+	}
+	if len(subResults) > 0 {
+		results = append(results, subResults...)
+	}
+
+	return results, nil
+}
+
+// findNodesSearchRecursive iterates through the value of the previous node and creates a new node for each element.
+// If any of those nodes match the checks they are returned.
+func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNotExists bool, firstNode bool) ([]*Node, error) {
+	if !isValid(previousNode.Value) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	value := unwrapValue(previousNode.Value)
+
+	results := make([]*Node, 0)
+
+	switch value.Kind() {
+	case reflect.Slice:
+		for i := 0; i < value.Len(); i++ {
+			object := value.Index(i)
+
+			subNode := &Node{
+				Previous: previousNode,
+				Value:    object,
+				Selector: selector.Copy(),
+			}
+			subNode.Selector.Type = "INDEX"
+			subNode.Selector.Index = i
+
+			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Index), createIfNotExists); err != nil {
+				return nil, err
+			} else {
+				results = append(results, newResults...)
+			}
+		}
+
+	case reflect.Map:
+		for _, key := range value.MapKeys() {
+			object := value.MapIndex(key)
+
+			subNode := &Node{
+				Previous: previousNode,
+				Value:    object,
+				Selector: selector.Copy(),
+			}
+			subNode.Selector.Type = "PROPERTY"
+			subNode.Selector.Property = fmt.Sprint(key.Interface())
+
+			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Property), createIfNotExists); err != nil {
+				return nil, err
+			} else {
+				results = append(results, newResults...)
+			}
+		}
+	}
+
+	return results, nil
+}
+
+// findNodesSearch finds all available nodes by recursively searching the previous value.
+func findNodesSearch(selector Selector, previousNode *Node, createIfNotExists bool) ([]*Node, error) {
+	return findNodesSearchRecursive(selector, previousNode, createIfNotExists, true)
+}
+
 // findNodesAnyIndex returns a node for every value in the previous value list.
 func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node, error) {
 	if !isValid(previousValue) {
@@ -228,13 +326,7 @@ func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflec
 	switch selector.Type {
 	case "PROPERTY":
 		return reflect.ValueOf(map[interface{}]interface{}{})
-	case "INDEX":
-		return reflect.ValueOf([]interface{}{})
-	case "NEXT_AVAILABLE_INDEX":
-		return reflect.ValueOf([]interface{}{})
-	case "INDEX_ANY":
-		return reflect.ValueOf([]interface{}{})
-	case "DYNAMIC":
+	case "INDEX", "NEXT_AVAILABLE_INDEX", "INDEX_ANY", "DYNAMIC":
 		return reflect.ValueOf([]interface{}{})
 	}
 	return previousValue
@@ -260,6 +352,8 @@ func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([
 		res, err = findNodesAnyIndex(selector, previousNode.Value)
 	case "DYNAMIC":
 		res, err = findNodesDynamic(selector, previousNode.Value, createIfNotExists)
+	case "SEARCH":
+		res, err = findNodesSearch(selector, previousNode, createIfNotExists)
 	default:
 		err = &UnsupportedSelector{Selector: selector.Raw}
 	}

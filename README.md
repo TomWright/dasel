@@ -53,6 +53,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
   * [Any index](#any-index)
   * [Dynamic](#dynamic)
     * [Using queries in dynamic selectors](#using-queries-in-dynamic-selectors)
+  * [Search](#search)
 * [Examples](#examples)
   * [General](#general)
     * [Filter JSON API results](#filter-json-api-results)
@@ -421,6 +422,40 @@ Once decoded, you can access them using any of the standard selectors provided b
 ```
 Using [github.com/clbanning/mxj](https://github.com/clbanning/mxj).
 
+#### XML Documents
+
+XML documents within dasel are stored as a map of values.
+
+This is just how dasel stores data and is required for the general functionality to work. An example of a simple documents representation is as follows:
+
+```
+<Person active="true">
+  <Name main="yes">Tom</Name>
+  <Age>27</Age>
+</Person>
+```
+
+```
+map[
+  Person:map[
+    -active:true
+    Age:27
+    Name:map[
+      #text:Tom
+      -main:true
+    ]
+  ]
+]
+```
+
+In general this won't affect you, but on the odd occasion in specific instances it could lead to unexpected output.
+
+If you are struggling with this please raise an issue for support. This will also help me know when the docs aren't sufficient.
+
+##### Debugging
+
+You can run select commands with the `--plain` flag to see the raw data that is stored within dasel. This can help you figure out the exact properties you may need to target when it isn't immediately obvious.
+
 #### Arrays/Lists
 
 Due to the way that XML is decoded, dasel can only detect something as a list if there are at least 2 items.
@@ -563,6 +598,64 @@ The resolution of that query looks something like this:
 .users.(.addresses.(.primary=true).number=123).name.first
 .users.(.addresses.[0].number=123).name.first
 .users.[0].name.first
+```
+
+### Search
+
+Search selectors recursively search all the data below the current node and returns all the results - this means they can only be used in multi select/put commands.
+
+The syntax is as follows:
+```
+.(?:key=value)
+```
+
+If `key` is:
+- `.` or `value` - dasel checks if the current nodes value is `value`.
+- `-` or `keyValue` - dasel checks if the current nodes key/name/index value is `value`.
+- Else dasel uses the `key` as a selector itself and compares the result against `value`.
+
+#### Search Example
+
+```
+{
+  "users": [
+    {
+      "primary": true,
+      "name": {
+        "first": "Tom",
+        "last": "Wright"
+      }
+    },
+    {
+      "primary": false,
+      "extra": {
+        "name": {
+          "first": "Joe",
+          "last": "Blogs"
+        }
+      },
+      "name": {
+        "first": "Jim",
+        "last": "Wright"
+      }
+    }
+  ]
+}
+```
+
+Search for all objects with a key of `name` and output the first name of each:
+```
+dasel -p json -m '.(?:-=name).first'
+"Tom"
+"Joe"
+"Jim"
+```
+
+Search for all objects with a last name of `Wright` and output the first name of each:
+```
+dasel -p json -m '.(?:name.last=Wright).name.first'
+"Tom"
+"Jim"
 ```
 
 ## Examples

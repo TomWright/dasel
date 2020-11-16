@@ -27,6 +27,19 @@ type Selector struct {
 	Conditions []Condition `json:"conditions,omitempty"`
 }
 
+// Copy returns a copy of the selector.
+func (s Selector) Copy() Selector {
+	return Selector{
+		Raw:        s.Raw,
+		Current:    s.Current,
+		Remaining:  s.Remaining,
+		Type:       s.Type,
+		Property:   s.Property,
+		Index:      s.Index,
+		Conditions: s.Conditions,
+	}
+}
+
 // Node represents a single node in the chain of nodes for a selector.
 type Node struct {
 	// Previous is the previous node in the chain.
@@ -112,6 +125,51 @@ func ParseSelector(selector string) (Selector, error) {
 	nextSel := strings.TrimPrefix(sel.Current, ".")
 
 	switch {
+	case strings.HasPrefix(nextSel, "(?:") && strings.HasSuffix(nextSel, ")"):
+		sel.Type = "SEARCH"
+
+		dynamicGroups, err := DynamicSelectorToGroups(nextSel)
+		if err != nil {
+			return sel, err
+		}
+		if len(dynamicGroups) != 1 {
+			return sel, fmt.Errorf("require exactly 1 group in search selector")
+		}
+
+		for _, g := range dynamicGroups {
+			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+			if m == nil {
+				return sel, fmt.Errorf("invalid search format")
+			}
+
+			m[1] = strings.TrimPrefix(m[1], "?:")
+
+			var cond Condition
+			switch m[1] {
+			case "-", "keyValue":
+				switch m[2] {
+				case "=":
+					cond = &KeyEqualCondition{
+						Value: m[3],
+					}
+				default:
+					return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				}
+			default:
+				switch m[2] {
+				case "=":
+					cond = &EqualCondition{
+						Key:   strings.TrimPrefix(m[1], "?:"),
+						Value: m[3],
+					}
+				default:
+					return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				}
+			}
+
+			sel.Conditions = append(sel.Conditions, cond)
+		}
+
 	case strings.HasPrefix(nextSel, "(") && strings.HasSuffix(nextSel, ")"):
 		sel.Type = "DYNAMIC"
 		dynamicGroups, err := DynamicSelectorToGroups(nextSel)
@@ -121,6 +179,9 @@ func ParseSelector(selector string) (Selector, error) {
 
 		for _, g := range dynamicGroups {
 			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+			if m == nil {
+				return sel, fmt.Errorf("invalid search format")
+			}
 
 			var cond Condition
 			switch m[2] {

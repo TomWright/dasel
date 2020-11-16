@@ -27,4 +27,4 @@ jobs:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
           file: ./coverage.txt # optional
           flags: unittests # optional
-          fail_ci_if_error: true # optional (default = false)
+          fail_ci_if_error: false # optional (default = false)

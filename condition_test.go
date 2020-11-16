@@ -73,3 +73,23 @@ func TestEqualCondition_Check(t *testing.T) {
 		false, &dasel.UnhandledCheckType{Value: ""},
 	))
 }
+
+func TestKeyEqualCondition_Check(t *testing.T) {
+	c := &dasel.KeyEqualCondition{Value: "name"}
+
+	t.Run("MatchStringValue", conditionTest(
+		c,
+		"name",
+		true, nil,
+	))
+	t.Run("NoMatchMissingKey", conditionTest(
+		c,
+		"asd",
+		false, nil,
+	))
+	t.Run("Nil", conditionTest(
+		c,
+		nil,
+		false, &dasel.UnhandledCheckType{Value: nil},
+	))
+}
