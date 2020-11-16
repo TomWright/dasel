@@ -112,6 +112,48 @@ func ParseSelector(selector string) (Selector, error) {
 	nextSel := strings.TrimPrefix(sel.Current, ".")
 
 	switch {
+	case strings.HasPrefix(nextSel, "(?:") && strings.HasSuffix(nextSel, ")"):
+		sel.Type = "SEARCH"
+
+		dynamicGroups, err := DynamicSelectorToGroups(nextSel)
+		if err != nil {
+			return sel, err
+		}
+		if len(dynamicGroups) != 1 {
+			return sel, fmt.Errorf("require exactly 1 group in search selector")
+		}
+
+		for _, g := range dynamicGroups {
+			m := dynamicSelectorRegexp.FindStringSubmatch(g)
+
+			m[1] = strings.TrimPrefix(m[1], "?:")
+
+			var cond Condition
+			switch m[1] {
+			case "-", "keyValue":
+				switch m[2] {
+				case "=":
+					cond = &KeyEqualCondition{
+						Value: m[3],
+					}
+				default:
+					return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				}
+			default:
+				switch m[2] {
+				case "=":
+					cond = &EqualCondition{
+						Key:   strings.TrimPrefix(m[1], "?:"),
+						Value: m[3],
+					}
+				default:
+					return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				}
+			}
+
+			sel.Conditions = append(sel.Conditions, cond)
+		}
+
 	case strings.HasPrefix(nextSel, "(") && strings.HasSuffix(nextSel, ")"):
 		sel.Type = "DYNAMIC"
 		dynamicGroups, err := DynamicSelectorToGroups(nextSel)

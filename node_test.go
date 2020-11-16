@@ -34,6 +34,18 @@ var (
 	}
 )
 
+func testParseSelector(in string, exp dasel.Selector) func(t *testing.T) {
+	return func(t *testing.T) {
+		got, err := dasel.ParseSelector(in)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+		}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	}
+}
+
 func TestParseSelector(t *testing.T) {
 	t.Run("NonIntIndex", func(t *testing.T) {
 		_, err := dasel.ParseSelector(".[a]")
@@ -56,6 +68,29 @@ func TestParseSelector(t *testing.T) {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
+	t.Run("Search", testParseSelector(".(?:name=asd)", dasel.Selector{
+		Raw:       ".(?:name=asd)",
+		Current:   ".(?:name=asd)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.EqualCondition{
+				Key:   "name",
+				Value: "asd",
+			},
+		},
+	}))
+	t.Run("SearchKey", testParseSelector(".(?:-=asd)", dasel.Selector{
+		Raw:       ".(?:-=asd)",
+		Current:   ".(?:-=asd)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.KeyEqualCondition{
+				Value: "asd",
+			},
+		},
+	}))
 }
 
 func TestNode_QueryMultiple(t *testing.T) {
