@@ -22,6 +22,10 @@ jobs:
             ${{ runner.os }}-go-
       - name: Test
         run: go test -coverprofile=coverage.txt -covermode=atomic -race ./...
+      - name: Coveralls GitHub Action
+        uses: coverallsapp/github-action@v1.1.2
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
       - uses: codecov/codecov-action@v1
         with:
           token: ${{ secrets.CODECOV_TOKEN }} # not required for public repos
