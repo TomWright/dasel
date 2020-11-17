@@ -263,6 +263,39 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   ]
 }`, nil))
 
+	t.Run("EmptyObject", putObjectTest(`{
+  "numbers": [
+    {
+      "rank": 1,
+      "number": "one"
+    },
+    {
+      "rank": 2,
+      "number": "two"
+    },
+    {
+      "rank": 3,
+      "number": "three"
+    }
+  ]
+}`, "json", ".numbers.[]", []string{}, []string{}, `{
+  "numbers": [
+    {
+      "number": "one",
+      "rank": 1
+    },
+    {
+      "number": "two",
+      "rank": 2
+    },
+    {
+      "number": "three",
+      "rank": 3
+    },
+    {}
+  ]
+}`, nil))
+
 	t.Run("AppendObjectMulti", putObjectTest(`{
   "numbers": [
     {
