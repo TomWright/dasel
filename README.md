@@ -307,6 +307,8 @@ Putting objects works slightly differently to a standard put, but the same princ
 dasel put object -f <file> -o <out> -p <parser> -m -t <type> <selector> <values>
 ```
 
+If you want to create an empty object just omit the type flag and the values.
+
 #### Arguments
 
 ##### `-t`, `--type`
