@@ -376,8 +376,6 @@ A space-separated list of `key=value` pairs.
 
 Dasel will parse each value as a string, int, or bool depending on the related `type`.
 
-This is required.
-
 #### Example
 
 ```bash
