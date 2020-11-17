@@ -33,7 +33,7 @@ jobs:
         run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
         if: runner.os != 'Windows'
       - name: Set env (Windows)
-        run: echo RELEASE_VERSION::${GITHUB_REF:10} >> $GITHUB_ENV
+        run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
         shell: bash
         if: runner.os == 'Windows'
       - name: Build
