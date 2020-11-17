@@ -210,7 +210,7 @@ func findNodesSearchRecursiveSubNode(selector Selector, subNode *Node, key strin
 	allConditionsMatched := true
 sliceConditionLoop:
 	for _, c := range selector.Conditions {
-		found := false
+		var found bool
 		var err error
 
 		switch cond := c.(type) {
@@ -260,11 +260,11 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 			subNode.Selector.Type = "INDEX"
 			subNode.Selector.Index = i
 
-			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Index), createIfNotExists); err != nil {
+			newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Index), createIfNotExists)
+			if err != nil {
 				return nil, err
-			} else {
-				results = append(results, newResults...)
 			}
+			results = append(results, newResults...)
 		}
 
 	case reflect.Map:
@@ -279,11 +279,11 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 			subNode.Selector.Type = "PROPERTY"
 			subNode.Selector.Property = fmt.Sprint(key.Interface())
 
-			if newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Property), createIfNotExists); err != nil {
+			newResults, err := findNodesSearchRecursiveSubNode(selector, subNode, fmt.Sprint(subNode.Selector.Property), createIfNotExists)
+			if err != nil {
 				return nil, err
-			} else {
-				results = append(results, newResults...)
 			}
+			results = append(results, newResults...)
 		}
 	}
 
