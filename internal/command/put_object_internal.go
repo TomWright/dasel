@@ -110,7 +110,6 @@ func putObjectCommand() *cobra.Command {
 	}
 
 	cmd.Flags().VarP(typeList, "type", "t", "Types of the variables in the object.")
-	_ = cmd.MarkFlagRequired("type")
 
 	return cmd
 }
