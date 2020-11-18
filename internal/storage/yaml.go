@@ -34,7 +34,7 @@ func (d *YAMLMultiDocument) RealValue() interface{} {
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
-func (p *YAMLParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *YAMLParser) FromBytes(byteData []byte) (RealValue, error) {
 	res := make([]interface{}, 0)
 
 	decoder := yaml.NewDecoder(bytes.NewBuffer(byteData))
