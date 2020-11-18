@@ -22,17 +22,9 @@ func (e UnknownParserErr) Error() string {
 // Parser can be used to load and save files from/to disk.
 type Parser interface {
 	// FromBytes returns some Data that is represented by the given bytes.
-	FromBytes(byteData []byte) (RealValue, error)
+	FromBytes(byteData []byte) (interface{}, error)
 	// ToBytes returns a slice of bytes that represents the given value.
 	ToBytes(value interface{}) ([]byte, error)
-}
-
-type RealValueParser struct {
-	data interface{}
-}
-
-func (r *RealValueParser) RealValue() interface{} {
-	return r.data
 }
 
 // NewParserFromFilename returns a Parser from the given filename.
@@ -73,7 +65,7 @@ func NewParserFromString(parser string) (Parser, error) {
 }
 
 // LoadFromFile loads data from the given file.
-func LoadFromFile(filename string, p Parser) (RealValue, error) {
+func LoadFromFile(filename string, p Parser) (interface{}, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return nil, fmt.Errorf("could not open file: %w", err)
@@ -82,7 +74,7 @@ func LoadFromFile(filename string, p Parser) (RealValue, error) {
 }
 
 // Load loads data from the given io.Reader.
-func Load(p Parser, reader io.Reader) (RealValue, error) {
+func Load(p Parser, reader io.Reader) (interface{}, error) {
 	byteData, err := ioutil.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("could not read data: %w", err)

@@ -22,7 +22,7 @@ func (d *JSONSingleDocument) RealValue() interface{} {
 	return d.Value
 }
 
-// YAMLMultiDocument represents a decoded multi-document YAML file.
+// JSONMultiDocument represents a decoded multi-document YAML file.
 type JSONMultiDocument struct {
 	originalRequired
 	Values []interface{}
@@ -33,10 +33,8 @@ func (d *JSONMultiDocument) RealValue() interface{} {
 	return d.Values
 }
 
-// FromBytes returns some Data that is represented by the given bytes.
-
-func (p *JSONParser) FromBytes(byteData []byte) (RealValue, error) {
-
+// FromBytes returns some data that is represented by the given bytes.
+func (p *JSONParser) FromBytes(byteData []byte) (interface{}, error) {
 	res := make([]interface{}, 0)
 
 	decoder := json.NewDecoder(bytes.NewBuffer(byteData))

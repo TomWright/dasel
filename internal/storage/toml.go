@@ -10,12 +10,12 @@ type TOMLParser struct {
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
-func (p *TOMLParser) FromBytes(byteData []byte) (RealValue, error) {
+func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	var data interface{}
 	if err := toml.Unmarshal(byteData, &data); err != nil {
-		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal data: %w", err)
+		return data, fmt.Errorf("could not unmarshal data: %w", err)
 	}
-	return &RealValueParser{data: data}, nil
+	return data, nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.

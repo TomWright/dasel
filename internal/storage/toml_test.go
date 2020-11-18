@@ -26,7 +26,7 @@ func TestTOMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(tomlMap, got.RealValue()) {
+		if !reflect.DeepEqual(tomlMap, got) {
 			t.Errorf("expected %v, got %v", tomlMap, got)
 		}
 	})

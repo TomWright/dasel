@@ -10,12 +10,12 @@ type XMLParser struct {
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
-func (p *XMLParser) FromBytes(byteData []byte) (RealValue, error) {
+func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {
-		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal data: %w", err)
+		return data, fmt.Errorf("could not unmarshal data: %w", err)
 	}
-	return &RealValueParser{data: map[string]interface{}(data)}, nil
+	return map[string]interface{}(data), nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.

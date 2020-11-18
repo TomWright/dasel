@@ -20,8 +20,9 @@ func TestJSONParser_FromBytes(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if !reflect.DeepEqual(jsonMap, got.RealValue()) {
-		t.Errorf("expected %v, got %v", jsonMap, got)
+	exp := &storage.JSONSingleDocument{Value: jsonMap}
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", exp, got)
 	}
 }
 

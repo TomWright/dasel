@@ -44,7 +44,7 @@ func TestNewParserFromString(t *testing.T) {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
 			}
-			if !reflect.DeepEqual(tc.Out, got) {
+			if tc.Out != got {
 				t.Errorf("expected result %v, got %v", tc.Out, got)
 			}
 		})
@@ -82,7 +82,7 @@ func TestNewParserFromFilename(t *testing.T) {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
 			}
-			if !reflect.DeepEqual(tc.Out, got) {
+			if tc.Out != got {
 				t.Errorf("expected result %v, got %v", tc.Out, got)
 			}
 		})
@@ -118,8 +118,9 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(jsonData, data.RealValue()) {
-			t.Errorf("data does not match")
+		exp := &storage.JSONSingleDocument{Value: jsonData}
+		if !reflect.DeepEqual(exp, data) {
+			t.Errorf("data does not match: exp %v, got %v", exp, data)
 		}
 	})
 	t.Run("BaseFilePath", func(t *testing.T) {
@@ -145,7 +146,7 @@ var errFailingParserErr = errors.New("i am meant to fail at parsing")
 type failingParser struct {
 }
 
-func (fp *failingParser) FromBytes(_ []byte) (storage.RealValue, error) {
+func (fp *failingParser) FromBytes(_ []byte) (interface{}, error) {
 	return nil, errFailingParserErr
 }
 
