@@ -23,6 +23,7 @@ func TestNewParserFromString(t *testing.T) {
 	}{
 		{In: "json", Out: &storage.JSONParser{}},
 		{In: "yaml", Out: &storage.YAMLParser{}},
+		{In: "yml", Out: &storage.YAMLParser{}},
 		{In: "toml", Out: &storage.TOMLParser{}},
 		{In: "bad", Out: nil, Err: &storage.UnknownParserErr{Parser: "bad"}},
 	}
@@ -144,7 +145,7 @@ var errFailingParserErr = errors.New("i am meant to fail at parsing")
 type failingParser struct {
 }
 
-func (fp *failingParser) FromBytes(_ []byte) (interface{}, error) {
+func (fp *failingParser) FromBytes(_ []byte) (storage.RealValue, error) {
 	return nil, errFailingParserErr
 }
 

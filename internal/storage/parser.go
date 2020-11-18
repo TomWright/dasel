@@ -49,7 +49,7 @@ func NewParserFromFilename(filename string) (Parser, error) {
 // NewParserFromString returns a Parser from the given parser name.
 func NewParserFromString(parser string) (Parser, error) {
 	switch parser {
-	case "yaml":
+	case "yaml", "yml":
 		return &YAMLParser{}, nil
 	case "json":
 		return &JSONParser{}, nil
