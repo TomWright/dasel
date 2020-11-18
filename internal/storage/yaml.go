@@ -33,7 +33,7 @@ func (d *YAMLMultiDocument) RealValue() interface{} {
 	return d.Values
 }
 
-// FromBytes returns some Data that is represented by the given bytes.
+// FromBytes returns some data that is represented by the given bytes.
 func (p *YAMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	res := make([]interface{}, 0)
 

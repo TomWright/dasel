@@ -9,7 +9,7 @@ import (
 type XMLParser struct {
 }
 
-// FromBytes returns some Data that is represented by the given bytes.
+// FromBytes returns some data that is represented by the given bytes.
 func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {

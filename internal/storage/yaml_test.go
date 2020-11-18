@@ -13,6 +13,19 @@ var yamlMap = map[interface{}]interface{}{
 	"name": "Tom",
 }
 
+var yamlBytesMulti = []byte(`name: Tom
+---
+name: Jim
+`)
+var yamlMapMulti = []interface{}{
+	map[interface{}]interface{}{
+		"name": "Tom",
+	},
+	map[interface{}]interface{}{
+		"name": "Jim",
+	},
+}
+
 func TestYAMLParser_FromBytes(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
 		got, err := (&storage.YAMLParser{}).FromBytes(yamlBytes)
@@ -26,23 +39,12 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidMultiDocument", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).FromBytes([]byte(`
-name: Tom
----
-name: Jim
-`))
+		got, err := (&storage.YAMLParser{}).FromBytes(yamlBytesMulti)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.YAMLMultiDocument{Values: []interface{}{
-			map[interface{}]interface{}{
-				"name": "Tom",
-			},
-			map[interface{}]interface{}{
-				"name": "Jim",
-			},
-		}}
+		exp := &storage.YAMLMultiDocument{Values: yamlMapMulti}
 
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
@@ -68,12 +70,34 @@ name: Jim
 }
 
 func TestYAMLParser_ToBytes(t *testing.T) {
-	got, err := (&storage.YAMLParser{}).ToBytes(yamlMap)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	if string(yamlBytes) != string(got) {
-		t.Errorf("expected %s, got %s", yamlBytes, got)
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).ToBytes(yamlMap)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(yamlBytes) != string(got) {
+			t.Errorf("expected %s, got %s", yamlBytes, got)
+		}
+	})
+	t.Run("ValidSingle", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).ToBytes(&storage.YAMLSingleDocument{Value: yamlMap})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(yamlBytes) != string(got) {
+			t.Errorf("expected %s, got %s", yamlBytes, got)
+		}
+	})
+	t.Run("ValidMulti", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).ToBytes(&storage.YAMLMultiDocument{Values: yamlMapMulti})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(yamlBytesMulti) != string(got) {
+			t.Errorf("expected %s, got %s", yamlBytesMulti, got)
+		}
+	})
 }

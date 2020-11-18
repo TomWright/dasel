@@ -15,23 +15,57 @@ var jsonMap = map[string]interface{}{
 }
 
 func TestJSONParser_FromBytes(t *testing.T) {
-	got, err := (&storage.JSONParser{}).FromBytes(jsonBytes)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(jsonMap, got) {
-		t.Errorf("expected %v, got %v", jsonMap, got)
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(jsonBytes)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONSingleDocument{Value: jsonMap}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+	t.Run("ValidMultiDocument", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(jsonBytesMulti)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONMultiDocument{
+			Values: jsonMapMulti,
+		}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", jsonMap, got)
+		}
+	})
+	t.Run("ValidMultiDocumentMixed", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(jsonBytesMultiMixed)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONMultiDocument{
+			Values: jsonMapMultiMixed,
+		}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", jsonMap, got)
+		}
+	})
+	t.Run("Empty", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes([]byte(``))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(nil, got) {
+			t.Errorf("expected %v, got %v", nil, got)
+		}
+	})
 }
 
 func TestJSONParser_FromBytes_Error(t *testing.T) {
-	_, err := (&storage.JSONParser{}).FromBytes(nil)
-	if err == nil {
-		t.Errorf("expected error but got none")
-		return
-	}
-	_, err = (&storage.JSONParser{}).FromBytes(yamlBytes)
+	_, err := (&storage.JSONParser{}).FromBytes(yamlBytes)
 	if err == nil {
 		t.Errorf("expected error but got none")
 		return
@@ -39,12 +73,74 @@ func TestJSONParser_FromBytes_Error(t *testing.T) {
 }
 
 func TestJSONParser_ToBytes(t *testing.T) {
-	got, err := (&storage.JSONParser{}).ToBytes(jsonMap)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	if !reflect.DeepEqual(jsonBytes, got) {
-		t.Errorf("expected %v, got %v", string(jsonBytes), string(got))
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).ToBytes(jsonMap)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(jsonBytes) != string(got) {
+			t.Errorf("expected %v, got %v", string(jsonBytes), string(got))
+		}
+	})
+
+	t.Run("ValidSingle", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONSingleDocument{Value: jsonMap})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(jsonBytes) != string(got) {
+			t.Errorf("expected %v, got %v", string(jsonBytes), string(got))
+		}
+	})
+
+	t.Run("ValidMulti", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONMultiDocument{Values: jsonMapMulti})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(jsonBytesMulti) != string(got) {
+			t.Errorf("expected %v, got %v", string(jsonBytesMulti), string(got))
+		}
+	})
+
+	t.Run("ValidMultiMixed", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONMultiDocument{Values: jsonMapMultiMixed})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if string(jsonBytesMultiMixed) != string(got) {
+			t.Errorf("expected %v, got %v", string(jsonBytesMultiMixed), string(got))
+		}
+	})
+}
+
+var jsonBytesMulti = []byte(`{
+  "name": "Tom"
+}
+{
+  "name": "Ellis"
+}
+`)
+
+var jsonMapMulti = []interface{}{
+	map[string]interface{}{"name": "Tom"},
+	map[string]interface{}{"name": "Ellis"},
+}
+
+var jsonBytesMultiMixed = []byte(`{
+  "name": "Tom",
+  "other": true
+}
+{
+  "name": "Ellis"
+}
+`)
+
+var jsonMapMultiMixed = []interface{}{
+	map[string]interface{}{"name": "Tom", "other": true},
+	map[string]interface{}{"name": "Ellis"},
 }

@@ -94,8 +94,7 @@ func putTest(in string, varType string, parser string, selector string, value st
 			return
 		}
 
-		out = strings.TrimSpace(out)
-		outputStr := strings.TrimSpace(string(output))
+		outputStr := string(output)
 		if out != outputStr {
 			t.Errorf("expected result %v, got %v", out, outputStr)
 		}
@@ -152,17 +151,20 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   "id": "x"
 }`, "json", "id", "y", `{
   "id": "y"
-}`, nil))
+}
+`, nil))
 	t.Run("Int", putIntTest(`{
   "id": 123
 }`, "json", "id", "456", `{
   "id": 456
-}`, nil))
+}
+`, nil))
 	t.Run("Bool", putBoolTest(`{
   "id": true
 }`, "json", "id", "false", `{
   "id": false
-}`, nil))
+}
+`, nil))
 	t.Run("OverwriteObject", putObjectTest(`{
   "numbers": [
     {
@@ -346,7 +348,8 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   {
     "value": "X"
   }
-]`, nil, "-m"))
+]
+`, nil, "-m"))
 
 	t.Run("KeySearch", putStringTest(`{
   "users": [
@@ -394,7 +397,8 @@ func TestRootCMD_Put_JSON(t *testing.T) {
       "primary": false
     }
   ]
-}`, nil, "-m"))
+}
+`, nil, "-m"))
 
 	t.Run("ValueSearch", putStringTest(`{
   "users": [
@@ -442,7 +446,8 @@ func TestRootCMD_Put_JSON(t *testing.T) {
       "primary": false
     }
   ]
-}`, nil, "-m"))
+}
+`, nil, "-m"))
 
 	t.Run("KeyValueSearch", putStringTest(`{
   "users": [
@@ -490,33 +495,64 @@ func TestRootCMD_Put_JSON(t *testing.T) {
       "primary": false
     }
   ]
-}`, nil, "-m"))
+}
+`, nil, "-m"))
+
+	t.Run("StringMultiObjectDocument", putStringTest(`{
+  "id": "x"
+}
+{
+  "id": "y"
+}`, "json", ".[0].id", "z", `{
+  "id": "z"
+}
+{
+  "id": "y"
+}
+`, nil))
+
+	t.Run("StringMultiArrayDocument", putStringTest(`[
+  "a",
+  "b",
+  "c"
+]
+[
+  "d",
+  "e",
+  "f"
+]`, "json", ".[1].[1]", "z", `[
+  "a",
+  "b",
+  "c"
+]
+[
+  "d",
+  "z",
+  "f"
+]
+`, nil))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
 	t.Run("String", putStringTest(`
 id: "x"
 name: "Tom"
-`, "yaml", "id", "y", `
-id: "y"
+`, "yaml", "id", "y", `id: "y"
 name: Tom
 `, nil))
 	t.Run("StringInFile", putFileTest(`
 id: "x"
 name: "Tom"
-`, "string", "yaml", "id", "y", `
-id: "y"
+`, "string", "yaml", "id", "y", `id: "y"
 name: Tom
 `, "TestRootCMD_Put_YAML_out.yaml", nil))
 	t.Run("Int", putIntTest(`
 id: 123
-`, "yaml", "id", "456", `
-id: 456
+`, "yaml", "id", "456", `id: 456
 `, nil))
 	t.Run("Bool", putBoolTest(`
 id: true
-`, "yaml", "id", "false", `
-id: false
+`, "yaml", "id", "false", `id: false
 `, nil))
 	t.Run("OverwriteObject", putObjectTest(`
 numbers:
@@ -541,8 +577,7 @@ id: "x"
 id: "y"
 ---
 id: "z"
-`, "yaml", "[1].id", "1", `
-id: x
+`, "yaml", "[1].id", "1", `id: x
 ---
 id: "1"
 ---
@@ -552,8 +587,7 @@ id: z
 	t.Run("StringWithDotInName", putStringTest(`
 id: "asd"
 my.name: "Tom"
-`, "yaml", `my\.name`, "Jim", `
-id: asd
+`, "yaml", `my\.name`, "Jim", `id: asd
 my.name: Jim
 `, nil))
 
@@ -561,8 +595,7 @@ my.name: Jim
 metadata:
   annotations:
     node.longhorn.io/default-disks-config: '[ { "name":"fast",  "path":"/mnt/data-fast1", "allowScheduling":true, "tags":["fast"]}, { "name":"slow",  "path":"/mnt/data-slow1", "allowScheduling":true, "tags":["slow"]} ]'
-`, "yaml", `metadata.labels.node\.longhorn\.io\/create-default-disk`, "config", `
-metadata:
+`, "yaml", `metadata.labels.node\.longhorn\.io\/create-default-disk`, "config", `metadata:
   annotations:
     node.longhorn.io/default-disks-config: '[ { "name":"fast",  "path":"/mnt/data-fast1",
       "allowScheduling":true, "tags":["fast"]}, { "name":"slow",  "path":"/mnt/data-slow1",
@@ -575,18 +608,15 @@ metadata:
 func TestRootCMD_Put_TOML(t *testing.T) {
 	t.Run("String", putStringTest(`
 id = "x"
-`, "toml", "id", "y", `
-id = "y"
+`, "toml", "id", "y", `id = "y"
 `, nil))
 	t.Run("Int", putIntTest(`
 id = 123
-`, "toml", "id", "456", `
-id = 456
+`, "toml", "id", "456", `id = 456
 `, nil))
 	t.Run("Bool", putBoolTest(`
 id = true
-`, "toml", "id", "false", `
-id = false
+`, "toml", "id", "false", `id = false
 `, nil))
 	t.Run("OverwriteObject", putObjectTest(`
 [[numbers]]

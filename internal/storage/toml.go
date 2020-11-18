@@ -5,11 +5,11 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
-// TOMLParser is a Parser implementation to handle yaml files.
+// TOMLParser is a Parser implementation to handle toml files.
 type TOMLParser struct {
 }
 
-// FromBytes returns some Data that is represented by the given bytes.
+// FromBytes returns some data that is represented by the given bytes.
 func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	var data interface{}
 	if err := toml.Unmarshal(byteData, &data); err != nil {

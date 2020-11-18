@@ -23,6 +23,7 @@ func TestNewParserFromString(t *testing.T) {
 	}{
 		{In: "json", Out: &storage.JSONParser{}},
 		{In: "yaml", Out: &storage.YAMLParser{}},
+		{In: "yml", Out: &storage.YAMLParser{}},
 		{In: "toml", Out: &storage.TOMLParser{}},
 		{In: "bad", Out: nil, Err: &storage.UnknownParserErr{Parser: "bad"}},
 	}
@@ -117,8 +118,9 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(jsonData, data) {
-			t.Errorf("data does not match")
+		exp := &storage.JSONSingleDocument{Value: jsonData}
+		if !reflect.DeepEqual(exp, data) {
+			t.Errorf("data does not match: exp %v, got %v", exp, data)
 		}
 	})
 	t.Run("BaseFilePath", func(t *testing.T) {
