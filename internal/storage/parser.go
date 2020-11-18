@@ -27,6 +27,14 @@ type Parser interface {
 	ToBytes(value interface{}) ([]byte, error)
 }
 
+type RealValueParser struct {
+	data interface{}
+}
+
+func (r *RealValueParser) RealValue() interface{} {
+	return r.data
+}
+
 // NewParserFromFilename returns a Parser from the given filename.
 func NewParserFromFilename(filename string) (Parser, error) {
 	ext := strings.ToLower(filepath.Ext(filename))

@@ -8,11 +8,6 @@ import (
 
 // CSVParser is a Parser implementation to handle yaml files.
 type CSVParser struct {
-	data interface{}
-}
-
-func (p *CSVParser) RealValue() interface{} {
-	return p.data
 }
 
 // CSVDocument represents a CSV file.
