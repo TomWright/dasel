@@ -7,15 +7,20 @@ import (
 
 // XMLParser is a Parser implementation to handle yaml files.
 type XMLParser struct {
+	data interface{}
+}
+
+func (x *XMLParser) RealValue() interface{} {
+	return x.data
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
-func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *XMLParser) FromBytes(byteData []byte) (RealValue, error) {
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {
-		return data, fmt.Errorf("could not unmarshal config data: %w", err)
+		return &XMLParser{data: data}, fmt.Errorf("could not unmarshal config data: %w", err)
 	}
-	return map[string]interface{}(data), nil
+	return &XMLParser{data: map[string]interface{}(data)}, nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.

@@ -8,10 +8,15 @@ import (
 
 // CSVParser is a Parser implementation to handle yaml files.
 type CSVParser struct {
+	data interface{}
+}
+
+func (p *CSVParser) RealValue() interface{} {
+	return p.data
 }
 
 // CSVDocument represents a CSV file.
-// This is required to keep headers in the expected order.
+// This is required to keep headers in the expected order.storage.JSONSingleDocument{Value:
 type CSVDocument struct {
 	originalRequired
 	Value   []map[string]interface{}
@@ -24,7 +29,7 @@ func (d *CSVDocument) RealValue() interface{} {
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
-func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *CSVParser) FromBytes(byteData []byte) (RealValue, error) {
 	if byteData == nil {
 		return nil, fmt.Errorf("could not read csv file: no data")
 	}
