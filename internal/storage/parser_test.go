@@ -44,7 +44,7 @@ func TestNewParserFromString(t *testing.T) {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
 			}
-			if tc.Out != got {
+			if !reflect.DeepEqual(tc.Out, got) {
 				t.Errorf("expected result %v, got %v", tc.Out, got)
 			}
 		})
@@ -82,7 +82,7 @@ func TestNewParserFromFilename(t *testing.T) {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
 			}
-			if tc.Out != got {
+			if !reflect.DeepEqual(tc.Out, got) {
 				t.Errorf("expected result %v, got %v", tc.Out, got)
 			}
 		})
