@@ -13,7 +13,7 @@ type TOMLParser struct {
 func (p *TOMLParser) FromBytes(byteData []byte) (RealValue, error) {
 	var data interface{}
 	if err := toml.Unmarshal(byteData, &data); err != nil {
-		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal config data: %w", err)
+		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal data: %w", err)
 	}
 	return &RealValueParser{data: data}, nil
 }

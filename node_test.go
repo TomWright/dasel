@@ -1,6 +1,7 @@
 package dasel_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/tomwright/dasel"
@@ -8,6 +9,78 @@ import (
 	"reflect"
 	"testing"
 )
+
+// ExampleNode_ReadmeExample tests the code from the readme explanation.
+func ExampleNode_ReadmeExample() {
+	printNodeValue := func(nodes ...*dasel.Node) {
+		for _, n := range nodes {
+			fmt.Println(n.InterfaceValue())
+		}
+	}
+
+	var data interface{}
+	_ = json.Unmarshal([]byte(`[{"name": "Tom"}, {"name": "Jim"}]`), &data)
+
+	rootNode := dasel.New(data)
+
+	result, _ := rootNode.Query(".[0].name")
+	printNodeValue(result) // Tom
+
+	results, _ := rootNode.QueryMultiple(".[*].name")
+	printNodeValue(results...) // Tom \n Jim
+
+	_ = rootNode.Put(".[0].name", "Frank")
+	printNodeValue(rootNode) // [ map[name:Frank] map[name:Jim] ]
+
+	_ = rootNode.PutMultiple(".[*].name", "Joe")
+	printNodeValue(rootNode) // [ map[name:Joe] map[name:Joe] ]
+
+	outputBytes, _ := json.Marshal(rootNode.InterfaceValue())
+	fmt.Println(string(outputBytes)) // [{"name": "Joe"}, {"name": "Joe"}]
+
+	// Output:
+	// Tom
+	// Tom
+	// Jim
+	// [map[name:Frank] map[name:Jim]]
+	// [map[name:Joe] map[name:Joe]]
+	// [{"name":"Joe"},{"name":"Joe"}]
+}
+
+// ExampleNode_Query shows how to query data from go code.
+func ExampleNode_Query() {
+	myData := []byte(`{"name": "Tom"}`)
+	var data interface{}
+	if err := json.Unmarshal(myData, &data); err != nil {
+		panic(err)
+	}
+	rootNode := dasel.New(data)
+	result, err := rootNode.Query(".name")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result.InterfaceValue())
+
+	// Output:
+	// Tom
+}
+
+// ExampleNode_Put shows how to update data from go code.
+func ExampleNode_Put() {
+	myData := []byte(`{"name": "Tom"}`)
+	var data interface{}
+	if err := json.Unmarshal(myData, &data); err != nil {
+		panic(err)
+	}
+	rootNode := dasel.New(data)
+	if err := rootNode.Put(".name", "Jim"); err != nil {
+		panic(err)
+	}
+	fmt.Println(rootNode.InterfaceValue())
+
+	// Output:
+	// map[name:Jim]
+}
 
 var (
 	tom = map[string]interface{}{

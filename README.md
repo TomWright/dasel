@@ -14,6 +14,12 @@ Dasel (short for data-selector) allows you to query and modify data structures u
 
 Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML, TOML, XML and CSV with zero runtime dependencies.
 
+## One tool to rule them all
+
+Say good bye to learning new tools just to work with a different data format.
+
+Dasel uses a standard selector syntax no matter the data format. This means that once you learn how to use dasel you immediately have the ability to query/modify any of the supported data types without any additional tools or effort. 
+
 ![Update Kubernetes Manifest](update_kubernetes.gif)
 
 ## Features
@@ -29,6 +35,7 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 
 ## Table of contents
 * [Dasel](#dasel)
+* [One tool to rule them all](#one-tool-to-rule-them-all)
 * [Features](#features)
 * [Playground](#playground)
 * [Installation](#installation)
@@ -117,6 +124,50 @@ As with any other go package, just use `go get`.
 ```bash
 go get github.com/tomwright/dasel
 ```
+
+Once imported you do something like the following:
+
+```go
+package main
+import (
+    "encoding/json"
+    "fmt"
+    "github.com/tomwright/dasel"
+)
+
+func main() {
+    var data interface{}
+    _ = json.Unmarshal([]byte(`[{"name": "Tom"}, {"name": "Jim"}]`), &data)
+
+    rootNode := dasel.New(data)
+
+    result, _ := rootNode.Query(".[0].name")
+    printNodeValue(result) // Tom
+    
+    results, _ := rootNode.QueryMultiple(".[*].name")
+    printNodeValue(results...) // Tom\nJim
+
+    _ = rootNode.Put(".[0].name", "Frank")
+    printNodeValue(rootNode) // [map[name:Frank] map[name:Jim]]
+
+    _ = rootNode.PutMultiple(".[*].name", "Joe")
+    printNodeValue(rootNode) // [map[name:Joe] map[name:Joe]]
+    
+    outputBytes, _ := json.Marshal(rootNode.InterfaceValue())
+    fmt.Println(string(outputBytes)) // [{"name":"Joe"},{"name":"Joe"}]
+}
+
+func printNodeValue(nodes ...*dasel.Node) {
+    for _, n := range nodes {
+        fmt.Println(n.InterfaceValue())
+    }
+}
+
+```
+
+From then on the rest of the docs should be enough.
+
+Just know that when using the command-line tool the `-m`,`--multiple` flag tells dasel to use `QueryMultiple`/`PutMultiple` instead of `Query`/`Put`.
 
 The documentation for this is still a WIP. Please raise an issue if you have a specific need for this and I'll do my best to help out.
 

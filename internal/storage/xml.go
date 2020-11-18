@@ -13,7 +13,7 @@ type XMLParser struct {
 func (p *XMLParser) FromBytes(byteData []byte) (RealValue, error) {
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {
-		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal config data: %w", err)
+		return &RealValueParser{data: data}, fmt.Errorf("could not unmarshal data: %w", err)
 	}
 	return &RealValueParser{data: map[string]interface{}(data)}, nil
 }

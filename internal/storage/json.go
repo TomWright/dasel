@@ -34,6 +34,7 @@ func (d *JSONMultiDocument) RealValue() interface{} {
 }
 
 // FromBytes returns some Data that is represented by the given bytes.
+
 func (p *JSONParser) FromBytes(byteData []byte) (RealValue, error) {
 
 	res := make([]interface{}, 0)
@@ -47,7 +48,7 @@ docLoop:
 			if err == io.EOF {
 				break docLoop
 			}
-			return nil, fmt.Errorf("could not unmarshal config data: %w", err)
+			return nil, fmt.Errorf("could not unmarshal data: %w", err)
 		}
 		res = append(res, docData)
 	}
