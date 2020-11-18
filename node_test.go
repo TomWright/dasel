@@ -1,6 +1,7 @@
 package dasel_test
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"github.com/tomwright/dasel"
@@ -8,6 +9,41 @@ import (
 	"reflect"
 	"testing"
 )
+
+// ExampleNode_Query shows how to query data from go code.
+func ExampleNode_Query() {
+	myData := []byte(`{"name": "Tom"}`)
+	var data interface{}
+	if err := json.Unmarshal(myData, &data); err != nil {
+		panic(err)
+	}
+	rootNode := dasel.New(data)
+	result, err := rootNode.Query(".name")
+	if err != nil {
+		panic(err)
+	}
+	fmt.Println(result.InterfaceValue())
+
+	// Output:
+	// Tom
+}
+
+// ExampleNode_Put shows how to update data from go code.
+func ExampleNode_Put() {
+	myData := []byte(`{"name": "Tom"}`)
+	var data interface{}
+	if err := json.Unmarshal(myData, &data); err != nil {
+		panic(err)
+	}
+	rootNode := dasel.New(data)
+	if err := rootNode.Put(".name", "Jim"); err != nil {
+		panic(err)
+	}
+	fmt.Println(rootNode.InterfaceValue())
+
+	// Output:
+	// map[name:Jim]
+}
 
 var (
 	tom = map[string]interface{}{
