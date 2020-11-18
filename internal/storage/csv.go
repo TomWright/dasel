@@ -11,7 +11,7 @@ type CSVParser struct {
 }
 
 // CSVDocument represents a CSV file.
-// This is required to keep headers in the expected order.storage.JSONSingleDocument{Value:
+// This is required to keep headers in the expected order.
 type CSVDocument struct {
 	originalRequired
 	Value   []map[string]interface{}
