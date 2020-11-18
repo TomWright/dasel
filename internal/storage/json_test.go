@@ -15,15 +15,59 @@ var jsonMap = map[string]interface{}{
 }
 
 func TestJSONParser_FromBytes(t *testing.T) {
-	got, err := (&storage.JSONParser{}).FromBytes(jsonBytes)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	exp := &storage.JSONSingleDocument{Value: jsonMap}
-	if !reflect.DeepEqual(exp, got) {
-		t.Errorf("expected %v, got %v", exp, got)
-	}
+	t.Run("Valid", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(jsonBytes)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONSingleDocument{Value: jsonMap}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+	t.Run("ValidMultiDocument", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(jsonBytesMulti)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONMultiDocument{
+			Values: []interface{}{
+				map[string]interface{}{"name": "Tom"},
+				map[string]interface{}{"name": "Ellis"},
+			},
+		}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", jsonMap, got)
+		}
+	})
+	t.Run("ValidMultiDocumentMixed", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes(mixedJsonBytesMulti)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := &storage.JSONMultiDocument{
+			Values: []interface{}{
+				map[string]interface{}{"name": "Tom", "other": true},
+				map[string]interface{}{"name": "Ellis"},
+			},
+		}
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", jsonMap, got)
+		}
+	})
+	t.Run("Empty", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).FromBytes([]byte(``))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(nil, got) {
+			t.Errorf("expected %v, got %v", nil, got)
+		}
+	})
 }
 
 func TestJSONParser_FromBytes_Error(t *testing.T) {
@@ -54,23 +98,6 @@ var jsonBytesMulti = []byte(`
 }
 `)
 
-func TestJSONParser_FromBytes_Multi(t *testing.T) {
-	got, err := (&storage.JSONParser{}).FromBytes(jsonBytesMulti)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	exp := &storage.JSONMultiDocument{
-		Values: []interface{}{
-			map[string]interface{}{"name": "Tom"},
-			map[string]interface{}{"name": "Ellis"},
-		},
-	}
-	if !reflect.DeepEqual(exp, got) {
-		t.Errorf("expected %v, got %v", jsonMap, got)
-	}
-}
-
 var mixedJsonBytesMulti = []byte(`
 {
   "name": "Tom",
@@ -80,20 +107,3 @@ var mixedJsonBytesMulti = []byte(`
   "name": "Ellis"
 }
 `)
-
-func TestJSONParser_FromBytes_Multi_Mixed(t *testing.T) {
-	got, err := (&storage.JSONParser{}).FromBytes(mixedJsonBytesMulti)
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
-	}
-	exp := &storage.JSONMultiDocument{
-		Values: []interface{}{
-			map[string]interface{}{"name": "Tom", "other": true},
-			map[string]interface{}{"name": "Ellis"},
-		},
-	}
-	if !reflect.DeepEqual(exp, got) {
-		t.Errorf("expected %v, got %v", jsonMap, got)
-	}
-}
