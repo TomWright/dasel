@@ -498,7 +498,7 @@ func TestRootCMD_Put_JSON(t *testing.T) {
 }
 `, nil, "-m"))
 
-	t.Run("StringMultiDocument", putStringTest(`{
+	t.Run("StringMultiObjectDocument", putStringTest(`{
   "id": "x"
 }
 {
@@ -509,6 +509,27 @@ func TestRootCMD_Put_JSON(t *testing.T) {
 {
   "id": "y"
 }
+`, nil))
+
+	t.Run("StringMultiArrayDocument", putStringTest(`[
+  "a",
+  "b",
+  "c"
+]
+[
+  "d",
+  "e",
+  "f"
+]`, "json", ".[1].[1]", "z", `[
+  "a",
+  "b",
+  "c"
+]
+[
+  "d",
+  "z",
+  "f"
+]
 `, nil))
 }
 
