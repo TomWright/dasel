@@ -46,7 +46,7 @@ docLoop:
 			if err == io.EOF {
 				break docLoop
 			}
-			return nil, fmt.Errorf("could not unmarshal config data: %w", err)
+			return nil, fmt.Errorf("could not unmarshal data: %w", err)
 		}
 		res = append(res, docData)
 	}

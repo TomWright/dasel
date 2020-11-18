@@ -32,7 +32,7 @@ func TestTOMLParser_FromBytes(t *testing.T) {
 	})
 	t.Run("Invalid", func(t *testing.T) {
 		_, err := (&storage.TOMLParser{}).FromBytes([]byte(`x:x`))
-		if err == nil || !strings.Contains(err.Error(), "could not unmarshal config data") {
+		if err == nil || !strings.Contains(err.Error(), "could not unmarshal data") {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}

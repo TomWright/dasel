@@ -13,7 +13,7 @@ type JSONParser struct {
 func (p *JSONParser) FromBytes(byteData []byte) (interface{}, error) {
 	var data interface{}
 	if err := json.Unmarshal(byteData, &data); err != nil {
-		return data, fmt.Errorf("could not unmarshal config data: %w", err)
+		return data, fmt.Errorf("could not unmarshal data: %w", err)
 	}
 	return data, nil
 }
