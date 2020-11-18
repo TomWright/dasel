@@ -449,6 +449,12 @@ Dasel attempts to find the correct parser for the given file type, but if that f
 ```
 Using [golang.org/pkg/encoding/json](https://golang.org/pkg/encoding/json/).
 
+#### Multi-document files
+
+Multi-document files are decoded into an array, with `[0]` being the first document, `[1]` being the second and so on.
+
+Once decoded, you can access them using any of the standard selectors provided by Dasel.
+
 ### TOML
 ```bash
 -p toml
