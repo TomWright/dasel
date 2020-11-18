@@ -120,6 +120,8 @@ go get github.com/tomwright/dasel
 
 The documentation for this is still a WIP. Please raise an issue if you have a specific need for this and I'll do my best to help out.
 
+There are some basic examples on [pkg.go.dev/github.com/tomwright/dasel](https://pkg.go.dev/github.com/tomwright/dasel).
+
 ## Notes
 
 ### Preserved formatting and ordering
