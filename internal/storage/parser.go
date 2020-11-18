@@ -21,7 +21,7 @@ func (e UnknownParserErr) Error() string {
 
 // Parser can be used to load and save files from/to disk.
 type Parser interface {
-	// FromBytes returns some Data that is represented by the given bytes.
+	// FromBytes returns some data that is represented by the given bytes.
 	FromBytes(byteData []byte) (interface{}, error)
 	// ToBytes returns a slice of bytes that represents the given value.
 	ToBytes(value interface{}) ([]byte, error)

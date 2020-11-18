@@ -23,7 +23,7 @@ func (d *CSVDocument) RealValue() interface{} {
 	return d.Value
 }
 
-// FromBytes returns some Data that is represented by the given bytes.
+// FromBytes returns some data that is represented by the given bytes.
 func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
 	if byteData == nil {
 		return nil, fmt.Errorf("could not read csv file: no data")
