@@ -118,7 +118,7 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(jsonData, data) {
+		if !reflect.DeepEqual(jsonData, data.RealValue()) {
 			t.Errorf("data does not match")
 		}
 	})
