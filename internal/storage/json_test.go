@@ -6,7 +6,9 @@ import (
 	"testing"
 )
 
-var jsonBytes = []byte(`{"name":"Tom"}
+var jsonBytes = []byte(`{
+  "name": "Tom"
+}
 `)
 var jsonMap = map[string]interface{}{
 	"name": "Tom",
@@ -43,8 +45,12 @@ func TestJSONParser_ToBytes(t *testing.T) {
 }
 
 var jsonBytesMulti = []byte(`
-{"name": "Tom"}
-{"name": "Ellis"}
+{
+  "name": "Tom"
+}
+{
+  "name": "Ellis"
+}
 `)
 
 func TestJSONParser_FromBytes_Multi(t *testing.T) {
@@ -69,7 +75,9 @@ var mixedJsonBytesMulti = []byte(`
   "name": "Tom",
   "other": true
 }
-{"name": "Ellis"}
+{
+  "name": "Ellis"
+}
 `)
 
 func TestJSONParser_FromBytes_Multi_Mixed(t *testing.T) {

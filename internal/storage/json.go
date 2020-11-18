@@ -66,6 +66,7 @@ docLoop:
 func (p *JSONParser) ToBytes(value interface{}) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	encoder := json.NewEncoder(buffer)
+	encoder.SetIndent("", "  ")
 
 	switch v := value.(type) {
 	case *JSONSingleDocument:
