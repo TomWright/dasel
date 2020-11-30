@@ -42,6 +42,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
+  * [Converting between formats](#converting-between-formats)
 * [Usage](#usage)
   * [Select](#select)
   * [Put](#put)
@@ -184,6 +185,13 @@ In short, the output files may have properties in a different order but the actu
 Dasel's method of querying data requires that the entire input document is stored in memory.
 
 You should keep this in mind as the maximum filesize it can process will be limited by your system's available resources (specifically RAM).
+
+### Converting between formats
+
+Dasel allows you to specify different input/output formats. This works well in general but you may see some strange behaviour
+when working with formats that don't suit the data... multi-document YAML to CSV for example.
+
+If you have any questions about a specific issue please raise an issue.
 
 ## Usage 
 
