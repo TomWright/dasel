@@ -61,7 +61,7 @@ func TestShouldReadFromStdin(t *testing.T) {
 	}
 }
 
-func TestGetParser(t *testing.T) {
+func TestGetReadParser(t *testing.T) {
 	tests := []struct {
 		File   string
 		Parser string
@@ -73,14 +73,14 @@ func TestGetParser(t *testing.T) {
 		{File: "a.yaml", Out: &storage.YAMLParser{}},
 		{File: "a.yml", Out: &storage.YAMLParser{}},
 		{Parser: "yaml", Out: &storage.YAMLParser{}},
-		{File: "a.txt", Err: fmt.Errorf("could not get parser from filename: unknown parser: .txt")},
-		{Parser: "txt", Err: fmt.Errorf("could not get parser: unknown parser: txt")},
+		{File: "a.txt", Err: fmt.Errorf("could not get read parser from filename: unknown parser: .txt")},
+		{Parser: "txt", Err: fmt.Errorf("could not get read parser: unknown parser: txt")},
 	}
 
 	for _, testCase := range tests {
 		tc := testCase
 		t.Run("Test", func(t *testing.T) {
-			got, err := getParser(tc.File, tc.Parser)
+			got, err := getReadParser(tc.File, tc.Parser, "")
 			if tc.Err == nil && err != nil {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
@@ -185,7 +185,7 @@ func putObjectTest(in string, parser string, selector string, values []string, v
 func TestPut(t *testing.T) {
 	t.Run("MissingParserFlag", func(t *testing.T) {
 		err := runGenericPutCommand(genericPutOptions{}, nil)
-		if err == nil || err.Error() != "parser flag required when reading from stdin" {
+		if err == nil || err.Error() != "read parser flag required when reading from stdin" {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
@@ -203,7 +203,7 @@ func TestPut(t *testing.T) {
 	})
 	t.Run("ObjectMissingParserFlag", func(t *testing.T) {
 		err := runPutObjectCommand(putObjectOpts{}, nil)
-		if err == nil || err.Error() != "parser flag required when reading from stdin" {
+		if err == nil || err.Error() != "read parser flag required when reading from stdin" {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})

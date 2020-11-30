@@ -33,7 +33,7 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.YAMLSingleDocument{Value: yamlMap}
+		exp := &storage.BasicSingleDocument{Value: yamlMap}
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
@@ -44,7 +44,7 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.YAMLMultiDocument{Values: yamlMapMulti}
+		exp := &storage.BasicMultiDocument{Values: yamlMapMulti}
 
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
@@ -81,7 +81,7 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidSingle", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(&storage.YAMLSingleDocument{Value: yamlMap})
+		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: yamlMap})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -91,7 +91,7 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidMulti", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(&storage.YAMLMultiDocument{Values: yamlMapMulti})
+		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: yamlMapMulti})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

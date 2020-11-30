@@ -5,6 +5,11 @@ import (
 	"github.com/clbanning/mxj/v2"
 )
 
+func init() {
+	registerReadParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
+	registerWriteParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
+}
+
 // XMLParser is a Parser implementation to handle yaml files.
 type XMLParser struct {
 }

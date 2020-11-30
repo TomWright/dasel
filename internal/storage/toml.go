@@ -5,6 +5,11 @@ import (
 	"github.com/pelletier/go-toml"
 )
 
+func init() {
+	registerReadParser([]string{"toml"}, []string{".toml"}, &TOMLParser{})
+	registerWriteParser([]string{"toml"}, []string{".toml"}, &TOMLParser{})
+}
+
 // TOMLParser is a Parser implementation to handle toml files.
 type TOMLParser struct {
 }

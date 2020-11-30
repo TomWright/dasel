@@ -15,7 +15,7 @@ func TestUnknownParserErr_Error(t *testing.T) {
 	}
 }
 
-func TestNewParserFromString(t *testing.T) {
+func TestNewReadParserFromString(t *testing.T) {
 	tests := []struct {
 		In  string
 		Out storage.Parser
@@ -25,13 +25,16 @@ func TestNewParserFromString(t *testing.T) {
 		{In: "yaml", Out: &storage.YAMLParser{}},
 		{In: "yml", Out: &storage.YAMLParser{}},
 		{In: "toml", Out: &storage.TOMLParser{}},
+		{In: "xml", Out: &storage.XMLParser{}},
+		{In: "csv", Out: &storage.CSVParser{}},
 		{In: "bad", Out: nil, Err: &storage.UnknownParserErr{Parser: "bad"}},
+		{In: "-", Out: nil, Err: &storage.UnknownParserErr{Parser: "-"}},
 	}
 
 	for _, testCase := range tests {
 		tc := testCase
 		t.Run(tc.In, func(t *testing.T) {
-			got, err := storage.NewParserFromString(tc.In)
+			got, err := storage.NewReadParserFromString(tc.In)
 			if tc.Err == nil && err != nil {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
@@ -51,7 +54,47 @@ func TestNewParserFromString(t *testing.T) {
 	}
 }
 
-func TestNewParserFromFilename(t *testing.T) {
+func TestNewWriteParserFromString(t *testing.T) {
+	tests := []struct {
+		In  string
+		Out storage.Parser
+		Err error
+	}{
+		{In: "json", Out: &storage.JSONParser{}},
+		{In: "yaml", Out: &storage.YAMLParser{}},
+		{In: "yml", Out: &storage.YAMLParser{}},
+		{In: "toml", Out: &storage.TOMLParser{}},
+		{In: "xml", Out: &storage.XMLParser{}},
+		{In: "csv", Out: &storage.CSVParser{}},
+		{In: "-", Out: &storage.PlainParser{}},
+		{In: "plain", Out: &storage.PlainParser{}},
+		{In: "bad", Out: nil, Err: &storage.UnknownParserErr{Parser: "bad"}},
+	}
+
+	for _, testCase := range tests {
+		tc := testCase
+		t.Run(tc.In, func(t *testing.T) {
+			got, err := storage.NewWriteParserFromString(tc.In)
+			if tc.Err == nil && err != nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err == nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err != nil && err.Error() != tc.Err.Error() {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Out != got {
+				t.Errorf("expected result %v, got %v", tc.Out, got)
+			}
+		})
+	}
+}
+
+func TestNewReadParserFromFilename(t *testing.T) {
 	tests := []struct {
 		In  string
 		Out storage.Parser
@@ -69,7 +112,45 @@ func TestNewParserFromFilename(t *testing.T) {
 	for _, testCase := range tests {
 		tc := testCase
 		t.Run(tc.In, func(t *testing.T) {
-			got, err := storage.NewParserFromFilename(tc.In)
+			got, err := storage.NewReadParserFromFilename(tc.In)
+			if tc.Err == nil && err != nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err == nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err != nil && err.Error() != tc.Err.Error() {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Out != got {
+				t.Errorf("expected result %v, got %v", tc.Out, got)
+			}
+		})
+	}
+}
+
+func TestNewWriteParserFromFilename(t *testing.T) {
+	tests := []struct {
+		In  string
+		Out storage.Parser
+		Err error
+	}{
+		{In: "a.json", Out: &storage.JSONParser{}},
+		{In: "a.yaml", Out: &storage.YAMLParser{}},
+		{In: "a.yml", Out: &storage.YAMLParser{}},
+		{In: "a.toml", Out: &storage.TOMLParser{}},
+		{In: "a.xml", Out: &storage.XMLParser{}},
+		{In: "a.csv", Out: &storage.CSVParser{}},
+		{In: "a.txt", Out: nil, Err: &storage.UnknownParserErr{Parser: ".txt"}},
+	}
+
+	for _, testCase := range tests {
+		tc := testCase
+		t.Run(tc.In, func(t *testing.T) {
+			got, err := storage.NewWriteParserFromFilename(tc.In)
 			if tc.Err == nil && err != nil {
 				t.Errorf("expected err %v, got %v", tc.Err, err)
 				return
@@ -118,7 +199,7 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.JSONSingleDocument{Value: jsonData}
+		exp := &storage.BasicSingleDocument{Value: jsonData}
 		if !reflect.DeepEqual(exp, data) {
 			t.Errorf("data does not match: exp %v, got %v", exp, data)
 		}

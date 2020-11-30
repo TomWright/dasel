@@ -6,6 +6,11 @@ import (
 	"fmt"
 )
 
+func init() {
+	registerReadParser([]string{"csv"}, []string{".csv"}, &CSVParser{})
+	registerWriteParser([]string{"csv"}, []string{".csv"}, &CSVParser{})
+}
+
 // CSVParser is a Parser implementation to handle yaml files.
 type CSVParser struct {
 }

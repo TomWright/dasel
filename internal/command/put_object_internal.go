@@ -11,6 +11,8 @@ import (
 type putObjectOpts struct {
 	File        string
 	Out         string
+	ReadParser  string
+	WriteParser string
 	Parser      string
 	Selector    string
 	InputTypes  []string
@@ -42,13 +44,13 @@ func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[strin
 }
 
 func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
-	parser, err := getParser(opts.File, opts.Parser)
+	readParser, err := getReadParser(opts.File, opts.ReadParser, opts.Parser)
 	if err != nil {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
 		File:   opts.File,
-		Parser: parser,
+		Parser: readParser,
 		Reader: opts.Reader,
 	}, cmd)
 	if err != nil {
@@ -70,9 +72,14 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		}
 	}
 
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File)
+	if err != nil {
+		return err
+	}
+
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
-		Parser: parser,
+		Parser: writeParser,
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,

@@ -449,7 +449,7 @@ func TestNode_PutMultiple(t *testing.T) {
 }
 
 func TestNode_Query(t *testing.T) {
-	parser, err := storage.NewParserFromFilename("./tests/assets/example.json")
+	parser, err := storage.NewReadParserFromFilename("./tests/assets/example.json")
 	if err != nil {
 		t.Errorf("could not get parser: %s", err)
 		return
@@ -521,7 +521,7 @@ func TestNode_Query_File(t *testing.T) {
 
 	fileTest := func(filename string) func(t *testing.T) {
 		return func(t *testing.T) {
-			parser, err := storage.NewParserFromFilename(filename)
+			parser, err := storage.NewReadParserFromFilename(filename)
 			if err != nil {
 				t.Errorf("could not get parser: %s", err)
 				return
