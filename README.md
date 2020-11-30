@@ -195,7 +195,7 @@ An important note is that if no sub-command is given, dasel will default to `sel
 
 ### Select
 ```bash
-dasel select -f <file> -p <parser> -m <selector>
+dasel select -f <file> -p <parser> -r <read_parser> -w <write_parser> -m <selector>
 ```
 
 #### Arguments
@@ -206,13 +206,25 @@ Specify the file to query. This is required unless you are piping in data.
 
 If piping in data you can optionally pass `-f stdin`/`-f -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading the file.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 
@@ -292,13 +304,25 @@ Specify the output file. If present, results will be written to the given file. 
 
 To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading/writing the input/output files.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 
@@ -385,13 +409,25 @@ Specify the output file. If present, results will be written to the given file. 
 
 To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading/writing the input/output files.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 

@@ -1,6 +1,7 @@
 package storage
 
 import (
+	"bytes"
 	"fmt"
 	"github.com/clbanning/mxj/v2"
 )
@@ -20,22 +21,49 @@ func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 	if err != nil {
 		return data, fmt.Errorf("could not unmarshal data: %w", err)
 	}
-	return map[string]interface{}(data), nil
+	return &BasicSingleDocument{
+		Value: map[string]interface{}(data),
+	}, nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
 func (p *XMLParser) ToBytes(value interface{}) ([]byte, error) {
-	m, ok := value.(map[string]interface{})
-	if !ok {
-		return []byte(fmt.Sprintf("%v\n", value)), nil
+	buf := new(bytes.Buffer)
+
+	writeMap := func(val interface{}) error {
+		if m, ok := val.(map[string]interface{}); ok {
+			mv := mxj.New()
+			for k, v := range m {
+				mv[k] = v
+			}
+			byteData, err := mv.XmlIndent("", "  ")
+			if err != nil {
+				return err
+			}
+			buf.Write(byteData)
+			buf.Write([]byte("\n"))
+			return nil
+		}
+		buf.Write([]byte(fmt.Sprintf("%v\n", value)))
+		return nil
 	}
-	mv := mxj.New()
-	for k, v := range m {
-		mv[k] = v
+
+	switch d := value.(type) {
+	case SingleDocument:
+		if err := writeMap(d.Document()); err != nil {
+			return nil, err
+		}
+	case MultiDocument:
+		for _, dd := range d.Documents() {
+			if err := writeMap(dd); err != nil {
+				return nil, err
+			}
+		}
+	default:
+		if err := writeMap(d); err != nil {
+			return nil, err
+		}
 	}
-	byteData, err := mv.XmlIndent("", "  ")
-	if err == nil {
-		byteData = append(byteData, []byte("\n")...)
-	}
-	return byteData, err
+
+	return buf.Bytes(), nil
 }

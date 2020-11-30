@@ -22,7 +22,7 @@ func TestXMLParser_FromBytes(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if !reflect.DeepEqual(xmlMap, got) {
+	if !reflect.DeepEqual(&storage.BasicSingleDocument{Value: xmlMap}, got) {
 		t.Errorf("expected %v, got %v", xmlMap, got)
 	}
 }

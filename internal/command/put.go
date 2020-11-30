@@ -133,35 +133,12 @@ type writeNodeToOutputOpts struct {
 }
 
 func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
-	if opts.Writer == nil {
-		switch {
-		case opts.Out == "" && shouldReadFromStdin(opts.File):
-			// No out flag and we read from stdin.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "stdout", opts.Out == "-":
-			// Out flag wants to write to stdout.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "":
-			// No out flag... write to the file we read from.
-			f, err := os.Create(opts.File)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-
-		case opts.Out != "":
-			// Out flag was set.
-			f, err := os.Create(opts.Out)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-		}
+	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
+	if err != nil {
+		return err
 	}
+	opts.Writer = writer
+	defer writerCleanUp()
 
 	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
@@ -179,30 +156,12 @@ type writeNodesToOutputOpts struct {
 }
 
 func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
-	if opts.Writer == nil {
-		switch {
-		case shouldWriteToStdout(opts.File, opts.Out):
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "":
-			// No out flag... write to the file we read from.
-			f, err := os.Create(opts.File)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-
-		case opts.Out != "":
-			// Out flag was set.
-			f, err := os.Create(opts.Out)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-		}
+	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
+	if err != nil {
+		return err
 	}
+	opts.Writer = writer
+	defer writerCleanUp()
 
 	buf := new(bytes.Buffer)
 
@@ -222,6 +181,36 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
 	}
 
 	return nil
+}
+
+func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) (io.Writer, func(), error) {
+	if in == nil {
+		switch {
+		case shouldWriteToStdout(file, out):
+			return cmd.OutOrStdout(), func() {}, nil
+
+		case out == "":
+			// No out flag... write to the file we read from.
+			f, err := os.Create(file)
+			if err != nil {
+				return nil, nil, fmt.Errorf("could not open output file: %w", err)
+			}
+			return f, func() {
+				_ = f.Close()
+			}, nil
+
+		case out != "":
+			// Out flag was set.
+			f, err := os.Create(out)
+			if err != nil {
+				return nil, nil, fmt.Errorf("could not open output file: %w", err)
+			}
+			return f, func() {
+				_ = f.Close()
+			}, nil
+		}
+	}
+	return in, func() {}, nil
 }
 
 func putCommand() *cobra.Command {
