@@ -56,15 +56,78 @@ a,b`))
 }
 
 func TestCSVParser_ToBytes(t *testing.T) {
-	got, err := (&storage.CSVParser{}).ToBytes(&storage.CSVDocument{
-		Value:   csvMap,
-		Headers: []string{"id", "name"},
+	t.Run("CSVDocument", func(t *testing.T) {
+		got, err := (&storage.CSVParser{}).ToBytes(&storage.CSVDocument{
+			Value:   csvMap,
+			Headers: []string{"id", "name"},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		if !reflect.DeepEqual(csvBytes, got) {
+			t.Errorf("expected %v, got %v", string(csvBytes), string(got))
+		}
 	})
-	if err != nil {
-		t.Errorf("unexpected error: %s", err)
-		return
+	t.Run("SingleDocument", func(t *testing.T) {
+		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicSingleDocument{
+			Value: map[string]interface{}{
+				"id":   "1",
+				"name": "Tom",
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		deepEqualOneOf(t, got, []byte(`id,name
+1,Tom
+`), []byte(`name,id
+Tom,1
+`))
+	})
+	t.Run("MultiDocument", func(t *testing.T) {
+		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicMultiDocument{
+			Values: []interface{}{
+				map[string]interface{}{
+					"id":   "1",
+					"name": "Tom",
+				},
+				map[string]interface{}{
+					"id":   "2",
+					"name": "Jim",
+				},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		deepEqualOneOf(t, got, []byte(`id,name
+1,Tom
+id,name
+2,Jim
+`), []byte(`name,id
+Tom,1
+id,name
+2,Jim
+`), []byte(`id,name
+1,Tom
+name,id
+Jim,2
+`), []byte(`name,id
+Tom,1
+name,id
+Jim,2
+`))
+	})
+}
+
+func deepEqualOneOf(t *testing.T, got []byte, exps ...[]byte) {
+	for _, exp := range exps {
+		if reflect.DeepEqual(exp, got) {
+			return
+		}
 	}
-	if !reflect.DeepEqual(csvBytes, got) {
-		t.Errorf("expected %v, got %v", string(csvBytes), string(got))
-	}
+	t.Errorf("%s did not match any of the expected values", string(got))
 }

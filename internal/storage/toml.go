@@ -36,7 +36,7 @@ func (p *TOMLParser) ToBytes(value interface{}) ([]byte, error) {
 	case SingleDocument:
 		if err := enc.Encode(d.Document()); err != nil {
 			if err.Error() == "Only a struct or map can be marshaled to TOML" {
-				buf.Write([]byte(fmt.Sprintf("%v\n", d)))
+				buf.Write([]byte(fmt.Sprintf("%v\n", d.Document())))
 			} else {
 				return nil, err
 			}
