@@ -44,7 +44,7 @@ func (p *XMLParser) ToBytes(value interface{}) ([]byte, error) {
 			buf.Write([]byte("\n"))
 			return nil
 		}
-		buf.Write([]byte(fmt.Sprintf("%v\n", value)))
+		buf.Write([]byte(fmt.Sprintf("%v\n", val)))
 		return nil
 	}
 

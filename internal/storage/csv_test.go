@@ -131,3 +131,54 @@ func deepEqualOneOf(t *testing.T, got []byte, exps ...[]byte) {
 	}
 	t.Errorf("%s did not match any of the expected values", string(got))
 }
+
+func TestCSVDocument_Documents(t *testing.T) {
+	in := &storage.CSVDocument{
+		Value: []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+		Headers: []string{"id", "name"},
+	}
+	exp := []interface{}{
+		map[string]interface{}{
+			"id":   1,
+			"name": "Tom",
+		},
+		map[string]interface{}{
+			"id":   2,
+			"name": "Jim",
+		},
+	}
+	got := in.Documents()
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", exp, got)
+	}
+}
+
+func TestCSVDocument_RealValue(t *testing.T) {
+	exp := []map[string]interface{}{
+		{
+			"id":   1,
+			"name": "Tom",
+		},
+		{
+			"id":   2,
+			"name": "Jim",
+		},
+	}
+	in := &storage.CSVDocument{
+		Value:   exp,
+		Headers: []string{"id", "name"},
+	}
+	got := in.RealValue()
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", exp, got)
+	}
+}

@@ -40,7 +40,7 @@ func TestTOMLParser_FromBytes(t *testing.T) {
 }
 
 func TestTOMLParser_ToBytes(t *testing.T) {
-	t.Run("Basic", func(t *testing.T) {
+	t.Run("Default", func(t *testing.T) {
 		got, err := (&storage.TOMLParser{}).ToBytes(tomlMap)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
@@ -74,6 +74,18 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 	})
 	t.Run("SingleDocumentValue", func(t *testing.T) {
 		got, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: "asd"})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := `asd
+`
+		if exp != string(got) {
+			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
+		}
+	})
+	t.Run("DefaultValue", func(t *testing.T) {
+		got, err := (&storage.TOMLParser{}).ToBytes("asd")
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
