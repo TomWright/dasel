@@ -203,7 +203,7 @@ name: Jim
 This works well in general but you may run into issues when converting between data formats that don't typically play
 well together.
 
-You have any questions or concerns around this please raise an issue.
+If you have any questions or concerns around this please raise an issue.
 
 ## Usage 
 
