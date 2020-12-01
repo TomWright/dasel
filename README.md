@@ -54,6 +54,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
   * [YAML](#yaml)
   * [XML](#xml)
   * [CSV](#csv)
+  * [Plain](#plain)
 * [Selectors](#selectors)
   * [Property](#property)
   * [Child](#child-elements)
@@ -571,6 +572,13 @@ There are no plans to introduce a workaround for this but if there is enough dem
 -p csv
 ```
 Using [golang.org/pkg/encoding/csv](https://golang.org/pkg/encoding/csv/).
+
+### Plain
+```bash
+-p plain
+```
+
+This outputs the data using `fmt.Sprint(x)`, displaying whatever underlying value is present as a string.
 
 #### Adding data
 New columns will be detected and added to the end of the CSV output.
