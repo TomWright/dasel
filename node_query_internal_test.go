@@ -106,6 +106,15 @@ func TestFindValueDynamic(t *testing.T) {
 		got, err := findValueDynamic(n, false)
 		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
+	t.Run("NotFoundMap", func(t *testing.T) {
+		n := getNodeWithValue(map[string]interface{}{})
+		n.Selector.Current = "(name=x)"
+		n.Selector.Conditions = []Condition{
+			&EqualCondition{Key: "name", Value: "x"},
+		}
+		got, err := findValueDynamic(n, false)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
+	})
 	t.Run("NotFoundWithCreate", func(t *testing.T) {
 		n := getNodeWithValue([]interface{}{})
 		n.Selector.Current = "(name=x)"
@@ -125,6 +134,19 @@ func TestFindValueDynamic(t *testing.T) {
 		itemVal := 1
 		val := []interface{}{
 			itemVal,
+		}
+		n := getNodeWithValue(val)
+		n.Selector.Current = "(name=x)"
+		n.Selector.Conditions = []Condition{
+			&EqualCondition{Key: "name", Value: "x"},
+		}
+		got, err := findValueDynamic(n, false)
+		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
+	})
+	t.Run("UnsupportedCheckTypeMap", func(t *testing.T) {
+		itemVal := 1
+		val := map[string]interface{}{
+			"x": itemVal,
 		}
 		n := getNodeWithValue(val)
 		n.Selector.Current = "(name=x)"
