@@ -135,7 +135,7 @@ func TestFindValueDynamic(t *testing.T) {
 		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
 	})
 	t.Run("UnsupportedType", func(t *testing.T) {
-		val := map[string]interface{}{}
+		val := 0
 		n := getNodeWithValue(val)
 		n.Selector.Current = "(name=x)"
 		n.Selector.Conditions = []Condition{

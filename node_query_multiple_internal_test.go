@@ -116,7 +116,7 @@ func TestFindNodesDynamic(t *testing.T) {
 		assertQueryMultipleResult(t, []reflect.Value{}, &UnhandledCheckType{Value: previousValue.Kind().String()}, got, err)
 	})
 	t.Run("UnsupportedType", func(t *testing.T) {
-		previousValue := reflect.ValueOf(map[string]interface{}{})
+		previousValue := reflect.ValueOf(0)
 		selector := Selector{
 			Current: "(name=x)",
 			Conditions: []Condition{

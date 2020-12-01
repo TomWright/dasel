@@ -165,7 +165,8 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 	}
 	value := unwrapValue(previousValue)
 
-	if value.Kind() == reflect.Slice {
+	switch value.Kind() {
+	case reflect.Slice:
 		results := make([]*Node, 0)
 		for i := 0; i < value.Len(); i++ {
 			object := value.Index(i)
@@ -193,6 +194,28 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 					Selector: selector,
 				},
 			}, nil
+		}
+		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
+	case reflect.Map:
+		results := make([]*Node, 0)
+		for _, key := range value.MapKeys() {
+			object := value.MapIndex(key)
+			found, err := processFindDynamicItems(selector, object)
+			if err != nil {
+				return nil, err
+			}
+			if found {
+				selector.Type = "PROPERTY"
+				selector.Property = key.String()
+				results = append(results, &Node{
+					Value:    object,
+					Selector: selector,
+				})
+			}
+		}
+		if len(results) > 0 {
+			return results, nil
 		}
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
 	}
@@ -312,12 +335,28 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 	}
 	value := unwrapValue(previousValue)
 
-	if value.Kind() == reflect.Slice {
+	switch value.Kind() {
+	case reflect.Slice:
 		results := make([]*Node, 0)
 		for i := 0; i < value.Len(); i++ {
 			object := value.Index(i)
 			selector.Type = "INDEX"
 			selector.Index = i
+			results = append(results, &Node{
+				Value:    object,
+				Selector: selector,
+			})
+		}
+		if len(results) > 0 {
+			return results, nil
+		}
+		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+	case reflect.Map:
+		results := make([]*Node, 0)
+		for _, key := range value.MapKeys() {
+			object := value.MapIndex(key)
+			selector.Type = "PROPERTY"
+			selector.Property = key.String()
 			results = append(results, &Node{
 				Value:    object,
 				Selector: selector,
