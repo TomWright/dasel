@@ -21,7 +21,7 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.JSONSingleDocument{Value: jsonMap}
+		exp := &storage.BasicSingleDocument{Value: jsonMap}
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
@@ -32,7 +32,7 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.JSONMultiDocument{
+		exp := &storage.BasicMultiDocument{
 			Values: jsonMapMulti,
 		}
 		if !reflect.DeepEqual(exp, got) {
@@ -45,7 +45,7 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.JSONMultiDocument{
+		exp := &storage.BasicMultiDocument{
 			Values: jsonMapMultiMixed,
 		}
 		if !reflect.DeepEqual(exp, got) {
@@ -85,7 +85,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidSingle", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONSingleDocument{Value: jsonMap})
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -96,7 +96,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidMulti", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONMultiDocument{Values: jsonMapMulti})
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicMultiDocument{Values: jsonMapMulti})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -107,7 +107,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidMultiMixed", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.JSONMultiDocument{Values: jsonMapMultiMixed})
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicMultiDocument{Values: jsonMapMultiMixed})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

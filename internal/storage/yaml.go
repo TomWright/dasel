@@ -7,30 +7,13 @@ import (
 	"io"
 )
 
+func init() {
+	registerReadParser([]string{"yaml", "yml"}, []string{".yaml", ".yml"}, &YAMLParser{})
+	registerWriteParser([]string{"yaml", "yml"}, []string{".yaml", ".yml"}, &YAMLParser{})
+}
+
 // YAMLParser is a Parser implementation to handle yaml files.
 type YAMLParser struct {
-}
-
-// YAMLSingleDocument represents a decoded single-document YAML file.
-type YAMLSingleDocument struct {
-	originalRequired
-	Value interface{}
-}
-
-// RealValue returns the real value that dasel should use when processing data.
-func (d *YAMLSingleDocument) RealValue() interface{} {
-	return d.Value
-}
-
-// YAMLMultiDocument represents a decoded multi-document YAML file.
-type YAMLMultiDocument struct {
-	originalRequired
-	Values []interface{}
-}
-
-// RealValue returns the real value that dasel should use when processing data.
-func (d *YAMLMultiDocument) RealValue() interface{} {
-	return d.Values
 }
 
 // FromBytes returns some data that is represented by the given bytes.
@@ -48,15 +31,47 @@ docLoop:
 			}
 			return nil, fmt.Errorf("could not unmarshal data: %w", err)
 		}
-		res = append(res, docData)
+
+		formattedDocData := cleanupYamlMapValue(docData)
+
+		res = append(res, formattedDocData)
 	}
 	switch len(res) {
 	case 0:
 		return nil, nil
 	case 1:
-		return &YAMLSingleDocument{Value: res[0]}, nil
+		return &BasicSingleDocument{Value: res[0]}, nil
 	default:
-		return &YAMLMultiDocument{Values: res}, nil
+		return &BasicMultiDocument{Values: res}, nil
+	}
+}
+
+func cleanupYamlInterfaceArray(in []interface{}) []interface{} {
+	res := make([]interface{}, len(in))
+	for i, v := range in {
+		res[i] = cleanupYamlMapValue(v)
+	}
+	return res
+}
+
+func cleanupYamlInterfaceMap(in map[interface{}]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range in {
+		res[fmt.Sprint(k)] = cleanupYamlMapValue(v)
+	}
+	return res
+}
+
+func cleanupYamlMapValue(v interface{}) interface{} {
+	switch v := v.(type) {
+	case []interface{}:
+		return cleanupYamlInterfaceArray(v)
+	case map[interface{}]interface{}:
+		return cleanupYamlInterfaceMap(v)
+	case string:
+		return v
+	default:
+		return v
 	}
 }
 
@@ -67,12 +82,12 @@ func (p *YAMLParser) ToBytes(value interface{}) ([]byte, error) {
 	defer encoder.Close()
 
 	switch v := value.(type) {
-	case *YAMLSingleDocument:
-		if err := encoder.Encode(v.Value); err != nil {
+	case SingleDocument:
+		if err := encoder.Encode(v.Document()); err != nil {
 			return nil, fmt.Errorf("could not encode single document: %w", err)
 		}
-	case *YAMLMultiDocument:
-		for index, d := range v.Values {
+	case MultiDocument:
+		for index, d := range v.Documents() {
 			if err := encoder.Encode(d); err != nil {
 				return nil, fmt.Errorf("could not encode multi document [%d]: %w", index, err)
 			}

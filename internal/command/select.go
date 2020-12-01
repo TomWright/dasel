@@ -8,23 +8,24 @@ import (
 )
 
 type selectOptions struct {
-	File     string
-	Parser   string
-	Selector string
-	Reader   io.Reader
-	Writer   io.Writer
-	Plain    bool
-	Multi    bool
+	File        string
+	Parser      string
+	ReadParser  string
+	WriteParser string
+	Selector    string
+	Reader      io.Reader
+	Writer      io.Writer
+	Multi       bool
 }
 
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
-	parser, err := getParser(opts.File, opts.Parser)
+	readParser, err := getReadParser(opts.File, opts.ReadParser, opts.Parser)
 	if err != nil {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
 		File:   opts.File,
-		Parser: parser,
+		Parser: readParser,
 		Reader: opts.Reader,
 	}, cmd)
 	if err != nil {
@@ -33,6 +34,11 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 	if opts.Writer == nil {
 		opts.Writer = cmd.OutOrStdout()
+	}
+
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, "-", opts.File)
+	if err != nil {
+		return err
 	}
 
 	if opts.Multi {
@@ -48,9 +54,8 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 		if err := writeNodesToOutput(writeNodesToOutputOpts{
 			Nodes:  results,
-			Parser: parser,
+			Parser: writeParser,
 			Writer: opts.Writer,
-			Plain:  opts.Plain,
 		}, cmd); err != nil {
 			return fmt.Errorf("could not write output: %w", err)
 		}
@@ -70,9 +75,8 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   res,
-		Parser: parser,
+		Parser: writeParser,
 		Writer: opts.Writer,
-		Plain:  opts.Plain,
 	}, cmd); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -81,7 +85,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 }
 
 func selectCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
 	var plainFlag, multiFlag bool
 
 	cmd := &cobra.Command{
@@ -92,20 +96,26 @@ func selectCommand() *cobra.Command {
 				selectorFlag = args[0]
 				args = args[1:]
 			}
+			if plainFlag {
+				writeParserFlag = "-"
+			}
 			return runSelectCommand(selectOptions{
-				File:     fileFlag,
-				Parser:   parserFlag,
-				Selector: selectorFlag,
-				Plain:    plainFlag,
-				Multi:    multiFlag,
+				File:        fileFlag,
+				Parser:      parserFlag,
+				ReadParser:  readParserFlag,
+				WriteParser: writeParserFlag,
+				Selector:    selectorFlag,
+				Multi:       multiFlag,
 			}, cmd)
 		},
 	}
 
 	cmd.Flags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
 	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
-	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
-	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Do not format output to the output data format.")
+	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for -r FORMAT -w FORMAT.")
+	cmd.Flags().StringVarP(&readParserFlag, "read", "r", "", "The parser to use when reading.")
+	cmd.Flags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
+	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 
 	_ = cmd.MarkFlagFilename("file")

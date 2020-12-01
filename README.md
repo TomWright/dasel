@@ -27,6 +27,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 - [Update data in structured data files](#put).
 - [Create data files](#creating-properties).
 - [Supports multiple data formats/types](#supported-file-types).
+- [Convert between data formats/types](#converting-between-formats).
 - Uses a [standard query/selector syntax](#selectors) across all data formats.
 - Zero runtime dependencies.
 - [Available on Linux, Mac and Windows](#binary-on-release).
@@ -42,6 +43,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
+  * [Converting between formats](#converting-between-formats)
 * [Usage](#usage)
   * [Select](#select)
   * [Put](#put)
@@ -52,6 +54,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
   * [YAML](#yaml)
   * [XML](#xml)
   * [CSV](#csv)
+  * [Plain](#plain)
 * [Selectors](#selectors)
   * [Property](#property)
   * [Child](#child-elements)
@@ -185,6 +188,13 @@ Dasel's method of querying data requires that the entire input document is store
 
 You should keep this in mind as the maximum filesize it can process will be limited by your system's available resources (specifically RAM).
 
+### Converting between formats
+
+Dasel allows you to specify different input/output formats. This works well in general but you may see some strange behaviour
+when working with formats that don't suit the data... multi-document YAML to CSV for example.
+
+If you have any questions about a specific issue please raise an issue.
+
 ## Usage 
 
 ```bash
@@ -195,7 +205,7 @@ An important note is that if no sub-command is given, dasel will default to `sel
 
 ### Select
 ```bash
-dasel select -f <file> -p <parser> -m <selector>
+dasel select -f <file> -p <parser> -r <read_parser> -w <write_parser> -m <selector>
 ```
 
 #### Arguments
@@ -206,13 +216,25 @@ Specify the file to query. This is required unless you are piping in data.
 
 If piping in data you can optionally pass `-f stdin`/`-f -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading the file.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 
@@ -292,13 +314,25 @@ Specify the output file. If present, results will be written to the given file. 
 
 To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading/writing the input/output files.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 
@@ -385,13 +419,25 @@ Specify the output file. If present, results will be written to the given file. 
 
 To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
-##### `-p`, `--parser`
+##### `-r`, `--read`
 
-Specify the parser to use when reading/writing the input/output files.
+Specify the parser to use when reading the input data.
 
 This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
 
-See [supported file types](#supported-file-types).
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
 
 ##### `-m`, `--multiple`
 
@@ -526,6 +572,13 @@ There are no plans to introduce a workaround for this but if there is enough dem
 -p csv
 ```
 Using [golang.org/pkg/encoding/csv](https://golang.org/pkg/encoding/csv/).
+
+### Plain
+```bash
+-p plain
+```
+
+This outputs the data using `fmt.Sprint(x)`, displaying whatever underlying value is present as a string.
 
 #### Adding data
 New columns will be detected and added to the end of the CSV output.

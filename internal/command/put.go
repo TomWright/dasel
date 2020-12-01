@@ -40,30 +40,66 @@ func shouldReadFromStdin(fileFlag string) bool {
 	return fileFlag == "" || fileFlag == "stdin" || fileFlag == "-"
 }
 
-func getParser(fileFlag string, parserFlag string) (storage.Parser, error) {
+func shouldWriteToStdout(fileFlag string, outFlag string) bool {
+	return (outFlag == "stdout" || outFlag == "-") || outFlag == "" && shouldReadFromStdin(fileFlag)
+}
+
+func getReadParser(fileFlag string, readParserFlag string, parserFlag string) (storage.ReadParser, error) {
 	useStdin := shouldReadFromStdin(fileFlag)
-	if useStdin && parserFlag == "" {
-		return nil, fmt.Errorf("parser flag required when reading from stdin")
+
+	if readParserFlag == "" {
+		readParserFlag = parserFlag
 	}
 
-	if parserFlag == "" {
-		parser, err := storage.NewParserFromFilename(fileFlag)
+	if useStdin && readParserFlag == "" {
+		return nil, fmt.Errorf("read parser flag required when reading from stdin")
+	}
+
+	if readParserFlag == "" {
+		parser, err := storage.NewReadParserFromFilename(fileFlag)
 		if err != nil {
-			return nil, fmt.Errorf("could not get parser from filename: %w", err)
+			return nil, fmt.Errorf("could not get read parser from filename: %w", err)
 		}
 		return parser, nil
 	}
-	parser, err := storage.NewParserFromString(parserFlag)
+	parser, err := storage.NewReadParserFromString(readParserFlag)
 	if err != nil {
-		return nil, fmt.Errorf("could not get parser: %w", err)
+		return nil, fmt.Errorf("could not get read parser: %w", err)
 	}
 	return parser, nil
+}
+
+func getWriteParser(readParser storage.ReadParser, writeParserFlag string, parserFlag string, outFlag string, fileFlag string) (storage.WriteParser, error) {
+	if writeParserFlag == "" {
+		writeParserFlag = parserFlag
+	}
+
+	if writeParserFlag != "" {
+		parser, err := storage.NewWriteParserFromString(writeParserFlag)
+		if err != nil {
+			return nil, fmt.Errorf("could not get write parser: %w", err)
+		}
+		return parser, nil
+	}
+
+	if !shouldWriteToStdout(fileFlag, outFlag) {
+		p, err := storage.NewWriteParserFromFilename(outFlag)
+		if err != nil {
+			return nil, fmt.Errorf("could not get write parser from filename: %w", err)
+		}
+		return p, nil
+	}
+
+	if p, ok := readParser.(storage.WriteParser); ok {
+		return p, nil
+	}
+	return nil, fmt.Errorf("read parser cannot be used to write. please specify a write parser")
 }
 
 type getRootNodeOpts struct {
 	File   string
 	Reader io.Reader
-	Parser storage.Parser
+	Parser storage.ReadParser
 }
 
 func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) {
@@ -90,50 +126,20 @@ func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) 
 
 type writeNodeToOutputOpts struct {
 	Node   *dasel.Node
-	Parser storage.Parser
+	Parser storage.WriteParser
 	File   string
 	Out    string
 	Writer io.Writer
-	Plain  bool
 }
 
 func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
-	if opts.Writer == nil {
-		switch {
-		case opts.Out == "" && shouldReadFromStdin(opts.File):
-			// No out flag and we read from stdin.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "stdout", opts.Out == "-":
-			// Out flag wants to write to stdout.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "":
-			// No out flag... write to the file we read from.
-			f, err := os.Create(opts.File)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-
-		case opts.Out != "":
-			// Out flag was set.
-			f, err := os.Create(opts.Out)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-		}
+	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
+	if err != nil {
+		return err
 	}
+	opts.Writer = writer
+	defer writerCleanUp()
 
-	if opts.Plain {
-		if _, err := fmt.Fprintf(opts.Writer, "%v\n", opts.Node.InterfaceValue()); err != nil {
-			return fmt.Errorf("could not write output: %w", err)
-		}
-		return nil
-	}
 	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
 	}
@@ -143,43 +149,19 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 
 type writeNodesToOutputOpts struct {
 	Nodes  []*dasel.Node
-	Parser storage.Parser
+	Parser storage.WriteParser
 	File   string
 	Out    string
 	Writer io.Writer
-	Plain  bool
 }
 
 func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
-	if opts.Writer == nil {
-		switch {
-		case opts.Out == "" && shouldReadFromStdin(opts.File):
-			// No out flag and we read from stdin.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "stdout", opts.Out == "-":
-			// Out flag wants to write to stdout.
-			opts.Writer = cmd.OutOrStdout()
-
-		case opts.Out == "":
-			// No out flag... write to the file we read from.
-			f, err := os.Create(opts.File)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-
-		case opts.Out != "":
-			// Out flag was set.
-			f, err := os.Create(opts.Out)
-			if err != nil {
-				return fmt.Errorf("could not open output file: %w", err)
-			}
-			defer f.Close()
-			opts.Writer = f
-		}
+	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
+	if err != nil {
+		return err
 	}
+	opts.Writer = writer
+	defer writerCleanUp()
 
 	buf := new(bytes.Buffer)
 
@@ -188,7 +170,6 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
 			Node:   n,
 			Parser: opts.Parser,
 			Writer: buf,
-			Plain:  opts.Plain,
 		}
 		if err := writeNodeToOutput(subOpts, cmd); err != nil {
 			return fmt.Errorf("could not write node %d to output: %w", i, err)
@@ -202,8 +183,38 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
 	return nil
 }
 
+func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) (io.Writer, func(), error) {
+	if in == nil {
+		switch {
+		case shouldWriteToStdout(file, out):
+			return cmd.OutOrStdout(), func() {}, nil
+
+		case out == "":
+			// No out flag... write to the file we read from.
+			f, err := os.Create(file)
+			if err != nil {
+				return nil, nil, fmt.Errorf("could not open output file: %w", err)
+			}
+			return f, func() {
+				_ = f.Close()
+			}, nil
+
+		case out != "":
+			// Out flag was set.
+			f, err := os.Create(out)
+			if err != nil {
+				return nil, nil, fmt.Errorf("could not open output file: %w", err)
+			}
+			return f, func() {
+				_ = f.Close()
+			}, nil
+		}
+	}
+	return in, func() {}, nil
+}
+
 func putCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, outFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
 	var multiFlag bool
 
 	cmd := &cobra.Command{
@@ -220,7 +231,9 @@ func putCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
 	cmd.PersistentFlags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
-	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "The parser to use with the given file.")
+	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for -r FORMAT -w FORMAT.")
+	cmd.PersistentFlags().StringVarP(&readParserFlag, "read", "r", "", "The parser to use when reading.")
+	cmd.PersistentFlags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 
@@ -230,16 +243,18 @@ func putCommand() *cobra.Command {
 }
 
 type genericPutOptions struct {
-	File      string
-	Out       string
-	Parser    string
-	Selector  string
-	Value     string
-	ValueType string
-	Init      func(genericPutOptions) genericPutOptions
-	Reader    io.Reader
-	Writer    io.Writer
-	Multi     bool
+	File        string
+	Out         string
+	Parser      string
+	ReadParser  string
+	WriteParser string
+	Selector    string
+	Value       string
+	ValueType   string
+	Init        func(genericPutOptions) genericPutOptions
+	Reader      io.Reader
+	Writer      io.Writer
+	Multi       bool
 }
 
 func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
@@ -247,6 +262,8 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.File = cmd.Flag("file").Value.String()
 		opts.Out = cmd.Flag("out").Value.String()
 		opts.Parser = cmd.Flag("parser").Value.String()
+		opts.ReadParser = cmd.Flag("read").Value.String()
+		opts.WriteParser = cmd.Flag("write").Value.String()
 		opts.Selector = cmd.Flag("selector").Value.String()
 		opts.Multi, _ = cmd.Flags().GetBool("multiple")
 
@@ -267,13 +284,13 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 	if opts.Init != nil {
 		opts = opts.Init(opts)
 	}
-	parser, err := getParser(opts.File, opts.Parser)
+	readParser, err := getReadParser(opts.File, opts.ReadParser, opts.Parser)
 	if err != nil {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
 		File:   opts.File,
-		Parser: parser,
+		Parser: readParser,
 		Reader: opts.Reader,
 	}, cmd)
 	if err != nil {
@@ -295,9 +312,14 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		}
 	}
 
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File)
+	if err != nil {
+		return err
+	}
+
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
-		Parser: parser,
+		Parser: writeParser,
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
