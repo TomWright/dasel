@@ -35,6 +35,12 @@ func TestFindNodesProperty(t *testing.T) {
 		got, err := findNodesProperty(selector, previousValue, false)
 		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}, got, err)
 	})
+	t.Run("UnsupportedType", func(t *testing.T) {
+		previousValue := reflect.ValueOf(0)
+		selector := Selector{Current: "x"}
+		got, err := findNodesProperty(selector, previousValue, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+	})
 }
 
 func TestFindNodesIndex(t *testing.T) {
@@ -84,6 +90,17 @@ func TestFindNodesDynamic(t *testing.T) {
 		got, err := findNodesDynamic(selector, previousValue, false)
 		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}, got, err)
 	})
+	t.Run("NotFoundMap", func(t *testing.T) {
+		previousValue := reflect.ValueOf(map[string]interface{}{})
+		selector := Selector{
+			Current: "(name=x)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "x"},
+			},
+		}
+		got, err := findNodesDynamic(selector, previousValue, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}, got, err)
+	})
 	t.Run("NotFoundWithCreate", func(t *testing.T) {
 		previousValue := reflect.ValueOf([]interface{}{})
 		selector := Selector{
@@ -105,6 +122,19 @@ func TestFindNodesDynamic(t *testing.T) {
 	t.Run("UnsupportedCheckType", func(t *testing.T) {
 		previousValue := reflect.ValueOf([]interface{}{
 			1,
+		})
+		selector := Selector{
+			Current: "(name=x)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "x"},
+			},
+		}
+		got, err := findNodesDynamic(selector, previousValue, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnhandledCheckType{Value: previousValue.Kind().String()}, got, err)
+	})
+	t.Run("UnsupportedCheckTypeMap", func(t *testing.T) {
+		previousValue := reflect.ValueOf(map[string]interface{}{
+			"x": 1,
 		})
 		selector := Selector{
 			Current: "(name=x)",

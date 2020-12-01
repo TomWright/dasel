@@ -54,6 +54,13 @@ func TestFindValueProperty(t *testing.T) {
 		got, err := findValueProperty(n, false)
 		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
+	t.Run("UnsupportedType", func(t *testing.T) {
+		val := 0
+		n := getNodeWithValue(val)
+		n.Selector.Current = "x"
+		got, err := findValueProperty(n, false)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, got, err)
+	})
 }
 
 func TestFindValueIndex(t *testing.T) {
