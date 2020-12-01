@@ -63,6 +63,32 @@ func TestFindNodesIndex(t *testing.T) {
 	})
 }
 
+func TestFindNodesAnyIndex(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		selector := Selector{Current: "[*]", Raw: ".[*]"}
+		got, err := findNodesAnyIndex(selector, nilValue())
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnexpectedPreviousNilValue{Selector: ".[*]"}, got, err)
+	})
+	t.Run("NotFound", func(t *testing.T) {
+		selector := Selector{Current: "[*]", Raw: ".[*]"}
+		previousValue := reflect.ValueOf([]interface{}{})
+		got, err := findNodesAnyIndex(selector, previousValue)
+		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: "[*]", PreviousValue: previousValue}, got, err)
+	})
+	t.Run("NotFoundMap", func(t *testing.T) {
+		selector := Selector{Current: "[*]", Raw: ".[*]"}
+		previousValue := reflect.ValueOf(map[string]interface{}{})
+		got, err := findNodesAnyIndex(selector, previousValue)
+		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: "[*]", PreviousValue: previousValue}, got, err)
+	})
+	t.Run("UnsupportedType", func(t *testing.T) {
+		selector := Selector{Current: "[*]", Raw: ".[*]"}
+		previousValue := reflect.ValueOf(0)
+		got, err := findNodesAnyIndex(selector, previousValue)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+	})
+}
+
 func TestFindNextAvailableIndexNodes(t *testing.T) {
 	t.Run("NotFound", func(t *testing.T) {
 		previousValue := reflect.ValueOf([]interface{}{})
