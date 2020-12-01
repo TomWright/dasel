@@ -27,6 +27,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 - [Update data in structured data files](#put).
 - [Create data files](#creating-properties).
 - [Supports multiple data formats/types](#supported-file-types).
+- [Convert between data formats/types](#converting-between-formats).
 - Uses a [standard query/selector syntax](#selectors) across all data formats.
 - Zero runtime dependencies.
 - [Available on Linux, Mac and Windows](#binary-on-release).
