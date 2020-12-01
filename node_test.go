@@ -309,7 +309,7 @@ func TestNode_QueryMultiple(t *testing.T) {
 			"Tom",
 		}
 
-		if !reflect.DeepEqual(expValues, gotValues) {
+		if !valuesAreEqual(expValues, gotValues) {
 			t.Errorf("expected %v, got %v", expValues, gotValues)
 		}
 	})
@@ -325,7 +325,7 @@ func TestNode_QueryMultiple(t *testing.T) {
 			"Amelia",
 		}
 
-		if !reflect.DeepEqual(expValues, gotValues) {
+		if !valuesAreEqual(expValues, gotValues) {
 			t.Errorf("expected %v, got %v", expValues, gotValues)
 		}
 	})
@@ -342,7 +342,7 @@ func TestNode_QueryMultiple(t *testing.T) {
 			"Jim",
 		}
 
-		if !reflect.DeepEqual(expValues, gotValues) {
+		if !valuesAreEqual(expValues, gotValues) {
 			t.Errorf("expected %v, got %v", expValues, gotValues)
 		}
 	})
@@ -360,10 +360,29 @@ func TestNode_QueryMultiple(t *testing.T) {
 			"Amelia",
 		}
 
-		if !reflect.DeepEqual(expValues, gotValues) {
+		if !valuesAreEqual(expValues, gotValues) {
 			t.Errorf("expected %v, got %v", expValues, gotValues)
 		}
 	})
+}
+
+func valuesAreEqual(exp []interface{}, got []interface{}) bool {
+	if len(exp) != len(got) {
+		return false
+	}
+	for _, g := range got {
+		found := false
+		for _, e := range exp {
+			if reflect.DeepEqual(g, e) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func TestNode_PutMultiple(t *testing.T) {
