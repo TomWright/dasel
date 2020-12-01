@@ -9,7 +9,7 @@ import (
 
 var yamlBytes = []byte(`name: Tom
 `)
-var yamlMap = map[interface{}]interface{}{
+var yamlMap = map[string]interface{}{
 	"name": "Tom",
 }
 
@@ -18,10 +18,10 @@ var yamlBytesMulti = []byte(`name: Tom
 name: Jim
 `)
 var yamlMapMulti = []interface{}{
-	map[interface{}]interface{}{
+	map[string]interface{}{
 		"name": "Tom",
 	},
-	map[interface{}]interface{}{
+	map[string]interface{}{
 		"name": "Jim",
 	},
 }

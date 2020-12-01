@@ -31,7 +31,10 @@ docLoop:
 			}
 			return nil, fmt.Errorf("could not unmarshal data: %w", err)
 		}
-		res = append(res, docData)
+
+		formattedDocData := cleanupYamlMapValue(docData)
+
+		res = append(res, formattedDocData)
 	}
 	switch len(res) {
 	case 0:
@@ -40,6 +43,35 @@ docLoop:
 		return &BasicSingleDocument{Value: res[0]}, nil
 	default:
 		return &BasicMultiDocument{Values: res}, nil
+	}
+}
+
+func cleanupYamlInterfaceArray(in []interface{}) []interface{} {
+	res := make([]interface{}, len(in))
+	for i, v := range in {
+		res[i] = cleanupYamlMapValue(v)
+	}
+	return res
+}
+
+func cleanupYamlInterfaceMap(in map[interface{}]interface{}) map[string]interface{} {
+	res := make(map[string]interface{})
+	for k, v := range in {
+		res[fmt.Sprint(k)] = cleanupYamlMapValue(v)
+	}
+	return res
+}
+
+func cleanupYamlMapValue(v interface{}) interface{} {
+	switch v := v.(type) {
+	case []interface{}:
+		return cleanupYamlInterfaceArray(v)
+	case map[interface{}]interface{}:
+		return cleanupYamlInterfaceMap(v)
+	case string:
+		return v
+	default:
+		return v
 	}
 }
 
