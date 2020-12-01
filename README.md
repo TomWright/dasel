@@ -202,9 +202,8 @@ name: Jim
 
 This works well in general but you may run into issues when converting between data formats that don't typically play
 well together.
-when working with formats that don't suit the data... multi-document YAML to CSV for example.
 
-If you have any questions about a specific issue please raise an issue.
+You have any questions or concerns around this please raise an issue.
 
 ## Usage 
 
