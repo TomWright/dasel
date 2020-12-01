@@ -209,6 +209,20 @@ func TestNode_QueryMultiple(t *testing.T) {
 			"age":  "25",
 		},
 	}
+	value2 := map[string]interface{}{
+		"personA": map[string]interface{}{
+			"name": "Tom",
+			"age":  27,
+		},
+		"personB": map[string]interface{}{
+			"name": "Jim",
+			"age":  27,
+		},
+		"personC": map[string]interface{}{
+			"name": "Amelia",
+			"age":  25,
+		},
+	}
 	extractValues := func(nodes []*dasel.Node) []interface{} {
 		gotValues := make([]interface{}, len(nodes))
 		for i, n := range nodes {
@@ -283,6 +297,92 @@ func TestNode_QueryMultiple(t *testing.T) {
 			t.Errorf("expected %v, got %v", expValues, gotValues)
 		}
 	})
+	t.Run("MapsSingleResult", func(t *testing.T) {
+		nodes, err := dasel.New(value2).QueryMultiple(".personA.name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Tom",
+		}
+
+		if !valuesAreEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+	t.Run("MapsSingleResultDynamic", func(t *testing.T) {
+		nodes, err := dasel.New(value2).QueryMultiple(".(age=25).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Amelia",
+		}
+
+		if !valuesAreEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+	t.Run("MapsMultipleResultDynamic", func(t *testing.T) {
+		nodes, err := dasel.New(value2).QueryMultiple(".(age=27).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Tom",
+			"Jim",
+		}
+
+		if !valuesAreEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+	t.Run("MapsMultipleResultAnyIndex", func(t *testing.T) {
+		nodes, err := dasel.New(value2).QueryMultiple(".[*].name")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		gotValues := extractValues(nodes)
+		expValues := []interface{}{
+			"Tom",
+			"Jim",
+			"Amelia",
+		}
+
+		if !valuesAreEqual(expValues, gotValues) {
+			t.Errorf("expected %v, got %v", expValues, gotValues)
+		}
+	})
+}
+
+func valuesAreEqual(exp []interface{}, got []interface{}) bool {
+	if len(exp) != len(got) {
+		return false
+	}
+	for _, g := range got {
+		found := false
+		for _, e := range exp {
+			if reflect.DeepEqual(g, e) {
+				found = true
+				break
+			}
+		}
+		if !found {
+			return false
+		}
+	}
+	return true
 }
 
 func TestNode_PutMultiple(t *testing.T) {
@@ -607,6 +707,26 @@ func TestNode_Query_Data(t *testing.T) {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
+	t.Run("DynamicPropertyOnMap", func(t *testing.T) {
+		rootNode := dasel.New(map[string]interface{}{
+			"personA": map[string]interface{}{
+				"name": "Tom",
+			},
+			"personB": map[string]interface{}{
+				"name": "Jim",
+			},
+		})
+
+		got, err := rootNode.Query(".(name=Tom).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
 }
 
 func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}, querySelector string) func(t *testing.T) {
@@ -790,5 +910,4 @@ func TestNode_PutMultiple_Query(t *testing.T) {
 	t.Run("NilChain", putQueryMultipleTest(dasel.New(nil), "my.name", "Thomas", "my.name"))
 	t.Run("NilChainToListIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[0]", "Tom", "my.favourite.people.[0]"))
 	t.Run("NilChainToListNextAvailableIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
-	t.Run("NilChainToDynamic", putQueryMultipleTest(dasel.New(nil), "(name=Jim).name", "Tom", "[0].name"))
 }

@@ -144,7 +144,8 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 
 	value := unwrapValue(n.Previous.Value)
 
-	if value.Kind() == reflect.Slice {
+	switch value.Kind() {
+	case reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
 			object := value.Index(i)
 			found, err := processFindDynamicItem(n, object)
@@ -160,6 +161,21 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		if createIfNotExists {
 			n.Selector.Type = "NEXT_AVAILABLE_INDEX"
 			return nilValue(), nil
+		}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
+
+	case reflect.Map:
+		for _, key := range value.MapKeys() {
+			object := value.MapIndex(key)
+			found, err := processFindDynamicItem(n, object)
+			if err != nil {
+				return nilValue(), err
+			}
+			if found {
+				n.Selector.Type = "PROPERTY"
+				n.Selector.Property = key.String()
+				return object, nil
+			}
 		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}

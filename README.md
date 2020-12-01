@@ -190,10 +190,20 @@ You should keep this in mind as the maximum filesize it can process will be limi
 
 ### Converting between formats
 
-Dasel allows you to specify different input/output formats. This works well in general but you may see some strange behaviour
-when working with formats that don't suit the data... multi-document YAML to CSV for example.
+Dasel allows you to specify different input/output formats using the `-r`,`--read` and `-w`,`--write` flags.
 
-If you have any questions about a specific issue please raise an issue.
+E.g.
+```bash
+echo '{"name": "Tom"}{"name": "Jim"}' | dasel -r json -w yaml .
+name: Tom
+---
+name: Jim
+```
+
+This works well in general but you may run into issues when converting between data formats that don't typically play
+well together.
+
+You have any questions or concerns around this please raise an issue.
 
 ## Usage 
 
@@ -644,13 +654,13 @@ The next available index selector is used when adding to a list of items. It all
 - `colours.[]`
 
 #### Any Index
-The any index selector is used to select *all* items of a list.
+The any index selector is used to select *all* items of a list or map.
 - `colours.[*]`
 
 This must be used in conjunction with `-m`,`--multiple`.
 
 #### Dynamic
-Dynamic selectors are used with lists when you don't know the index of the item, but instead want to find the index based on some other criteria.
+Dynamic selectors are used with lists/maps when you don't know the index/property of the item, but instead want to find the index based on some other criteria.
  
 Dasel currently supports `key/query=value` checks but I aim to support more check types in the future.
 

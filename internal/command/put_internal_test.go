@@ -380,6 +380,20 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
+		t.Run("DynamicMapInt", putTest(`{
+  "numbers": {
+    "high": 3,
+	"low": 1,
+	"mid": 2
+  }
+}`, "json", ".numbers.(.=3)", "5", "int", `{
+  "numbers": {
+    "high": 5,
+    "low": 1,
+    "mid": 2
+  }
+}`, nil))
+
 		t.Run("OverwriteObject", putObjectTest(`{
   "numbers": [
     {

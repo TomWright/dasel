@@ -54,6 +54,13 @@ func TestFindValueProperty(t *testing.T) {
 		got, err := findValueProperty(n, false)
 		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
+	t.Run("UnsupportedType", func(t *testing.T) {
+		val := 0
+		n := getNodeWithValue(val)
+		n.Selector.Current = "x"
+		got, err := findValueProperty(n, false)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, got, err)
+	})
 }
 
 func TestFindValueIndex(t *testing.T) {
@@ -106,6 +113,15 @@ func TestFindValueDynamic(t *testing.T) {
 		got, err := findValueDynamic(n, false)
 		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
 	})
+	t.Run("NotFoundMap", func(t *testing.T) {
+		n := getNodeWithValue(map[string]interface{}{})
+		n.Selector.Current = "(name=x)"
+		n.Selector.Conditions = []Condition{
+			&EqualCondition{Key: "name", Value: "x"},
+		}
+		got, err := findValueDynamic(n, false)
+		assertQueryResult(t, nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}, got, err)
+	})
 	t.Run("NotFoundWithCreate", func(t *testing.T) {
 		n := getNodeWithValue([]interface{}{})
 		n.Selector.Current = "(name=x)"
@@ -134,8 +150,21 @@ func TestFindValueDynamic(t *testing.T) {
 		got, err := findValueDynamic(n, false)
 		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
 	})
+	t.Run("UnsupportedCheckTypeMap", func(t *testing.T) {
+		itemVal := 1
+		val := map[string]interface{}{
+			"x": itemVal,
+		}
+		n := getNodeWithValue(val)
+		n.Selector.Current = "(name=x)"
+		n.Selector.Conditions = []Condition{
+			&EqualCondition{Key: "name", Value: "x"},
+		}
+		got, err := findValueDynamic(n, false)
+		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
+	})
 	t.Run("UnsupportedType", func(t *testing.T) {
-		val := map[string]interface{}{}
+		val := 0
 		n := getNodeWithValue(val)
 		n.Selector.Current = "(name=x)"
 		n.Selector.Conditions = []Condition{
