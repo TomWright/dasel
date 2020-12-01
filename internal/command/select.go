@@ -112,10 +112,10 @@ func selectCommand() *cobra.Command {
 
 	cmd.Flags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
 	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
-	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for `-r FORMAT -w FORMAT`.")
+	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for -r FORMAT -w FORMAT.")
 	cmd.Flags().StringVarP(&readParserFlag, "read", "r", "", "The parser to use when reading.")
 	cmd.Flags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
-	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Do not format output to the output data format.")
+	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 
 	_ = cmd.MarkFlagFilename("file")

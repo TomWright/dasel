@@ -231,7 +231,7 @@ func putCommand() *cobra.Command {
 
 	cmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
 	cmd.PersistentFlags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when querying the data structure.")
-	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for `-r FORMAT -w FORMAT`.")
+	cmd.PersistentFlags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for -r FORMAT -w FORMAT.")
 	cmd.PersistentFlags().StringVarP(&readParserFlag, "read", "r", "", "The parser to use when reading.")
 	cmd.PersistentFlags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
