@@ -109,13 +109,20 @@ mv ./dasel /usr/local/bin/dasel
 ##### Windows 10 
 You have two installation options at the moment.
 
-There is a convenient way to install via [scoop command-line installer](https://scoop.sh). By issueing following commands in your terminal `dasel` will be available:
+The most convenient installation method is via [scoop command-line installer](https://scoop.sh). Issue the following commands in your terminal and `dasel` will be available:
 ```bash
 scoop bucket add extras
 scoop install dasel
 ```
 
-Less convenient option is to download dasel from the release section as mentioned above and put binary on the PATH.
+You can then use
+```bash
+scoop update dasel
+```
+to update later on.
+
+
+The less convenient option is to download dasel from the release section as mentioned above and put the binary on the `PATH`.
 
 #### Docker
 You also have the option of using the docker image to run dasel for you.
