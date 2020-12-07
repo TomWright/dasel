@@ -111,7 +111,7 @@ You have two installation options at the moment.
 
 There is a convenient way to install via [scoop command-line installer](https://scoop.sh). By issueing following commands in your terminal `dasel` will be available:
 ```bash
-scoop add bucket extras
+scoop bucket add extras
 scoop install dasel
 ```
 
