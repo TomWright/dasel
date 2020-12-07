@@ -106,6 +106,24 @@ curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep brow
 mv ./dasel /usr/local/bin/dasel
 ```
 
+##### Windows 10 
+You have two installation options at the moment.
+
+The most convenient installation method is via [scoop command-line installer](https://scoop.sh). Issue the following commands in your terminal and `dasel` will be available:
+```bash
+scoop bucket add extras
+scoop install dasel
+```
+
+You can then use
+```bash
+scoop update dasel
+```
+to update later on.
+
+
+The less convenient option is to download dasel from the release section as mentioned above and put the binary on the `PATH`.
+
 #### Docker
 You also have the option of using the docker image to run dasel for you.
 
