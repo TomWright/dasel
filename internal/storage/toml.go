@@ -30,7 +30,7 @@ func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
 func (p *TOMLParser) ToBytes(value interface{}) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
-	enc := toml.NewEncoder(buf)
+	enc := toml.NewEncoder(buf).QuoteMapKeys(true)
 
 	switch d := value.(type) {
 	case SingleDocument:

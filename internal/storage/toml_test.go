@@ -7,10 +7,10 @@ import (
 	"testing"
 )
 
-var tomlBytes = []byte(`names = ["John", "Frank"]
+var tomlBytes = []byte(`"names" = ["John", "Frank"]
 
-[person]
-  name = "Tom"
+["person"]
+  "name" = "Tom"
 `)
 var tomlMap = map[string]interface{}{
 	"person": map[string]interface{}{

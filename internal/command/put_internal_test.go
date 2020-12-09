@@ -626,17 +626,17 @@ numbers:
 
 	t.Run("TOML", func(t *testing.T) {
 		t.Run("SingleProperty", putTest(`
-id = "1111"
+"id" = "1111"
 
-[details]
-  age = 27
-  name = "Tom"
+["details"]
+  "age" = 27
+  "name" = "Tom"
 `, "toml", ".id", "2222", "string", `
-id = "2222"
+"id" = "2222"
 
-[details]
-  age = 27
-  name = "Tom"
+["details"]
+  "age" = 27
+  "name" = "Tom"
 `, nil))
 
 		t.Run("ObjectPropertyString", putTest(`
@@ -646,11 +646,11 @@ id = "1111"
   age = 27
   name = "Tom"
 `, "toml", ".details.name", "Frank", "string", `
-id = "1111"
+"id" = "1111"
 
-[details]
-  age = 27
-  name = "Frank"
+["details"]
+  "age" = 27
+  "name" = "Frank"
 `, nil))
 
 		t.Run("ObjectPropertyInt", putTest(`
@@ -660,35 +660,35 @@ id = "1111"
   age = 20
   name = "Tom"
 `, "toml", ".details.age", "27", "int", `
-id = "1111"
+"id" = "1111"
 
-[details]
-  age = 27
-  name = "Tom"
+["details"]
+  "age" = 27
+  "name" = "Tom"
 `, nil))
 
 		t.Run("IndexString", putTest(`
 numbers = ["one", "two", "three"]
 `, "toml", ".numbers.[1]", "four", "string", `
-numbers = ["one", "four", "three"]
+"numbers" = ["one", "four", "three"]
 `, nil))
 
 		t.Run("DynamicString", putTest(`
 numbers = ["one", "two", "three"]
 `, "toml", ".numbers.(value=three)", "four", "string", `
-numbers = ["one", "two", "four"]
+"numbers" = ["one", "two", "four"]
 `, nil))
 
 		t.Run("DynamicInt", putTest(`
 numbers = [1, 2, 3]
 `, "toml", ".numbers.(value=3)", "4", "int", `
-numbers = [1, 2, 4]
+"numbers" = [1, 2, 4]
 `, nil))
 
 		t.Run("IndexInt", putTest(`
 numbers = [1, 2, 3]
 `, "toml", ".numbers.[1]", "4", "int", `
-numbers = [1, 4, 3]
+"numbers" = [1, 4, 3]
 `, nil))
 
 		t.Run("DynamicString", putTest(`
@@ -704,17 +704,17 @@ numbers = [1, 4, 3]
   number = "three"
   rank = 3
 `, "toml", ".numbers.(number=two).number", "four", "string", `
-[[numbers]]
-  number = "one"
-  rank = 1
+[["numbers"]]
+  "number" = "one"
+  "rank" = 1
 
-[[numbers]]
-  number = "four"
-  rank = 2
+[["numbers"]]
+  "number" = "four"
+  "rank" = 2
 
-[[numbers]]
-  number = "three"
-  rank = 3
+[["numbers"]]
+  "number" = "three"
+  "rank" = 3
 `, nil))
 
 		t.Run("DynamicInt", putTest(`
@@ -730,17 +730,17 @@ numbers = [1, 4, 3]
   number = "three"
   rank = 3
 `, "toml", ".numbers.(rank=2).rank", "4", "int", `
-[[numbers]]
-  number = "one"
-  rank = 1
+[["numbers"]]
+  "number" = "one"
+  "rank" = 1
 
-[[numbers]]
-  number = "two"
-  rank = 4
+[["numbers"]]
+  "number" = "two"
+  "rank" = 4
 
-[[numbers]]
-  number = "three"
-  rank = 3
+[["numbers"]]
+  "number" = "three"
+  "rank" = 3
 `, nil))
 
 		t.Run("OverwriteObject", putObjectTest(`
@@ -756,17 +756,17 @@ numbers = [1, 4, 3]
   number = "three"
   rank = 3
 `, "toml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
-[[numbers]]
-  number = "five"
-  rank = 5
+[["numbers"]]
+  "number" = "five"
+  "rank" = 5
 
-[[numbers]]
-  number = "two"
-  rank = 2
+[["numbers"]]
+  "number" = "two"
+  "rank" = 2
 
-[[numbers]]
-  number = "three"
-  rank = 3
+[["numbers"]]
+  "number" = "three"
+  "rank" = 3
 `, nil))
 
 		t.Run("AppendObject", putObjectTest(`
@@ -782,21 +782,21 @@ numbers = [1, 4, 3]
   number = "three"
   rank = 3
 `, "toml", ".numbers.[]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
-[[numbers]]
-  number = "one"
-  rank = 1
+[["numbers"]]
+  "number" = "one"
+  "rank" = 1
 
-[[numbers]]
-  number = "two"
-  rank = 2
+[["numbers"]]
+  "number" = "two"
+  "rank" = 2
 
-[[numbers]]
-  number = "three"
-  rank = 3
+[["numbers"]]
+  "number" = "three"
+  "rank" = 3
 
-[[numbers]]
-  number = "five"
-  rank = 5
+[["numbers"]]
+  "number" = "five"
+  "rank" = 5
 `, nil))
 
 	})

@@ -608,15 +608,15 @@ metadata:
 func TestRootCMD_Put_TOML(t *testing.T) {
 	t.Run("String", putStringTest(`
 id = "x"
-`, "toml", "id", "y", `id = "y"
+`, "toml", "id", "y", `"id" = "y"
 `, nil))
 	t.Run("Int", putIntTest(`
 id = 123
-`, "toml", "id", "456", `id = 456
+`, "toml", "id", "456", `"id" = 456
 `, nil))
 	t.Run("Bool", putBoolTest(`
 id = true
-`, "toml", "id", "false", `id = false
+`, "toml", "id", "false", `"id" = false
 `, nil))
 	t.Run("OverwriteObject", putObjectTest(`
 [[numbers]]
@@ -631,17 +631,17 @@ id = true
   number = "three"
   rank = 3
 `, "toml", ".numbers.[0]", []string{"number=five", "rank=5"}, []string{"string", "int"}, `
-[[numbers]]
-  number = "five"
-  rank = 5
+[["numbers"]]
+  "number" = "five"
+  "rank" = 5
 
-[[numbers]]
-  number = "two"
-  rank = 2
+[["numbers"]]
+  "number" = "two"
+  "rank" = 2
 
-[[numbers]]
-  number = "three"
-  rank = 3
+[["numbers"]]
+  "number" = "three"
+  "rank" = 3
 `, nil))
 }
 

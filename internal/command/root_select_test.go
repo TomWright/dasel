@@ -449,7 +449,7 @@ spec:
 }
 
 func TestRootCmd_Select_TOML(t *testing.T) {
-	t.Run("RootElement", selectTest(tomlDataSingle, "toml", ".", newline(`x = "asd"`), nil))
+	t.Run("RootElement", selectTest(tomlDataSingle, "toml", ".", newline(`"x" = "asd"`), nil))
 	t.Run("SingleProperty", selectTest(tomlData, "toml", ".id", newline(`1111`), nil))
 	t.Run("ObjectProperty", selectTest(tomlData, "toml", ".details.name", newline(`Tom`), nil))
 	t.Run("Index", selectTest(tomlData, "toml", ".details.addresses.[0].street", newline(`101 Some Street`), nil))
