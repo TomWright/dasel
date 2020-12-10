@@ -69,16 +69,29 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	} else {
 		res, err = rootNode.Query(opts.Selector)
 		if err != nil {
-			return fmt.Errorf("could not query node: %w", err)
+			err = fmt.Errorf("could not query node: %w", err)
 		}
 	}
 
-	if err := writeNodeToOutput(writeNodeToOutputOpts{
-		Node:   res,
-		Parser: writeParser,
-		Writer: opts.Writer,
-	}, cmd); err != nil {
-		return fmt.Errorf("could not write output: %w", err)
+	written, err := customErrorHandling(customErrorHandlingOpts{
+		File:     opts.File,
+		Writer:   opts.Writer,
+		Err:      err,
+		Cmd:      cmd,
+		NullFlag: true,
+	})
+	if err != nil {
+		return fmt.Errorf("could not write custom output: %w", err)
+	}
+
+	if !written {
+		if err := writeNodeToOutput(writeNodeToOutputOpts{
+			Node:   res,
+			Parser: writeParser,
+			Writer: opts.Writer,
+		}, cmd); err != nil {
+			return fmt.Errorf("could not write output: %w", err)
+		}
 	}
 
 	return nil

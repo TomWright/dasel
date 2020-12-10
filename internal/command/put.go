@@ -2,6 +2,7 @@ package command
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
@@ -130,6 +131,50 @@ type writeNodeToOutputOpts struct {
 	File   string
 	Out    string
 	Writer io.Writer
+}
+
+type customErrorHandlingOpts struct {
+	File     string
+	Out      string
+	Writer   io.Writer
+	Err      error
+	Cmd      *cobra.Command
+	NullFlag bool
+}
+
+func customErrorHandling(opts customErrorHandlingOpts) (bool, error) {
+	if opts.Err == nil {
+		return false, nil
+	}
+
+	var valNotFound *dasel.ValueNotFound
+	if !errors.As(opts.Err, &valNotFound) {
+		return false, opts.Err
+	}
+
+	if !opts.NullFlag {
+		return false, opts.Err
+	}
+
+	if err := writeStringToOutput("null\n", opts.File, opts.Out, opts.Writer, opts.Cmd); err != nil {
+		return false, fmt.Errorf("could not write string to output: %w", err)
+	}
+
+	return true, nil
+}
+
+func writeStringToOutput(value string, file string, out string, writer io.Writer, cmd *cobra.Command) error {
+	writer, writerCleanUp, err := getOutputWriter(cmd, writer, file, out)
+	if err != nil {
+		return err
+	}
+	defer writerCleanUp()
+
+	if _, err := writer.Write([]byte(value)); err != nil {
+		return fmt.Errorf("could not write to output file: %w", err)
+	}
+
+	return nil
 }
 
 func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
