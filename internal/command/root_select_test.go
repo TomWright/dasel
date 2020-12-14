@@ -351,8 +351,8 @@ func TestRootCmd_Select_JSON(t *testing.T) {
   ]
 }`, "json", ".(?:-=name).first", []string{`"Tom"`, `"Joe"`, `"Jim"`}, nil, "-m"))
 
-	t.Run("ObjectKeysSelector", selectTest(jsonData, "json", ".-", newline(`"id"
-"details"`), nil, "-m"))
+	t.Run("ObjectKeysSelector", selectTestContainsLines(jsonData, "json", ".-", []string{`"id"`,
+		`"details"`}, nil, "-m"))
 
 	t.Run("ArrayIndexesSelector", selectTest(jsonData, "json", ".details.addresses.-", newline(`"0"
 "1"`), nil, "-m"))
