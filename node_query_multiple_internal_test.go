@@ -37,6 +37,42 @@ func assertQueryMultipleResult(t *testing.T, exp []reflect.Value, expErr error, 
 	return true
 }
 
+func assertQueryMultipleResultOneOf(t *testing.T, exp [][]reflect.Value, expErr error, got []*Node, gotErr error) bool {
+	if !assertErrResult(t, expErr, gotErr) {
+		return false
+	}
+	gotVals := make([]interface{}, len(got))
+	if len(got) > 0 {
+		for i, n := range got {
+			if !n.Value.IsValid() {
+				gotVals[i] = nil
+				continue
+			}
+			gotVals[i] = n.Value.Interface()
+		}
+	}
+
+	for _, exp := range exp {
+		expVals := make([]interface{}, len(exp))
+		if len(exp) > 0 {
+			for i, n := range exp {
+				if !n.IsValid() {
+					expVals[i] = nil
+					continue
+				}
+				expVals[i] = n.Interface()
+			}
+		}
+
+		if reflect.DeepEqual(expVals, gotVals) {
+			return true
+		}
+	}
+
+	t.Errorf("unexpected result: %v", gotVals)
+	return false
+}
+
 func TestFindNodesProperty(t *testing.T) {
 	t.Run("NilValue", func(t *testing.T) {
 		selector := Selector{Current: ".", Raw: "."}
@@ -90,9 +126,15 @@ func TestFindNodesPropertyKeys(t *testing.T) {
 		selector := Selector{Current: "-"}
 		got, err := findNodesPropertyKeys(selector, previousValue, false)
 
-		assertQueryMultipleResult(t, []reflect.Value{
-			reflect.ValueOf("name"),
-			reflect.ValueOf("age"),
+		assertQueryMultipleResultOneOf(t, [][]reflect.Value{
+			{
+				reflect.ValueOf("name"),
+				reflect.ValueOf("age"),
+			},
+			{
+				reflect.ValueOf("age"),
+				reflect.ValueOf("name"),
+			},
 		}, nil, got, err)
 	})
 }

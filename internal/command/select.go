@@ -8,14 +8,15 @@ import (
 )
 
 type selectOptions struct {
-	File        string
-	Parser      string
-	ReadParser  string
-	WriteParser string
-	Selector    string
-	Reader      io.Reader
-	Writer      io.Writer
-	Multi       bool
+	File              string
+	Parser            string
+	ReadParser        string
+	WriteParser       string
+	Selector          string
+	Reader            io.Reader
+	Writer            io.Writer
+	Multi             bool
+	NullValueNotFound bool
 }
 
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
@@ -69,16 +70,29 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	} else {
 		res, err = rootNode.Query(opts.Selector)
 		if err != nil {
-			return fmt.Errorf("could not query node: %w", err)
+			err = fmt.Errorf("could not query node: %w", err)
 		}
 	}
 
-	if err := writeNodeToOutput(writeNodeToOutputOpts{
-		Node:   res,
-		Parser: writeParser,
-		Writer: opts.Writer,
-	}, cmd); err != nil {
-		return fmt.Errorf("could not write output: %w", err)
+	written, err := customErrorHandling(customErrorHandlingOpts{
+		File:     opts.File,
+		Writer:   opts.Writer,
+		Err:      err,
+		Cmd:      cmd,
+		NullFlag: opts.NullValueNotFound,
+	})
+	if err != nil {
+		return err
+	}
+
+	if !written {
+		if err := writeNodeToOutput(writeNodeToOutputOpts{
+			Node:   res,
+			Parser: writeParser,
+			Writer: opts.Writer,
+		}, cmd); err != nil {
+			return fmt.Errorf("could not write output: %w", err)
+		}
 	}
 
 	return nil
@@ -86,7 +100,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
-	var plainFlag, multiFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -100,12 +114,13 @@ func selectCommand() *cobra.Command {
 				writeParserFlag = "-"
 			}
 			return runSelectCommand(selectOptions{
-				File:        fileFlag,
-				Parser:      parserFlag,
-				ReadParser:  readParserFlag,
-				WriteParser: writeParserFlag,
-				Selector:    selectorFlag,
-				Multi:       multiFlag,
+				File:              fileFlag,
+				Parser:            parserFlag,
+				ReadParser:        readParserFlag,
+				WriteParser:       writeParserFlag,
+				Selector:          selectorFlag,
+				Multi:             multiFlag,
+				NullValueNotFound: nullValueNotFoundFlag,
 			}, cmd)
 		},
 	}
@@ -117,6 +132,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
 	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
+	cmd.Flags().BoolVarP(&nullValueNotFoundFlag, "null", "n", false, "Output null instead of value not found errors.")
 
 	_ = cmd.MarkFlagFilename("file")
 
