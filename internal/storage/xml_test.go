@@ -1,8 +1,6 @@
 package storage_test
 
 import (
-	"fmt"
-	"github.com/clbanning/mxj/v2"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
@@ -155,13 +153,5 @@ func TestXMLParser_ToBytes(t *testing.T) {
 				t.Errorf("expected %s, got %s", exp, got)
 			}
 		})
-
-		val, _ := mxj.NewMapXml(bytes)
-
-		// Print val["systemList"]["system"]["command"]
-
-		fmt.Println(val["systemList"].(map[string]interface{})["system"].(map[string]interface{})["command"])
-
-		//  sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% </dev/tty >/dev/tty
 	})
 }
