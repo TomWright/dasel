@@ -7,6 +7,9 @@ import (
 )
 
 func init() {
+	// Required for https://github.com/TomWright/dasel/issues/61
+	mxj.XMLEscapeCharsDecoder(true)
+
 	registerReadParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
 	registerWriteParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
 }

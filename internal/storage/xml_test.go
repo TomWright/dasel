@@ -110,4 +110,48 @@ func TestXMLParser_ToBytes(t *testing.T) {
 			t.Errorf("expected %v, got %v", string(exp), string(got))
 		}
 	})
+	t.Run("Entities", func(t *testing.T) {
+		bytes := []byte(`<systemList>
+  <system>
+    <command>sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty</command>
+    <extension>.rp .sh</extension>
+    <fullname>RetroPie</fullname>
+    <name>retropie</name>
+    <path>/home/fozz/RetroPie/retropiemenu</path>
+    <platform/>
+    <theme>retropie</theme>
+  </system>
+</systemList>
+`)
+
+		p := &storage.XMLParser{}
+		var doc interface{}
+
+		t.Run("FromBytes", func(t *testing.T) {
+			res, err := p.FromBytes(bytes)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+				return
+			}
+			doc = res.(storage.SingleDocument).Document()
+			got := doc.(map[string]interface{})["systemList"].(map[string]interface{})["system"].(map[string]interface{})["command"]
+			exp := "sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty"
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
+			}
+		})
+
+		t.Run("ToBytes", func(t *testing.T) {
+			gotBytes, err := p.ToBytes(doc)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+				return
+			}
+			got := string(gotBytes)
+			exp := string(bytes)
+			if exp != got {
+				t.Errorf("expected %s, got %s", exp, got)
+			}
+		})
+	})
 }
