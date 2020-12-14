@@ -71,8 +71,12 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
 	}
 
-	value := unwrapValue(previousValue)
+	if selector.Property == "-" {
+		res, err := findNodesPropertyKeys(selector, previousValue, createIfNotExists)
+		return res, err
+	}
 
+	value := unwrapValue(previousValue)
 	if value.Kind() == reflect.Map {
 		node := &Node{
 			Value:    nilValue(),
@@ -91,6 +95,47 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 	}
 
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Type().Kind()}
+}
+
+func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	if createIfNotExists {
+		return nil, &UnsupportedSelector{Selector: selector.Raw}
+	}
+
+	value := unwrapValue(previousValue)
+
+	results := make([]*Node, 0)
+
+	switch value.Kind() {
+	case reflect.Slice:
+		for i := 0; i < value.Len(); i++ {
+			sel := selector.Copy()
+			sel.Type = "INDEX"
+			sel.Index = i
+			results = append(results, &Node{
+				Value:    reflect.ValueOf(fmt.Sprint(i)),
+				Selector: sel,
+			})
+		}
+
+	case reflect.Map:
+		for _, key := range value.MapKeys() {
+			sel := selector.Copy()
+			sel.Type = "PROPERTY"
+			sel.Property = key.String()
+			results = append(results, &Node{
+				Value:    reflect.ValueOf(key.String()),
+				Selector: sel,
+			})
+		}
+	default:
+		return nil, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}
+	}
+
+	return results, nil
 }
 
 // findNodesIndex finds the value for the given node using the index selector

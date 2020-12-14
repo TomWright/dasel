@@ -10,14 +10,28 @@ func assertQueryMultipleResult(t *testing.T, exp []reflect.Value, expErr error, 
 	if !assertErrResult(t, expErr, gotErr) {
 		return false
 	}
-	gotVals := make([]reflect.Value, len(got))
+	gotVals := make([]interface{}, len(got))
 	if len(got) > 0 {
 		for i, n := range got {
-			gotVals[i] = n.Value
+			if !n.Value.IsValid() {
+				gotVals[i] = nil
+				continue
+			}
+			gotVals[i] = n.Value.Interface()
 		}
 	}
-	if !reflect.DeepEqual(exp, gotVals) {
-		t.Errorf("expected result %v, got %v", exp, gotVals)
+	expVals := make([]interface{}, len(exp))
+	if len(exp) > 0 {
+		for i, n := range exp {
+			if !n.IsValid() {
+				expVals[i] = nil
+				continue
+			}
+			expVals[i] = n.Interface()
+		}
+	}
+	if !reflect.DeepEqual(expVals, gotVals) {
+		t.Errorf("expected result %v, got %v", expVals, gotVals)
 		return false
 	}
 	return true
@@ -40,6 +54,46 @@ func TestFindNodesProperty(t *testing.T) {
 		selector := Selector{Current: "x"}
 		got, err := findNodesProperty(selector, previousValue, false)
 		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+	})
+}
+
+func TestFindNodesPropertyKeys(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		selector := Selector{Current: ".", Raw: "."}
+		got, err := findNodesPropertyKeys(selector, nilValue(), false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnexpectedPreviousNilValue{Selector: "."}, got, err)
+	})
+	t.Run("UnsupportedCreate", func(t *testing.T) {
+		selector := Selector{Current: ".", Raw: "."}
+		got, err := findNodesPropertyKeys(selector, reflect.ValueOf(map[string]interface{}{}), true)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedSelector{Selector: selector.Raw}, got, err)
+	})
+	t.Run("UnsupportedType", func(t *testing.T) {
+		previousValue := reflect.ValueOf(0)
+		selector := Selector{Current: "x"}
+		got, err := findNodesPropertyKeys(selector, previousValue, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+	})
+	t.Run("SliceValue", func(t *testing.T) {
+		previousValue := reflect.ValueOf([]interface{}{"a", "b", "c"})
+		selector := Selector{Current: "-"}
+		got, err := findNodesPropertyKeys(selector, previousValue, false)
+
+		assertQueryMultipleResult(t, []reflect.Value{
+			reflect.ValueOf("0"),
+			reflect.ValueOf("1"),
+			reflect.ValueOf("2"),
+		}, nil, got, err)
+	})
+	t.Run("MapValue", func(t *testing.T) {
+		previousValue := reflect.ValueOf(map[string]interface{}{"name": "Tom", "age": 27})
+		selector := Selector{Current: "-"}
+		got, err := findNodesPropertyKeys(selector, previousValue, false)
+
+		assertQueryMultipleResult(t, []reflect.Value{
+			reflect.ValueOf("name"),
+			reflect.ValueOf("age"),
+		}, nil, got, err)
 	})
 }
 
