@@ -308,7 +308,7 @@ null
 Without the flag:
 ```
 $ echo '[1]' | dasel -p json '.[1]'   
-Error: could not write custom output: could not query node: could not find value: no value found for selector: .[1]: [1]
+Error: could not query node: could not find value: no value found for selector: .[1]: [1]
 Usage:
   dasel select -f <file> -p <json,yaml> -s <selector> [flags]
 
