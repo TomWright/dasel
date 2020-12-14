@@ -82,7 +82,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		NullFlag: opts.NullValueNotFound,
 	})
 	if err != nil {
-		return fmt.Errorf("could not write custom output: %w", err)
+		return err
 	}
 
 	if !written {
