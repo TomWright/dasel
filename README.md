@@ -57,6 +57,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
   * [Plain](#plain)
 * [Selectors](#selectors)
   * [Property](#property)
+  * [Keys and indexes](#keys-and-indexes)
   * [Child](#child-elements)
   * [Index](#index)
   * [Next available index](#next-available-index)
@@ -681,6 +682,18 @@ Tom
 ```
 - `name` == `Tom`
 
+### Keys and Indexes
+You can use the property selector with a value of `-` to return a list of all the keys/indexes in the current node.
+
+```bash
+echo '{"a":{"c": [1, 2, 3]},"b":{}}' | dasel -p json -m '.a.c.-'
+"0"
+"1"
+"2"
+```
+
+This must be used in conjunction with `-m`,`--multiple` and cannot be used in put commands.
+
 ### Child Elements
 Just separate the child element from the parent element using a `.`:
 ```bash
@@ -689,7 +702,7 @@ red
 ```
 - `preferences.favouriteColour` == `red`
 
-#### Index
+### Index
 When you have a list, you can use square brackets to access a specific item in the list by its index.
 ```bash
 dasel select -f ./tests/assets/example.yaml -s "colours.[1]"
@@ -699,17 +712,17 @@ green
 - `colours.[1]` == `green`
 - `colours.[2]` == `blue`
 
-#### Next Available Index
+### Next Available Index
 The next available index selector is used when adding to a list of items. It allows you to append to a list.
 - `colours.[]`
 
-#### Any Index
+### Any Index
 The any index selector is used to select *all* items of a list or map.
 - `colours.[*]`
 
 This must be used in conjunction with `-m`,`--multiple`.
 
-#### Dynamic
+### Dynamic
 Dynamic selectors are used with lists/maps when you don't know the index/property of the item, but instead want to find the index based on some other criteria.
  
 Dasel currently supports `key/query=value` checks but I aim to support more check types in the future.
@@ -729,7 +742,7 @@ map[name:blue rgb:0000ff]
 
 If you want to refer to the value of a non-object value in a list, just define the key as `value` or `.`, meaning the current value. This may look something like `(value=2)`.
 
-##### Using queries in dynamic selectors
+#### Using queries in dynamic selectors
 When performing a check dasel creates a new root node at the current position and then selects data using the given key as the query.
 
 This allows you to perform complex queries such as...
