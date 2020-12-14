@@ -147,12 +147,12 @@ func customErrorHandling(opts customErrorHandlingOpts) (bool, error) {
 		return false, nil
 	}
 
-	var valNotFound *dasel.ValueNotFound
-	if !errors.As(opts.Err, &valNotFound) {
+	if !opts.NullFlag {
 		return false, opts.Err
 	}
 
-	if !opts.NullFlag {
+	var valNotFound *dasel.ValueNotFound
+	if !errors.As(opts.Err, &valNotFound) {
 		return false, opts.Err
 	}
 

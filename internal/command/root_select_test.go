@@ -350,6 +350,8 @@ func TestRootCmd_Select_JSON(t *testing.T) {
     }
   ]
 }`, "json", ".(?:-=name).first", []string{`"Tom"`, `"Joe"`, `"Jim"`}, nil, "-m"))
+
+	t.Run("NullNotFound", selectTest(`{}`, "json", ".asd", newline(`null`), nil, "-n"))
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
