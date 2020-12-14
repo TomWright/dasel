@@ -102,7 +102,7 @@ func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, creat
 		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
 	}
 	if createIfNotExists {
-		return nil, fmt.Errorf("selector unavailable")
+		return nil, &UnsupportedSelector{Selector: selector.Raw}
 	}
 
 	value := unwrapValue(previousValue)
@@ -132,7 +132,7 @@ func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, creat
 			})
 		}
 	default:
-		return nil, &UnsupportedSelector{Selector: selector.Current}
+		return nil, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}
 	}
 
 	return results, nil
