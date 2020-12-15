@@ -33,6 +33,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 - [Available on Linux, Mac and Windows](#binary-on-release).
 - Available to [import and use in your own projects](#go-get).
 - [Run via Docker](#docker).
+- [Faster than jq/yq](#benchmarks).
 
 ## Table of contents
 * [Dasel](#dasel)
@@ -72,6 +73,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
   * [yq to dasel](#yq-to-dasel)
   * [Kubernetes](#kubernetes)
   * [XML](#xml-examples)
+* [Benchmarks](#benchmarks)
 
 ## Playground
 
@@ -1190,3 +1192,9 @@ echo '<data>
 </data>' | dasel -p xml '.data.users.(-primary=true).name'
 Tom
 ``` 
+
+## Benchmarks
+
+In my tests dasel has been up to 4x faster than jq and 18x faster than yq.
+
+See the [benchmark directory](./benchmark/README.md).
