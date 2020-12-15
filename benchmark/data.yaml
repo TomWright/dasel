@@ -1,0 +1,18 @@
+id: "1234"
+user:
+  name:
+    first: Tom
+    last: Wright
+favouriteNumbers:
+  - 1
+  - 2
+  - 3
+  - 4
+favouriteColours:
+  - red
+  - green
+phones:
+  - make: OnePlus
+    model: 8 Pro
+  - make: Apple
+    model: iPhone 12
