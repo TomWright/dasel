@@ -95,12 +95,14 @@ func putObjectCommand() *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:   "object -f <file> -s <selector> <value>",
-		Short: "Update a string property in the given file.",
+		Short: "Put an object in the given document.",
 		Args:  cobra.MinimumNArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			opts := putObjectOpts{
 				File:        cmd.Flag("file").Value.String(),
 				Out:         cmd.Flag("out").Value.String(),
+				ReadParser:  cmd.Flag("read").Value.String(),
+				WriteParser: cmd.Flag("write").Value.String(),
 				Parser:      cmd.Flag("parser").Value.String(),
 				Selector:    cmd.Flag("selector").Value.String(),
 				InputTypes:  typeList.Strings,

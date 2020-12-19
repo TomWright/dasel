@@ -64,7 +64,7 @@ func propagateValueIndex(n *Node) error {
 			value.Index(n.Selector.Index).Set(n.Value)
 			return nil
 		}
-		n.Previous.Value = reflect.Append(value, n.Value)
+		n.Previous.setReflectValue(reflect.Append(value, n.Value))
 		return nil
 	}
 
@@ -80,7 +80,7 @@ func propagateValueNextAvailableIndex(n *Node) error {
 	value := unwrapValue(n.Previous.Value)
 
 	if value.Kind() == reflect.Slice {
-		n.Previous.Value = reflect.Append(value, n.Value)
+		n.Previous.setReflectValue(reflect.Append(value, n.Value))
 		return nil
 	}
 
