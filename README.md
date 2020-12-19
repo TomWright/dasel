@@ -558,8 +558,6 @@ You are able to put entire documents using `put document`.
 dasel put document -f <file> -o <out> -p <parser> -m <selector> -d <document-parser> <document>
 ```
 
-If you want to create an empty object just omit the type flag and the values.
-
 #### Arguments
 
 ##### `-f`, `--file`
@@ -574,7 +572,7 @@ Specify the output file. If present, results will be written to the given file. 
 
 To force output to be written to stdout, pass `-o stdout`/`-o -`.
 
-##### `-d`, `--document-parser`
+##### `-d`, `--document-parser`, `<document-parser>`
 
 Specify the parser to use when reading the document value.
 
@@ -608,20 +606,6 @@ Tells dasel to put multiple items.
 
 This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
 
-E.g.
-
-```
-echo '[{"name": "Tom"}, {"name": "Jim"}]' | dasel put object -p json -m -t string '.[*]' 'name=Frank'
-[
-  {
-    "name": "Frank"
-  },
-  {
-    "name": "Frank"
-  }
-]
-```
-
 ##### `-s`, `--selector`, `<selector>`
 
 Specify the selector to use. See [Selectors](#selectors) for more information.
@@ -630,9 +614,11 @@ If no selector flag is given, dasel assumes the first argument given is the sele
 
 This is required.
 
-##### `document`
+##### `document`, `<document>`
 
 The document you want to put, as a string.
+
+This is required.
 
 #### Example
 
