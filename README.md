@@ -49,6 +49,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
   * [Select](#select)
   * [Put](#put)
   * [Put Object](#put-object)
+  * [Put Document](#put-document)
 * [Supported file types](#supported-file-types)
   * [JSON](#json)
   * [TOML](#toml)
@@ -549,6 +550,102 @@ my:
     number: 3
 ```
 
+### Put Document
+
+You are able to put entire documents using `put document`.
+
+```bash
+dasel put document -f <file> -o <out> -p <parser> -m <selector> -d <document-parser> <document>
+```
+
+#### Arguments
+
+##### `-f`, `--file`
+
+Specify the file to query. This is required unless you are piping in data.
+
+If piping in data you can optionally pass `-f stdin`/`-f -`.
+
+##### `-o`, `--out`
+
+Specify the output file. If present, results will be written to the given file. If not present, results will be written to the input file (or stdout if none given).
+
+To force output to be written to stdout, pass `-o stdout`/`-o -`.
+
+##### `-d`, `--document-parser`, `<document-parser>`
+
+Specify the parser to use when reading the document value.
+
+If no value is provided, the read parser is used.
+
+See [supported parsers](#supported-file-types).
+
+##### `-r`, `--read`
+
+Specify the parser to use when reading the input data.
+
+This is required if you are piping in data, otherwise dasel will use the given file extension to guess which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-w`, `--write`
+
+Specify the parser to use when writing the output data.
+
+If not provided dasel will attempt to use the `--out` and `--read` flags to determine which parser to use.
+
+See [supported parsers](#supported-file-types).
+
+##### `-p`, `--parser`
+
+Shorthand for `-r <value> -w <value>`
+
+##### `-m`, `--multiple`
+
+Tells dasel to put multiple items.
+
+This causes the [dynamic](#dynamic) selector to return all matching results rather than the first, and enables the [any index](#any-index) selector.
+
+##### `-s`, `--selector`, `<selector>`
+
+Specify the selector to use. See [Selectors](#selectors) for more information.
+
+If no selector flag is given, dasel assumes the first argument given is the selector.
+
+This is required.
+
+##### `document`, `<document>`
+
+The document you want to put, as a string.
+
+This is required.
+
+#### Example
+
+```bash
+echo '{"people":[]}' | dasel put document -p json -d yaml '.people.[]' 'name: Tom
+colours:
+- red
+- green
+- blue'
+```
+
+Results in the following:
+```json
+{
+  "people": [
+    {
+      "colours": [
+        "red",
+        "green",
+        "blue"
+      ],
+      "name": "Tom"
+    }
+  ]
+}
+```
+
 ## Supported file types
 Dasel attempts to find the correct parser for the given file type, but if that fails you can choose which parser to use with the `-p` or `--parser` flag. 
 
@@ -980,7 +1077,7 @@ echo '{"users": [{"name": "Tom"}]}' | jq '.users += [{"name": "Frank"}]'
   ]
 }
 
-echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users[]' -t string name=Frank
+echo '{"users": [{"name": "Tom"}]}' | dasel put object -p json -s '.users.[]' -t string name=Frank
 {
   "users": [
     {
@@ -1122,7 +1219,7 @@ users:
 
 
 echo 'users:
-- name: Tom' | dasel put object -p yaml -s '.users[]' -t string name=Frank
+- name: Tom' | dasel put object -p yaml -s '.users.[]' -t string name=Frank
 users:
 - name: Tom
 - name: Frank

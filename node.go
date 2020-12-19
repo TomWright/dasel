@@ -105,19 +105,10 @@ func unwrapValue(value reflect.Value) reflect.Value {
 
 // New returns a new root node with the given value.
 func New(value interface{}) *Node {
-	var baseValue reflect.Value
-	switch typed := value.(type) {
-	case storage.RealValue:
-		baseValue = reflect.ValueOf(typed.RealValue())
-	default:
-		baseValue = reflect.ValueOf(value)
-	}
 	rootNode := &Node{
-		Previous:      nil,
-		Next:          nil,
-		NextMultiple:  nil,
-		OriginalValue: value,
-		Value:         baseValue,
+		Previous:     nil,
+		Next:         nil,
+		NextMultiple: nil,
 		Selector: Selector{
 			Raw:       ".",
 			Current:   ".",
@@ -126,5 +117,46 @@ func New(value interface{}) *Node {
 			Property:  "",
 		},
 	}
+	rootNode.setRealValue(value)
 	return rootNode
+}
+
+func (n *Node) setValue(newValue interface{}) {
+	n.Value = reflect.ValueOf(newValue)
+	if n.Selector.Type == "ROOT" {
+		n.OriginalValue = newValue
+	}
+}
+
+func (n *Node) setRealValue(newValue interface{}) {
+	switch typed := newValue.(type) {
+	case storage.RealValue:
+		n.Value = reflect.ValueOf(typed.RealValue())
+	default:
+		n.Value = reflect.ValueOf(typed)
+	}
+	if n.Selector.Type == "ROOT" {
+		n.OriginalValue = newValue
+	}
+}
+
+func (n *Node) setReflectValue(newValue reflect.Value) {
+	n.Value = newValue
+	if n.Selector.Type == "ROOT" {
+		n.OriginalValue = unwrapValue(newValue).Interface()
+	}
+}
+
+func (n *Node) setRealReflectValue(newValue reflect.Value) {
+	val := unwrapValue(newValue).Interface()
+	switch typed := val.(type) {
+	case storage.RealValue:
+		n.OriginalValue = typed
+		n.Value = reflect.ValueOf(typed.RealValue())
+	default:
+		n.Value = newValue
+	}
+	if n.Selector.Type == "ROOT" {
+		n.OriginalValue = val
+	}
 }

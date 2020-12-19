@@ -2,6 +2,7 @@ package command_test
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/tomwright/dasel/internal/command"
 	"io/ioutil"
 	"os"
@@ -195,6 +196,14 @@ func TestRootCMD_Put_JSON(t *testing.T) {
       "rank": 3
     }
   ]
+}`, nil))
+
+	t.Run("OverwriteObjectAtRoot", putObjectTest(`{
+  "rank": 1,
+  "number": "one"
+}`, "json", ".", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{
+  "number": "five",
+  "rank": 5
 }`, nil))
 
 	t.Run("MultipleObject", putObjectTest(`{
@@ -531,6 +540,87 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   "f"
 ]
 `, nil))
+
+	t.Run("InsertDocumentAtProperty", putDocumentTest(`{}`, "json", ".person", `{"name":"Tom"}`, `{
+  "person": {
+    "name": "Tom"
+  }
+}
+`, nil))
+
+	t.Run("InvalidDocumentParser", putDocumentTest(`{}`, "json", ".person", `name: Tom`, ``,
+		fmt.Errorf("could not get document parser: unknown parser: bad"), "-d", "bad"))
+
+	t.Run("InsertDocumentAtPropertyWithDifferentParser", putDocumentTest(`{}`, "json", ".person", `name: Tom`, `{
+  "person": {
+    "name": "Tom"
+  }
+}
+`, nil, "-d", "yaml"))
+
+	t.Run("AppendDocumentToProperty", putDocumentTest(`{"people": []}`, "json", ".people.[]", `{"name":"Tom"}`, `{
+  "people": [
+    {
+      "name": "Tom"
+    }
+  ]
+}
+`, nil))
+
+	t.Run("AppendDocumentToPropertyMulti", putDocumentTest(`{"people": []}{"people": []}`, "json", ".[*].people.[]", `{"name":"Tom"}`, `{
+  "people": [
+    {
+      "name": "Tom"
+    }
+  ]
+}
+{
+  "people": [
+    {
+      "name": "Tom"
+    }
+  ]
+}
+`, nil, "-m"))
+
+	t.Run("InsertDocumentAtRoot", putDocumentTest(`{}`, "json", ".", `{"name":"Tom"}`, `{
+  "name": "Tom"
+}
+`, nil))
+
+	t.Run("AppendDocumentAtRoot", putDocumentTest(`[]`, "json", ".[]", `{"name":"Tom"}`, `[
+  {
+    "name": "Tom"
+  }
+]
+`, nil))
+
+	t.Run("AppendDocumentAtRootMulti", putDocumentTest(`[][]`, "json", ".[*].[]", `{"name":"Tom"}`, `[
+  {
+    "name": "Tom"
+  }
+]
+[
+  {
+    "name": "Tom"
+  }
+]
+`, nil, "-m"))
+
+	// https://github.com/TomWright/dasel/issues/66
+	t.Run("PutJSONDocumentAtYAMLProperty", putDocumentTest(`foo: true
+bar: 5
+baz:
+  qux: false
+  quux: "yes"
+  quuz: 7`, "yaml", ".baz", `{"qux": false,"quux": "no","quuz": 8}`, `bar: 5
+baz:
+  quux: "no"
+  quuz: 8
+  qux: false
+foo: true
+`, nil, "-d", "json"))
+
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
@@ -725,6 +815,54 @@ func putObjectTest(in string, parser string, selector string, values []string, t
 		}
 		if expErr != nil && err != nil && err.Error() != expErr.Error() {
 			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+
+		output, err := ioutil.ReadAll(outputBuffer)
+		if err != nil {
+			t.Errorf("unexpected error reading output buffer: %s", err)
+			return
+		}
+
+		out = strings.TrimSpace(out)
+		outputStr := strings.TrimSpace(string(output))
+		if out != outputStr {
+			t.Errorf("expected result %v, got %v", out, outputStr)
+		}
+	}
+}
+
+func putDocumentTest(in string, parser string, selector string, document string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	return func(t *testing.T) {
+		cmd := command.NewRootCMD()
+		outputBuffer := bytes.NewBuffer([]byte{})
+
+		args := []string{
+			"put", "document", "-p", parser, "-o", "stdout",
+		}
+		args = append(args, additionalArgs...)
+		args = append(args, selector)
+		args = append(args, document)
+
+		cmd.SetOut(outputBuffer)
+		cmd.SetIn(strings.NewReader(in))
+		cmd.SetArgs(args)
+
+		err := cmd.Execute()
+
+		if expErr == nil && err != nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil && err != nil && err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if expErr != nil {
 			return
 		}
 

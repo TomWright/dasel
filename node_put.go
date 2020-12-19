@@ -2,13 +2,16 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 )
 
 // Put finds the node using the given selector and updates it's value.
 // It then attempts to propagate the value back up the chain to the root element.
 func (n *Node) Put(selector string, newValue interface{}) error {
-	n.Selector.Remaining = selector
+	if selector != "." {
+		n.Selector.Remaining = selector
+	}
 
 	if err := buildPutChain(n); err != nil {
 		return err
@@ -16,10 +19,17 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 
 	final := lastNode(n)
 
-	final.Value = reflect.ValueOf(newValue)
+	_, isRealValue := newValue.(storage.RealValue)
+	if isRealValue {
+		final.setRealValue(newValue)
+	} else {
+		final.setValue(newValue)
+	}
 
-	if err := propagate(final); err != nil {
-		return err
+	if final.Selector.Type != "ROOT" {
+		if err := propagate(final); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -28,7 +38,9 @@ func (n *Node) Put(selector string, newValue interface{}) error {
 // PutMultiple all applicable nodes for the given selector and updates all of their values to the given value.
 // It then attempts to propagate the value back up the chain to the root element.
 func (n *Node) PutMultiple(selector string, newValue interface{}) error {
-	n.Selector.Remaining = selector
+	if selector != "." {
+		n.Selector.Remaining = selector
+	}
 
 	if err := buildPutMultipleChain(n); err != nil {
 		return err
@@ -37,9 +49,14 @@ func (n *Node) PutMultiple(selector string, newValue interface{}) error {
 	final := lastNodes(n)
 
 	val := reflect.ValueOf(newValue)
+	_, isRealValue := newValue.(storage.RealValue)
 
 	for _, n := range final {
-		n.Value = val
+		if isRealValue {
+			n.setRealReflectValue(val)
+		} else {
+			n.setReflectValue(val)
+		}
 		if err := propagate(n); err != nil {
 			return err
 		}

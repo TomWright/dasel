@@ -272,6 +272,7 @@ func putCommand() *cobra.Command {
 		putBoolCommand(),
 		putIntCommand(),
 		putObjectCommand(),
+		putDocumentCommand(),
 	)
 
 	cmd.PersistentFlags().StringVarP(&fileFlag, "file", "f", "", "The file to query.")
