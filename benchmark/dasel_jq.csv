@@ -1,7 +1,0 @@
-Top level property,dasel -f benchmark/data.json '.id',jq '.id' benchmark/data.json
-Nested property,dasel -f benchmark/data.json '.user.name.first',jq '.user.name.first' benchmark/data.json
-Array index,dasel -f benchmark/data.json '.favouriteNumbers.[1]',jq '.favouriteNumbers[1]' benchmark/data.json
-Append to array of strings,dasel put string -f benchmark/data.json -o - '.favouriteColours.[]' blue,jq '.favouriteColours += ["blue"]' benchmark/data.json
-Update a string value,dasel put string -f benchmark/data.json -o - '.favouriteColours.[0]' blue,jq '.favouriteColours[0] = "blue"' benchmark/data.json
-Overwrite an object,dasel put object -f benchmark/data.json -o - -t string -t string '.user.name' first=Frank last=Jones,jq '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.json
-List keys of an array,dasel -f benchmark/data.json -m '.-',jq 'keys[]' benchmark/data.json

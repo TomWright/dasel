@@ -1,0 +1,40 @@
+Top level property
+top_level_property
+dasel -f benchmark/data.json '.id'
+jq '.id' benchmark/data.json
+yq --yaml-output '.id' benchmark/data.yaml
+
+Nested property
+nested_property
+dasel -f benchmark/data.json '.user.name.first'
+jq '.user.name.first' benchmark/data.json
+yq --yaml-output '.user.name.first' benchmark/data.yaml
+
+Array index
+array_index
+dasel -f benchmark/data.json '.favouriteNumbers.[1]'
+jq '.favouriteNumbers[1]' benchmark/data.json
+yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml
+
+Append to array of strings
+append_array_of_strings
+dasel put string -f benchmark/data.json -o - '.favouriteColours.[]' blue
+jq '.favouriteColours += ["blue"]' benchmark/data.json
+yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
+
+Update a string value
+update_string
+dasel put string -f benchmark/data.json -o - '.favouriteColours.[0]' blue
+jq '.favouriteColours[0] = "blue"' benchmark/data.json
+yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml
+
+Overwrite an object
+overwrite_object
+dasel put object -f benchmark/data.json -o - -t string -t string '.user.name' first=Frank last=Jones
+jq '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.json
+yq --yaml-output '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.yaml
+
+List keys of an array
+list_array_keys
+dasel -f benchmark/data.json -m '.-'
+jq 'keys[]' benchmark/data.json,yq --yaml-output 'keys[]' benchmark/data.yaml
