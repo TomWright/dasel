@@ -1,7 +1,0 @@
-Top level property,dasel -f benchmark/data.yaml '.id',yq --yaml-output '.id' benchmark/data.yaml
-Nested property,dasel -f benchmark/data.yaml '.user.name.first',yq --yaml-output '.user.name.first' benchmark/data.yaml
-Array index,dasel -f benchmark/data.yaml '.favouriteNumbers.[1]',yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml
-Append to array of strings,dasel put string -f benchmark/data.yaml -o - '.favouriteColours.[]' blue,yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
-Update a string value,dasel put string -f benchmark/data.yaml -o - '.favouriteColours.[0]' blue,yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml
-Overwrite an object,dasel put object -f benchmark/data.yaml -o - -t string -t string '.user.name' first=Frank last=Jones,yq --yaml-output '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.yaml
-List keys of an array,dasel -f benchmark/data.yaml -m '.-',yq --yaml-output 'keys[]' benchmark/data.yaml

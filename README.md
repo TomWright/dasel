@@ -1292,6 +1292,6 @@ Tom
 
 ## Benchmarks
 
-In my tests dasel has been up to 4x faster than jq and 18x faster than yq.
+In my tests dasel has been up to 3x faster than jq and 15x faster than yq.
 
 See the [benchmark directory](./benchmark/README.md).
