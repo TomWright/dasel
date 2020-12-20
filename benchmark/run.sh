@@ -24,7 +24,7 @@ function run_file() {
       python benchmark/plot_barchart.py "${jsonFile}" --title "${name}" --out "${imagePath}"
 
       echo "\n### ${name}\n" >> "${outputFile}"
-      echo "![${name}](${imagePath})" >> "${outputFile}"
+      echo "![${name}](./${imagePath})\n" >> "${outputFile}"
       cat "${mdOutputFile}" >> "${outputFile}"
 
       rm "${mdOutputFile}"
