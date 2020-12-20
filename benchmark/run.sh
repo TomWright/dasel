@@ -19,12 +19,13 @@ function run_file() {
       counter=0
       jsonFile="benchmark/data/${key}.json"
       imagePath="benchmark/diagrams/${key}.jpg"
+      readmeImagePath="diagrams/${key}.jpg"
 
       hyperfine --warmup 10 --runs 100 --export-json="${jsonFile}" --export-markdown="${mdOutputFile}" "${daselCmd}" "${jqCmd}" "${yqCmd}"
       python benchmark/plot_barchart.py "${jsonFile}" --title "${name}" --out "${imagePath}"
 
       echo "\n### ${name}\n" >> "${outputFile}"
-      echo "![${name}](./${imagePath})\n" >> "${outputFile}"
+      echo "![${name}](${readmeImagePath})\n" >> "${outputFile}"
       cat "${mdOutputFile}" >> "${outputFile}"
 
       rm "${mdOutputFile}"
