@@ -99,6 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add `-m`,`--multiple` flag to deal with multi-value queries.
 - Add `ANY_INDEX` or `[*]` selector.
 - Add `NextMultiple` property to the `Node` struct - this is used when processing multi-value queries.
+- Add `Node.QueryMultiple` func.
+- Add `Node.PutMultiple` func.
 
 ## [v1.3.0] - 2020-11-08
 
