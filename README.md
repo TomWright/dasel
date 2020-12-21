@@ -51,6 +51,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Available to [import and use in your own projects](#go-get).
 - [Run via Docker](#docker).
 - [Faster than jq/yq](#benchmarks).
+- [Self update](#self-update).
 
 ## Table of contents
 * [Dasel](#dasel)
@@ -69,6 +70,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
   * [Put](#put)
   * [Put Object](#put-object)
   * [Put Document](#put-document)
+  * [Self Update](#self-update)
 * [Supported file types](#supported-file-types)
   * [JSON](#json)
   * [TOML](#toml)
@@ -663,6 +665,18 @@ Results in the following:
     }
   ]
 }
+```
+
+### Self Update
+
+To update dasel to the latest release:
+```
+dasel update
+```
+
+If you have a development version of dasel you should run the following:
+```
+dasel update --dev
 ```
 
 ## Supported file types
