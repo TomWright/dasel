@@ -54,7 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add `-r`,`--read` + `-w`,`--write` flags to specifically choose input/output parsers. This allows you to convert data between formats.
+- Add `-r`,`--read` and `-w`,`--write` flags to specifically choose input/output parsers. This allows you to convert data between formats.
 
 ## [v1.6.2] - 2020-11-18
 
