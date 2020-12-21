@@ -28,17 +28,11 @@ I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on 
 
 I am aware there may be some confusion when deciding where you should communicate when reporting issues, asking questions or raising feature requests so this section aims to help us align on that.
 
-#### [Issues](https://github.com/TomWright/dasel/issues)
-
-Please raise an issue if:
-
+Please [raise an issue](https://github.com/TomWright/dasel/issues) if:
 - You find a bug.
 - You have a feature request and can clearly describe your request.
 
-#### [Discussions](https://github.com/TomWright/dasel/discussions)
-
-Please open a discussion if:
-
+Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - You have a question.
 - You're not sure how to achieve something with dasel.
 - You have an idea but don't quite know how you would like it to work.
