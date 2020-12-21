@@ -22,6 +22,23 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 
 ![Update Kubernetes Manifest](update_kubernetes.gif)
 
+### Issue vs Discussion
+
+I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on this repository.
+
+I am aware there may be some confusion when deciding where you should communicate when reporting issues, asking questions or raising feature requests so this section aims to help us align on that.
+
+Please [raise an issue](https://github.com/TomWright/dasel/issues) if:
+- You find a bug.
+- You have a feature request and can clearly describe your request.
+
+Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
+- You have a question.
+- You're not sure how to achieve something with dasel.
+- You have an idea but don't quite know how you would like it to work.
+- You have achieved something cool with dasel and want to show it off.
+- Anything else!
+
 ## Features
 - [Query/select data from structured data files](#select).
 - [Update data in structured data files](#put).
@@ -38,7 +55,9 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 ## Table of contents
 * [Dasel](#dasel)
 * [One tool to rule them all](#one-tool-to-rule-them-all)
+* [Issue vs discussion](#issue-vs-discussion)
 * [Features](#features)
+* [Table of contents](#table-of-contents)
 * [Playground](#playground)
 * [Installation](#installation)
 * [Notes](#notes)
@@ -194,7 +213,7 @@ From then on the rest of the docs should be enough.
 
 Just know that when using the command-line tool the `-m`,`--multiple` flag tells dasel to use `QueryMultiple`/`PutMultiple` instead of `Query`/`Put`.
 
-The documentation for this is still a WIP. Please raise an issue if you have a specific need for this and I'll do my best to help out.
+If the information provided here isn't good enough please open a [discussion](https://github.com/TomWright/dasel/discussions).
 
 ## Notes
 
@@ -225,7 +244,7 @@ name: Jim
 This works well in general but you may run into issues when converting between data formats that don't typically play
 well together.
 
-If you have any questions or concerns around this please raise an issue.
+If you have any questions or concerns around this please raise a [discussion](https://github.com/TomWright/dasel/discussions).
 
 ## Usage 
 
@@ -713,7 +732,7 @@ map[
 
 In general this won't affect you, but on the odd occasion in specific instances it could lead to unexpected output.
 
-If you are struggling with this please raise an issue for support. This will also help me know when the docs aren't sufficient.
+If you are struggling with this please open a [discussion](https://github.com/TomWright/dasel/discussions) for support. This will also help me know when the docs aren't sufficient.
 
 ##### Debugging
 
