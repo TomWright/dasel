@@ -1,38 +1,33 @@
 package selfupdate
 
 import (
-	"encoding/json"
 	"fmt"
-	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"time"
 )
 
-// Updater allows you to update a binary file from a latest github release.
-type Updater interface {
-	// FindLatestRelease returns the latest release on the given repo.
-	FindLatestRelease(user string, repo string) (*Release, error)
-	// DownloadAssetWithName downloads and returns a path to the asset with the given name.
-	DownloadAssetWithName(release *Release, name string) (string, error)
-	// DownloadAsset downloads and returns a path to the given asset.
-	DownloadAsset(asset *ReleaseAsset) (string, error)
-	// GetVersions returns the current version and the version of the given executable.
-	GetVersions(path string) (*Version, *Version, error)
-	// Replace replaces the current executable with the given executable.
-	Replace(path string) error
-}
+const (
+	gitHubUsername = "TomWright"
+	gitHubRepo     = "dasel"
+)
 
 // NewUpdater returns an Updater.
-func NewUpdater(currentVersion string) Updater {
-	return &stdUpdater{
+func NewUpdater(currentVersion string) *Updater {
+	return &Updater{
 		httpClient: &http.Client{
 			Timeout: time.Second * 10,
 		},
 		currentVersion: currentVersion,
+
+		FetchReleaseFn: fetchGitHubRelease,
+		DownloadFileFn: downloadFile,
+		ChmodFn:        os.Chmod,
+		ExecuteCmdFn:   executeCmd,
+		ExecutableFn:   os.Executable,
+		RenameFn:       os.Rename,
+		RemoveFn:       os.Remove,
 	}
 }
 
@@ -44,6 +39,28 @@ type Release struct {
 	TagName string          `json:"tag_name"`
 }
 
+// FindAssetForSystem searches returns the asset for the given OS and arch.
+func (r *Release) FindAssetForSystem(os string, arch string) *ReleaseAsset {
+	ext := ""
+	if os == "windows" {
+		ext = ".exe"
+	}
+	matches := []string{fmt.Sprintf("dasel_%s_%s%s", os, arch, ext)}
+	if os == "darwin" {
+		matches = append(matches, fmt.Sprintf("dasel_%s_%s%s", "macos", arch, ext))
+	}
+
+	for _, a := range r.Assets {
+		for _, m := range matches {
+			if a.Name == m {
+				return a
+			}
+		}
+	}
+
+	return nil
+}
+
 // ReleaseAsset is an asset of a Release.
 type ReleaseAsset struct {
 	URL                string `json:"url"`
@@ -51,81 +68,44 @@ type ReleaseAsset struct {
 	BrowserDownloadURL string `json:"browser_download_url"`
 }
 
-type stdUpdater struct {
+// Updater provides functionality that allows you to update a binary from github.
+type Updater struct {
 	httpClient     *http.Client
 	currentVersion string
+
+	// FetchReleaseFn is used to fetch github release information.
+	FetchReleaseFn func(httpClient *http.Client, user string, repo string, tag string) (*Release, error)
+	// DownloadFileFn is used to download a file.
+	DownloadFileFn func(url string, dest string) error
+	// ChmodFn is used to change the permissions of a file.
+	ChmodFn func(name string, mode os.FileMode) error
+	// ExecuteCmdFn executes the given command and returns the output.
+	ExecuteCmdFn func(name string, arg ...string) ([]byte, error)
+	// ExecutableFn is used to return the path of the current executable.
+	ExecutableFn func() (string, error)
+	// RenameFn is used to rename a file.
+	RenameFn func(src string, dst string) error
+	// RemoveFn is used to remove a file.
+	RemoveFn func(path string) error
 }
 
 // FindLatestRelease returns the latest release on the given repo.
-func (u *stdUpdater) FindLatestRelease(user string, repo string) (*Release, error) {
-	url := fmt.Sprintf("https://api.github.com/repos/%s/%s/releases/latest", user, repo)
-
-	req, err := http.NewRequest(http.MethodGet, url, nil)
-	if err != nil {
-		return nil, fmt.Errorf("could not create request to get latest release: %w", err)
-	}
-
-	resp, err := u.httpClient.Do(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not perform request to get latest release: %w", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, nil
-	}
-
-	respBytes, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read response bytes: %w", err)
-	}
-
-	release := &Release{}
-	if err := json.Unmarshal(respBytes, release); err != nil {
-		return nil, fmt.Errorf("could not parse response: %w", err)
-	}
-
-	return release, nil
-}
-
-// DownloadAssetWithName downloads and returns a path to the asset with the given name.
-func (u *stdUpdater) DownloadAssetWithName(release *Release, name string) (string, error) {
-	for _, a := range release.Assets {
-		if a.Name == name {
-			return u.DownloadAsset(a)
-		}
-	}
-	return "", fmt.Errorf("no asset found with name: %s", name)
+func (u *Updater) FindLatestRelease() (*Release, error) {
+	return u.FetchReleaseFn(u.httpClient, gitHubUsername, gitHubRepo, "latest")
 }
 
 // DownloadAsset downloads and returns a path to the given asset.
-func (u *stdUpdater) DownloadAsset(asset *ReleaseAsset) (string, error) {
+func (u *Updater) DownloadAsset(asset *ReleaseAsset) (string, error) {
 	path, err := filepath.Abs(fmt.Sprintf("./%s", asset.Name))
 	if err != nil {
 		return "", err
 	}
 
-	// Get the data
-	resp, err := http.Get(asset.BrowserDownloadURL)
-	if err != nil {
-		return "", err
-	}
-	defer resp.Body.Close()
-
-	// Create the file
-	out, err := os.Create(path)
-	if err != nil {
-		return "", err
-	}
-	defer out.Close()
-
-	// Write the body to file
-	_, err = io.Copy(out, resp.Body)
-	if err != nil {
-		return "", err
+	if err := u.DownloadFileFn(asset.BrowserDownloadURL, path); err != nil {
+		return "", fmt.Errorf("could not download file: %w", err)
 	}
 
-	if err := os.Chmod(path, os.ModePerm); err != nil {
+	if err := u.ChmodFn(path, os.ModePerm); err != nil {
 		return "", fmt.Errorf("could not make executable: %w", err)
 	}
 
@@ -133,8 +113,8 @@ func (u *stdUpdater) DownloadAsset(asset *ReleaseAsset) (string, error) {
 }
 
 // GetVersions returns the current version and the version of the given executable.
-func (u *stdUpdater) GetVersions(path string) (*Version, *Version, error) {
-	versionOutput, err := exec.Command(path, "--version").Output()
+func (u *Updater) GetVersions(path string) (*Version, *Version, error) {
+	versionOutput, err := u.ExecuteCmdFn(path, "--version")
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not get new version: %w", err)
 	}
@@ -146,15 +126,21 @@ func (u *stdUpdater) GetVersions(path string) (*Version, *Version, error) {
 }
 
 // Replace replaces the current executable with the given executable.
-func (u *stdUpdater) Replace(path string) error {
-	currentPath, err := os.Executable()
+func (u *Updater) Replace(path string) error {
+	currentPath, err := u.ExecutableFn()
 	if err != nil {
 		return fmt.Errorf("cannot get current executable path: %w", err)
 	}
 
-	if err := os.Rename(path, currentPath); err != nil {
+	if err := u.RenameFn(path, currentPath); err != nil {
 		return fmt.Errorf("could not replace old executable: %w", err)
 	}
 
 	return nil
+}
+
+// CleanUp cleans up the given path.
+// This should be deferred once a download has completed.
+func (u *Updater) CleanUp(path string) {
+	_ = u.RemoveFn(path)
 }

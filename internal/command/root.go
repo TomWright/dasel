@@ -3,6 +3,7 @@ package command
 import (
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/internal"
+	"github.com/tomwright/dasel/internal/selfupdate"
 	"os"
 )
 
@@ -16,7 +17,7 @@ func NewRootCMD() *cobra.Command {
 	cmd.AddCommand(
 		selectCommand(),
 		putCommand(),
-		updateCommand(),
+		updateCommand(selfupdate.NewUpdater(internal.Version)),
 	)
 	return cmd
 }
