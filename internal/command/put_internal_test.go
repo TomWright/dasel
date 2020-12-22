@@ -201,9 +201,43 @@ func TestPut(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
-	t.Run("ObjectMissingParserFlag", func(t *testing.T) {
+	t.Run("ObjectMissingReadParserFlag", func(t *testing.T) {
 		err := runPutObjectCommand(putObjectOpts{}, nil)
 		if err == nil || err.Error() != "read parser flag required when reading from stdin" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("ObjectMissingWriteParserFlag", func(t *testing.T) {
+		err := runPutObjectCommand(putObjectOpts{
+			ReadParser:  "yaml",
+			WriteParser: "bad",
+			Reader:      bytes.NewReader([]byte(`name: Tom`)),
+			Writer:      new(bytes.Buffer),
+			Selector:    ".name",
+			InputTypes:  []string{"string"},
+			InputValues: []string{"name=Tom"},
+		}, nil)
+		if err == nil || err.Error() != "could not get write parser: unknown parser: bad" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("DocumentMissingReadParserFlag", func(t *testing.T) {
+		err := runPutDocumentCommand(putDocumentOpts{}, nil)
+		if err == nil || err.Error() != "read parser flag required when reading from stdin" {
+			t.Errorf("unexpected error: %v", err)
+		}
+	})
+	t.Run("DocumentMissingWriteParserFlag", func(t *testing.T) {
+		err := runPutDocumentCommand(putDocumentOpts{
+			ReadParser:     "yaml",
+			WriteParser:    "bad",
+			Reader:         bytes.NewReader([]byte(`name: Tom`)),
+			Writer:         new(bytes.Buffer),
+			Selector:       ".name",
+			DocumentString: "first: Tom",
+			DocumentParser: "yaml",
+		}, nil)
+		if err == nil || err.Error() != "could not get write parser: unknown parser: bad" {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
