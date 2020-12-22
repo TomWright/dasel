@@ -48,7 +48,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Uses a [standard query/selector syntax](#selectors) across all data formats.
 - Zero runtime dependencies.
 - [Available on Linux, Mac and Windows](#binary-on-release).
-- Available to [import and use in your own projects](#go-get).
+- Available to [import and use in your own projects](#using-dasel-as-a-package).
 - [Run via Docker](#docker).
 - [Faster than jq/yq](#benchmarks).
 - [Self update](#self-update).
@@ -63,7 +63,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Installation](#installation)
   * [Command line](#command-line)
   * [Self Update](#self-update)
-  * [Go get](#go-get)
+  * [Dasel as a go package](#using-dasel-as-a-package)
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
@@ -110,11 +110,16 @@ You can import dasel as a package and use it in your applications, or you can us
 
 ### Command line
 
-#### Go
-You can `go get` the `main` package and go should automatically build and install dasel for you.
+#### Development version
+
+You can `go get` the `main` package to build and install dasel for you.
 ```bash
 go get github.com/tomwright/dasel/cmd/dasel
 ```
+
+You may need to prefix the command with `GO111MODULE=on` in order for this to work.
+
+Note that doing this will set the version to `development`.
 
 #### Binary on release
 You can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
@@ -179,7 +184,7 @@ If you have a development version of dasel you should run the following:
 dasel update --dev
 ```
 
-### Go get
+### Using dasel as a package
 As with any other go package, just use `go get`.
 ```bash
 go get github.com/tomwright/dasel
