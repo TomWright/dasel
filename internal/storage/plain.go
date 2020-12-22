@@ -13,6 +13,7 @@ func init() {
 type PlainParser struct {
 }
 
+// ErrPlainParserNotImplemented is returned when you try to use the PlainParser.FromBytes func.
 var ErrPlainParserNotImplemented = fmt.Errorf("PlainParser.FromBytes not implemented")
 
 // FromBytes returns some data that is represented by the given bytes.

@@ -14,9 +14,12 @@ type updateOpts struct {
 }
 
 var (
+	// ErrHaveLatestVersion is returned when you are already on the latest version.
 	ErrHaveLatestVersion = errors.New("you already have the latest version")
-	ErrNewerVersion      = errors.New("current version is newer than the latest release")
-	ErrIgnoredDev        = errors.New("ignoring update for development version")
+	// ErrNewerVersion is returned when you are on a newer version that the latest release.
+	ErrNewerVersion = errors.New("current version is newer than the latest release")
+	// ErrIgnoredDev is returned when your local version is development and you have not used the --dev flag.
+	ErrIgnoredDev = errors.New("ignoring update for development version")
 )
 
 func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
