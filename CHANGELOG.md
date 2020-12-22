@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.11.0] - 2020-12-22
+
 ### Added
 
 - Benchmark info now contains graphs.
@@ -201,7 +205,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.10.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.11.0...HEAD
+[v1.11.0]: https://github.com/TomWright/dasel/compare/v1.10.0...v1.11.0
 [v1.10.0]: https://github.com/TomWright/dasel/compare/v1.9.1...v1.10.0
 [v1.9.1]: https://github.com/TomWright/dasel/compare/v1.9.0...v1.9.1
 [v1.9.0]: https://github.com/TomWright/dasel/compare/v1.8.0...v1.9.0
