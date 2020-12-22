@@ -114,7 +114,7 @@ You can import dasel as a package and use it in your applications, or you can us
 
 You can `go get` the `main` package to build and install dasel for you.
 ```bash
-go get github.com/tomwright/dasel/cmd/dasel
+go get github.com/tomwright/dasel/cmd/dasel@master
 ```
 
 You may need to prefix the command with `GO111MODULE=on` in order for this to work.
