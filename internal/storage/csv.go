@@ -120,46 +120,54 @@ func (p *CSVParser) ToBytes(value interface{}) ([]byte, error) {
 	}
 
 	for _, doc := range docs {
-		// Iterate through the rows and detect any new headers.
-		for _, r := range doc.Value {
-			for k := range r {
-				headerExists := false
-				for _, header := range doc.Headers {
-					if k == header {
-						headerExists = true
-						break
-					}
-				}
-				if !headerExists {
-					doc.Headers = append(doc.Headers, k)
-				}
-			}
-		}
-
-		// Iterate through the rows and write the output.
-		for i, r := range doc.Value {
-			if i == 0 {
-				if err := writer.Write(doc.Headers); err != nil {
-					return nil, fmt.Errorf("could not write headers: %w", err)
-				}
-			}
-
-			values := make([]string, 0)
-			for _, header := range doc.Headers {
-				val, ok := r[header]
-				if !ok {
-					val = ""
-				}
-				values = append(values, fmt.Sprint(val))
-			}
-
-			if err := writer.Write(values); err != nil {
-				return nil, fmt.Errorf("could not write values: %w", err)
-			}
-
-			writer.Flush()
+		if err := p.toBytesHandleDoc(writer, doc); err != nil {
+			return nil, err
 		}
 	}
 
 	return append(buffer.Bytes()), nil
+}
+
+func (p *CSVParser) toBytesHandleDoc(writer *csv.Writer, doc *CSVDocument) error {
+	// Iterate through the rows and detect any new headers.
+	for _, r := range doc.Value {
+		for k := range r {
+			headerExists := false
+			for _, header := range doc.Headers {
+				if k == header {
+					headerExists = true
+					break
+				}
+			}
+			if !headerExists {
+				doc.Headers = append(doc.Headers, k)
+			}
+		}
+	}
+
+	// Iterate through the rows and write the output.
+	for i, r := range doc.Value {
+		if i == 0 {
+			if err := writer.Write(doc.Headers); err != nil {
+				return fmt.Errorf("could not write headers: %w", err)
+			}
+		}
+
+		values := make([]string, 0)
+		for _, header := range doc.Headers {
+			val, ok := r[header]
+			if !ok {
+				val = ""
+			}
+			values = append(values, fmt.Sprint(val))
+		}
+
+		if err := writer.Write(values); err != nil {
+			return fmt.Errorf("could not write values: %w", err)
+		}
+
+		writer.Flush()
+	}
+
+	return nil
 }
