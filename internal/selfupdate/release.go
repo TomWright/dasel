@@ -61,6 +61,11 @@ func (r *Release) FindAssetForSystem(os string, arch string) *ReleaseAsset {
 	return nil
 }
 
+// Version returns the version of the release.
+func (r *Release) Version() *Version {
+	return versionFromString(r.TagName)
+}
+
 // ReleaseAsset is an asset of a Release.
 type ReleaseAsset struct {
 	URL                string `json:"url"`
@@ -112,17 +117,21 @@ func (u *Updater) DownloadAsset(asset *ReleaseAsset) (string, error) {
 	return path, nil
 }
 
-// GetVersions returns the current version and the version of the given executable.
-func (u *Updater) GetVersions(path string) (*Version, *Version, error) {
+// CurrentVersion returns the current version.
+func (u *Updater) CurrentVersion() *Version {
+	return versionFromString(u.currentVersion)
+}
+
+// GetVersion returns the version of the given executable.
+func (u *Updater) GetVersion(path string) (*Version, error) {
 	versionOutput, err := u.ExecuteCmdFn(path, "--version")
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not get new version: %w", err)
+		return nil, fmt.Errorf("could not get new version: %w", err)
 	}
 
-	current := versionFromString(u.currentVersion)
 	latest := versionFromString(string(versionOutput))
 
-	return current, latest, nil
+	return latest, nil
 }
 
 // Replace replaces the current executable with the given executable.

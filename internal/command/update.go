@@ -20,10 +20,23 @@ var (
 )
 
 func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
+	currentVersion := opts.Updater.CurrentVersion()
+
+	out := cmd.OutOrStdout()
+
+	_, _ = fmt.Fprintf(out, "Updating...\nCurrent version: %s\n", currentVersion)
+
+	if currentVersion.IsDevelopment() && !opts.UpdateDevelopment {
+		return ErrIgnoredDev
+	}
+
 	release, err := opts.Updater.FindLatestRelease()
 	if err != nil {
 		return fmt.Errorf("could not find latest release: %w", err)
 	}
+
+	releaseVersion := release.Version()
+	_, _ = fmt.Fprintf(out, "Release version: %s\n", releaseVersion)
 
 	asset := release.FindAssetForSystem(runtime.GOOS, runtime.GOARCH)
 	if asset == nil {
@@ -38,14 +51,14 @@ func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
 	// Make sure the downloaded file is deleted if an error occurs.
 	defer opts.Updater.CleanUp(downloadPath)
 
-	currentVersion, latestVersion, err := opts.Updater.GetVersions(downloadPath)
+	latestVersion, err := opts.Updater.GetVersion(downloadPath)
 	if err != nil {
 		return fmt.Errorf("could not get version information: %w", err)
 	}
 
-	if currentVersion.IsDevelopment() && !opts.UpdateDevelopment {
-		return ErrIgnoredDev
-	} else {
+	_, _ = fmt.Fprintf(out, "New version: %s\n", latestVersion)
+
+	if !currentVersion.IsDevelopment() {
 		switch currentVersion.Compare(latestVersion) {
 		case 1:
 			return ErrNewerVersion
@@ -55,10 +68,6 @@ func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
 			// Latest version is newer.
 		}
 	}
-
-	out := cmd.OutOrStdout()
-
-	_, _ = fmt.Fprintf(out, "Updating...\nCurrent version: %s\nNew version: %s\n", currentVersion, latestVersion)
 
 	if err := opts.Updater.Replace(downloadPath); err != nil {
 		return err
