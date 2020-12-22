@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"testing"
 )
 
@@ -19,6 +20,14 @@ func mustAbs(path string) string {
 		panic(err)
 	}
 	return res
+}
+
+func expectedExecutableName() string {
+	var ext string
+	if runtime.GOOS == "windows" {
+		ext = ".exe"
+	}
+	return fmt.Sprintf("dasel_%s_%s%s", runtime.GOOS, runtime.GOARCH, ext)
 }
 
 func TestRootCMD_Update(t *testing.T) {
@@ -36,7 +45,7 @@ func TestRootCMD_Update(t *testing.T) {
 			return &selfupdate.Release{
 				Assets: []*selfupdate.ReleaseAsset{
 					{
-						Name:               "dasel_macos_amd64",
+						Name:               expectedExecutableName(),
 						BrowserDownloadURL: "asd",
 					},
 				},
@@ -47,13 +56,13 @@ func TestRootCMD_Update(t *testing.T) {
 			if exp, got := "asd", url; exp != got {
 				return fmt.Errorf("exp url %s, got %s", exp, got)
 			}
-			if exp, got := mustAbs("./dasel_macos_amd64"), dest; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
 				return fmt.Errorf("exp dest %s, got %s", exp, got)
 			}
 			return nil
 		},
 		func(name string, mode os.FileMode) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), name; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
 				return fmt.Errorf("exp name %s, got %s", exp, got)
 			}
 			if exp, got := os.ModePerm, mode; exp != got {
@@ -62,7 +71,7 @@ func TestRootCMD_Update(t *testing.T) {
 			return nil
 		},
 		func(name string, arg ...string) ([]byte, error) {
-			if exp, got := mustAbs("./dasel_macos_amd64"), name; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
 				return nil, fmt.Errorf("exp name %s, got %s", exp, got)
 			}
 			if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
@@ -74,7 +83,7 @@ func TestRootCMD_Update(t *testing.T) {
 			return "/current", nil
 		},
 		func(src string, dst string) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), src; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), src; exp != got {
 				return fmt.Errorf("exp src %s, got %s", exp, got)
 			}
 			if exp, got := "/current", dst; exp != got {
@@ -83,7 +92,7 @@ func TestRootCMD_Update(t *testing.T) {
 			return nil
 		},
 		func(path string) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), path; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
 				return fmt.Errorf("exp path %s, got %s", exp, got)
 			}
 			return nil
@@ -109,7 +118,7 @@ Successfully updated
 			return &selfupdate.Release{
 				Assets: []*selfupdate.ReleaseAsset{
 					{
-						Name:               "dasel_macos_amd64",
+						Name:               expectedExecutableName(),
 						BrowserDownloadURL: "asd",
 					},
 				},
@@ -120,13 +129,13 @@ Successfully updated
 			if exp, got := "asd", url; exp != got {
 				return fmt.Errorf("exp url %s, got %s", exp, got)
 			}
-			if exp, got := mustAbs("./dasel_macos_amd64"), dest; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
 				return fmt.Errorf("exp dest %s, got %s", exp, got)
 			}
 			return nil
 		},
 		func(name string, mode os.FileMode) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), name; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
 				return fmt.Errorf("exp name %s, got %s", exp, got)
 			}
 			if exp, got := os.ModePerm, mode; exp != got {
@@ -135,7 +144,7 @@ Successfully updated
 			return nil
 		},
 		func(name string, arg ...string) ([]byte, error) {
-			if exp, got := mustAbs("./dasel_macos_amd64"), name; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
 				return nil, fmt.Errorf("exp name %s, got %s", exp, got)
 			}
 			if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
@@ -147,7 +156,7 @@ Successfully updated
 			return "/current", nil
 		},
 		func(src string, dst string) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), src; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), src; exp != got {
 				return fmt.Errorf("exp src %s, got %s", exp, got)
 			}
 			if exp, got := "/current", dst; exp != got {
@@ -156,7 +165,7 @@ Successfully updated
 			return nil
 		},
 		func(path string) error {
-			if exp, got := mustAbs("./dasel_macos_amd64"), path; exp != got {
+			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
 				return fmt.Errorf("exp path %s, got %s", exp, got)
 			}
 			return nil
