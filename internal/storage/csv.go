@@ -83,9 +83,8 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 			Value:   []map[string]interface{}{mapVal},
 			Headers: headers,
 		}, nil
-	} else {
-		return nil, fmt.Errorf("CSVParser.toBytes cannot handle type %T", val)
 	}
+	return nil, fmt.Errorf("CSVParser.toBytes cannot handle type %T", val)
 }
 
 // ToBytes returns a slice of bytes that represents the given value.

@@ -53,4 +53,20 @@ func TestPut_Document(t *testing.T) {
 			return
 		}
 	})
+	t.Run("InvalidDocument", func(t *testing.T) {
+		err := runPutDocumentCommand(putDocumentOpts{
+			Parser:         "json",
+			Selector:       ".[*]",
+			Reader:         strings.NewReader(`[{"name": "Tom"}]`),
+			DocumentString: `{"name": "Frank}`,
+			DocumentParser: "json",
+		}, nil)
+
+		exp := "could not parse document: could not unmarshal data: unexpected EOF"
+
+		if err == nil || err.Error() != exp {
+			t.Errorf("expected error %v, got %v", exp, err)
+			return
+		}
+	})
 }

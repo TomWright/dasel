@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Benchmark info now contains graphs.
+- `update` command to self-update dasel.
 
 ### Changed
 

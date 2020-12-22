@@ -156,10 +156,12 @@ func (d originalRequired) OriginalRequired() bool {
 	return true
 }
 
+// SingleDocument is a parser result that contains a single document.
 type SingleDocument interface {
 	Document() interface{}
 }
 
+// MultiDocument is a parser result that contains multiple documents.
 type MultiDocument interface {
 	Documents() []interface{}
 }

@@ -51,6 +51,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Available to [import and use in your own projects](#go-get).
 - [Run via Docker](#docker).
 - [Faster than jq/yq](#benchmarks).
+- [Self update](#self-update).
 
 ## Table of contents
 * [Dasel](#dasel)
@@ -60,6 +61,9 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Table of contents](#table-of-contents)
 * [Playground](#playground)
 * [Installation](#installation)
+  * [Command line](#command-line)
+  * [Self Update](#self-update)
+  * [Go get](#go-get)
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
@@ -162,6 +166,18 @@ If you want to use a specific version of dasel simply change `latest` to the des
 - `latest` - The latest released version.
 - `dev` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
+
+### Self Update
+
+If you have dasel installed you can easily upgrade to the latest release using:
+```
+dasel update
+```
+
+If you have a development version of dasel you should run the following:
+```
+dasel update --dev
+```
 
 ### Go get
 As with any other go package, just use `go get`.
