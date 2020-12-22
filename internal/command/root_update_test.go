@@ -267,6 +267,36 @@ func updateTestOutputEqual(currentVersion string,
 		}, expErr, additionalArgs...)
 }
 
+func newUpdateRootCmd(updater *selfupdate.Updater) *cobra.Command {
+	root := NewRootCMD()
+
+	for _, c := range root.Commands() {
+		if c.Use == "update" {
+			root.RemoveCommand(c)
+		}
+	}
+
+	root.AddCommand(updateCommand(updater))
+
+	return root
+}
+
+func assertError(t *testing.T, err error, expErr error) bool {
+	if expErr == nil && err != nil {
+		t.Errorf("expected err %v, got %v", expErr, err)
+		return false
+	}
+	if expErr != nil && err == nil {
+		t.Errorf("expected err %v, got %v", expErr, err)
+		return false
+	}
+	if expErr != nil && err != nil && !(errors.Is(err, expErr) || err.Error() == expErr.Error()) {
+		t.Errorf("expected err %v, got %v", expErr, err)
+		return false
+	}
+	return true
+}
+
 func updateTestCheck(currentVersion string,
 	fetchReleaseFn func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error),
 	downloadFileFn func(url string, dest string) error,
@@ -287,22 +317,8 @@ func updateTestCheck(currentVersion string,
 	updater.RenameFn = renameFn
 	updater.RemoveFn = removeFn
 
-	newRootCmd := func() *cobra.Command {
-		root := NewRootCMD()
-
-		for _, c := range root.Commands() {
-			if c.Use == "update" {
-				root.RemoveCommand(c)
-			}
-		}
-
-		root.AddCommand(updateCommand(updater))
-
-		return root
-	}
-
 	return func(t *testing.T) {
-		cmd := newRootCmd()
+		cmd := newUpdateRootCmd(updater)
 		outputBuffer := bytes.NewBuffer([]byte{})
 
 		args := []string{
@@ -317,16 +333,7 @@ func updateTestCheck(currentVersion string,
 
 		err := cmd.Execute()
 
-		if expErr == nil && err != nil {
-			t.Errorf("expected err %v, got %v", expErr, err)
-			return
-		}
-		if expErr != nil && err == nil {
-			t.Errorf("expected err %v, got %v", expErr, err)
-			return
-		}
-		if expErr != nil && err != nil && !(errors.Is(err, expErr) || err.Error() == expErr.Error()) {
-			t.Errorf("expected err %v, got %v", expErr, err)
+		if !assertError(t, err, expErr) {
 			return
 		}
 
