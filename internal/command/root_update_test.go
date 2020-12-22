@@ -31,75 +31,96 @@ func expectedExecutableName() string {
 	return fmt.Sprintf("dasel_%s_%s%s", runtime.GOOS, runtime.GOARCH, ext)
 }
 
+func validFetchReleaseFn(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
+	if exp, got := "TomWright", user; exp != got {
+		return nil, fmt.Errorf("exp user %s, got %s", exp, got)
+	}
+	if exp, got := "dasel", repo; exp != got {
+		return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
+	}
+	if exp, got := "latest", tag; exp != got {
+		return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
+	}
+	return &selfupdate.Release{
+		Assets: []*selfupdate.ReleaseAsset{
+			{
+				Name:               expectedExecutableName(),
+				BrowserDownloadURL: "asd",
+			},
+		},
+		TagName: "v1.1.0",
+	}, nil
+}
+
+func validDownloadFileFn(url string, dest string) error {
+	if exp, got := "asd", url; exp != got {
+		return fmt.Errorf("exp url %s, got %s", exp, got)
+	}
+	if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
+		return fmt.Errorf("exp dest %s, got %s", exp, got)
+	}
+	return nil
+}
+
+func validChmodFn(name string, mode os.FileMode) error {
+	if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
+		return fmt.Errorf("exp name %s, got %s", exp, got)
+	}
+	if exp, got := os.ModePerm, mode; exp != got {
+		return fmt.Errorf("exp mode %s, got %s", exp, got)
+	}
+	return nil
+}
+
+func validExecuteCmdFn(version string) func(name string, arg ...string) ([]byte, error) {
+	return func(name string, arg ...string) ([]byte, error) {
+		if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
+			return nil, fmt.Errorf("exp name %s, got %s", exp, got)
+		}
+		if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
+			return nil, fmt.Errorf("exp args %v, got %s", exp, got)
+		}
+		return []byte(`dasel version ` + version), nil
+	}
+}
+
+func validExecutableFn() (string, error) {
+	return "/current", nil
+}
+
+func validRenameFn(src string, dst string) error {
+	if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), src; exp != got {
+		return fmt.Errorf("exp src %s, got %s", exp, got)
+	}
+	if exp, got := "/current", dst; exp != got {
+		return fmt.Errorf("exp dst %s, got %s", exp, got)
+	}
+	return nil
+}
+
+func validRemoveFn(removed *bool) func(path string) error {
+	return func(path string) error {
+		if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
+			return fmt.Errorf("exp path %s, got %s", exp, got)
+		}
+		if removed != nil {
+			*removed = true
+		}
+		return nil
+	}
+}
+
 func TestRootCMD_Update(t *testing.T) {
 	expectedErr := errors.New("some expected error")
 
 	t.Run("Successful", updateTestOutputEqual("v1.0.0",
-		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-			if exp, got := "TomWright", user; exp != got {
-				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-			}
-			if exp, got := "dasel", repo; exp != got {
-				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-			}
-			if exp, got := "latest", tag; exp != got {
-				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-			}
-			return &selfupdate.Release{
-				Assets: []*selfupdate.ReleaseAsset{
-					{
-						Name:               expectedExecutableName(),
-						BrowserDownloadURL: "asd",
-					},
-				},
-				TagName: "v1.1.0",
-			}, nil
-		},
-		func(url string, dest string) error {
-			if exp, got := "asd", url; exp != got {
-				return fmt.Errorf("exp url %s, got %s", exp, got)
-			}
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
-				return fmt.Errorf("exp dest %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(name string, mode os.FileMode) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-				return fmt.Errorf("exp name %s, got %s", exp, got)
-			}
-			if exp, got := os.ModePerm, mode; exp != got {
-				return fmt.Errorf("exp mode %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(name string, arg ...string) ([]byte, error) {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-				return nil, fmt.Errorf("exp name %s, got %s", exp, got)
-			}
-			if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
-				return nil, fmt.Errorf("exp args %v, got %s", exp, got)
-			}
-			return []byte(`dasel version v1.1.0`), nil
-		},
-		func() (string, error) {
-			return "/current", nil
-		},
-		func(src string, dst string) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), src; exp != got {
-				return fmt.Errorf("exp src %s, got %s", exp, got)
-			}
-			if exp, got := "/current", dst; exp != got {
-				return fmt.Errorf("exp dst %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(path string) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
-				return fmt.Errorf("exp path %s, got %s", exp, got)
-			}
-			return nil
-		},
+		validFetchReleaseFn,
+		validDownloadFileFn,
+		validChmodFn,
+		validExecuteCmdFn("v1.1.0"),
+		validExecutableFn,
+		validRenameFn,
+		validRemoveFn(nil),
 		`Updating...
 Current version: v1.0.0
 Release version: v1.1.0
@@ -108,71 +129,13 @@ Successfully updated
 `, nil))
 
 	t.Run("SuccessfulDevelopment", updateTestOutputEqual("development",
-		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-			if exp, got := "TomWright", user; exp != got {
-				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-			}
-			if exp, got := "dasel", repo; exp != got {
-				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-			}
-			if exp, got := "latest", tag; exp != got {
-				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-			}
-			return &selfupdate.Release{
-				Assets: []*selfupdate.ReleaseAsset{
-					{
-						Name:               expectedExecutableName(),
-						BrowserDownloadURL: "asd",
-					},
-				},
-				TagName: "v1.1.0",
-			}, nil
-		},
-		func(url string, dest string) error {
-			if exp, got := "asd", url; exp != got {
-				return fmt.Errorf("exp url %s, got %s", exp, got)
-			}
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
-				return fmt.Errorf("exp dest %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(name string, mode os.FileMode) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-				return fmt.Errorf("exp name %s, got %s", exp, got)
-			}
-			if exp, got := os.ModePerm, mode; exp != got {
-				return fmt.Errorf("exp mode %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(name string, arg ...string) ([]byte, error) {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-				return nil, fmt.Errorf("exp name %s, got %s", exp, got)
-			}
-			if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
-				return nil, fmt.Errorf("exp args %v, got %s", exp, got)
-			}
-			return []byte(`dasel version v1.1.0`), nil
-		},
-		func() (string, error) {
-			return "/current", nil
-		},
-		func(src string, dst string) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), src; exp != got {
-				return fmt.Errorf("exp src %s, got %s", exp, got)
-			}
-			if exp, got := "/current", dst; exp != got {
-				return fmt.Errorf("exp dst %s, got %s", exp, got)
-			}
-			return nil
-		},
-		func(path string) error {
-			if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
-				return fmt.Errorf("exp path %s, got %s", exp, got)
-			}
-			return nil
-		},
+		validFetchReleaseFn,
+		validDownloadFileFn,
+		validChmodFn,
+		validExecuteCmdFn("v1.1.0"),
+		validExecutableFn,
+		validRenameFn,
+		validRemoveFn(nil),
 		`Updating...
 Current version: development
 Release version: v1.1.0
@@ -185,50 +148,12 @@ Successfully updated
 		``, ErrIgnoredDev))
 
 	t.Run("AlreadyOnLatestVersion", updateTestOutputEqual("v1.1.0",
-		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-			if exp, got := "TomWright", user; exp != got {
-				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-			}
-			if exp, got := "dasel", repo; exp != got {
-				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-			}
-			if exp, got := "latest", tag; exp != got {
-				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-			}
-			return &selfupdate.Release{
-				Assets: []*selfupdate.ReleaseAsset{
-					{
-						Name:               expectedExecutableName(),
-						BrowserDownloadURL: "asd",
-					},
-				},
-				TagName: "v1.1.0",
-			}, nil
-		},
+		validFetchReleaseFn,
 		nil, nil, nil, nil, nil, nil,
 		``, ErrHaveLatestVersion))
 
-	t.Run("AlreadyOnNewerVersion", updateTestOutputEqual("v1.1.0",
-		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-			if exp, got := "TomWright", user; exp != got {
-				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-			}
-			if exp, got := "dasel", repo; exp != got {
-				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-			}
-			if exp, got := "latest", tag; exp != got {
-				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-			}
-			return &selfupdate.Release{
-				Assets: []*selfupdate.ReleaseAsset{
-					{
-						Name:               expectedExecutableName(),
-						BrowserDownloadURL: "asd",
-					},
-				},
-				TagName: "v1.0.0",
-			}, nil
-		},
+	t.Run("AlreadyOnNewerVersion", updateTestOutputEqual("v1.2.0",
+		validFetchReleaseFn,
 		nil, nil, nil, nil, nil, nil,
 		``, ErrNewerVersion))
 
@@ -259,26 +184,7 @@ Successfully updated
 		``, fmt.Errorf("could not find asset for %s %s", runtime.GOOS, runtime.GOARCH)))
 
 	t.Run("DownloadError", updateTestOutputEqual("v1.0.0",
-		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-			if exp, got := "TomWright", user; exp != got {
-				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-			}
-			if exp, got := "dasel", repo; exp != got {
-				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-			}
-			if exp, got := "latest", tag; exp != got {
-				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-			}
-			return &selfupdate.Release{
-				Assets: []*selfupdate.ReleaseAsset{
-					{
-						Name:               expectedExecutableName(),
-						BrowserDownloadURL: "asd",
-					},
-				},
-				TagName: "v1.1.0",
-			}, nil
-		},
+		validFetchReleaseFn,
 		func(url string, dest string) error {
 			return expectedErr
 		}, nil, nil, nil, nil, nil,
@@ -287,54 +193,14 @@ Successfully updated
 	t.Run("FailGettingNewVersion", func(t *testing.T) {
 		removed := false
 		testFunc := updateTestOutputEqual("v1.0.0",
-			func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-				if exp, got := "TomWright", user; exp != got {
-					return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-				}
-				if exp, got := "dasel", repo; exp != got {
-					return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-				}
-				if exp, got := "latest", tag; exp != got {
-					return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-				}
-				return &selfupdate.Release{
-					Assets: []*selfupdate.ReleaseAsset{
-						{
-							Name:               expectedExecutableName(),
-							BrowserDownloadURL: "asd",
-						},
-					},
-					TagName: "v1.1.0",
-				}, nil
-			},
-			func(url string, dest string) error {
-				if exp, got := "asd", url; exp != got {
-					return fmt.Errorf("exp url %s, got %s", exp, got)
-				}
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
-					return fmt.Errorf("exp dest %s, got %s", exp, got)
-				}
-				return nil
-			},
-			func(name string, mode os.FileMode) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-					return fmt.Errorf("exp name %s, got %s", exp, got)
-				}
-				if exp, got := os.ModePerm, mode; exp != got {
-					return fmt.Errorf("exp mode %s, got %s", exp, got)
-				}
-				return nil
-			},
+			validFetchReleaseFn,
+			validDownloadFileFn,
+			validChmodFn,
 			func(name string, arg ...string) ([]byte, error) {
 				return nil, expectedErr
 			},
-			nil, nil, func(path string) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
-					return fmt.Errorf("exp path %s, got %s", exp, got)
-				}
-				removed = true
-				return nil
-			},
+			nil, nil,
+			validRemoveFn(&removed),
 			``, expectedErr)
 		testFunc(t)
 		if !removed {
@@ -345,64 +211,15 @@ Successfully updated
 	t.Run("FailGettingCurrentExecutablePath", func(t *testing.T) {
 		removed := false
 		testFunc := updateTestOutputEqual("v1.0.0",
-			func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-				if exp, got := "TomWright", user; exp != got {
-					return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-				}
-				if exp, got := "dasel", repo; exp != got {
-					return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-				}
-				if exp, got := "latest", tag; exp != got {
-					return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-				}
-				return &selfupdate.Release{
-					Assets: []*selfupdate.ReleaseAsset{
-						{
-							Name:               expectedExecutableName(),
-							BrowserDownloadURL: "asd",
-						},
-					},
-					TagName: "v1.1.0",
-				}, nil
-			},
-			func(url string, dest string) error {
-				if exp, got := "asd", url; exp != got {
-					return fmt.Errorf("exp url %s, got %s", exp, got)
-				}
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
-					return fmt.Errorf("exp dest %s, got %s", exp, got)
-				}
-				return nil
-			},
-			func(name string, mode os.FileMode) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-					return fmt.Errorf("exp name %s, got %s", exp, got)
-				}
-				if exp, got := os.ModePerm, mode; exp != got {
-					return fmt.Errorf("exp mode %s, got %s", exp, got)
-				}
-				return nil
-			},
-			func(name string, arg ...string) ([]byte, error) {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-					return nil, fmt.Errorf("exp name %s, got %s", exp, got)
-				}
-				if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
-					return nil, fmt.Errorf("exp args %v, got %s", exp, got)
-				}
-				return []byte(`dasel version v1.1.0`), nil
-			},
+			validFetchReleaseFn,
+			validDownloadFileFn,
+			validChmodFn,
+			validExecuteCmdFn("v1.1.0"),
 			func() (string, error) {
 				return "", expectedErr
 			},
 			nil,
-			func(path string) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
-					return fmt.Errorf("exp path %s, got %s", exp, got)
-				}
-				removed = true
-				return nil
-			},
+			validRemoveFn(&removed),
 			``, expectedErr)
 		testFunc(t)
 		if !removed {
@@ -413,66 +230,15 @@ Successfully updated
 	t.Run("FailReplacingCurrentExecutable", func(t *testing.T) {
 		removed := false
 		testFunc := updateTestOutputEqual("v1.0.0",
-			func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
-				if exp, got := "TomWright", user; exp != got {
-					return nil, fmt.Errorf("exp user %s, got %s", exp, got)
-				}
-				if exp, got := "dasel", repo; exp != got {
-					return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
-				}
-				if exp, got := "latest", tag; exp != got {
-					return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
-				}
-				return &selfupdate.Release{
-					Assets: []*selfupdate.ReleaseAsset{
-						{
-							Name:               expectedExecutableName(),
-							BrowserDownloadURL: "asd",
-						},
-					},
-					TagName: "v1.1.0",
-				}, nil
-			},
-			func(url string, dest string) error {
-				if exp, got := "asd", url; exp != got {
-					return fmt.Errorf("exp url %s, got %s", exp, got)
-				}
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), dest; exp != got {
-					return fmt.Errorf("exp dest %s, got %s", exp, got)
-				}
-				return nil
-			},
-			func(name string, mode os.FileMode) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-					return fmt.Errorf("exp name %s, got %s", exp, got)
-				}
-				if exp, got := os.ModePerm, mode; exp != got {
-					return fmt.Errorf("exp mode %s, got %s", exp, got)
-				}
-				return nil
-			},
-			func(name string, arg ...string) ([]byte, error) {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), name; exp != got {
-					return nil, fmt.Errorf("exp name %s, got %s", exp, got)
-				}
-				if exp, got := []string{"--version"}, arg; !reflect.DeepEqual(exp, got) {
-					return nil, fmt.Errorf("exp args %v, got %s", exp, got)
-				}
-				return []byte(`dasel version v1.1.0`), nil
-			},
-			func() (string, error) {
-				return "/current", nil
-			},
+			validFetchReleaseFn,
+			validDownloadFileFn,
+			validChmodFn,
+			validExecuteCmdFn("v1.1.0"),
+			validExecutableFn,
 			func(src string, dst string) error {
 				return expectedErr
 			},
-			func(path string) error {
-				if exp, got := mustAbs(fmt.Sprintf("./%s", expectedExecutableName())), path; exp != got {
-					return fmt.Errorf("exp path %s, got %s", exp, got)
-				}
-				removed = true
-				return nil
-			},
+			validRemoveFn(&removed),
 			``, expectedErr)
 		testFunc(t)
 		if !removed {

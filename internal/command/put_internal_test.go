@@ -251,8 +251,10 @@ func TestPut(t *testing.T) {
 			t.Errorf("unexpected error: %v", err)
 		}
 	})
-	t.Run("JSON", func(t *testing.T) {
-		t.Run("SingleProperty", putTest(`{
+}
+
+func TestPut_JSON(t *testing.T) {
+	t.Run("SingleProperty", putTest(`{
   "details": {
     "age": 27,
     "name": "Tom"
@@ -266,7 +268,7 @@ func TestPut(t *testing.T) {
   "id": "2222"
 }`, nil))
 
-		t.Run("ObjectPropertyString", putTest(`{
+	t.Run("ObjectPropertyString", putTest(`{
   "details": {
     "age": 27,
     "name": "Tom"
@@ -280,7 +282,7 @@ func TestPut(t *testing.T) {
   "id": "1111"
 }`, nil))
 
-		t.Run("ObjectPropertyInt", putTest(`{
+	t.Run("ObjectPropertyInt", putTest(`{
   "details": {
     "age": 20,
     "name": "Tom"
@@ -294,7 +296,7 @@ func TestPut(t *testing.T) {
   "id": "1111"
 }`, nil))
 
-		t.Run("IndexString", putTest(`{
+	t.Run("IndexString", putTest(`{
   "numbers": [
     "one",
     "two",
@@ -308,7 +310,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("DynamicString", putTest(`{
+	t.Run("DynamicString", putTest(`{
   "numbers": [
 	"one",
 	"two",
@@ -322,7 +324,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("DynamicInt", putTest(`{
+	t.Run("DynamicInt", putTest(`{
   "numbers": [
 	1,
 	2,
@@ -336,7 +338,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("IndexInt", putTest(`{
+	t.Run("IndexInt", putTest(`{
   "numbers": [
     1,
     2,
@@ -350,7 +352,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("DynamicString", putTest(`{
+	t.Run("DynamicString", putTest(`{
   "numbers": [
     {
       "number": "one",
@@ -382,7 +384,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("DynamicInt", putTest(`{
+	t.Run("DynamicInt", putTest(`{
   "numbers": [
     {
       "rank": 1,
@@ -414,7 +416,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("DynamicMapInt", putTest(`{
+	t.Run("DynamicMapInt", putTest(`{
   "numbers": {
     "high": 3,
 	"low": 1,
@@ -428,7 +430,7 @@ func TestPut(t *testing.T) {
   }
 }`, nil))
 
-		t.Run("OverwriteObject", putObjectTest(`{
+	t.Run("OverwriteObject", putObjectTest(`{
   "numbers": [
     {
       "rank": 1,
@@ -460,7 +462,7 @@ func TestPut(t *testing.T) {
   ]
 }`, nil))
 
-		t.Run("AppendObject", putObjectTest(`{
+	t.Run("AppendObject", putObjectTest(`{
   "numbers": [
     {
       "rank": 1,
@@ -495,11 +497,10 @@ func TestPut(t *testing.T) {
     }
   ]
 }`, nil))
+}
 
-	})
-
-	t.Run("YAML", func(t *testing.T) {
-		t.Run("SingleProperty", putTest(`
+func TestPut_YAML(t *testing.T) {
+	t.Run("SingleProperty", putTest(`
 details:
   age: 27
   name: Tom
@@ -511,7 +512,7 @@ details:
 id: "2222"
 `, nil))
 
-		t.Run("ObjectPropertyString", putTest(`
+	t.Run("ObjectPropertyString", putTest(`
 details:
   age: 27
   name: Tom
@@ -522,7 +523,7 @@ id: 1111
 id: 1111
 `, nil))
 
-		t.Run("ObjectPropertyInt", putTest(`
+	t.Run("ObjectPropertyInt", putTest(`
 details:
   age: 20
   name: Tom
@@ -534,7 +535,7 @@ details:
 id: 1111
 `, nil))
 
-		t.Run("IndexString", putTest(`
+	t.Run("IndexString", putTest(`
 numbers:
 - one
 - two
@@ -546,7 +547,7 @@ numbers:
 - three
 `, nil))
 
-		t.Run("DynamicString", putTest(`
+	t.Run("DynamicString", putTest(`
 numbers:
 - one
 - two
@@ -558,7 +559,7 @@ numbers:
 - four
 `, nil))
 
-		t.Run("DynamicInt", putTest(`
+	t.Run("DynamicInt", putTest(`
 numbers:
 - 1
 - 2
@@ -570,7 +571,7 @@ numbers:
 - 4
 `, nil))
 
-		t.Run("IndexInt", putTest(`
+	t.Run("IndexInt", putTest(`
 numbers:
 - 1
 - 2
@@ -582,7 +583,7 @@ numbers:
 - 3
 `, nil))
 
-		t.Run("DynamicString", putTest(`
+	t.Run("DynamicString", putTest(`
 numbers:
 - number: one
   rank: 1
@@ -600,7 +601,7 @@ numbers:
   rank: 3
 `, nil))
 
-		t.Run("DynamicInt", putTest(`
+	t.Run("DynamicInt", putTest(`
 numbers:
 - number: one
   rank: 1
@@ -618,7 +619,7 @@ numbers:
   rank: 3
 `, nil))
 
-		t.Run("OverwriteObject", putObjectTest(`
+	t.Run("OverwriteObject", putObjectTest(`
 numbers:
 - number: one
   rank: 1
@@ -636,7 +637,7 @@ numbers:
   rank: 3
 `, nil))
 
-		t.Run("AppendObject", putObjectTest(`
+	t.Run("AppendObject", putObjectTest(`
 numbers:
 - number: one
   rank: 1
@@ -656,10 +657,10 @@ numbers:
   rank: 5
 `, nil))
 
-	})
+}
 
-	t.Run("TOML", func(t *testing.T) {
-		t.Run("SingleProperty", putTest(`
+func TestPut_TOML(t *testing.T) {
+	t.Run("SingleProperty", putTest(`
 id = "1111"
 
 [details]
@@ -673,7 +674,7 @@ id = "2222"
   name = "Tom"
 `, nil))
 
-		t.Run("ObjectPropertyString", putTest(`
+	t.Run("ObjectPropertyString", putTest(`
 id = "1111"
 
 [details]
@@ -687,7 +688,7 @@ id = "1111"
   name = "Frank"
 `, nil))
 
-		t.Run("ObjectPropertyInt", putTest(`
+	t.Run("ObjectPropertyInt", putTest(`
 id = "1111"
 
 [details]
@@ -701,31 +702,31 @@ id = "1111"
   name = "Tom"
 `, nil))
 
-		t.Run("IndexString", putTest(`
+	t.Run("IndexString", putTest(`
 numbers = ["one", "two", "three"]
 `, "toml", ".numbers.[1]", "four", "string", `
 numbers = ["one", "four", "three"]
 `, nil))
 
-		t.Run("DynamicString", putTest(`
+	t.Run("DynamicString", putTest(`
 numbers = ["one", "two", "three"]
 `, "toml", ".numbers.(value=three)", "four", "string", `
 numbers = ["one", "two", "four"]
 `, nil))
 
-		t.Run("DynamicInt", putTest(`
+	t.Run("DynamicInt", putTest(`
 numbers = [1, 2, 3]
 `, "toml", ".numbers.(value=3)", "4", "int", `
 numbers = [1, 2, 4]
 `, nil))
 
-		t.Run("IndexInt", putTest(`
+	t.Run("IndexInt", putTest(`
 numbers = [1, 2, 3]
 `, "toml", ".numbers.[1]", "4", "int", `
 numbers = [1, 4, 3]
 `, nil))
 
-		t.Run("DynamicString", putTest(`
+	t.Run("DynamicString", putTest(`
 [[numbers]]
   number = "one"
   rank = 1
@@ -751,7 +752,7 @@ numbers = [1, 4, 3]
   rank = 3
 `, nil))
 
-		t.Run("DynamicInt", putTest(`
+	t.Run("DynamicInt", putTest(`
 [[numbers]]
   number = "one"
   rank = 1
@@ -777,7 +778,7 @@ numbers = [1, 4, 3]
   rank = 3
 `, nil))
 
-		t.Run("OverwriteObject", putObjectTest(`
+	t.Run("OverwriteObject", putObjectTest(`
 [[numbers]]
   number = "one"
   rank = 1
@@ -803,7 +804,7 @@ numbers = [1, 4, 3]
   rank = 3
 `, nil))
 
-		t.Run("AppendObject", putObjectTest(`
+	t.Run("AppendObject", putObjectTest(`
 [[numbers]]
   number = "one"
   rank = 1
@@ -832,6 +833,4 @@ numbers = [1, 4, 3]
   number = "five"
   rank = 5
 `, nil))
-
-	})
 }

@@ -40,78 +40,77 @@ func TestXMLParser_FromBytes_Error(t *testing.T) {
 	}
 }
 
-func TestXMLParser_ToBytes(t *testing.T) {
-	t.Run("Default", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes(xmlMap)
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		if !reflect.DeepEqual(xmlBytes, got) {
-			t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
-		}
-	})
-	t.Run("SingleDocument", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		if !reflect.DeepEqual(xmlBytes, got) {
-			t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
-		}
-	})
-	t.Run("MultiDocument", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{xmlMap, xmlMap}})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		exp := append([]byte{}, xmlBytes...)
-		exp = append(exp, xmlBytes...)
-		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", string(exp), string(got))
-		}
-	})
-	t.Run("DefaultValue", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes("asd")
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		exp := []byte(`asd
+func TestXMLParser_ToBytes_Default(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(xmlMap)
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	if !reflect.DeepEqual(xmlBytes, got) {
+		t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
+	}
+}
+func TestXMLParser_ToBytes_SingleDocument(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	if !reflect.DeepEqual(xmlBytes, got) {
+		t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
+	}
+}
+func TestXMLParser_ToBytes_MultiDocument(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{xmlMap, xmlMap}})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	exp := append([]byte{}, xmlBytes...)
+	exp = append(exp, xmlBytes...)
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", string(exp), string(got))
+	}
+}
+func TestXMLParser_ToBytes_DefaultValue(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes("asd")
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	exp := []byte(`asd
 `)
-		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", string(exp), string(got))
-		}
-	})
-	t.Run("SingleDocumentValue", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: "asd"})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		exp := []byte(`asd
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", string(exp), string(got))
+	}
+}
+func TestXMLParser_ToBytes_SingleDocumentValue(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: "asd"})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	exp := []byte(`asd
 `)
-		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", string(exp), string(got))
-		}
-	})
-	t.Run("MultiDocumentValue", func(t *testing.T) {
-		got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{"asd", "123"}})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		exp := []byte(`asd
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", string(exp), string(got))
+	}
+}
+func TestXMLParser_ToBytes_MultiDocumentValue(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{"asd", "123"}})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	exp := []byte(`asd
 123
 `)
-		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", string(exp), string(got))
-		}
-	})
-	t.Run("Entities", func(t *testing.T) {
-		bytes := []byte(`<systemList>
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", string(exp), string(got))
+	}
+}
+func TestXMLParser_ToBytes_Entities(t *testing.T) {
+	bytes := []byte(`<systemList>
   <system>
     <command>sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty</command>
     <extension>.rp .sh</extension>
@@ -124,34 +123,33 @@ func TestXMLParser_ToBytes(t *testing.T) {
 </systemList>
 `)
 
-		p := &storage.XMLParser{}
-		var doc interface{}
+	p := &storage.XMLParser{}
+	var doc interface{}
 
-		t.Run("FromBytes", func(t *testing.T) {
-			res, err := p.FromBytes(bytes)
-			if err != nil {
-				t.Errorf("unexpected error: %s", err)
-				return
-			}
-			doc = res.(storage.SingleDocument).Document()
-			got := doc.(map[string]interface{})["systemList"].(map[string]interface{})["system"].(map[string]interface{})["command"]
-			exp := "sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty"
-			if exp != got {
-				t.Errorf("expected %s, got %s", exp, got)
-			}
-		})
+	t.Run("FromBytes", func(t *testing.T) {
+		res, err := p.FromBytes(bytes)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		doc = res.(storage.SingleDocument).Document()
+		got := doc.(map[string]interface{})["systemList"].(map[string]interface{})["system"].(map[string]interface{})["command"]
+		exp := "sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty"
+		if exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
 
-		t.Run("ToBytes", func(t *testing.T) {
-			gotBytes, err := p.ToBytes(doc)
-			if err != nil {
-				t.Errorf("unexpected error: %s", err)
-				return
-			}
-			got := string(gotBytes)
-			exp := string(bytes)
-			if exp != got {
-				t.Errorf("expected %s, got %s", exp, got)
-			}
-		})
+	t.Run("ToBytes", func(t *testing.T) {
+		gotBytes, err := p.ToBytes(doc)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		got := string(gotBytes)
+		exp := string(bytes)
+		if exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
 	})
 }
