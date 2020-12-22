@@ -61,6 +61,9 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Table of contents](#table-of-contents)
 * [Playground](#playground)
 * [Installation](#installation)
+  * [Command line](#command-line)
+  * [Self Update](#self-update)
+  * [Go get](#go-get)
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
@@ -70,7 +73,6 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
   * [Put](#put)
   * [Put Object](#put-object)
   * [Put Document](#put-document)
-  * [Self Update](#self-update)
 * [Supported file types](#supported-file-types)
   * [JSON](#json)
   * [TOML](#toml)
@@ -164,6 +166,18 @@ If you want to use a specific version of dasel simply change `latest` to the des
 - `latest` - The latest released version.
 - `dev` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
+
+### Self Update
+
+If you have dasel installed you can easily upgrade to the latest release using:
+```
+dasel update
+```
+
+If you have a development version of dasel you should run the following:
+```
+dasel update --dev
+```
 
 ### Go get
 As with any other go package, just use `go get`.
@@ -665,18 +679,6 @@ Results in the following:
     }
   ]
 }
-```
-
-### Self Update
-
-To update dasel to the latest release:
-```
-dasel update
-```
-
-If you have a development version of dasel you should run the following:
-```
-dasel update --dev
 ```
 
 ## Supported file types
