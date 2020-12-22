@@ -180,6 +180,54 @@ Successfully updated
 	t.Run("SkipDevelopment", updateTestOutputEqual("development",
 		nil, nil, nil, nil, nil, nil, nil,
 		``, ErrIgnoredDev))
+
+	t.Run("AlreadyOnLatestVersion", updateTestOutputEqual("v1.1.0",
+		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
+			if exp, got := "TomWright", user; exp != got {
+				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
+			}
+			if exp, got := "dasel", repo; exp != got {
+				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
+			}
+			if exp, got := "latest", tag; exp != got {
+				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
+			}
+			return &selfupdate.Release{
+				Assets: []*selfupdate.ReleaseAsset{
+					{
+						Name:               expectedExecutableName(),
+						BrowserDownloadURL: "asd",
+					},
+				},
+				TagName: "v1.1.0",
+			}, nil
+		},
+		nil, nil, nil, nil, nil, nil,
+		``, ErrHaveLatestVersion))
+
+	t.Run("AlreadyOnNewerVersion", updateTestOutputEqual("v1.1.0",
+		func(httpClient *http.Client, user string, repo string, tag string) (*selfupdate.Release, error) {
+			if exp, got := "TomWright", user; exp != got {
+				return nil, fmt.Errorf("exp user %s, got %s", exp, got)
+			}
+			if exp, got := "dasel", repo; exp != got {
+				return nil, fmt.Errorf("exp repo %s, got %s", exp, got)
+			}
+			if exp, got := "latest", tag; exp != got {
+				return nil, fmt.Errorf("exp tag %s, got %s", exp, got)
+			}
+			return &selfupdate.Release{
+				Assets: []*selfupdate.ReleaseAsset{
+					{
+						Name:               expectedExecutableName(),
+						BrowserDownloadURL: "asd",
+					},
+				},
+				TagName: "v1.0.0",
+			}, nil
+		},
+		nil, nil, nil, nil, nil, nil,
+		``, ErrNewerVersion))
 }
 
 func updateTestOutputEqual(currentVersion string,

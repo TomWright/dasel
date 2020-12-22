@@ -38,6 +38,17 @@ func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
 	releaseVersion := release.Version()
 	_, _ = fmt.Fprintf(out, "Release version: %s\n", releaseVersion)
 
+	if !currentVersion.IsDevelopment() {
+		switch currentVersion.Compare(releaseVersion) {
+		case 1:
+			return ErrNewerVersion
+		case 0:
+			return ErrHaveLatestVersion
+		case -1:
+			// Latest version is newer.
+		}
+	}
+
 	asset := release.FindAssetForSystem(runtime.GOOS, runtime.GOARCH)
 	if asset == nil {
 		return fmt.Errorf("could not find asset for %s %s", runtime.GOOS, runtime.GOARCH)
@@ -57,17 +68,6 @@ func runUpdateCommand(opts updateOpts, cmd *cobra.Command) error {
 	}
 
 	_, _ = fmt.Fprintf(out, "New version: %s\n", latestVersion)
-
-	if !currentVersion.IsDevelopment() {
-		switch currentVersion.Compare(latestVersion) {
-		case 1:
-			return ErrNewerVersion
-		case 0:
-			return ErrHaveLatestVersion
-		case -1:
-			// Latest version is newer.
-		}
-	}
 
 	if err := opts.Updater.Replace(downloadPath); err != nil {
 		return err
