@@ -76,7 +76,7 @@ func cleanupYamlMapValue(v interface{}) interface{} {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *YAMLParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *YAMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	encoder := yaml.NewEncoder(buffer)
 	defer encoder.Close()

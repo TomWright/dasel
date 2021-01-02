@@ -177,7 +177,7 @@ func writeStringToOutput(value string, file string, out string, writer io.Writer
 	return nil
 }
 
-func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
+func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command, options ...storage.ReadWriteOption) error {
 	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
 	if err != nil {
 		return err
@@ -185,7 +185,7 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command) error {
 	opts.Writer = writer
 	defer writerCleanUp()
 
-	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer); err != nil {
+	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer, options...); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
 	}
 
@@ -200,7 +200,7 @@ type writeNodesToOutputOpts struct {
 	Writer io.Writer
 }
 
-func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
+func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command, options ...storage.ReadWriteOption) error {
 	writer, writerCleanUp, err := getOutputWriter(cmd, opts.Writer, opts.File, opts.Out)
 	if err != nil {
 		return err
@@ -216,7 +216,7 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command) error {
 			Parser: opts.Parser,
 			Writer: buf,
 		}
-		if err := writeNodeToOutput(subOpts, cmd); err != nil {
+		if err := writeNodeToOutput(subOpts, cmd, options...); err != nil {
 			return fmt.Errorf("could not write node %d to output: %w", i, err)
 		}
 	}
@@ -260,7 +260,7 @@ func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) 
 
 func putCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
-	var multiFlag bool
+	var multiFlag, compactFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "put -f <file> -s <selector>",
@@ -282,6 +282,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
+	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 
@@ -301,6 +302,7 @@ type genericPutOptions struct {
 	Reader      io.Reader
 	Writer      io.Writer
 	Multi       bool
+	Compact     bool
 }
 
 func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
@@ -312,6 +314,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.WriteParser = cmd.Flag("write").Value.String()
 		opts.Selector = cmd.Flag("selector").Value.String()
 		opts.Multi, _ = cmd.Flags().GetBool("multiple")
+		opts.Compact, _ = cmd.Flags().GetBool("compact")
 
 		if opts.Selector == "" && len(args) > 0 {
 			opts.Selector = args[0]
@@ -363,13 +366,19 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		return err
 	}
 
+	writeOptions := make([]storage.ReadWriteOption, 0)
+
+	if opts.Compact {
+		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
+	}
+
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
 		Parser: writeParser,
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
-	}, cmd); err != nil {
+	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 

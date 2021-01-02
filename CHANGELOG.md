@@ -7,7 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- `-c`, `--compact` flag to remove pretty-print formatting from JSON output.
+- Defined `storage.IndentOption(indent string) ReadWriteOption`.
+- Defined `storage.PrettyPrintOption(enabled bool) ReadWriteOption`.
+
+### Changed
+
+- Changed `storage.Parser` funcs to allow the passing of `...ReadWriteOption`.
 
 ## [v1.11.0] - 2020-12-22
 

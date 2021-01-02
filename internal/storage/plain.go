@@ -22,7 +22,7 @@ func (p *PlainParser) FromBytes(byteData []byte) (interface{}, error) {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *PlainParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *PlainParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	switch val := value.(type) {
 	case SingleDocument:

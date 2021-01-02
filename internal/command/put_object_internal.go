@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/internal/oflag"
+	"github.com/tomwright/dasel/internal/storage"
 	"io"
 	"strings"
 )
@@ -20,6 +21,7 @@ type putObjectOpts struct {
 	Reader      io.Reader
 	Writer      io.Writer
 	Multi       bool
+	Compact     bool
 }
 
 func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[string]interface{}, error) {
@@ -77,13 +79,19 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		return err
 	}
 
+	writeOptions := make([]storage.ReadWriteOption, 0)
+
+	if opts.Compact {
+		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
+	}
+
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
 		Parser: writeParser,
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
-	}, cmd); err != nil {
+	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 
@@ -109,6 +117,7 @@ func putObjectCommand() *cobra.Command {
 				InputValues: args,
 			}
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
+			opts.Compact, _ = cmd.Flags().GetBool("compact")
 
 			if opts.Selector == "" && len(opts.InputValues) > 0 {
 				opts.Selector = opts.InputValues[0]

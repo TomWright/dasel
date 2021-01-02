@@ -95,6 +95,36 @@ func TestJSONParser_ToBytes(t *testing.T) {
 		}
 	})
 
+	t.Run("ValidSingleNoPrettyPrint", func(t *testing.T) {
+		res, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.PrettyPrintOption(false))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		got := string(res)
+		exp := `{"name":"Tom"}
+`
+		if exp != got {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+
+	t.Run("ValidSingleCustomIndent", func(t *testing.T) {
+		res, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.IndentOption("   "))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		got := string(res)
+		exp := `{
+   "name": "Tom"
+}
+`
+		if exp != got {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+
 	t.Run("ValidMulti", func(t *testing.T) {
 		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicMultiDocument{Values: jsonMapMulti})
 		if err != nil {

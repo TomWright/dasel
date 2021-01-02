@@ -359,6 +359,13 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	t.Run("ArrayIndexesSelector", selectTest(jsonData, "json", ".details.addresses.-", newline(`"0"
 "1"`), nil, "-m"))
 
+	t.Run("RootElementCompactShortFlag", selectTest(`{
+  "x": "asd"
+}`, "json", ".", newline(`{"x":"asd"}`), nil, "-c"))
+	t.Run("RootElementCompactLongFlag", selectTest(`{
+  "x": "asd"
+}`, "json", ".", newline(`{"x":"asd"}`), nil, "--compact"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
