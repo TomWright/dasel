@@ -19,6 +19,7 @@ type putDocumentOpts struct {
 	Reader         io.Reader
 	Writer         io.Writer
 	Multi          bool
+	Compact        bool
 }
 
 func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
@@ -60,13 +61,19 @@ func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
 		return err
 	}
 
+	writeOptions := make([]storage.ReadWriteOption, 0)
+
+	if opts.Compact {
+		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
+	}
+
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
 		Node:   rootNode,
 		Parser: writeParser,
 		File:   opts.File,
 		Out:    opts.Out,
 		Writer: opts.Writer,
-	}, cmd); err != nil {
+	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
 

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/internal/storage"
 	"io"
 )
 
@@ -17,6 +18,7 @@ type selectOptions struct {
 	Writer            io.Writer
 	Multi             bool
 	NullValueNotFound bool
+	Compact           bool
 }
 
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
@@ -42,6 +44,12 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		return err
 	}
 
+	writeOptions := make([]storage.ReadWriteOption, 0)
+
+	if opts.Compact {
+		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
+	}
+
 	if opts.Multi {
 		var results []*dasel.Node
 		if opts.Selector == "." {
@@ -57,7 +65,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 			Nodes:  results,
 			Parser: writeParser,
 			Writer: opts.Writer,
-		}, cmd); err != nil {
+		}, cmd, writeOptions...); err != nil {
 			return fmt.Errorf("could not write output: %w", err)
 		}
 		return nil
@@ -90,7 +98,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 			Node:   res,
 			Parser: writeParser,
 			Writer: opts.Writer,
-		}, cmd); err != nil {
+		}, cmd, writeOptions...); err != nil {
 			return fmt.Errorf("could not write output: %w", err)
 		}
 	}
@@ -100,7 +108,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
-	var plainFlag, multiFlag, nullValueNotFoundFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -121,6 +129,7 @@ func selectCommand() *cobra.Command {
 				Selector:          selectorFlag,
 				Multi:             multiFlag,
 				NullValueNotFound: nullValueNotFoundFlag,
+				Compact:           compactFlag,
 			}, cmd)
 		},
 	}
@@ -133,6 +142,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 	cmd.Flags().BoolVarP(&nullValueNotFoundFlag, "null", "n", false, "Output null instead of value not found errors.")
+	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 
 	_ = cmd.MarkFlagFilename("file")
 

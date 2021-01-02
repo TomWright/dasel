@@ -117,14 +117,14 @@ func Load(p ReadParser, reader io.Reader) (interface{}, error) {
 }
 
 // Write writes the value to the given io.Writer.
-func Write(p WriteParser, value interface{}, originalValue interface{}, writer io.Writer) error {
+func Write(p WriteParser, value interface{}, originalValue interface{}, writer io.Writer, options ...ReadWriteOption) error {
 	switch typed := originalValue.(type) {
 	case OriginalRequired:
 		if typed.OriginalRequired() {
 			value = originalValue
 		}
 	}
-	byteData, err := p.ToBytes(value)
+	byteData, err := p.ToBytes(value, options...)
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
 	}
