@@ -9,7 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- `-c`, `--c` flag to remove pretty-print formatting from JSON output.
+- `-c`, `--compact` flag to remove pretty-print formatting from JSON output.
+- Defined `storage.IndentOption(indent string) ReadWriteOption`.
+- Defined `storage.PrettyPrintOption(enabled bool) ReadWriteOption`.
 
 ### Changed
 
