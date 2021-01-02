@@ -16,11 +16,13 @@ func PrettyPrintOption(enabled bool) ReadWriteOption {
 	}
 }
 
+// OptionKey is a defined type for keys within a ReadWriteOption.
 type OptionKey string
 
 const (
 	// OptionIndent is the key used with IndentOption.
-	OptionIndent      OptionKey = "indent"
+	OptionIndent OptionKey = "indent"
+	// OptionPrettyPrint is the key used with PrettyPrintOption.
 	OptionPrettyPrint OptionKey = "prettyPrint"
 )
 
