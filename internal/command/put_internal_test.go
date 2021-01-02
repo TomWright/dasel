@@ -100,18 +100,24 @@ func TestGetReadParser(t *testing.T) {
 	}
 }
 
-func putTest(in string, parser string, selector string, value string, valueType string, out string, expErr error) func(t *testing.T) {
+func putTest(in string, parser string, selector string, value string, valueType string, out string, expErr error, initOptions ...func(options *genericPutOptions)) func(t *testing.T) {
 	return func(t *testing.T) {
 		outputBuffer := bytes.NewBuffer([]byte{})
 
-		err := runGenericPutCommand(genericPutOptions{
+		opts := genericPutOptions{
 			Parser:    parser,
 			Selector:  selector,
 			Value:     value,
 			ValueType: valueType,
 			Reader:    strings.NewReader(in),
 			Writer:    outputBuffer,
-		}, nil)
+		}
+
+		for _, initOption := range initOptions {
+			initOption(&opts)
+		}
+
+		err := runGenericPutCommand(opts, nil)
 
 		if expErr == nil && err != nil {
 			t.Errorf("expected err %v, got %v", expErr, err)
@@ -272,6 +278,17 @@ func TestPut_JSON(t *testing.T) {
   },
   "id": "2222"
 }`, nil))
+
+	t.Run("SinglePropertyCompact", putTest(`{
+  "details": {
+    "age": 27,
+    "name": "Tom"
+  },
+  "id": "1111"
+}`, "json", ".id", "2222", "string", `{"details":{"age":27,"name":"Tom"},"id":"2222"}`, nil,
+		func(options *genericPutOptions) {
+			options.Compact = true
+		}))
 
 	t.Run("ObjectPropertyString", putTest(`{
   "details": {

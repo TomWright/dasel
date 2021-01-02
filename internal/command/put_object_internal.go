@@ -117,6 +117,7 @@ func putObjectCommand() *cobra.Command {
 				InputValues: args,
 			}
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
+			opts.Compact, _ = cmd.Flags().GetBool("compact")
 
 			if opts.Selector == "" && len(opts.InputValues) > 0 {
 				opts.Selector = opts.InputValues[0]

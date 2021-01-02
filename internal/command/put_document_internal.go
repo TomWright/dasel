@@ -99,6 +99,7 @@ func putDocumentCommand() *cobra.Command {
 				DocumentString: args[0],
 			}
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
+			opts.Compact, _ = cmd.Flags().GetBool("compact")
 
 			if opts.Selector == "" && len(args) > 1 {
 				opts.Selector = args[0]

@@ -206,6 +206,12 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   "rank": 5
 }`, nil))
 
+	t.Run("OverwriteObjectAtRootCompact", putObjectTest(`{
+  "rank": 1,
+  "number": "one"
+}`, "json", ".", []string{"number=five", "rank=5"}, []string{"string", "int"}, `{"number":"five","rank":5}
+`, nil, "-c"))
+
 	t.Run("MultipleObject", putObjectTest(`{
   "numbers": [
     {
@@ -547,6 +553,9 @@ func TestRootCMD_Put_JSON(t *testing.T) {
   }
 }
 `, nil))
+
+	t.Run("InsertDocumentAtPropertyCompact", putDocumentTest(`{}`, "json", ".person", `{"name":"Tom"}`, `{"person":{"name":"Tom"}}
+`, nil, "-c"))
 
 	t.Run("InvalidDocumentParser", putDocumentTest(`{}`, "json", ".person", `name: Tom`, ``,
 		fmt.Errorf("could not get document parser: unknown parser: bad"), "-d", "bad"))
