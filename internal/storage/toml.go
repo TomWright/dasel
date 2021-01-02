@@ -27,10 +27,19 @@ func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *TOMLParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *TOMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	enc := toml.NewEncoder(buf)
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionIndent:
+			if indent, ok := o.Value.(string); ok {
+				enc.Indentation(indent)
+			}
+		}
+	}
 
 	switch d := value.(type) {
 	case SingleDocument:

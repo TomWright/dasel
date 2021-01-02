@@ -231,7 +231,7 @@ func (fp *failingParser) FromBytes(_ []byte) (interface{}, error) {
 	return nil, errFailingParserErr
 }
 
-func (fp *failingParser) ToBytes(_ interface{}) ([]byte, error) {
+func (fp *failingParser) ToBytes(_ interface{}, options ...storage.ReadWriteOption) ([]byte, error) {
 	return nil, errFailingParserErr
 }
 

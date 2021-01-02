@@ -60,6 +60,22 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			t.Errorf("expected:\n%s\ngot:\n%s", tomlBytes, got)
 		}
 	})
+	t.Run("SingleDocumentCustomIndent", func(t *testing.T) {
+		res, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: tomlMap}, storage.IndentOption("   "))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		got := string(res)
+		exp := `names = ["John", "Frank"]
+
+[person]
+   name = "Tom"
+`
+		if exp != got {
+			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
+		}
+	})
 	t.Run("MultiDocument", func(t *testing.T) {
 		got, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{tomlMap, tomlMap}})
 		if err != nil {

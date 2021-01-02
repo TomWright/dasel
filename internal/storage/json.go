@@ -44,10 +44,30 @@ docLoop:
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *JSONParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	encoder := json.NewEncoder(buffer)
-	encoder.SetIndent("", "  ")
+
+	indent := "  "
+	prettyPrint := true
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionIndent:
+			if value, ok := o.Value.(string); ok {
+				indent = value
+			}
+		case OptionPrettyPrint:
+			if value, ok := o.Value.(bool); ok {
+				prettyPrint = value
+			}
+		}
+	}
+
+	if !prettyPrint {
+		indent = ""
+	}
+	encoder.SetIndent("", indent)
 
 	switch v := value.(type) {
 	case SingleDocument:

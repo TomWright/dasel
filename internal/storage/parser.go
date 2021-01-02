@@ -51,7 +51,7 @@ type ReadParser interface {
 // WriteParser can be used to convert data to bytes.
 type WriteParser interface {
 	// ToBytes returns a slice of bytes that represents the given value.
-	ToBytes(value interface{}) ([]byte, error)
+	ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error)
 }
 
 // Parser can be used to load and save files from/to disk.

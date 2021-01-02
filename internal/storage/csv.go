@@ -88,7 +88,7 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *CSVParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *CSVParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	writer := csv.NewWriter(buffer)
 

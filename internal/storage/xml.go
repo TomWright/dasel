@@ -30,7 +30,7 @@ func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *XMLParser) ToBytes(value interface{}) ([]byte, error) {
+func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	writeMap := func(val interface{}) error {
