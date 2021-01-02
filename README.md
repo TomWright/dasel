@@ -370,6 +370,10 @@ Error: could not write custom output: could not query node: could not find value
 exit status 1
 ```
 
+##### `-c`, `--compact`
+
+This tells dasel to output compact data where possible. E.g. not pretty printing JSON.
+
 #### Example
 
 ##### Select the image within a kubernetes deployment manifest file:
@@ -465,6 +469,10 @@ Specify the selector to use. See [Selectors](#selectors) for more information.
 If no selector flag is given, dasel assumes the first argument given is the selector.
 
 This is required.
+
+##### `-c`, `--compact`
+
+This tells dasel to output compact data where possible. E.g. not pretty printing JSON.
 
 ##### `value`
 
@@ -571,6 +579,10 @@ If no selector flag is given, dasel assumes the first argument given is the sele
 
 This is required.
 
+##### `-c`, `--compact`
+
+This tells dasel to output compact data where possible. E.g. not pretty printing JSON.
+
 ##### `values`
 
 A space-separated list of `key=value` pairs.
@@ -653,6 +665,10 @@ Specify the selector to use. See [Selectors](#selectors) for more information.
 If no selector flag is given, dasel assumes the first argument given is the selector.
 
 This is required.
+
+##### `-c`, `--compact`
+
+This tells dasel to output compact data where possible. E.g. not pretty printing JSON.
 
 ##### `document`, `<document>`
 
