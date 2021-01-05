@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Changed
+
+- Release asset for macos/darwin is now named `dasel_darwin_amd64` instead of `dasel_macos_amd64`.
 
 ## [v1.12.0] - 2021-01-02
 
