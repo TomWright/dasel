@@ -30,11 +30,6 @@ jobs:
             artifact_name: dasel_darwin_amd64
             asset_name: dasel_darwin_amd64
             build_docker: false
-          - os: darwin
-            arch: 386
-            artifact_name: dasel_darwin_386
-            asset_name: dasel_darwin_386
-            build_docker: false
           - os: windows
             arch: amd64
             artifact_name: dasel_windows_amd64.exe
