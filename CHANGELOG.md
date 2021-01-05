@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.12.2] - 2021-01-05
+
+### Fixed
+
+- Fix a bug that stopped the write parser being properly detected when writing to the input file.
+
 ## [v1.12.1] - 2021-01-05
 
 ### Changed
@@ -229,7 +235,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.12.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.12.2...HEAD
+[v1.12.2]: https://github.com/TomWright/dasel/compare/v1.12.1...v1.12.2
 [v1.12.1]: https://github.com/TomWright/dasel/compare/v1.12.0...v1.12.1
 [v1.12.0]: https://github.com/TomWright/dasel/compare/v1.11.0...v1.12.0
 [v1.11.0]: https://github.com/TomWright/dasel/compare/v1.10.0...v1.11.0
