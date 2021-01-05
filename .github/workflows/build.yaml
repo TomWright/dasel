@@ -21,7 +21,7 @@ jobs:
             asset_name: dasel_windows_amd64.exe
           - os: macos-latest
             artifact_name: dasel
-            asset_name: dasel_macos_amd64
+            asset_name: dasel_darwin_amd64
     name: Publish for ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     steps:
