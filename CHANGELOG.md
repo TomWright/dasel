@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Build workflows now updated to run on ubuntu-latest and use a matrix to build assets for `linux`, `darwin` and
+`windows` for both `amd64` and `386`.
+
+### Fixed
+
 - Release asset for macos/darwin is now named `dasel_darwin_amd64` instead of `dasel_macos_amd64`.
+- Self-updater now identifies `dev` version as development.
 
 ## [v1.12.0] - 2021-01-02
 

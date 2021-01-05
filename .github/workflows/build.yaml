@@ -7,23 +7,46 @@ jobs:
   publish:
     strategy:
       matrix:
-        go-version: [1.15.x]
         os:
-          - ubuntu-latest
-          - windows-latest
-          - macos-latest
+          - linux
+          - darwin
+          - windows
+        arch:
+          - amd64
+          - 386
         include:
-          - os: ubuntu-latest
-            artifact_name: dasel
+          - os: linux
+            arch: amd64
+            artifact_name: dasel_linux_amd64
             asset_name: dasel_linux_amd64
-          - os: windows-latest
-            artifact_name: dasel.exe
-            asset_name: dasel_windows_amd64.exe
-          - os: macos-latest
-            artifact_name: dasel
+            build_docker: true
+          - os: linux
+            arch: 386
+            artifact_name: dasel_linux_386
+            asset_name: dasel_linux_386
+            build_docker: false
+          - os: darwin
+            arch: amd64
+            artifact_name: dasel_darwin_amd64
             asset_name: dasel_darwin_amd64
-    name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+            build_docker: false
+          - os: darwin
+            arch: 386
+            artifact_name: dasel_darwin_386
+            asset_name: dasel_darwin_386
+            build_docker: false
+          - os: windows
+            arch: amd64
+            artifact_name: dasel_windows_amd64.exe
+            asset_name: dasel_windows_amd64.exe
+            build_docker: false
+          - os: windows
+            arch: 386
+            artifact_name: dasel_windows_386.exe
+            asset_name: dasel_windows_386.exe
+            build_docker: false
+    name: Build ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
@@ -31,13 +54,10 @@ jobs:
           go-version: '^1.15.0' # The Go version to download (if necessary) and use.
       - name: Set env
         run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
-        if: runner.os != 'Windows'
-      - name: Set env (Windows)
-        run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
-        shell: bash
-        if: runner.os == 'Windows'
       - name: Build
-        run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+      - name: Test version
+        run: ./target/release/${{ matrix.artifact_name }} --version
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
@@ -46,20 +66,20 @@ jobs:
           asset_name: ${{ matrix.asset_name }}
           tag: ${{ github.ref }}
       - name: Build docker image
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
       - name: Docker login
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
       - name: Docker tag latest
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
       - name: Docker tag release
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
       - name: Docker push latest
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: docker push ghcr.io/tomwright/dasel:latest
       - name: Docker push release
-        if: runner.os == 'Linux'
+        if: matrix.build_docker == true
         run: docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}

@@ -8,28 +8,60 @@ jobs:
   publish:
     strategy:
       matrix:
-        go-version: [1.15.x]
         os:
-          - ubuntu-latest
+          - linux
+          - darwin
+          - windows
+        arch:
+          - amd64
+          - 386
         include:
-          - os: ubuntu-latest
-            artifact_name: dasel
-    name: Publish for ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
+          - os: linux
+            arch: amd64
+            artifact_name: dasel_linux_amd64
+            build_docker: true
+          - os: linux
+            arch: 386
+            artifact_name: dasel_linux_386
+            build_docker: false
+          - os: darwin
+            arch: amd64
+            artifact_name: dasel_darwin_amd64
+            build_docker: false
+          - os: darwin
+            arch: 386
+            artifact_name: dasel_darwin_386
+            build_docker: false
+          - os: windows
+            arch: amd64
+            artifact_name: dasel_windows_amd64.exe
+            build_docker: false
+          - os: windows
+            arch: 386
+            artifact_name: dasel_windows_386.exe
+            build_docker: false
+    name: Dev build ${{ matrix.os }} ${{ matrix.arch }}
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
       - uses: actions/setup-go@v2
         with:
           go-version: '^1.15.0' # The Go version to download (if necessary) and use.
       - name: Set env
-        run: echo RELEASE_VERSION=dev >> $GITHUB_ENV
+        run: echo RELEASE_VERSION=development >> $GITHUB_ENV
       - name: Build
-        run: go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+      - name: Test version
+        run: ./target/release/${{ matrix.artifact_name }} --version
       - name: Build docker image
+        if: matrix.build_docker == true
         run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
       - name: Docker login
+        if: matrix.build_docker == true
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
-      - name: Docker tag ${{ env.RELEASE_VERSION }}
+      - name: Docker tag release
+        if: matrix.build_docker == true
         run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
-      - name: Docker push ${{ env.RELEASE_VERSION }}
+      - name: Docker push release
+        if: matrix.build_docker == true
         run: docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
