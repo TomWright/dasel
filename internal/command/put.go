@@ -84,7 +84,7 @@ func getWriteParser(readParser storage.ReadParser, writeParserFlag string, parse
 	}
 
 	if !shouldWriteToStdout(fileFlag, outFlag) {
-		p, err := storage.NewWriteParserFromFilename(outFlag)
+		p, err := storage.NewWriteParserFromFilename(fileFlag)
 		if err != nil {
 			return nil, fmt.Errorf("could not get write parser from filename: %w", err)
 		}
