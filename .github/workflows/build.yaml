@@ -20,26 +20,31 @@ jobs:
             artifact_name: dasel_linux_amd64
             asset_name: dasel_linux_amd64
             build_docker: true
+            test_version: true
           - os: linux
             arch: 386
             artifact_name: dasel_linux_386
             asset_name: dasel_linux_386
             build_docker: false
+            test_version: false
           - os: darwin
             arch: amd64
             artifact_name: dasel_darwin_amd64
             asset_name: dasel_darwin_amd64
             build_docker: false
+            test_version: false
           - os: windows
             arch: amd64
             artifact_name: dasel_windows_amd64.exe
             asset_name: dasel_windows_amd64.exe
             build_docker: false
+            test_version: false
           - os: windows
             arch: 386
             artifact_name: dasel_windows_386.exe
             asset_name: dasel_windows_386.exe
             build_docker: false
+            test_version: false
         exclude:
             - os: darwin
               arch: 386
@@ -55,6 +60,7 @@ jobs:
       - name: Build
         run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
       - name: Test version
+        if: matrix.test_version == true
         run: ./target/release/${{ matrix.artifact_name }} --version
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
