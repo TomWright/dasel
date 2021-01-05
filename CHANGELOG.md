@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.12.1] - 2021-01-05
+
 ### Changed
 
 - Build workflows now updated to run on ubuntu-latest and use a matrix to build assets for `linux`, `darwin` and
@@ -225,7 +229,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.12.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.12.1...HEAD
+[v1.12.1]: https://github.com/TomWright/dasel/compare/v1.12.0...v1.12.1
 [v1.12.0]: https://github.com/TomWright/dasel/compare/v1.11.0...v1.12.0
 [v1.11.0]: https://github.com/TomWright/dasel/compare/v1.10.0...v1.11.0
 [v1.10.0]: https://github.com/TomWright/dasel/compare/v1.9.1...v1.10.0
