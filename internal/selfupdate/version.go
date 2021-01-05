@@ -25,7 +25,7 @@ func (v *Version) String() string {
 
 // IsDevelopment returns true if it's a development version.
 func (v *Version) IsDevelopment() bool {
-	return v.Raw == "development"
+	return v.Raw == "development" || v.Raw == "dev"
 }
 
 // Compare compares this version to the other version.

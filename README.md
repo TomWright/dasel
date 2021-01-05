@@ -134,7 +134,7 @@ mv ./dasel /usr/local/bin/dasel
 ##### Mac OS amd64
 You may have to `brew install wget` in order for this to work.
 ```bash
-curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep macos_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_macos_amd64 dasel && chmod +x dasel
+curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep darwin_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_darwin_amd64 dasel && chmod +x dasel
 mv ./dasel /usr/local/bin/dasel
 ```
 
@@ -1005,7 +1005,7 @@ dasel -p json -m '.(?:name.last=Wright).name.first'
 The following line will return the download URL for the latest macOS dasel release:
 
 ```bash
-curl https://api.github.com/repos/tomwright/dasel/releases/latest | dasel -p json --plain '.assets.(name=dasel_macos_amd64).browser_download_url'
+curl https://api.github.com/repos/tomwright/dasel/releases/latest | dasel -p json --plain '.assets.(name=dasel_darwin_amd64).browser_download_url'
 ```
 
 ### jq to dasel
