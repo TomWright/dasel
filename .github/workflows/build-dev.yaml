@@ -36,6 +36,9 @@ jobs:
             arch: 386
             artifact_name: dasel_windows_386.exe
             build_docker: false
+        exclude:
+          - os: darwin
+            arch: 386
     name: Dev build ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ubuntu-latest
     steps:
