@@ -61,8 +61,13 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Table of contents](#table-of-contents)
 * [Playground](#playground)
 * [Installation](#installation)
-  * [Command line](#command-line)
+  * [Docker](#docker)
+  * [ASDF](#asdf-cross-platform)
+  * [Linux](#linux)
+  * [MacOS](#macos)
+  * [Windows](#windows-10)
   * [Self Update](#self-update)
+  * [Development Version](#development-version)
   * [Dasel as a go package](#using-dasel-as-a-package)
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
@@ -108,55 +113,8 @@ Source code for the playground can be found at  [github.com/TomWright/daselplayg
 ## Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
-### Command line
 
-#### Development version
-
-You can `go get` the `main` package to build and install dasel for you.
-```bash
-go get github.com/tomwright/dasel/cmd/dasel@master
-```
-
-You may need to prefix the command with `GO111MODULE=on` in order for this to work.
-
-Note that doing this will set the version to `development`.
-
-#### Binary on release
-You can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
-
-##### Linux amd64
-This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
-```bash
-curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
-mv ./dasel /usr/local/bin/dasel
-```
-
-##### Mac OS amd64
-You may have to `brew install wget` in order for this to work.
-```bash
-curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep darwin_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_darwin_amd64 dasel && chmod +x dasel
-mv ./dasel /usr/local/bin/dasel
-```
-
-##### Windows 10 
-You have two installation options at the moment.
-
-The most convenient installation method is via [scoop command-line installer](https://scoop.sh). Issue the following commands in your terminal and `dasel` will be available:
-```bash
-scoop bucket add extras
-scoop install dasel
-```
-
-You can then use
-```bash
-scoop update dasel
-```
-to update later on.
-
-
-The less convenient option is to download dasel from the release section as mentioned above and put the binary on the `PATH`.
-
-#### Docker
+### Docker
 You also have the option of using the docker image to run dasel for you.
 
 ```bash
@@ -172,6 +130,44 @@ If you want to use a specific version of dasel simply change `latest` to the des
 - `dev` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
 
+### Manual
+
+You can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
+
+_Note: Don't forget to put the binary somewhere in your `PATH`_
+### Linux
+
+This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
+
+```bash
+curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_linux_amd64 dasel && chmod +x dasel
+mv ./dasel /usr/local/bin/dasel
+```
+
+### MacOS
+
+You may have to `brew install wget` in order for this to work.
+
+```bash
+curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep browser_download_url | grep darwin_amd64 | cut -d '"' -f 4 | wget -qi - && mv dasel_darwin_amd64 dasel && chmod +x dasel
+mv ./dasel /usr/local/bin/dasel
+```
+
+### Windows 10 
+
+The most convenient installation method is via [scoop command-line installer](https://scoop.sh). Issue the following commands in your terminal and `dasel` will be available:
+
+```bash
+scoop bucket add extras
+scoop install dasel
+```
+
+You can then use
+```bash
+scoop update dasel
+```
+to update later on.
+
 ### Self Update
 
 If you have dasel installed you can easily upgrade to the latest release using:
@@ -183,6 +179,17 @@ If you have a development version of dasel you should run the following:
 ```
 dasel update --dev
 ```
+
+### Development Version
+
+You can `go get` the `main` package to build and install dasel for you.
+```bash
+go get github.com/tomwright/dasel/cmd/dasel@master
+```
+
+You may need to prefix the command with `GO111MODULE=on` in order for this to work.
+
+Note that doing this will set the version to `development`
 
 ### Using dasel as a package
 As with any other go package, just use `go get`.
