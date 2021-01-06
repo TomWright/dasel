@@ -113,7 +113,6 @@ Source code for the playground can be found at  [github.com/TomWright/daselplayg
 ## Installation
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
-
 ### Docker
 You also have the option of using the docker image to run dasel for you.
 
@@ -129,6 +128,17 @@ If you want to use a specific version of dasel simply change `latest` to the des
 - `latest` - The latest released version.
 - `dev` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
+
+### ASDF (Cross Platform)
+
+Using [asdf-vm](https://asdf-vm.com/) and the [asdf-dasel plugin](https://github.com/asdf-community/asdf-dasel?ts=4)
+
+```bash
+asdf plugin add dasel https://github.com/asdf-community/asdf-dasel.git
+asdf list all dasel
+asdf install dasel <version>
+asdf global dasel <version>
+```
 
 ### Manual
 
