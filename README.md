@@ -63,12 +63,13 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Installation](#installation)
   * [Docker](#docker)
   * [ASDF](#asdf-cross-platform)
+  * [Manual](#manual)
   * [Linux](#linux)
   * [MacOS](#macos)
   * [Windows](#windows-10)
   * [Self Update](#self-update)
   * [Development Version](#development-version)
-  * [Dasel as a go package](#using-dasel-as-a-package)
+  * [Dasel as a go package](#using-dasel-as-a-go-package)
 * [Notes](#notes)
   * [Preserved formatting and ordering](#preserved-formatting-and-ordering)
   * [Memory Usage](#memory-usage)
@@ -114,7 +115,7 @@ Source code for the playground can be found at  [github.com/TomWright/daselplayg
 You can import dasel as a package and use it in your applications, or you can use a pre-built binary to modify files from the command line.
 
 ### Docker
-You also have the option of using the docker image to run dasel for you.
+Run dasel in docker using the image `ghcr.io/tomwright/dasel`.
 
 ```bash
 echo '{"name": "Tom"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -p json '.name'
@@ -144,7 +145,8 @@ asdf global dasel <version>
 
 You can download a compiled executable from the [latest release](https://github.com/TomWright/dasel/releases/latest).
 
-_Note: Don't forget to put the binary somewhere in your `PATH`_
+_Note: Don't forget to put the binary somewhere in your `PATH`._
+
 ### Linux
 
 This one liner should work for you - be sure to change the targeted release executable if needed. It currently targets `dasel_linux_amd64`.
@@ -163,7 +165,7 @@ curl -s https://api.github.com/repos/tomwright/dasel/releases/latest | grep brow
 mv ./dasel /usr/local/bin/dasel
 ```
 
-### Windows 10 
+### Windows 10
 
 The most convenient installation method is via [scoop command-line installer](https://scoop.sh). Issue the following commands in your terminal and `dasel` will be available:
 
@@ -190,6 +192,8 @@ If you have a development version of dasel you should run the following:
 dasel update --dev
 ```
 
+_Note: This is a dasel feature and will cause the current executable to be replaced. This may cause side effects when used in conjuction with a package manager._
+
 ### Development Version
 
 You can `go get` the `main` package to build and install dasel for you.
@@ -201,7 +205,7 @@ You may need to prefix the command with `GO111MODULE=on` in order for this to wo
 
 Note that doing this will set the version to `development`
 
-### Using dasel as a package
+### Using dasel as a go package
 As with any other go package, just use `go get`.
 ```bash
 go get github.com/tomwright/dasel
