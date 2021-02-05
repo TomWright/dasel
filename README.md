@@ -62,6 +62,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Playground](#playground)
 * [Installation](#installation)
   * [Docker](#docker)
+  * [Homebrew](#homebrew)
   * [ASDF](#asdf-cross-platform)
   * [Manual](#manual)
   * [Linux](#linux)
@@ -129,6 +130,13 @@ If you want to use a specific version of dasel simply change `latest` to the des
 - `latest` - The latest released version.
 - `dev` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
+
+### Homebrew
+Dasel is part of [homebrew-core](https://github.com/Homebrew/homebrew-core) making it available without any additional taps.
+
+```
+brew install dasel
+```
 
 ### ASDF (Cross Platform)
 
