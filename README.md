@@ -9,6 +9,7 @@
 ![GitHub All Releases Downloads](https://img.shields.io/github/downloads/TomWright/dasel/total)
 ![GitHub License](https://img.shields.io/github/license/TomWright/dasel)
 ![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/TomWright/dasel?label=latest%20release)
+![Homebrew tag (latest by date)](https://img.shields.io/homebrew/v/dasel)
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
