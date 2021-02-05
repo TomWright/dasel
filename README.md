@@ -8,8 +8,8 @@
 [![Mentioned in Awesome Go](https://awesome.re/mentioned-badge.svg)](https://github.com/avelino/awesome-go)
 ![GitHub All Releases Downloads](https://img.shields.io/github/downloads/TomWright/dasel/total)
 ![GitHub License](https://img.shields.io/github/license/TomWright/dasel)
-![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/TomWright/dasel?label=latest%20release)
-![Homebrew tag (latest by date)](https://img.shields.io/homebrew/v/dasel)
+[![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/TomWright/dasel?label=latest%20release)](https://github.com/TomWright/dasel/releases/latest)
+[![Homebrew tag (latest by date)](https://img.shields.io/homebrew/v/dasel)](https://formulae.brew.sh/formula/dasel)
 
 Dasel (short for data-selector) allows you to query and modify data structures using selector strings.
 
