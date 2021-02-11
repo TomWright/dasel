@@ -87,3 +87,10 @@ jobs:
       - name: Docker push release
         if: matrix.build_docker == true
         run: docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
+      - name: Homebrew bump formula
+        uses: dawidd6/action-homebrew-bump-formula@v3.7.0
+        with:
+          token: ${{ secrets.GH_HOMEBREW_TOKEN }}
+          formula: dasel
+          tap: homebrew/core
+          tag: ${{ env.RELEASE_VERSION }}
