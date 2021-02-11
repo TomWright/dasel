@@ -366,6 +366,35 @@ func TestRootCmd_Select_JSON(t *testing.T) {
   "x": "asd"
 }`, "json", ".", newline(`{"x":"asd"}`), nil, "--compact"))
 
+	t.Run("LengthFlagList", selectTest(`{
+  "x": [ "a", "b", "c" ]
+}`, "json", ".x", newline(`3`), nil, "--length"))
+	t.Run("LengthFlagMap", selectTest(`{
+  "x": { "a": 1, "b": 2, "c": 3 }
+}`, "json", ".x", newline(`3`), nil, "--length"))
+	t.Run("LengthFlagString", selectTest(`{
+  "x": "asd"
+}`, "json", ".x", newline(`3`), nil, "--length"))
+	t.Run("LengthFlagInt", selectTest(`{
+  "x": 123
+}`, "json", ".x", newline(`3`), nil, "--length"))
+	t.Run("LengthFlagBool", selectTest(`{
+  "x": true
+}`, "json", ".x", newline(`4`), nil, "--length"))
+	t.Run("LengthFlagMulti", selectTest(`[
+  [ "a", "b", "c" ],
+  { "a": 1 },
+  "hello there",
+  12345,
+  123.45,
+  true
+]`, "json", ".[*]", newline(`3
+1
+11
+5
+6
+4`), nil, "--length", "-m"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
