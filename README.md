@@ -404,6 +404,18 @@ exit status 1
 
 This tells dasel to output compact data where possible. E.g. not pretty printing JSON.
 
+##### `--length`
+
+This tells dasel to output the length of the value found.
+
+- `[1, 2, 3]` - `3`: The number of elements within the array.
+- `{"a": 1, "b": 2}` - `2`: The number of elements within the map.
+- `"Hello there"` - `11`: The number of characters in the string.
+- Any other values are converted to strings and then treated as such:
+  - `12345` - `5`: Numbers are converted to strings.
+  - `123.45` - `6`: Floats/decimals are converted to strings.
+  - `true` - `4`: Bools are converted to strings.
+
 #### Example
 
 ##### Select the image within a kubernetes deployment manifest file:

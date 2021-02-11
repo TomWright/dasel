@@ -6,6 +6,7 @@ import (
 	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
 	"io"
+	"reflect"
 )
 
 type selectOptions struct {
@@ -19,6 +20,27 @@ type selectOptions struct {
 	Multi             bool
 	NullValueNotFound bool
 	Compact           bool
+	DisplayLength     bool
+}
+
+func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
+	for _, n := range nodes {
+		val := n.Value
+		if val.Kind() == reflect.Interface {
+			val = val.Elem()
+		}
+		length := 0
+		switch val.Kind() {
+		case reflect.Map, reflect.Slice, reflect.String:
+			length = val.Len()
+		default:
+			length = len(fmt.Sprint(val.Interface()))
+		}
+		if _, err := fmt.Fprintf(writer, "%d\n", length); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
@@ -61,6 +83,10 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 			}
 		}
 
+		if opts.DisplayLength {
+			return outputNodeLength(opts.Writer, results...)
+		}
+
 		if err := writeNodesToOutput(writeNodesToOutputOpts{
 			Nodes:  results,
 			Parser: writeParser,
@@ -92,15 +118,20 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	if err != nil {
 		return err
 	}
+	if written {
+		return nil
+	}
 
-	if !written {
-		if err := writeNodeToOutput(writeNodeToOutputOpts{
-			Node:   res,
-			Parser: writeParser,
-			Writer: opts.Writer,
-		}, cmd, writeOptions...); err != nil {
-			return fmt.Errorf("could not write output: %w", err)
-		}
+	if opts.DisplayLength {
+		return outputNodeLength(opts.Writer, res)
+	}
+
+	if err := writeNodeToOutput(writeNodeToOutputOpts{
+		Node:   res,
+		Parser: writeParser,
+		Writer: opts.Writer,
+	}, cmd, writeOptions...); err != nil {
+		return fmt.Errorf("could not write output: %w", err)
 	}
 
 	return nil
@@ -108,7 +139,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
-	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -130,6 +161,7 @@ func selectCommand() *cobra.Command {
 				Multi:             multiFlag,
 				NullValueNotFound: nullValueNotFoundFlag,
 				Compact:           compactFlag,
+				DisplayLength:     lengthFlag,
 			}, cmd)
 		},
 	}
@@ -142,6 +174,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 	cmd.Flags().BoolVarP(&nullValueNotFoundFlag, "null", "n", false, "Output null instead of value not found errors.")
+	cmd.Flags().BoolVar(&lengthFlag, "length", false, "Output the length of the selected value.")
 	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 
 	_ = cmd.MarkFlagFilename("file")
