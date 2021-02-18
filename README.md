@@ -129,7 +129,7 @@ Docker images are pushed to the github container repository: [tomwright/dasel](h
 If you want to use a specific version of dasel simply change `latest` to the desired version.
 
 - `latest` - The latest released version.
-- `dev` - The latest build from `master` branch.
+- `development` - The latest build from `master` branch.
 - `v*.*.*` - The build from the given release.
 
 ### Homebrew
