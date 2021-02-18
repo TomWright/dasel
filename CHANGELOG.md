@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.13.1] - 2021-02-18
+
+### Fixed
+
+- Added `CGO_ENABLED=0` build flag to ensure linux_amd64 builds are statically linked.
+
 ## [v1.13.0] - 2021-02-11
 
 ### Added
@@ -241,7 +247,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.1...HEAD
+[v1.13.1]: https://github.com/TomWright/dasel/compare/v1.13.0...v1.13.1
 [v1.13.0]: https://github.com/TomWright/dasel/compare/v1.12.2...v1.13.0
 [v1.12.2]: https://github.com/TomWright/dasel/compare/v1.12.1...v1.12.2
 [v1.12.1]: https://github.com/TomWright/dasel/compare/v1.12.0...v1.12.1
