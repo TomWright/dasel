@@ -89,7 +89,7 @@ func TestFindNodesProperty(t *testing.T) {
 		previousValue := reflect.ValueOf(0)
 		selector := Selector{Current: "x"}
 		got, err := findNodesProperty(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue}, got, err)
 	})
 }
 
@@ -108,7 +108,7 @@ func TestFindNodesPropertyKeys(t *testing.T) {
 		previousValue := reflect.ValueOf(0)
 		selector := Selector{Current: "x"}
 		got, err := findNodesPropertyKeys(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue}, got, err)
 	})
 	t.Run("SliceValue", func(t *testing.T) {
 		previousValue := reflect.ValueOf([]interface{}{"a", "b", "c"})
@@ -155,7 +155,7 @@ func TestFindNodesIndex(t *testing.T) {
 		selector := Selector{Current: "[0]", Index: 0, Raw: ".[0]"}
 		previousValue := reflect.ValueOf(map[string]interface{}{})
 		got, err := findNodesIndex(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue}, got, err)
 	})
 }
 
@@ -181,7 +181,7 @@ func TestFindNodesAnyIndex(t *testing.T) {
 		selector := Selector{Current: "[*]", Raw: ".[*]"}
 		previousValue := reflect.ValueOf(0)
 		got, err := findNodesAnyIndex(selector, previousValue)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue}, got, err)
 	})
 }
 
@@ -276,7 +276,7 @@ func TestFindNodesDynamic(t *testing.T) {
 			},
 		}
 		got, err := findNodesDynamic(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}, got, err)
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue}, got, err)
 	})
 }
 

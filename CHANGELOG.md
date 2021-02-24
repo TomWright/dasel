@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Changed
+
+- Improved information provided in `UnsupportedTypeForSelector` errors.
 
 ## [v1.13.1] - 2021-02-18
 

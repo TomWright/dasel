@@ -42,5 +42,5 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 		return fmt.Sprint(foundNode.InterfaceValue()) == c.Value, nil
 	}
 
-	return false, &UnhandledCheckType{Value: value.Kind().String()}
+	return false, &UnhandledCheckType{Value: value.String()}
 }

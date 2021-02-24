@@ -94,7 +94,7 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
 	}
 
-	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Type().Kind()}
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
 func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
@@ -132,7 +132,7 @@ func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, creat
 			})
 		}
 	default:
-		return nil, &UnsupportedTypeForSelector{Selector: selector, Value: previousValue.Kind()}
+		return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 	}
 
 	return results, nil
@@ -163,7 +163,7 @@ func findNodesIndex(selector Selector, previousValue reflect.Value, createIfNotE
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
 	}
 
-	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
 // findNextAvailableIndexNodes finds the value for the given node using the index selector
@@ -265,7 +265,7 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
 	}
 
-	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
 func findNodesSearchRecursiveSubNode(selector Selector, subNode *Node, key string, createIfNotExists bool) ([]*Node, error) {
@@ -413,7 +413,7 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
 	}
 
-	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value.Kind()}
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
 func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflect.Value {

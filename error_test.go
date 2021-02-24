@@ -16,7 +16,7 @@ func TestErrorMessages(t *testing.T) {
 		{In: &dasel.InvalidIndexErr{Index: "1"}, Out: "invalid index: 1"},
 		{In: &dasel.UnsupportedSelector{Selector: "..."}, Out: "selector is not supported here: ..."},
 		{In: &dasel.UnsupportedTypeForSelector{
-			Value: map[string]interface{}{},
+			Value: reflect.ValueOf(map[string]interface{}{}),
 			Selector: dasel.Selector{
 				Raw:       ".a.b.c",
 				Current:   ".a",
@@ -24,7 +24,7 @@ func TestErrorMessages(t *testing.T) {
 				Type:      "INDEX",
 				Index:     1,
 			},
-		}, Out: "selector [INDEX] does not support value: map[string]interface {}: map[]"},
+		}, Out: "selector [type:INDEX selector:.a.b.c] does not support value: [kind:map type:map[string]interface {}] map[]"},
 		{In: &dasel.ValueNotFound{
 			Selector: ".name",
 		}, Out: "no value found for selector: .name: <invalid reflect.Value>"},

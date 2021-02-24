@@ -78,7 +78,7 @@ func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
-	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value.Type().Kind()}
+	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
 // findValueIndex finds the value for the given node using the index selector
@@ -101,7 +101,7 @@ func findValueIndex(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
-	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
+	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
 // findNextAvailableIndex finds the value for the given node using the index selector
@@ -180,7 +180,7 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}
 
-	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
+	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
 // findValue finds the value for the given node.

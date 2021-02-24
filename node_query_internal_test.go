@@ -59,7 +59,7 @@ func TestFindValueProperty(t *testing.T) {
 		n := getNodeWithValue(val)
 		n.Selector.Current = "x"
 		got, err := findValueProperty(n, false)
-		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, got, err)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
 	})
 }
 
@@ -83,7 +83,7 @@ func TestFindValueIndex(t *testing.T) {
 		n.Selector.Current = "[0]"
 		n.Selector.Index = 0
 		got, err := findValueIndex(n, false)
-		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, got, err)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
 	})
 }
 
@@ -171,7 +171,7 @@ func TestFindValueDynamic(t *testing.T) {
 			&EqualCondition{Key: "name", Value: "x"},
 		}
 		got, err := findValueDynamic(n, false)
-		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.TypeOf(val).Kind()}, got, err)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
 	})
 }
 

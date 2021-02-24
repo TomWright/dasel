@@ -42,12 +42,12 @@ func (e UnsupportedSelector) Error() string {
 // UnsupportedTypeForSelector is returned when a selector attempts to handle a data type it can't handle.
 type UnsupportedTypeForSelector struct {
 	Selector Selector
-	Value    interface{}
+	Value    reflect.Value
 }
 
 // Error returns the error message.
 func (e UnsupportedTypeForSelector) Error() string {
-	return fmt.Sprintf("selector [%s] does not support value: %T: %v", e.Selector.Type, e.Value, e.Value)
+	return fmt.Sprintf("selector [type:%s selector:%s] does not support value: [kind:%s type:%T] %v", e.Selector.Type, e.Selector.Raw, e.Value.Kind().String(), e.Value.Interface(), e.Value.Interface())
 }
 
 // ValueNotFound is returned when a selector string cannot be fully resolved.

@@ -501,7 +501,7 @@ func TestNode_Query(t *testing.T) {
 	})
 	t.Run("NotFound", func(t *testing.T) {
 		_, err := dasel.New(value).Query(".colours.[0].a")
-		expErr := fmt.Errorf("could not find value: selector [PROPERTY] does not support value: reflect.Kind: interface")
+		expErr := fmt.Errorf("could not find value: selector [type:PROPERTY selector:.a] does not support value: [kind:string type:string] red")
 		if err == nil {
 			t.Errorf("expected err %v, got %v", expErr, err)
 			return

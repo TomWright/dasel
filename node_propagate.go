@@ -68,7 +68,7 @@ func propagateValueIndex(n *Node) error {
 		return nil
 	}
 
-	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
+	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
 // propagateValueNextAvailableIndex sends the value of the current node up to the previous node in the chain.
@@ -84,5 +84,5 @@ func propagateValueNextAvailableIndex(n *Node) error {
 		return nil
 	}
 
-	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value.Kind()}
+	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
