@@ -1,6 +1,6 @@
 module github.com/tomwright/dasel
 
-go 1.15
+go 1.16
 
 require (
 	github.com/clbanning/mxj/v2 v2.3.3-0.20201214204241-e937bdee5a3e

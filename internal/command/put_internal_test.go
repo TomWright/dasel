@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tomwright/dasel/internal/storage"
-	"io/ioutil"
+	"io"
 	"reflect"
 	"strings"
 	"testing"
@@ -132,7 +132,7 @@ func putTest(in string, parser string, selector string, value string, valueType 
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return
@@ -173,7 +173,7 @@ func putObjectTest(in string, parser string, selector string, values []string, v
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return

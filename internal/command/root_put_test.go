@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tomwright/dasel/internal/command"
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -89,7 +89,7 @@ func putTest(in string, varType string, parser string, selector string, value st
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return
@@ -133,7 +133,7 @@ func putFileTest(in string, varType string, parser string, selector string, valu
 			return
 		}
 
-		output, err := ioutil.ReadFile(outFile)
+		output, err := os.ReadFile(outFile)
 		if err != nil {
 			t.Errorf("could not read output file: %s", err)
 			return
@@ -827,7 +827,7 @@ func putObjectTest(in string, parser string, selector string, values []string, t
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return
@@ -875,7 +875,7 @@ func putDocumentTest(in string, parser string, selector string, document string,
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return

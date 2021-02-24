@@ -3,7 +3,6 @@ package storage
 import (
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -109,7 +108,7 @@ func LoadFromFile(filename string, p ReadParser) (interface{}, error) {
 
 // Load loads data from the given io.Reader.
 func Load(p ReadParser, reader io.Reader) (interface{}, error) {
-	byteData, err := ioutil.ReadAll(reader)
+	byteData, err := io.ReadAll(reader)
 	if err != nil {
 		return nil, fmt.Errorf("could not read data: %w", err)
 	}

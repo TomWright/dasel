@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tomwright/dasel/internal/command"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 )
@@ -195,7 +195,7 @@ func selectTestCheck(in string, parser string, selector string, checkFn func(out
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return
@@ -234,7 +234,7 @@ func selectTestFromFile(inputPath string, selector string, out string, expErr er
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return

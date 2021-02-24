@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/internal/selfupdate"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -341,7 +341,7 @@ func updateTestCheck(currentVersion string,
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return

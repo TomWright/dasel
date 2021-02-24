@@ -3,7 +3,7 @@ package command
 import (
 	"bytes"
 	"errors"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 )
@@ -98,7 +98,7 @@ func selectTest(in string, parser string, selector string, out string, expErr er
 			return
 		}
 
-		output, err := ioutil.ReadAll(outputBuffer)
+		output, err := io.ReadAll(outputBuffer)
 		if err != nil {
 			t.Errorf("unexpected error reading output buffer: %s", err)
 			return
