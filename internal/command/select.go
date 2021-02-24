@@ -43,6 +43,43 @@ func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
 	return nil
 }
 
+func runSelectMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts selectOptions, writeParser storage.WriteParser, writeOptions []storage.ReadWriteOption) error {
+	var results []*dasel.Node
+	var err error
+	if opts.Selector == "." {
+		results = []*dasel.Node{rootNode}
+	} else {
+		results, err = rootNode.QueryMultiple(opts.Selector)
+	}
+
+	written, err := customErrorHandling(customErrorHandlingOpts{
+		File:     opts.File,
+		Writer:   opts.Writer,
+		Err:      err,
+		Cmd:      cmd,
+		NullFlag: opts.NullValueNotFound,
+	})
+	if err != nil {
+		return fmt.Errorf("could not query multiple node: %w", err)
+	}
+	if written {
+		return nil
+	}
+
+	if opts.DisplayLength {
+		return outputNodeLength(opts.Writer, results...)
+	}
+
+	if err := writeNodesToOutput(writeNodesToOutputOpts{
+		Nodes:  results,
+		Parser: writeParser,
+		Writer: opts.Writer,
+	}, cmd, writeOptions...); err != nil {
+		return fmt.Errorf("could not write output: %w", err)
+	}
+	return nil
+}
+
 func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	readParser, err := getReadParser(opts.File, opts.ReadParser, opts.Parser)
 	if err != nil {
@@ -73,28 +110,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	}
 
 	if opts.Multi {
-		var results []*dasel.Node
-		if opts.Selector == "." {
-			results = []*dasel.Node{rootNode}
-		} else {
-			results, err = rootNode.QueryMultiple(opts.Selector)
-			if err != nil {
-				return fmt.Errorf("could not query multiple node: %w", err)
-			}
-		}
-
-		if opts.DisplayLength {
-			return outputNodeLength(opts.Writer, results...)
-		}
-
-		if err := writeNodesToOutput(writeNodesToOutputOpts{
-			Nodes:  results,
-			Parser: writeParser,
-			Writer: opts.Writer,
-		}, cmd, writeOptions...); err != nil {
-			return fmt.Errorf("could not write output: %w", err)
-		}
-		return nil
+		return runSelectMultiCommand(cmd, rootNode, opts, writeParser, writeOptions)
 	}
 
 	var res *dasel.Node

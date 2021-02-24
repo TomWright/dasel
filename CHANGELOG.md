@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Improved information provided in `UnsupportedTypeForSelector` errors.
 
+### Fixed
+
+- Make sure the `-n`,`--null` flag has an effect in multi-select queries.
+
 ## [v1.13.1] - 2021-02-18
 
 ### Fixed
