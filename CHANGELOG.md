@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Improved information provided in `UnsupportedTypeForSelector` errors.
+- Upgrade to go 1.16.
 
 ### Fixed
 
