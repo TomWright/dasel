@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.13.2] - 2021-02-25
+
 ### Changed
 
 - Improved information provided in `UnsupportedTypeForSelector` errors.
@@ -254,7 +258,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.2...HEAD
+[v1.13.2]: https://github.com/TomWright/dasel/compare/v1.13.1...v1.13.2
 [v1.13.1]: https://github.com/TomWright/dasel/compare/v1.13.0...v1.13.1
 [v1.13.0]: https://github.com/TomWright/dasel/compare/v1.12.2...v1.13.0
 [v1.12.2]: https://github.com/TomWright/dasel/compare/v1.12.1...v1.12.2
