@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.13.3] - 2021-03-05
+
 ### Fixed
 
 - Blank YAML and CSV input is now treated as an empty document.
@@ -264,7 +268,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.3...HEAD
+[v1.13.3]: https://github.com/TomWright/dasel/compare/v1.13.2...v1.13.3
 [v1.13.2]: https://github.com/TomWright/dasel/compare/v1.13.1...v1.13.2
 [v1.13.1]: https://github.com/TomWright/dasel/compare/v1.13.0...v1.13.1
 [v1.13.0]: https://github.com/TomWright/dasel/compare/v1.12.2...v1.13.0
