@@ -62,6 +62,10 @@ type Node struct {
 
 // InterfaceValue returns the value stored within the node as an interface{}.
 func (n *Node) InterfaceValue() interface{} {
+	// We shouldn't be able to get here but this will stop a panic if we do.
+	if !n.Value.IsValid() {
+		return nil
+	}
 	return n.Value.Interface()
 }
 

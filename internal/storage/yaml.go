@@ -34,11 +34,16 @@ docLoop:
 
 		formattedDocData := cleanupYamlMapValue(docData)
 
+		// Insert empty documents instead of nils.
+		if formattedDocData == nil {
+			formattedDocData = map[string]interface{}{}
+		}
 		res = append(res, formattedDocData)
 	}
 	switch len(res) {
 	case 0:
-		return nil, nil
+		// If no document is found return an empty single document.
+		return &BasicSingleDocument{Value: map[string]interface{}{}}, nil
 	case 1:
 		return &BasicSingleDocument{Value: res[0]}, nil
 	default:
