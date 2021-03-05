@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Fixed
+
+- Blank YAML and CSV input is now treated as an empty document.
+
+### Changed
+
+- Blank JSON input is now treated as an empty document.
 
 ## [v1.13.2] - 2021-02-25
 
