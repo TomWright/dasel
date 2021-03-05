@@ -49,6 +49,13 @@ func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not read csv file: %w", err)
 	}
+	if len(records) == 0 {
+		// If there's no content then return an empty CSV document.
+		return &CSVDocument{
+			Value:   res,
+			Headers: []string{},
+		}, nil
+	}
 	var headers []string
 	for i, row := range records {
 		if i == 0 {
