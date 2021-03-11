@@ -63,11 +63,8 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicSingleDocument{
-			Value: map[string]interface{}{},
-		}
-		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", exp, got)
+		if !reflect.DeepEqual(nil, got) {
+			t.Errorf("expected %v, got %v", nil, got)
 		}
 	})
 }

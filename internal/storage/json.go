@@ -35,8 +35,7 @@ docLoop:
 	}
 	switch len(res) {
 	case 0:
-		// If no document is found return an empty single document.
-		return &BasicSingleDocument{Value: map[string]interface{}{}}, nil
+		return nil, nil
 	case 1:
 		return &BasicSingleDocument{Value: res[0]}, nil
 	default:

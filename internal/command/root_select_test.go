@@ -396,6 +396,11 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 6
 4`), nil, "--length", "-m"))
 
+	t.Run("NullInput", selectTest(`null`, "json", `.`, newline("{}"), nil))
+	t.Run("EmptyDocument", selectTest(`{}`, "json", `.`, newline("{}"), nil))
+	t.Run("EmptyArray", selectTest(`[]`, "json", `.`, newline("[]"), nil))
+	t.Run("BlankInput", selectTest(``, "json", `.`, newline("{}"), nil))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {

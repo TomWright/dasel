@@ -94,6 +94,12 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		return err
 	}
 
+	if !rootNode.Value.IsValid() {
+		rootNode = dasel.New(&storage.BasicSingleDocument{
+			Value: map[string]interface{}{},
+		})
+	}
+
 	if opts.Writer == nil {
 		opts.Writer = cmd.OutOrStdout()
 	}

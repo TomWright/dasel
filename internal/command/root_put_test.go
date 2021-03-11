@@ -705,7 +705,7 @@ metadata:
 
 	// https://github.com/TomWright/dasel/issues/102
 	// Worked in v1.13.2
-	t.Run("BlankInput", putStringTest(``, "yaml", `[0].job_name`, "logging-graylog", `- job_name: logging
+	t.Run("BlankInput", putStringTest(``, "yaml", `[0].job_name`, "logging", `- job_name: logging
 `, nil))
 }
 
