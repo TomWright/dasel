@@ -310,6 +310,8 @@ An important note is that if no sub-command is given, dasel will default to `sel
 dasel select -f <file> -p <parser> -r <read_parser> -w <write_parser> -m <selector>
 ```
 
+Select treats blank input as an empty map. 
+
 #### Arguments
 
 ##### `-f`, `--file`

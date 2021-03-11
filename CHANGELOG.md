@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.13.4] - 2021-03-11
+
+### Fixed
+
+- Empty document input is now treated different in select and put commands.
+  - https://github.com/TomWright/dasel/issues/99
+  - https://github.com/TomWright/dasel/issues/102
+
 ## [v1.13.3] - 2021-03-05
 
 ### Fixed
@@ -268,7 +276,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.3...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.4...HEAD
+[v1.13.4]: https://github.com/TomWright/dasel/compare/v1.13.3...v1.13.4
 [v1.13.3]: https://github.com/TomWright/dasel/compare/v1.13.2...v1.13.3
 [v1.13.2]: https://github.com/TomWright/dasel/compare/v1.13.1...v1.13.2
 [v1.13.1]: https://github.com/TomWright/dasel/compare/v1.13.0...v1.13.1
