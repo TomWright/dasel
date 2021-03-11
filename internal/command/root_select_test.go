@@ -492,6 +492,12 @@ spec:
             timeoutSeconds: 5
             periodSeconds: 5
 `, "yaml", "spec.template.spec.containers.(name=harbor-exporter).env.(name=HARBOR_URI).value", newline(`http://harbor-core.harbor`), nil))
+
+	// https://github.com/TomWright/dasel/issues/99
+	// Worked in v1.13.3
+	t.Run("NullInput", selectTest(`null`, "yaml", `.`, newline("{}"), nil))
+	t.Run("EmptyDocument", selectTest(`---`, "yaml", `.`, newline("{}"), nil))
+	t.Run("BlankInput", selectTest(``, "yaml", `.`, newline("{}"), nil))
 }
 
 func TestRootCmd_Select_TOML(t *testing.T) {
