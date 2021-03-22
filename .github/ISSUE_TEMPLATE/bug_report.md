@@ -7,6 +7,9 @@ assignees: ''
 
 ---
 
+**Discussion?**
+If this is a question rather than a bug, please raise it in the discussions Q&A section.
+
 **Describe the bug**
 A clear and concise description of what the bug is.
 
