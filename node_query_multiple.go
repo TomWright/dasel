@@ -419,7 +419,7 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflect.Value {
 	switch selector.Type {
 	case "PROPERTY":
-		return reflect.ValueOf(map[interface{}]interface{}{})
+		return reflect.ValueOf(map[string]interface{}{})
 	case "INDEX", "NEXT_AVAILABLE_INDEX", "INDEX_ANY", "DYNAMIC":
 		return reflect.ValueOf([]interface{}{})
 	}

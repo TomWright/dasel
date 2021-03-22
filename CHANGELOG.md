@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.13.5] - 2021-03-22
+
+### Fixed
+
+- Empty map values are now initialised as `map[string]interface{}` rather than `map[interface{}]interface{}`.
+
 ## [v1.13.4] - 2021-03-11
 
 ### Fixed
@@ -276,7 +282,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.4...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.5...HEAD
+[v1.13.5]: https://github.com/TomWright/dasel/compare/v1.13.4...v1.13.5
 [v1.13.4]: https://github.com/TomWright/dasel/compare/v1.13.3...v1.13.4
 [v1.13.3]: https://github.com/TomWright/dasel/compare/v1.13.2...v1.13.3
 [v1.13.2]: https://github.com/TomWright/dasel/compare/v1.13.1...v1.13.2
