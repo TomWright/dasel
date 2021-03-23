@@ -20,12 +20,9 @@ func init() {
 	}
 
 	// https://github.com/golang/go/issues/29228
-	if info.Main.Version == "(devel)" {
+	if info.Main.Version == "(devel)" || info.Main.Version == "" {
 		return
 	}
 
-	Version = info.Main.Version
-	if len(info.Main.Sum) >= 7 {
-		Version += "-sum-" + info.Main.Version[0:6]
-	}
+	Version += "-" + info.Main.Version
 }
