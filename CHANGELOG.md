@@ -7,10 +7,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
-
-## [v1.13.6] - 2021-03-23
-
 ### Changed
 
 - Development versions of dasel will now include more specific version information where possible.
@@ -288,8 +284,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.6...HEAD
-[v1.13.6]: https://github.com/TomWright/dasel/compare/v1.13.5...v1.13.6
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.5...HEAD
 [v1.13.5]: https://github.com/TomWright/dasel/compare/v1.13.4...v1.13.5
 [v1.13.4]: https://github.com/TomWright/dasel/compare/v1.13.3...v1.13.4
 [v1.13.3]: https://github.com/TomWright/dasel/compare/v1.13.2...v1.13.3
