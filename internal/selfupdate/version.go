@@ -17,7 +17,7 @@ type Version struct {
 
 // String returns a string representation of the Version.
 func (v *Version) String() string {
-	if v.Major == 0 && v.Minor == 0 && v.Patch == 0 {
+	if v.IsDevelopment() || v.Major == 0 && v.Minor == 0 && v.Patch == 0 {
 		return v.Raw
 	}
 	return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
