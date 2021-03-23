@@ -205,14 +205,14 @@ _Note: This is a dasel feature and will cause the current executable to be repla
 
 ### Development Version
 
-You can `go get` the `main` package to build and install dasel for you.
+You can `go get`/`go install` the `main` package to build and install dasel for you.
 ```bash
-go get github.com/tomwright/dasel/cmd/dasel@master
+go install github.com/tomwright/dasel/cmd/dasel
 ```
 
 You may need to prefix the command with `GO111MODULE=on` in order for this to work.
 
-Note that doing this will set the version to `development`
+Note that doing this will set the version to `development`.
 
 ### Using dasel as a go package
 As with any other go package, just use `go get`.

@@ -17,7 +17,7 @@ type Version struct {
 
 // String returns a string representation of the Version.
 func (v *Version) String() string {
-	if v.Major == 0 && v.Minor == 0 && v.Patch == 0 {
+	if v.IsDevelopment() || v.Major == 0 && v.Minor == 0 && v.Patch == 0 {
 		return v.Raw
 	}
 	return fmt.Sprintf("v%d.%d.%d", v.Major, v.Minor, v.Patch)
@@ -25,7 +25,7 @@ func (v *Version) String() string {
 
 // IsDevelopment returns true if it's a development version.
 func (v *Version) IsDevelopment() bool {
-	return v.Raw == "development" || v.Raw == "dev"
+	return v.Raw == "development" || v.Raw == "dev" || strings.HasPrefix(v.Raw, "development-")
 }
 
 // Compare compares this version to the other version.
