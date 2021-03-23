@@ -13,7 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Development versions of dasel will now include build more specific version information where possible.
+- Development versions of dasel will now include more specific version information where possible.
 
 ## [v1.13.5] - 2021-03-22
 
