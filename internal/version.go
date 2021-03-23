@@ -26,6 +26,6 @@ func init() {
 
 	Version = info.Main.Version
 	if len(info.Main.Sum) >= 7 {
-		Version += "-" + info.Main.Version[0:6]
+		Version += "-sum-" + info.Main.Version[0:6]
 	}
 }
