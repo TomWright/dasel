@@ -207,7 +207,7 @@ _Note: This is a dasel feature and will cause the current executable to be repla
 
 You can `go get`/`go install` the `main` package to build and install dasel for you.
 ```bash
-go install github.com/tomwright/dasel/cmd/dasel
+go install github.com/tomwright/dasel/cmd/dasel@master
 ```
 
 You may need to prefix the command with `GO111MODULE=on` in order for this to work.
