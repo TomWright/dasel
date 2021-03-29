@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"sort"
 )
 
 func init() {
@@ -109,6 +110,7 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 				}
 			}
 		}
+		sort.Strings(headers)
 		return &CSVDocument{
 			Value:   mapVals,
 			Headers: headers,
