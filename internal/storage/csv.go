@@ -77,17 +77,46 @@ func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
 }
 
 func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
-	if mapVal, ok := val.(map[string]interface{}); ok {
+	switch v := val.(type) {
+	case map[string]interface{}:
 		headers := make([]string, 0)
-		for k := range mapVal {
+		for k := range v {
 			headers = append(headers, k)
 		}
 		return &CSVDocument{
-			Value:   []map[string]interface{}{mapVal},
+			Value:   []map[string]interface{}{v},
 			Headers: headers,
 		}, nil
+
+	case []interface{}:
+		mapVals := make([]map[string]interface{}, 0)
+		headers := make([]string, 0)
+		for _, val := range v {
+			if x, ok := val.(map[string]interface{}); ok {
+				mapVals = append(mapVals, x)
+
+				for objectKey, _ := range x {
+					found := false
+					for _, existingHeader := range headers {
+						if existingHeader == objectKey {
+							found = true
+							break
+						}
+					}
+					if !found {
+						headers = append(headers, objectKey)
+					}
+				}
+			}
+		}
+		return &CSVDocument{
+			Value:   mapVals,
+			Headers: headers,
+		}, nil
+
+	default:
+		return nil, fmt.Errorf("CSVParser.toBytes cannot handle type %T", val)
 	}
-	return nil, fmt.Errorf("CSVParser.toBytes cannot handle type %T", val)
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
