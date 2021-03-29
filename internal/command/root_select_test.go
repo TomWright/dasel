@@ -545,4 +545,31 @@ func TestRootCMD_Select_CSV(t *testing.T) {
 	t.Run("RootElement", selectTest(csvData, "csv", ".", csvData, nil))
 	t.Run("SingleProperty", selectTest(csvData, "csv", ".[0].id", "1\n", nil))
 	t.Run("SingleProperty", selectTest(csvData, "csv", ".[1].id", "2\n", nil))
+
+	// https://github.com/TomWright/dasel/issues/110
+	t.Run("ObjectArrayJSONToCSV", selectTest(`
+[
+  {
+    "id": "ABS",
+    "name": "Australian Bureau of Statistics"
+  },
+  {
+    "id": "ECB",
+    "name": "European Central Bank"
+  },
+  {
+    "id": "ESTAT",
+    "name": "Eurostat"
+  },
+  {
+    "id": "ILO",
+    "name": "International Labor Organization"
+  }
+]
+`, "json", ".", `id,name
+ABS,Australian Bureau of Statistics
+ECB,European Central Bank
+ESTAT,Eurostat
+ILO,International Labor Organization
+`, nil, "-w", "csv"))
 }
