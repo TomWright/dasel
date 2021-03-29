@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Development versions of dasel will now include more specific version information where possible.
 
+### Fixed
+
+- Fix an issue that stopped dasel being able to output CSV documents when parsed from JSON. 
+
 ## [v1.13.5] - 2021-03-22
 
 ### Fixed
