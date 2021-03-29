@@ -84,6 +84,7 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 		for k := range v {
 			headers = append(headers, k)
 		}
+		sort.Strings(headers)
 		return &CSVDocument{
 			Value:   []map[string]interface{}{v},
 			Headers: headers,
