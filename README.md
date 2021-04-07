@@ -79,7 +79,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 
 ## Documentation
 
-The official dasel docs can be found at [tomwright.gitbook.io/dasel/](https://tomwright.gitbook.io/dasel/).
+The official dasel docs can be found at [tomwright.gitbook.io/dasel](https://tomwright.gitbook.io/dasel/).
 
 ## Playground
 
