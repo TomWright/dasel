@@ -1,5 +1,6 @@
 # dasel
 
+[![Gitbook](https://badges.aleen42.com/src/gitbook_1.svg)](https://app.gitbook.com/@tomwright/s/dasel)
 [![Go Report Card](https://goreportcard.com/badge/github.com/TomWright/dasel)](https://goreportcard.com/report/github.com/TomWright/dasel)
 [![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel)
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
@@ -60,6 +61,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 * [Issue vs discussion](#issue-vs-discussion)
 * [Features](#features)
 * [Table of contents](#table-of-contents)
+* [Documentation](#documentation)
 * [Playground](#playground)
 * [Installation](#installation)
   * [Docker](#docker)
@@ -106,6 +108,10 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
   * [Kubernetes](#kubernetes)
   * [XML](#xml-examples)
 * [Benchmarks](#benchmarks)
+
+## Documentation
+
+The official dasel docs can be found at [app.gitbook.com/@tomwright/s/dasel](https://app.gitbook.com/@tomwright/s/dasel).
 
 ## Playground
 
