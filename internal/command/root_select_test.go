@@ -436,6 +436,24 @@ func TestRootCmd_Select_JSON(t *testing.T) {
     "uses": [3, 4]
   }
 ]`, "json", `.(.uses.[#]=2).id`, newline("2\n4"), nil, "-m"))
+	t.Run("LengthDynamicSelectorMoreThan", selectTest(`[
+  {
+    "id": 1,
+    "uses": [1]
+  },
+  {
+    "id": 2,
+    "uses": [1, 2]
+  },
+  {
+    "id": 3,
+    "uses": [1, 2, 3]
+  },
+  {
+    "id": 4,
+    "uses": [3, 4]
+  }
+]`, "json", `.(.uses.[#]>2).id`, newline("3"), nil, "-m"))
 
 }
 

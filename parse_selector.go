@@ -54,20 +54,41 @@ func processParseSelectorDynamic(selector string, sel Selector) (Selector, error
 	}
 
 	for _, g := range dynamicGroups {
-		m := dynamicSelectorRegexp.FindStringSubmatch(g)
-		if m == nil {
-			return sel, fmt.Errorf("invalid search format")
-		}
+		m := FindDynamicSelectorParts(g)
 
 		var cond Condition
-		switch m[2] {
+		switch m.Comparison {
 		case "=":
 			cond = &EqualCondition{
-				Key:   m[1],
-				Value: m[3],
+				Key:   m.Key,
+				Value: m.Value,
+			}
+		case ">=":
+			cond = &SortedComparisonCondition{
+				Key:   m.Key,
+				Value: m.Value,
+				Equal: true,
+				After: true,
+			}
+		case ">":
+			cond = &SortedComparisonCondition{
+				Key:   m.Key,
+				Value: m.Value,
+				After: true,
+			}
+		case "<=":
+			cond = &SortedComparisonCondition{
+				Key:   m.Key,
+				Value: m.Value,
+				Equal: true,
+			}
+		case "<":
+			cond = &SortedComparisonCondition{
+				Key:   m.Key,
+				Value: m.Value,
 			}
 		default:
-			return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+			return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
 		}
 
 		sel.Conditions = append(sel.Conditions, cond)
@@ -88,33 +109,54 @@ func processParseSelectorSearch(selector string, sel Selector) (Selector, error)
 	}
 
 	for _, g := range dynamicGroups {
-		m := dynamicSelectorRegexp.FindStringSubmatch(g)
-		if m == nil {
-			return sel, fmt.Errorf("invalid search format")
-		}
+		m := FindDynamicSelectorParts(g)
 
-		m[1] = strings.TrimPrefix(m[1], "?:")
+		m.Key = strings.TrimPrefix(m.Key, "?:")
 
 		var cond Condition
-		switch m[1] {
+		switch m.Key {
 		case "-", "keyValue":
-			switch m[2] {
+			switch m.Comparison {
 			case "=":
 				cond = &KeyEqualCondition{
-					Value: m[3],
+					Value: m.Value,
 				}
 			default:
-				return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
 			}
 		default:
-			switch m[2] {
+			switch m.Comparison {
 			case "=":
 				cond = &EqualCondition{
-					Key:   strings.TrimPrefix(m[1], "?:"),
-					Value: m[3],
+					Key:   m.Key,
+					Value: m.Value,
+				}
+			case ">=":
+				cond = &SortedComparisonCondition{
+					Key:   m.Key,
+					Value: m.Value,
+					Equal: true,
+					After: true,
+				}
+			case ">":
+				cond = &SortedComparisonCondition{
+					Key:   m.Key,
+					Value: m.Value,
+					After: true,
+				}
+			case "<=":
+				cond = &SortedComparisonCondition{
+					Key:   m.Key,
+					Value: m.Value,
+					Equal: true,
+				}
+			case "<":
+				cond = &SortedComparisonCondition{
+					Key:   m.Key,
+					Value: m.Value,
 				}
 			default:
-				return sel, &UnknownComparisonOperatorErr{Operator: m[2]}
+				return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
 			}
 		}
 

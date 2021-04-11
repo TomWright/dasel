@@ -75,3 +75,41 @@ func DynamicSelectorToGroups(selector string) ([]string, error) {
 	}
 	return res, nil
 }
+
+type DynamicSelectorParts struct {
+	Key        string
+	Comparison string
+	Value      string
+}
+
+// FindDynamicSelectorParts extracts the parts from the dynamic selector given.
+func FindDynamicSelectorParts(selector string) DynamicSelectorParts {
+	i := 0
+	parts := DynamicSelectorParts{}
+	for _, v := range selector {
+		if v == '(' {
+			if parts.Comparison == "" {
+				parts.Key += string(v)
+			} else {
+				parts.Value += string(v)
+			}
+			i++
+		} else if v == ')' {
+			i--
+			if parts.Comparison == "" {
+				parts.Key += string(v)
+			} else {
+				parts.Value += string(v)
+			}
+		} else if i == 0 && (v == '<' || v == '>' || v == '=') {
+			parts.Comparison += string(v)
+		} else {
+			if parts.Comparison == "" {
+				parts.Key += string(v)
+			} else {
+				parts.Value += string(v)
+			}
+		}
+	}
+	return parts
+}

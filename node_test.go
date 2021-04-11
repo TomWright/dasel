@@ -135,8 +135,8 @@ func TestParseSelector(t *testing.T) {
 		}
 	})
 	t.Run("InvalidDynamicComparison", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(x<2)")
-		exp := &dasel.UnknownComparisonOperatorErr{Operator: "<"}
+		_, err := dasel.ParseSelector(".(x<=>2)")
+		exp := &dasel.UnknownComparisonOperatorErr{Operator: "<=>"}
 		if err == nil || err.Error() != exp.Error() {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
@@ -149,15 +149,15 @@ func TestParseSelector(t *testing.T) {
 		}
 	})
 	t.Run("UnknownComparisonOperator", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(a>b)")
-		exp := "unknown comparison operator: >"
+		_, err := dasel.ParseSelector(".(a<=>b)")
+		exp := "unknown comparison operator: <=>"
 		if err == nil || err.Error() != exp {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
 	t.Run("UnknownSearchComparisonOperator", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(?:a>b)")
-		exp := "unknown comparison operator: >"
+		_, err := dasel.ParseSelector(".(?:a<=>b)")
+		exp := "unknown comparison operator: <=>"
 		if err == nil || err.Error() != exp {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
@@ -169,7 +169,7 @@ func TestParseSelector(t *testing.T) {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
-	t.Run("Search", testParseSelector(".(?:name=asd)", dasel.Selector{
+	t.Run("SearchEqual", testParseSelector(".(?:name=asd)", dasel.Selector{
 		Raw:       ".(?:name=asd)",
 		Current:   ".(?:name=asd)",
 		Remaining: "",
@@ -181,6 +181,58 @@ func TestParseSelector(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("SearchMoreThan", testParseSelector(".(?:name.[#]>3)", dasel.Selector{
+		Raw:       ".(?:name.[#]>3)",
+		Current:   ".(?:name.[#]>3)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				After: true,
+			},
+		},
+	}))
+	t.Run("SearchMoreThanEqual", testParseSelector(".(?:name.[#]>=3)", dasel.Selector{
+		Raw:       ".(?:name.[#]>=3)",
+		Current:   ".(?:name.[#]>=3)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				After: true,
+				Equal: true,
+			},
+		},
+	}))
+	t.Run("SearchLessThan", testParseSelector(".(?:name.[#]<3)", dasel.Selector{
+		Raw:       ".(?:name.[#]<3)",
+		Current:   ".(?:name.[#]<3)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+			},
+		},
+	}))
+	t.Run("SearchLessThanEqual", testParseSelector(".(?:name.[#]<=3)", dasel.Selector{
+		Raw:       ".(?:name.[#]<=3)",
+		Current:   ".(?:name.[#]<=3)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				Equal: true,
+			},
+		},
+	}))
 	t.Run("SearchKey", testParseSelector(".(?:-=asd)", dasel.Selector{
 		Raw:       ".(?:-=asd)",
 		Current:   ".(?:-=asd)",
@@ -189,6 +241,70 @@ func TestParseSelector(t *testing.T) {
 		Conditions: []dasel.Condition{
 			&dasel.KeyEqualCondition{
 				Value: "asd",
+			},
+		},
+	}))
+	t.Run("DynamicEqual", testParseSelector(".(name=asd)", dasel.Selector{
+		Raw:       ".(name=asd)",
+		Current:   ".(name=asd)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.EqualCondition{
+				Key:   "name",
+				Value: "asd",
+			},
+		},
+	}))
+	t.Run("DynamicMoreThan", testParseSelector(".(name.[#]>3)", dasel.Selector{
+		Raw:       ".(name.[#]>3)",
+		Current:   ".(name.[#]>3)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				After: true,
+			},
+		},
+	}))
+	t.Run("DynamicMoreThanEqual", testParseSelector(".(name.[#]>=3)", dasel.Selector{
+		Raw:       ".(name.[#]>=3)",
+		Current:   ".(name.[#]>=3)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				After: true,
+				Equal: true,
+			},
+		},
+	}))
+	t.Run("DynamicLessThan", testParseSelector(".(name.[#]<3)", dasel.Selector{
+		Raw:       ".(name.[#]<3)",
+		Current:   ".(name.[#]<3)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+			},
+		},
+	}))
+	t.Run("DynamicLessThanEqual", testParseSelector(".(name.[#]<=3)", dasel.Selector{
+		Raw:       ".(name.[#]<=3)",
+		Current:   ".(name.[#]<=3)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.SortedComparisonCondition{
+				Key:   "name.[#]",
+				Value: "3",
+				Equal: true,
 			},
 		},
 	}))
