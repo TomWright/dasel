@@ -97,7 +97,7 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 			if x, ok := val.(map[string]interface{}); ok {
 				mapVals = append(mapVals, x)
 
-				for objectKey, _ := range x {
+				for objectKey := range x {
 					found := false
 					for _, existingHeader := range headers {
 						if existingHeader == objectKey {

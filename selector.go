@@ -76,6 +76,7 @@ func DynamicSelectorToGroups(selector string) ([]string, error) {
 	return res, nil
 }
 
+// DynamicSelectorParts contains the parts for a dynamic selector.
 type DynamicSelectorParts struct {
 	Key        string
 	Comparison string
