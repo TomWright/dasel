@@ -72,15 +72,12 @@ func (n *Node) InterfaceValue() interface{} {
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
 	indexSelector    = `\[(?P<index>[0-9a-zA-Z\*]*?)\]`
-	// dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
-	dynamicSelector = `(?P<name>[^=<>\(]+)(?P<comparison>[=<>]+)(?P<value>[^\)]+)`
 )
 
 var (
-	propertyRegexp        = regexp.MustCompile(fmt.Sprintf("^\\.?%s", propertySelector))
-	indexRegexp           = regexp.MustCompile(fmt.Sprintf("^\\.?%s", indexSelector))
-	dynamicSelectorRegexp = regexp.MustCompile(fmt.Sprintf("%s", dynamicSelector))
-	newDynamicRegexp      = regexp.MustCompile(fmt.Sprintf("^\\.?((?:\\(.*\\))+)"))
+	propertyRegexp   = regexp.MustCompile(fmt.Sprintf("^\\.?%s", propertySelector))
+	indexRegexp      = regexp.MustCompile(fmt.Sprintf("^\\.?%s", indexSelector))
+	newDynamicRegexp = regexp.MustCompile(fmt.Sprintf("^\\.?((?:\\(.*\\))+)"))
 )
 
 func isValid(value reflect.Value) bool {
