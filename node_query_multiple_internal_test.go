@@ -93,6 +93,44 @@ func TestFindNodesProperty(t *testing.T) {
 	})
 }
 
+func TestFindNodesLength(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		got, err := findNodesLength(selector, nilValue())
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnexpectedPreviousNilValue{Selector: ".[#]"}, got, err)
+	})
+	t.Run("UnsupportedTypeInt", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := 0
+		got, err := findNodesLength(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: reflect.ValueOf(val)}, got, err)
+	})
+	t.Run("UnsupportedTypeBool", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := false
+		got, err := findNodesLength(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnsupportedTypeForSelector{Selector: selector, Value: reflect.ValueOf(val)}, got, err)
+	})
+	t.Run("SliceType", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		got, err := findNodesLength(selector, reflect.ValueOf([]interface{}{"x", "y"}))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf(2)}, nil, got, err)
+	})
+	t.Run("MapType", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		got, err := findNodesLength(selector, reflect.ValueOf(map[string]interface{}{
+			"x": 1,
+			"y": 2,
+		}))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf(2)}, nil, got, err)
+	})
+	t.Run("StringType", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		got, err := findNodesLength(selector, reflect.ValueOf("hello"))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf(5)}, nil, got, err)
+	})
+}
+
 func TestFindNodesPropertyKeys(t *testing.T) {
 	t.Run("NilValue", func(t *testing.T) {
 		selector := Selector{Current: ".", Raw: "."}
