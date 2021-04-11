@@ -25,7 +25,15 @@ func assertQueryResult(t *testing.T, exp reflect.Value, expErr error, got reflec
 	if !assertErrResult(t, expErr, gotErr) {
 		return false
 	}
-	if !reflect.DeepEqual(exp, got) {
+
+	var res bool
+	if exp.IsValid() && got.IsValid() {
+		res = reflect.DeepEqual(exp.Interface(), got.Interface())
+	} else {
+		res = reflect.DeepEqual(exp, got)
+	}
+
+	if !res {
 		t.Errorf("expected result %v, got %v", exp, got)
 		return false
 	}
@@ -172,6 +180,50 @@ func TestFindValueDynamic(t *testing.T) {
 		}
 		got, err := findValueDynamic(n, false)
 		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
+	})
+}
+
+func TestFindValueLength(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		n := getNodeWithValue(nil)
+		n.Previous.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, nilValue(), &UnexpectedPreviousNilValue{Selector: ".[#]"}, got, err)
+	})
+	t.Run("UnsupportedTypeInt", func(t *testing.T) {
+		val := 0
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
+	})
+	t.Run("UnsupportedTypeBool", func(t *testing.T) {
+		val := false
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: reflect.ValueOf(val)}, got, err)
+	})
+	t.Run("SliceType", func(t *testing.T) {
+		n := getNodeWithValue([]interface{}{"x", "y"})
+		n.Previous.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, reflect.ValueOf(2), nil, got, err)
+	})
+	t.Run("MapType", func(t *testing.T) {
+		n := getNodeWithValue(map[string]interface{}{
+			"x": 1,
+			"y": 2,
+		})
+		n.Previous.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, reflect.ValueOf(2), nil, got, err)
+	})
+	t.Run("StringType", func(t *testing.T) {
+		n := getNodeWithValue("hello")
+		n.Previous.Selector.Current = ".[#]"
+		got, err := findValueLength(n, false)
+		assertQueryResult(t, reflect.ValueOf(5), nil, got, err)
 	})
 }
 
