@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.14.0] - 2021-04-11
+
 ### Added
 
 - `.[#]` length selector.
@@ -298,7 +302,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.13.6...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.14.0...HEAD
+[v1.14.0]: https://github.com/TomWright/dasel/compare/v1.13.6...v1.14.0
 [v1.13.6]: https://github.com/TomWright/dasel/compare/v1.13.5...v1.13.6
 [v1.13.5]: https://github.com/TomWright/dasel/compare/v1.13.4...v1.13.5
 [v1.13.4]: https://github.com/TomWright/dasel/compare/v1.13.3...v1.13.4
