@@ -72,7 +72,8 @@ func (n *Node) InterfaceValue() interface{} {
 const (
 	propertySelector = `(?P<property>[a-zA-Z\-_]+)`
 	indexSelector    = `\[(?P<index>[0-9a-zA-Z\*]*?)\]`
-	dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
+	// dynamicSelector  = `(?P<name>.+)(?P<comparison>=|<|>)(?P<value>.+)`
+	dynamicSelector = `(?P<name>[^=<>\(]+)(?P<comparison>[=<>]+)(?P<value>[^\)]+)`
 )
 
 var (

@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `.[#]` length selector.
+- `>` comparison operator.
+- `>=` comparison operator.
+- `<` comparison operator.
+- `<=` comparison operator.
 
 ## [v1.13.6] - 2021-03-29
 
