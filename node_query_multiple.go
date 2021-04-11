@@ -416,6 +416,40 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
+// findNodesLength returns the length
+func findNodesLength(selector Selector, previousValue reflect.Value) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+
+	value := unwrapValue(previousValue)
+
+	switch value.Kind() {
+	case reflect.Slice:
+		node := &Node{
+			Value:    reflect.ValueOf(value.Len()),
+			Selector: selector,
+		}
+		return []*Node{node}, nil
+
+	case reflect.Map:
+		node := &Node{
+			Value:    reflect.ValueOf(value.Len()),
+			Selector: selector,
+		}
+		return []*Node{node}, nil
+
+	case reflect.String:
+		node := &Node{
+			Value:    reflect.ValueOf(value.Len()),
+			Selector: selector,
+		}
+		return []*Node{node}, nil
+	}
+
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+}
+
 func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflect.Value {
 	switch selector.Type {
 	case "PROPERTY":
@@ -444,6 +478,8 @@ func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([
 		res, err = findNextAvailableIndexNodes(selector, previousNode.Value, createIfNotExists)
 	case "INDEX_ANY":
 		res, err = findNodesAnyIndex(selector, previousNode.Value)
+	case "LENGTH":
+		res, err = findNodesLength(selector, previousNode.Value)
 	case "DYNAMIC":
 		res, err = findNodesDynamic(selector, previousNode.Value, createIfNotExists)
 	case "SEARCH":

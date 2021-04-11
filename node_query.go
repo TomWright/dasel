@@ -183,6 +183,28 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
+// findValueLength returns the length of the current node.
+func findValueLength(n *Node, createIfNotExists bool) (reflect.Value, error) {
+	if !isValid(n.Previous.Value) {
+		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
+	}
+
+	value := unwrapValue(n.Previous.Value)
+
+	switch value.Kind() {
+	case reflect.Slice:
+		return reflect.ValueOf(value.Len()), nil
+
+	case reflect.Map:
+		return reflect.ValueOf(value.Len()), nil
+
+	case reflect.String:
+		return reflect.ValueOf(value.Len()), nil
+	}
+
+	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
+}
+
 // findValue finds the value for the given node.
 // The value is essentially pulled from the previous node, using the (already parsed) selector
 // information stored on the current node.
@@ -205,6 +227,8 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		return findNextAvailableIndex(n, createIfNotExists)
 	case "DYNAMIC":
 		return findValueDynamic(n, createIfNotExists)
+	case "LENGTH":
+		return findValueLength(n, createIfNotExists)
 	default:
 		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Raw}
 	}

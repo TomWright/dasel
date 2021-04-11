@@ -401,6 +401,42 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 	t.Run("EmptyArray", selectTest(`[]`, "json", `.`, newline("[]"), nil))
 	t.Run("BlankInput", selectTest(``, "json", `.`, newline("{}"), nil))
 
+	t.Run("LengthSelector", selectTest(jsonData, "json", `.details.addresses.[#]`, newline("2"), nil))
+	t.Run("LengthSelectorMultiple", selectTest(jsonData, "json", `.details.addresses.[#]`, newline("2"), nil, "-m"))
+	t.Run("LengthSelectorMultiple", selectTest(jsonData, "json", `.details.addresses.[*].[#]`, newline("5\n4"), nil, "-m"))
+	t.Run("LengthDynamicSelector", selectTest(`{
+  "a": {
+    "id": 1,
+    "uses": [1]
+  },
+  "b": {
+    "id": 2,
+    "uses": [1, 2]
+  },
+  "c": {
+    "id": 3,
+    "uses": [1, 2, 3]
+  }
+}`, "json", `.(.uses.[#]=2).id`, newline("2"), nil))
+	t.Run("LengthDynamicSelectorMultiple", selectTest(`[
+  {
+    "id": 1,
+    "uses": [1]
+  },
+  {
+    "id": 2,
+    "uses": [1, 2]
+  },
+  {
+    "id": 3,
+    "uses": [1, 2, 3]
+  },
+  {
+    "id": 4,
+    "uses": [3, 4]
+  }
+]`, "json", `.(.uses.[#]=2).id`, newline("2\n4"), nil, "-m"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {

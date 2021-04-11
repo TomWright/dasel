@@ -25,4 +25,5 @@ func TestExtractNextSelector(t *testing.T) {
 	t.Run("EscapedFirstDot", testExtractNextSelector(`\.name`, `.name`, 6))
 	t.Run("SimpleProp", testExtractNextSelector(`.name`, `.name`, 5))
 	t.Run("SimpleIndex", testExtractNextSelector(`.[123]`, `.[123]`, 6))
+	t.Run("SimpleLength", testExtractNextSelector(`.[#]`, `.[#]`, 4))
 }

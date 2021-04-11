@@ -86,6 +86,30 @@ func TestCSVParser_ToBytes(t *testing.T) {
 Tom,1
 `))
 	})
+	t.Run("SingleDocumentSlice", func(t *testing.T) {
+		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicSingleDocument{
+			Value: []interface{}{
+				map[string]interface{}{
+					"id":   "1",
+					"name": "Tom",
+				},
+				map[string]interface{}{
+					"id":   "2",
+					"name": "Tommy",
+				},
+			},
+		})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		deepEqualOneOf(t, got, []byte(`id,name
+1,Tom
+2,Tommy
+`), []byte(`name,id
+Tom,1
+`))
+	})
 	t.Run("MultiDocument", func(t *testing.T) {
 		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicMultiDocument{
 			Values: []interface{}{
@@ -119,6 +143,15 @@ Jim,2
 Tom,1
 name,id
 Jim,2
+`))
+	})
+	t.Run("DefaultDocType", func(t *testing.T) {
+		got, err := (&storage.CSVParser{}).ToBytes([]interface{}{"x", "y"})
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		deepEqualOneOf(t, got, []byte(`[x y]
 `))
 	})
 }

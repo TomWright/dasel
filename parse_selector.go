@@ -35,6 +35,8 @@ func ParseSelector(selector string) (Selector, error) {
 		sel, err = processParseSelectorNextAvailableIndex(nextSel, sel)
 	case nextSel == "[*]":
 		sel, err = processParseSelectorIndexAny(nextSel, sel)
+	case nextSel == "[#]":
+		sel, err = processParseSelectorLength(nextSel, sel)
 	case strings.HasPrefix(nextSel, "[") && strings.HasSuffix(nextSel, "]"):
 		sel, err = processParseSelectorIndex(nextSel, sel)
 	default:
@@ -129,6 +131,11 @@ func processParseSelectorNextAvailableIndex(selector string, sel Selector) (Sele
 
 func processParseSelectorIndexAny(selector string, sel Selector) (Selector, error) {
 	sel.Type = "INDEX_ANY"
+	return sel, nil
+}
+
+func processParseSelectorLength(selector string, sel Selector) (Selector, error) {
+	sel.Type = "LENGTH"
 	return sel, nil
 }
 
