@@ -3,9 +3,8 @@ package storage
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	"github.com/zclconf/go-cty/cty"
+	"github.com/tomwright/dasel/hclgo"
 )
 
 func init() {
@@ -24,37 +23,12 @@ func (p *HCLParser) FromBytes(byteData []byte) (interface{}, error) {
 		return nil, fmt.Errorf("could not parse hcl config: %s", diags.Error())
 	}
 
-	target := map[string]interface{}{}
-
-	diags = gohcl.DecodeBody(file.Body, nil, &target)
-	if diags.HasErrors() {
-		return nil, fmt.Errorf("could not decode hcl body: %s", diags.Error())
+	data, err := hclgo.HCLFileToGo(file)
+	if err != nil {
+		return nil, fmt.Errorf("could not convert hcl file to go: %w", err)
 	}
 
-	return &BasicSingleDocument{Value: hclToMap(target)}, nil
-}
-
-func hclToMap(data interface{}) interface{} {
-	switch val := data.(type) {
-	case map[string]interface{}:
-		for k, v := range val {
-			val[k] = hclToMap(v)
-		}
-		return val
-	case *hcl.Attribute:
-		x, _ := val.Expr.Value(nil)
-		switch x.Type() {
-		case cty.Bool:
-			return x.True()
-		case cty.Number:
-			floatVal, _ := x.AsBigFloat().Float64()
-			return floatVal
-		case cty.String:
-			return x.AsString()
-		}
-		fmt.Printf("%s, %s\n", val.Name, x.Type().GoString())
-	}
-	return data
+	return &BasicSingleDocument{Value: data}, nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
