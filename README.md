@@ -24,7 +24,27 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 
 ![Update Kubernetes Manifest](update_kubernetes.gif)
 
-### Issue vs Discussion
+## Quickstart
+
+Dasel is available on [homebrew](https://daseldocs.tomwright.me/installation#homebrew), [ASDF](https://daseldocs.tomwright.me/installation#asdf), [scoop](https://daseldocs.tomwright.me/installation#scoop), [docker](https://daseldocs.tomwright.me/installation#docker) or as [compiled binaries](https://daseldocs.tomwright.me/installation#manual) from the [latest release](https://github.com/TomWright/dasel/releases/latest).
+
+```bash
+brew install dasel
+```
+
+You can also install a [development version](https://daseldocs.tomwright.me/installation#development-version) with:
+```bash
+go install github.com/tomwright/dasel/cmd/dasel@master
+```
+
+For more information see the [installation documentation](https://daseldocs.tomwright.me/installation).
+
+```bash
+echo '{"name": "Tom"}' | dasel -p json '.name'
+"Tom"
+```
+
+## Issue vs Discussion
 
 I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on this repository.
 
@@ -42,22 +62,23 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Anything else!
 
 ## Features
-- [Query/select data from structured data files](#select).
-- [Update data in structured data files](#put).
-- [Create data files](#creating-properties).
-- [Supports multiple data formats/types](#supported-file-types).
-- [Convert between data formats/types](#converting-between-formats).
-- Uses a [standard query/selector syntax](#selectors) across all data formats.
+- [Query/select data from structured data files](https://daseldocs.tomwright.me/usage/select).
+- [Update data in structured data files](https://daseldocs.tomwright.me/usage/put).
+- [Create data files](https://daseldocs.tomwright.me/usage/put#create-documents-from-scratch).
+- [Supports multiple data formats/types](https://daseldocs.tomwright.me/usage/supported-file-types).
+- [Convert between data formats/types](https://daseldocs.tomwright.me/notes/converting-between-formats).
+- Uses a [standard query/selector syntax](https://daseldocs.tomwright.me/selectors/introduction) across all data formats.
 - Zero runtime dependencies.
-- [Available on Linux, Mac and Windows](#binary-on-release).
-- Available to [import and use in your own projects](#using-dasel-as-a-package).
-- [Run via Docker](#docker).
+- [Available on Linux, Mac and Windows](https://daseldocs.tomwright.me/installation).
+- Available to [import and use in your own projects](https://daseldocs.tomwright.me/use-as-a-go-package).
+- [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
-- [Self update](#self-update).
+- [Self update](https://daseldocs.tomwright.me/installation/update).
 
 ## Table of contents
 * [Dasel](#dasel)
 * [One tool to rule them all](#one-tool-to-rule-them-all)
+* [Quickstart](#quickstart)
 * [Issue vs discussion](#issue-vs-discussion)
 * [Features](#features)
 * [Table of contents](#table-of-contents)
