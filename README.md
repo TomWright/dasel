@@ -62,18 +62,18 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Anything else!
 
 ## Features
-- [Query/select data from structured data files](#select).
-- [Update data in structured data files](#put).
-- [Create data files](#creating-properties).
-- [Supports multiple data formats/types](#supported-file-types).
-- [Convert between data formats/types](#converting-between-formats).
-- Uses a [standard query/selector syntax](#selectors) across all data formats.
+- [Query/select data from structured data files](https://daseldocs.tomwright.me/usage/select).
+- [Update data in structured data files](https://daseldocs.tomwright.me/usage/put).
+- [Create data files](https://daseldocs.tomwright.me/usage/put#create-documents-from-scratch).
+- [Supports multiple data formats/types](https://daseldocs.tomwright.me/usage/supported-file-types).
+- [Convert between data formats/types](https://daseldocs.tomwright.me/notes/converting-between-formats).
+- Uses a [standard query/selector syntax](https://daseldocs.tomwright.me/selectors/introduction) across all data formats.
 - Zero runtime dependencies.
-- [Available on Linux, Mac and Windows](#binary-on-release).
-- Available to [import and use in your own projects](#using-dasel-as-a-package).
-- [Run via Docker](#docker).
+- [Available on Linux, Mac and Windows](https://daseldocs.tomwright.me/installation).
+- Available to [import and use in your own projects](https://daseldocs.tomwright.me/use-as-a-go-package).
+- [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
-- [Self update](#self-update).
+- [Self update](https://daseldocs.tomwright.me/installation/update).
 
 ## Table of contents
 * [Dasel](#dasel)
