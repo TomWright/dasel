@@ -14,6 +14,7 @@ jobs:
         arch:
           - amd64
           - 386
+          - arm64
         include:
           - os: linux
             arch: amd64
@@ -53,6 +54,10 @@ jobs:
         exclude:
             - os: darwin
               arch: 386
+            - os: darwin
+              arch: arm64
+            - os: windows
+              arch: arm64
     name: Build ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ubuntu-latest
     steps:
