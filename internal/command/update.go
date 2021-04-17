@@ -1,3 +1,5 @@
+// +build !noupdater
+
 package command
 
 import (

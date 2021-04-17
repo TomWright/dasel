@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Changed
+
+- Optional `noupdater` build tag to disable the self-update command.
 
 ## [v1.14.1] - 2021-04-15
 
