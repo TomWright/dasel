@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `--merge-input-documents` flag.
+
 ### Changed
 
 - Optional `noupdater` build tag to disable the self-update command.
