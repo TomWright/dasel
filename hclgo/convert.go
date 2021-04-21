@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
+	"github.com/hashicorp/hcl/v2/hclwrite"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -36,6 +37,16 @@ func HCLToGo(data interface{}) (interface{}, error) {
 		}
 		return val, nil
 
+	case []interface{}:
+		var err error
+		for k, v := range val {
+			val[k], err = HCLToGo(v)
+			if err != nil {
+				return nil, err
+			}
+		}
+		return val, nil
+
 	case *hcl.Attribute:
 		x, _ := val.Expr.Value(nil)
 		switch x.Type() {
@@ -51,4 +62,25 @@ func HCLToGo(data interface{}) (interface{}, error) {
 		}
 	}
 	return data, nil
+}
+
+// GoToHCLFile takes an interface{} converts it to a HCL file.
+func GoToHCLFile(data interface{}) (*hclwrite.File, error) {
+	data, err := GoToHCL(data)
+	if err != nil {
+		return nil, err
+	}
+
+	file := hclwrite.NewEmptyFile()
+
+	// todo : catch panics
+
+	gohcl.EncodeIntoBody(data, file.Body())
+
+	return file, nil
+}
+
+// GoToHCL takes go data types data types and converts them to HCL data types.
+func GoToHCL(data interface{}) (interface{}, error) {
+	return nil, fmt.Errorf("not implemented")
 }
