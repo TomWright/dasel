@@ -98,9 +98,10 @@ func getWriteParser(readParser storage.ReadParser, writeParserFlag string, parse
 }
 
 type getRootNodeOpts struct {
-	File   string
-	Reader io.Reader
-	Parser storage.ReadParser
+	File                string
+	Reader              io.Reader
+	Parser              storage.ReadParser
+	MergeInputDocuments bool
 }
 
 func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) {
@@ -120,6 +121,15 @@ func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) 
 	value, err := storage.Load(opts.Parser, opts.Reader)
 	if err != nil {
 		return nil, fmt.Errorf("could not load input: %w", err)
+	}
+
+	if opts.MergeInputDocuments {
+		switch val := value.(type) {
+		case storage.SingleDocument:
+			value = &storage.BasicSingleDocument{Value: []interface{}{val.Document()}}
+		case storage.MultiDocument:
+			value = &storage.BasicSingleDocument{Value: val.Documents()}
+		}
 	}
 
 	return dasel.New(value), nil
@@ -260,7 +270,7 @@ func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) 
 
 func putCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
-	var multiFlag, compactFlag bool
+	var multiFlag, compactFlag, mergeInputDocumentsFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "put -f <file> -s <selector>",
@@ -283,6 +293,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
+	cmd.PersistentFlags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 
@@ -290,19 +301,20 @@ func putCommand() *cobra.Command {
 }
 
 type genericPutOptions struct {
-	File        string
-	Out         string
-	Parser      string
-	ReadParser  string
-	WriteParser string
-	Selector    string
-	Value       string
-	ValueType   string
-	Init        func(genericPutOptions) genericPutOptions
-	Reader      io.Reader
-	Writer      io.Writer
-	Multi       bool
-	Compact     bool
+	File                string
+	Out                 string
+	Parser              string
+	ReadParser          string
+	WriteParser         string
+	Selector            string
+	Value               string
+	ValueType           string
+	Init                func(genericPutOptions) genericPutOptions
+	Reader              io.Reader
+	Writer              io.Writer
+	Multi               bool
+	Compact             bool
+	MergeInputDocuments bool
 }
 
 func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOptions) genericPutOptions {
@@ -315,6 +327,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.Selector = cmd.Flag("selector").Value.String()
 		opts.Multi, _ = cmd.Flags().GetBool("multiple")
 		opts.Compact, _ = cmd.Flags().GetBool("compact")
+		opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
 
 		if opts.Selector == "" && len(args) > 0 {
 			opts.Selector = args[0]
@@ -338,9 +351,10 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
-		File:   opts.File,
-		Parser: readParser,
-		Reader: opts.Reader,
+		File:                opts.File,
+		Parser:              readParser,
+		Reader:              opts.Reader,
+		MergeInputDocuments: opts.MergeInputDocuments,
 	}, cmd)
 	if err != nil {
 		return err

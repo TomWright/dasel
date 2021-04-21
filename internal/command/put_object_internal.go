@@ -10,18 +10,19 @@ import (
 )
 
 type putObjectOpts struct {
-	File        string
-	Out         string
-	ReadParser  string
-	WriteParser string
-	Parser      string
-	Selector    string
-	InputTypes  []string
-	InputValues []string
-	Reader      io.Reader
-	Writer      io.Writer
-	Multi       bool
-	Compact     bool
+	File                string
+	Out                 string
+	ReadParser          string
+	WriteParser         string
+	Parser              string
+	Selector            string
+	InputTypes          []string
+	InputValues         []string
+	Reader              io.Reader
+	Writer              io.Writer
+	Multi               bool
+	Compact             bool
+	MergeInputDocuments bool
 }
 
 func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[string]interface{}, error) {
@@ -51,9 +52,10 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
-		File:   opts.File,
-		Parser: readParser,
-		Reader: opts.Reader,
+		File:                opts.File,
+		Parser:              readParser,
+		Reader:              opts.Reader,
+		MergeInputDocuments: opts.MergeInputDocuments,
 	}, cmd)
 	if err != nil {
 		return err
