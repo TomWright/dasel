@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/clbanning/mxj/v2"
+	"strings"
 )
 
 func init() {
@@ -20,6 +21,12 @@ type XMLParser struct {
 
 // FromBytes returns some data that is represented by the given bytes.
 func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
+	if byteData == nil {
+		return nil, fmt.Errorf("cannot parse nil xml data")
+	}
+	if len(byteData) == 0 || strings.TrimSpace(string(byteData)) == "" {
+		return nil, nil
+	}
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {
 		return data, fmt.Errorf("could not unmarshal data: %w", err)
