@@ -11,6 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Optional `noupdater` build tag to disable the self-update command.
 
+### Fixed
+
+- Empty XML documents are now parsed correctly.
+  - https://github.com/TomWright/dasel/issues/131
+
 ## [v1.14.1] - 2021-04-15
 
 ### Added
