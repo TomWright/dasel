@@ -27,6 +27,17 @@ func TestXMLParser_FromBytes(t *testing.T) {
 	}
 }
 
+func TestXMLParser_FromBytes_Empty(t *testing.T) {
+	got, err := (&storage.XMLParser{}).FromBytes([]byte{})
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+	if got != nil {
+		t.Errorf("expected %v, got %v", nil, got)
+	}
+}
+
 func TestXMLParser_FromBytes_Error(t *testing.T) {
 	_, err := (&storage.XMLParser{}).FromBytes(nil)
 	if err == nil {
