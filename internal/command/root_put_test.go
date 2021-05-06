@@ -630,6 +630,29 @@ baz:
 foo: true
 `, nil, "-d", "json"))
 
+	t.Run("MergeInputDocumentsPut", putIntTest(`
+{
+"number": 1
+}
+{
+"number": 2
+}
+{
+"number": 3
+}
+`, "json", ".[0].number", `4`, `[
+  {
+    "number": 4
+  },
+  {
+    "number": 2
+  },
+  {
+    "number": 3
+  }
+]
+`, nil, "--merge-input-documents"))
+
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {

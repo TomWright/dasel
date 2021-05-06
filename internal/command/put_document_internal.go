@@ -8,18 +8,19 @@ import (
 )
 
 type putDocumentOpts struct {
-	File           string
-	Out            string
-	ReadParser     string
-	WriteParser    string
-	Parser         string
-	Selector       string
-	DocumentString string
-	DocumentParser string
-	Reader         io.Reader
-	Writer         io.Writer
-	Multi          bool
-	Compact        bool
+	File                string
+	Out                 string
+	ReadParser          string
+	WriteParser         string
+	Parser              string
+	Selector            string
+	DocumentString      string
+	DocumentParser      string
+	Reader              io.Reader
+	Writer              io.Writer
+	Multi               bool
+	Compact             bool
+	MergeInputDocuments bool
 }
 
 func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
@@ -28,9 +29,10 @@ func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
-		File:   opts.File,
-		Parser: readParser,
-		Reader: opts.Reader,
+		File:                opts.File,
+		Parser:              readParser,
+		Reader:              opts.Reader,
+		MergeInputDocuments: opts.MergeInputDocuments,
 	}, cmd)
 	if err != nil {
 		return err

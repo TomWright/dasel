@@ -8,9 +8,16 @@ import (
 )
 
 var yamlBytes = []byte(`name: Tom
+numbers:
+- 1
+- 2
 `)
 var yamlMap = map[string]interface{}{
 	"name": "Tom",
+	"numbers": []interface{}{
+		1,
+		2,
+	},
 }
 
 var yamlBytesMulti = []byte(`name: Tom

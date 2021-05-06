@@ -10,17 +10,18 @@ import (
 )
 
 type selectOptions struct {
-	File              string
-	Parser            string
-	ReadParser        string
-	WriteParser       string
-	Selector          string
-	Reader            io.Reader
-	Writer            io.Writer
-	Multi             bool
-	NullValueNotFound bool
-	Compact           bool
-	DisplayLength     bool
+	File                string
+	Parser              string
+	ReadParser          string
+	WriteParser         string
+	Selector            string
+	Reader              io.Reader
+	Writer              io.Writer
+	Multi               bool
+	NullValueNotFound   bool
+	Compact             bool
+	DisplayLength       bool
+	MergeInputDocuments bool
 }
 
 func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
@@ -86,9 +87,10 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		return err
 	}
 	rootNode, err := getRootNode(getRootNodeOpts{
-		File:   opts.File,
-		Parser: readParser,
-		Reader: opts.Reader,
+		File:                opts.File,
+		Parser:              readParser,
+		Reader:              opts.Reader,
+		MergeInputDocuments: opts.MergeInputDocuments,
 	}, cmd)
 	if err != nil {
 		return err
@@ -161,7 +163,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
-	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -175,15 +177,16 @@ func selectCommand() *cobra.Command {
 				writeParserFlag = "-"
 			}
 			return runSelectCommand(selectOptions{
-				File:              fileFlag,
-				Parser:            parserFlag,
-				ReadParser:        readParserFlag,
-				WriteParser:       writeParserFlag,
-				Selector:          selectorFlag,
-				Multi:             multiFlag,
-				NullValueNotFound: nullValueNotFoundFlag,
-				Compact:           compactFlag,
-				DisplayLength:     lengthFlag,
+				File:                fileFlag,
+				Parser:              parserFlag,
+				ReadParser:          readParserFlag,
+				WriteParser:         writeParserFlag,
+				Selector:            selectorFlag,
+				Multi:               multiFlag,
+				NullValueNotFound:   nullValueNotFoundFlag,
+				Compact:             compactFlag,
+				DisplayLength:       lengthFlag,
+				MergeInputDocuments: mergeInputDocumentsFlag,
 			}, cmd)
 		},
 	}
@@ -197,7 +200,8 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 	cmd.Flags().BoolVarP(&nullValueNotFoundFlag, "null", "n", false, "Output null instead of value not found errors.")
 	cmd.Flags().BoolVar(&lengthFlag, "length", false, "Output the length of the selected value.")
-	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
+	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
+	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 
 	_ = cmd.MarkFlagFilename("file")
 

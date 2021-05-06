@@ -455,6 +455,28 @@ func TestRootCmd_Select_JSON(t *testing.T) {
   }
 ]`, "json", `.(.uses.[#]>2).id`, newline("3"), nil, "-m"))
 
+	t.Run("MergeInputDocuments", selectTest(`{
+  "number": 1
+}
+{
+  "number": 2
+}
+{
+  "number": 3
+}
+`, "json", `.`, `[
+  {
+    "number": 1
+  },
+  {
+    "number": 2
+  },
+  {
+    "number": 3
+  }
+]
+`, nil, "--merge-input-documents"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
