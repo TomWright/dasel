@@ -21,6 +21,9 @@ type XMLParser struct {
 
 // FromBytes returns some data that is represented by the given bytes.
 func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
+	if byteData == nil {
+		return nil, fmt.Errorf("cannot parse nil xml data")
+	}
 	if len(byteData) == 0 || strings.TrimSpace(string(byteData)) == "" {
 		return nil, nil
 	}
