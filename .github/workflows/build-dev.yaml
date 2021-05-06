@@ -51,7 +51,7 @@ jobs:
           - os: darwin
             arch: 386
           - os: darwin
-          arch: arm64
+            arch: arm64
           - os: windows
             arch: arm64
     name: Dev build ${{ matrix.os }} ${{ matrix.arch }}
