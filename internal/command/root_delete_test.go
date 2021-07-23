@@ -29,6 +29,11 @@ func TestRootCMD_Delete(t *testing.T) {
 		[]string{"delete", "-p", "json", "-m", "-s", "[-]"},
 		"invalid index: -",
 	))
+	t.Run("ValueNotFound", expectErrFromInput(
+		`{"name": "Tom"}`,
+		[]string{"delete", "-p", "json", "-s", ".age"},
+		"no value found for selector: .age",
+	))
 }
 
 func deleteTest(in string, parser string, selector string, output string, expErr error, additionalArgs ...string) func(t *testing.T) {
