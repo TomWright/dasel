@@ -88,10 +88,9 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 		return runDeleteMultiCommand(cmd, rootNode, opts, writeParser, writeOptions)
 	}
 
-	if err := rootNode.Delete(opts.Selector); err != nil {
-		err = fmt.Errorf("could not delete node: %w", err)
+	if deleteErr := rootNode.Delete(opts.Selector); deleteErr != nil {
+		err = fmt.Errorf("could not delete node: %w", deleteErr)
 	}
-
 	written, err := customErrorHandling(customErrorHandlingOpts{
 		File:     opts.File,
 		Writer:   opts.Writer,

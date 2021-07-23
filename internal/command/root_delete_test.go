@@ -21,12 +21,12 @@ func TestRootCMD_Delete(t *testing.T) {
 
 	t.Run("InvalidSingleSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
-		[]string{"select", "-p", "json", "-s", "[-]"},
+		[]string{"delete", "-p", "json", "-s", "[-]"},
 		"invalid index: -",
 	))
 	t.Run("InvalidMultiSelector", expectErrFromInput(
 		`{"name": "Tom"}`,
-		[]string{"select", "-p", "json", "-m", "-s", "[-]"},
+		[]string{"delete", "-p", "json", "-m", "-s", "[-]"},
 		"invalid index: -",
 	))
 }
