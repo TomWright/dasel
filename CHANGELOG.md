@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing
+
+## [v1.16.0] - 2021-08-01
+
 ### Added
 
 - Delete command.
@@ -325,7 +329,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.15.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.16.0...HEAD
+[v1.16.0]: https://github.com/TomWright/dasel/compare/v1.15.0...v1.16.0
 [v1.15.0]: https://github.com/TomWright/dasel/compare/v1.14.1...v1.15.0
 [v1.14.1]: https://github.com/TomWright/dasel/compare/v1.14.0...v1.14.1
 [v1.14.0]: https://github.com/TomWright/dasel/compare/v1.13.6...v1.14.0
