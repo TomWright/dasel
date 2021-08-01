@@ -5,7 +5,7 @@ import (
 )
 
 func putIntCommand() *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "int -f <file> -s <selector> <value>",
 		Short: "Update an int property in the given document.",
 		Args:  cobra.MinimumNArgs(1),
@@ -16,6 +16,4 @@ func putIntCommand() *cobra.Command {
 			}, cmd)
 		},
 	}
-
-	return cmd
 }

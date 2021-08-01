@@ -5,7 +5,7 @@ import (
 )
 
 func putBoolCommand() *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "bool -f <file> -s <selector> <value>",
 		Short: "Update a bool property in the given document.",
 		Args:  cobra.MinimumNArgs(1),
@@ -16,6 +16,4 @@ func putBoolCommand() *cobra.Command {
 			}, cmd)
 		},
 	}
-
-	return cmd
 }

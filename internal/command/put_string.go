@@ -5,7 +5,7 @@ import (
 )
 
 func putStringCommand() *cobra.Command {
-	cmd := &cobra.Command{
+	return &cobra.Command{
 		Use:   "string -f <file> -s <selector> <value>",
 		Short: "Update a string property in the given document.",
 		Args:  cobra.MinimumNArgs(1),
@@ -16,6 +16,4 @@ func putStringCommand() *cobra.Command {
 			}, cmd)
 		},
 	}
-
-	return cmd
 }
