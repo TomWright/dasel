@@ -140,7 +140,6 @@ func deleteFromParentIndex(n *Node) error {
 }
 
 // cleanupSliceDeletions scans through the given reflect and removes any invalid reflect values.
-// Does not modify the original value.
 // Returns false if no modification was made.
 func cleanupSliceDeletions(input reflect.Value) (reflect.Value, bool) {
 	value := unwrapValue(input)
@@ -153,11 +152,7 @@ func cleanupSliceDeletions(input reflect.Value) (reflect.Value, bool) {
 
 	for i := 0; i < value.Len(); i++ {
 		item := value.Index(i)
-		if !item.IsValid() {
-			invalidCount++
-			continue
-		}
-		if isDeletePlaceholder(item) {
+		if !item.IsValid() || isDeletePlaceholder(item) {
 			invalidCount++
 			continue
 		}

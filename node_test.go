@@ -985,7 +985,7 @@ func TestNode_PutMultiple_Query(t *testing.T) {
 	t.Run("NilChainToListNextAvailableIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
 }
 
-func TestNode_Delete_Query(t *testing.T) {
+func TestNode_Delete(t *testing.T) {
 	data := func() map[string]interface{} {
 		return map[string]interface{}{
 			"id": "123",
@@ -1071,6 +1071,19 @@ func TestNode_Delete_Query(t *testing.T) {
 		},
 		"people": []map[string]interface{}{
 			{
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("ExistingArray", deleteMultipleTest(dasel.New(data()), "names", map[string]interface{}{
+		"id": "123",
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
 				"name": "Tom",
 			},
 			{
@@ -1184,6 +1197,28 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("AllObjectsInArray", deleteMultipleTest(dasel.New(data()), "people.[*]", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{},
+	}))
+	t.Run("ExistingArray", deleteMultipleTest(dasel.New(data()), "names", map[string]interface{}{
+		"id": "123",
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("AllItemsInObject", deleteMultipleTest(dasel.New(data()), ".[*]", map[string]interface{}{}))
 	t.Run("RootNodeObject", deleteMultipleTest(dasel.New(map[string]interface{}{
 		"name": "Tom",
 	}), ".", map[string]interface{}{}))
