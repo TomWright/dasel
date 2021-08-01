@@ -793,6 +793,35 @@ func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}
 	}
 }
 
+func deleteTest(rootNode *dasel.Node, deleteSelector string, exp interface{}) func(t *testing.T) {
+	return func(t *testing.T) {
+		err := rootNode.Delete(deleteSelector)
+		if err != nil {
+			t.Errorf("unexpected delete error: %v", err)
+			return
+		}
+
+		gotVal := rootNode.InterfaceValue()
+		if !reflect.DeepEqual(exp, gotVal) && exp != gotVal {
+			t.Errorf("expected [%T] %v, got [%T] %v", exp, exp, gotVal, gotVal)
+		}
+	}
+}
+
+func deleteMultipleTest(rootNode *dasel.Node, deleteSelector string, exp interface{}) func(t *testing.T) {
+	return func(t *testing.T) {
+		err := rootNode.DeleteMultiple(deleteSelector)
+		if err != nil {
+			t.Errorf("unexpected delete error: %v", err)
+			return
+		}
+
+		if !reflect.DeepEqual(exp, rootNode.InterfaceValue()) {
+			t.Errorf("expected %v, got %v", exp, rootNode.InterfaceValue())
+		}
+	}
+}
+
 func putQueryMultipleTest(rootNode *dasel.Node, putSelector string, newValue interface{}, querySelector string) func(t *testing.T) {
 	return func(t *testing.T) {
 		err := rootNode.PutMultiple(putSelector, newValue)
@@ -954,4 +983,212 @@ func TestNode_PutMultiple_Query(t *testing.T) {
 	t.Run("NilChain", putQueryMultipleTest(dasel.New(nil), "my.name", "Thomas", "my.name"))
 	t.Run("NilChainToListIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[0]", "Tom", "my.favourite.people.[0]"))
 	t.Run("NilChainToListNextAvailableIndex", putQueryMultipleTest(dasel.New(nil), "my.favourite.people.[]", "Tom", "my.favourite.people.[0]"))
+}
+
+func TestNode_Delete_Query(t *testing.T) {
+	data := func() map[string]interface{} {
+		return map[string]interface{}{
+			"id": "123",
+			"names": []string{
+				"Tom",
+				"Jim",
+			},
+			"people": []map[string]interface{}{
+				{
+					"id":   1,
+					"name": "Tom",
+				},
+				{
+					"id":   2,
+					"name": "Jim",
+				},
+			},
+		}
+	}
+
+	t.Run("InvalidSelector", func(t *testing.T) {
+		err := dasel.New(data()).Delete("people.[a].name")
+		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
+	t.Run("ExistingSingleString", deleteTest(dasel.New(data()), "id", map[string]interface{}{
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("ExistingStringValue", deleteTest(dasel.New(data()), "people.[0].name", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"id": 1,
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("ExistingObjectInArray", deleteTest(dasel.New(data()), "people.[0]", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("ExistingIntValue", deleteTest(dasel.New(data()), "people.(id=1).id", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("RootNodeObject", deleteTest(dasel.New(map[string]interface{}{
+		"name": "Tom",
+	}), ".", map[string]interface{}{}))
+	t.Run("RootNodeArray", deleteTest(dasel.New([]interface{}{
+		"name", "Tom",
+	}), ".", []interface{}{}))
+	t.Run("RootNodeUnknown", deleteTest(dasel.New(false), ".", map[string]interface{}{}))
+}
+
+func TestNode_DeleteMultiple_Query(t *testing.T) {
+	data := func() map[string]interface{} {
+		return map[string]interface{}{
+			"id": "123",
+			"names": []string{
+				"Tom",
+				"Jim",
+			},
+			"people": []map[string]interface{}{
+				{
+					"id":   1,
+					"name": "Tom",
+				},
+				{
+					"id":   2,
+					"name": "Jim",
+				},
+			},
+		}
+	}
+
+	t.Run("InvalidSelector", func(t *testing.T) {
+		err := dasel.New(data()).DeleteMultiple("people.[a].name")
+		expErr := fmt.Errorf("failed to parse selector: %w", &dasel.InvalidIndexErr{Index: "a"})
+		if err == nil {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+		if err.Error() != expErr.Error() {
+			t.Errorf("expected err %v, got %v", expErr, err)
+			return
+		}
+	})
+	t.Run("ExistingSingleString", deleteMultipleTest(dasel.New(data()), "id", map[string]interface{}{
+		"people": []map[string]interface{}{
+			{
+				"id":   1,
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+	}))
+	t.Run("ExistingStringValue", deleteMultipleTest(dasel.New(data()), "people.[0].name", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"id": 1,
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("WildcardProperty", deleteMultipleTest(dasel.New(data()), "people.[*].name", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"id": 1,
+			},
+			{
+				"id": 2,
+			},
+		},
+	}))
+	t.Run("ExistingIntValue", deleteMultipleTest(dasel.New(data()), "people.(id=1).id", map[string]interface{}{
+		"id": "123",
+		"names": []string{
+			"Tom",
+			"Jim",
+		},
+		"people": []map[string]interface{}{
+			{
+				"name": "Tom",
+			},
+			{
+				"id":   2,
+				"name": "Jim",
+			},
+		},
+	}))
+	t.Run("RootNodeObject", deleteMultipleTest(dasel.New(map[string]interface{}{
+		"name": "Tom",
+	}), ".", map[string]interface{}{}))
+	t.Run("RootNodeArray", deleteMultipleTest(dasel.New([]interface{}{
+		"name", "Tom",
+	}), ".", []interface{}{}))
+	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
 }

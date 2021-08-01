@@ -34,6 +34,16 @@ func TestRootCMD_Delete(t *testing.T) {
 		[]string{"delete", "-p", "json", "-s", ".age"},
 		"no value found for selector: .age",
 	))
+	t.Run("InvalidRootNode", expectErrFromInput(
+		``,
+		[]string{"delete", "-p", "json", "-s", ".age"},
+		"no value found for selector: .age",
+	))
+	t.Run("InvalidRootNodeMulti", expectErrFromInput(
+		``,
+		[]string{"delete", "-p", "json", "-m", "-s", ".age"},
+		"no value found for selector: .age",
+	))
 }
 
 func deleteTest(in string, parser string, selector string, output string, expErr error, additionalArgs ...string) func(t *testing.T) {
@@ -89,52 +99,40 @@ func deleteTestCheck(in string, parser string, selector string, checkFn func(out
 	}
 }
 
-func deleteTestFromFile(inputPath string, selector string, out string, expErr error) func(t *testing.T) {
-	return func(t *testing.T) {
-		cmd := command.NewRootCMD()
-		outputBuffer := bytes.NewBuffer([]byte{})
-
-		args := []string{
-			"select", "-f", inputPath, "-s", selector,
-		}
-
-		cmd.SetOut(outputBuffer)
-		cmd.SetArgs(args)
-
-		err := cmd.Execute()
-
-		if expErr == nil && err != nil {
-			t.Errorf("expected err %v, got %v", expErr, err)
-			return
-		}
-		if expErr != nil && err == nil {
-			t.Errorf("expected err %v, got %v", expErr, err)
-			return
-		}
-		if expErr != nil && err != nil && err.Error() != expErr.Error() {
-			t.Errorf("expected err %v, got %v", expErr, err)
-			return
-		}
-
-		output, err := io.ReadAll(outputBuffer)
-		if err != nil {
-			t.Errorf("unexpected error reading output buffer: %s", err)
-			return
-		}
-
-		if out != string(output) {
-			t.Errorf("expected result %v, got %v", out, string(output))
-		}
-	}
-}
-
 func TestRootCmd_Delete_JSON(t *testing.T) {
-	t.Run("RootElement", deleteTest(`{
+	t.Run("RootNodeObject", deleteTest(`{
+  "email": "tom@wright.com",
+  "name": "Tom"
+}`, "json", ".", newline(`{}`), nil))
+
+	t.Run("RootNodeObjectMulti", deleteTest(`{
+  "email": "tom@wright.com",
+  "name": "Tom"
+}`, "json", ".", newline(`{}`), nil, "-m"))
+
+	t.Run("RootNodeArray", deleteTest(`["a", "b", "c"]`, "json", ".",
+		newline(`[]`), nil))
+
+	t.Run("RootNodeArrayMulti", deleteTest(`["a", "b", "c"]`, "json", ".",
+		newline(`[]`), nil, "-m"))
+
+	t.Run("RootNodeUnknown", deleteTest(`false`, "json", ".",
+		newline(`{}`), nil))
+
+	t.Run("RootNodeUnknownMulti", deleteTest(`false`, "json", ".",
+		newline(`{}`), nil, "-m"))
+
+	t.Run("Property", deleteTest(`{
   "email": "tom@wright.com",
   "name": "Tom"
 }`, "json", ".email", newline(`{
   "name": "Tom"
 }`), nil))
+
+	t.Run("PropertyCompact", deleteTest(`{
+  "email": "tom@wright.com",
+  "name": "Tom"
+}`, "json", ".email", newline(`{"name":"Tom"}`), nil, "-c"))
 
 	t.Run("Index", deleteTest(`{
   "colours": ["blue", "green", "red"],

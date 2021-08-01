@@ -4,7 +4,7 @@ import "reflect"
 
 // Delete uses the given selector to find and delete the final node from the current node.
 func (n *Node) Delete(selector string) error {
-	if selector == "." {
+	if isFinalSelector(selector) {
 		n.setReflectValue(initialiseEmptyOfType(n.Value))
 		return nil
 	}
@@ -87,6 +87,7 @@ func initialiseEmptyOfType(value reflect.Value) reflect.Value {
 		return reflect.MakeSlice(value.Type(), 0, 0)
 	case reflect.Map:
 		return reflect.MakeMap(value.Type())
+	default:
+		return reflect.ValueOf(map[string]interface{}{})
 	}
-	panic("unhandled kind: " + value.Kind().String())
 }

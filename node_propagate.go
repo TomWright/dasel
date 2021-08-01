@@ -119,11 +119,6 @@ func deleteFromParentProperty(n *Node) error {
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 }
 
-type deletePlaceholder struct {
-}
-
-var deletePlaceholderType = reflect.TypeOf(deletePlaceholder{})
-
 // deleteFromParentIndex sends the value of the current node up to the previous node in the chain.
 func deleteFromParentIndex(n *Node) error {
 	if !isValid(n.Previous.Value) {
@@ -136,7 +131,7 @@ func deleteFromParentIndex(n *Node) error {
 		if n.Selector.Index >= 0 && n.Selector.Index < value.Len() {
 			// Mark this index for deletion.
 			// We can't just rewrite the slice here in-case other selectors also target it.
-			value.Index(n.Selector.Index).Set(reflect.ValueOf(deletePlaceholder{}))
+			value.Index(n.Selector.Index).Set(getDeletePlaceholder(value.Index(n.Selector.Index)))
 		}
 		return nil
 	}
@@ -162,7 +157,7 @@ func cleanupSliceDeletions(input reflect.Value) (reflect.Value, bool) {
 			invalidCount++
 			continue
 		}
-		if unwrapValue(item).Type() == deletePlaceholderType {
+		if isDeletePlaceholder(item) {
 			invalidCount++
 			continue
 		}
@@ -174,4 +169,45 @@ func cleanupSliceDeletions(input reflect.Value) (reflect.Value, bool) {
 	}
 
 	return res, true
+}
+
+const deletePlaceholderKey = "dasel:delete:key"
+const deletePlaceholder = "dasel:delete:me"
+
+func getDeletePlaceholder(item reflect.Value) reflect.Value {
+	switch unwrapValue(item).Kind() {
+	case reflect.Map:
+		return reflect.ValueOf(map[string]interface{}{
+			deletePlaceholderKey: deletePlaceholder,
+		})
+	case reflect.Slice:
+		return reflect.ValueOf([]interface{}{deletePlaceholder})
+	default:
+		return reflect.ValueOf(deletePlaceholder)
+	}
+}
+
+func isDeletePlaceholder(item reflect.Value) bool {
+	switch i := unwrapValue(item); i.Kind() {
+	case reflect.Map:
+		if val, ok := i.Interface().(map[string]interface{})[deletePlaceholderKey]; ok {
+			if val == deletePlaceholder {
+				return true
+			}
+		}
+	case reflect.Slice:
+		for _, val := range i.Interface().([]interface{}) {
+			if val == deletePlaceholder {
+				return true
+			}
+		}
+	default:
+		if val, ok := i.Interface().(string); ok {
+			if val == deletePlaceholder {
+				return true
+			}
+		}
+	}
+
+	return false
 }
