@@ -39,10 +39,40 @@ go install github.com/tomwright/dasel/cmd/dasel@master
 
 For more information see the [installation documentation](https://daseldocs.tomwright.me/installation).
 
+### Select
+
 ```bash
 echo '{"name": "Tom"}' | dasel -p json '.name'
 "Tom"
 ```
+
+See [select documentation](https://daseldocs.tomwright.me/usage/select).
+
+### Put
+
+```bash
+echo '{"name": "Tom"}' | dasel put string -p json '.email' 'contact@tomwright.me'
+{
+  "email": "contact@tomwright.me",
+  "name": "Tom"
+}
+```
+
+See [put documentation](https://daseldocs.tomwright.me/usage/put).
+
+### Delete
+
+```bash
+echo '{
+  "email": "contact@tomwright.me",
+  "name": "Tom"
+}' | dasel delete -p json '.email' 'contact@tomwright.me'
+{
+  "name": "Tom"
+}
+```
+
+See [delete documentation](https://daseldocs.tomwright.me/usage/delete).
 
 ## Issue vs Discussion
 
