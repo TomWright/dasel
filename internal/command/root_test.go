@@ -86,7 +86,7 @@ func expectErrFromInput(in string, args []string, expErr string) func(t *testing
 		err := cmd.Execute()
 
 		if err == nil || !strings.Contains(err.Error(), expErr) {
-			t.Errorf("unexpected error: %v", err)
+			t.Errorf("unexpected error: %v: %s", err, outputBuffer.String())
 			return
 		}
 	}

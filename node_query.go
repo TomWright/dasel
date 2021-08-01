@@ -29,8 +29,12 @@ func lastNode(n *Node) *Node {
 	}
 }
 
+func isFinalSelector(selector string) bool {
+	return selector == "" || selector == "."
+}
+
 func buildFindChain(n *Node) error {
-	if n.Selector.Remaining == "" {
+	if isFinalSelector(n.Selector.Remaining) {
 		// We've reached the end
 		return nil
 	}

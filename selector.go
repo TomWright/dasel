@@ -88,23 +88,32 @@ func FindDynamicSelectorParts(selector string) DynamicSelectorParts {
 	i := 0
 	parts := DynamicSelectorParts{}
 	for _, v := range selector {
-		if v == '(' {
+		switch {
+
+		// Start of a group
+		case v == '(':
 			if parts.Comparison == "" {
 				parts.Key += string(v)
 			} else {
 				parts.Value += string(v)
 			}
 			i++
-		} else if v == ')' {
+
+		// End of a group
+		case v == ')':
 			i--
 			if parts.Comparison == "" {
 				parts.Key += string(v)
 			} else {
 				parts.Value += string(v)
 			}
-		} else if i == 0 && (v == '<' || v == '>' || v == '=') {
+
+		// Matches a comparison character
+		case i == 0 && (v == '<' || v == '>' || v == '=' || v == '!'):
 			parts.Comparison += string(v)
-		} else {
+
+		// Add to key or value based on comparison existence
+		default:
 			if parts.Comparison == "" {
 				parts.Key += string(v)
 			} else {
