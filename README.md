@@ -24,6 +24,17 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 
 ![Update Kubernetes Manifest](update_kubernetes.gif)
 
+## Table of contents
+* [Dasel](#dasel)
+* [One tool to rule them all](#one-tool-to-rule-them-all)
+* [Quickstart](#quickstart)
+* [Issue vs discussion](#issue-vs-discussion)
+* [Features](#features)
+* [Table of contents](#table-of-contents)
+* [Documentation](#documentation)
+* [Playground](#playground)
+* [Benchmarks](#benchmarks)
+
 ## Quickstart
 
 Dasel is available on [homebrew](https://daseldocs.tomwright.me/installation#homebrew), [ASDF](https://daseldocs.tomwright.me/installation#asdf), [scoop](https://daseldocs.tomwright.me/installation#scoop), [docker](https://daseldocs.tomwright.me/installation#docker) or as [compiled binaries](https://daseldocs.tomwright.me/installation#manual) from the [latest release](https://github.com/TomWright/dasel/releases/latest).
@@ -104,17 +115,6 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
 - [Self update](https://daseldocs.tomwright.me/installation/update).
-
-## Table of contents
-* [Dasel](#dasel)
-* [One tool to rule them all](#one-tool-to-rule-them-all)
-* [Quickstart](#quickstart)
-* [Issue vs discussion](#issue-vs-discussion)
-* [Features](#features)
-* [Table of contents](#table-of-contents)
-* [Documentation](#documentation)
-* [Playground](#playground)
-* [Benchmarks](#benchmarks)
 
 ## Documentation
 
