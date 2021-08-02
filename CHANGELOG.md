@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing
 
+## [v1.16.1] - 2021-08-02
+
+### Fixed
+
+- Fixed a bug that stopped the delete command editing files in place.
+
 ## [v1.16.0] - 2021-08-01
 
 ### Added
@@ -329,7 +335,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.16.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.16.1...HEAD
+[v1.16.1]: https://github.com/TomWright/dasel/compare/v1.16.0...v1.16.1
 [v1.16.0]: https://github.com/TomWright/dasel/compare/v1.15.0...v1.16.0
 [v1.15.0]: https://github.com/TomWright/dasel/compare/v1.14.1...v1.15.0
 [v1.14.1]: https://github.com/TomWright/dasel/compare/v1.14.0...v1.14.1

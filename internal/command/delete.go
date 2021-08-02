@@ -19,6 +19,7 @@ type deleteOptions struct {
 	Multi               bool
 	Compact             bool
 	MergeInputDocuments bool
+	Out                 string
 }
 
 func runDeleteMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts deleteOptions, writeParser storage.WriteParser, writeOptions []storage.ReadWriteOption) error {
@@ -30,6 +31,7 @@ func runDeleteMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts delete
 		Err:      err,
 		Cmd:      cmd,
 		NullFlag: false,
+		Out:      opts.Out,
 	})
 	if err != nil {
 		return fmt.Errorf("could not delete multiple node: %w", err)
@@ -42,6 +44,8 @@ func runDeleteMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts delete
 		Node:   rootNode,
 		Parser: writeParser,
 		Writer: opts.Writer,
+		File:   opts.File,
+		Out:    opts.Out,
 	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -69,11 +73,7 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 		})
 	}
 
-	if opts.Writer == nil {
-		opts.Writer = cmd.OutOrStdout()
-	}
-
-	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, "-", opts.File)
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File)
 	if err != nil {
 		return err
 	}
@@ -97,6 +97,7 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 		Err:      err,
 		Cmd:      cmd,
 		NullFlag: false,
+		Out:      opts.Out,
 	})
 	if err != nil {
 		return err
@@ -109,6 +110,8 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 		Node:   rootNode,
 		Parser: writeParser,
 		Writer: opts.Writer,
+		File:   opts.File,
+		Out:    opts.Out,
 	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -117,7 +120,7 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 }
 
 func deleteCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
 	var plainFlag, multiFlag, compactFlag, mergeInputDocumentsFlag bool
 
 	cmd := &cobra.Command{
@@ -140,6 +143,7 @@ func deleteCommand() *cobra.Command {
 				Multi:               multiFlag,
 				Compact:             compactFlag,
 				MergeInputDocuments: mergeInputDocumentsFlag,
+				Out:                 outFlag,
 			}, cmd)
 		},
 	}
@@ -153,6 +157,7 @@ func deleteCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Delete multiple results.")
 	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
+	cmd.Flags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 
 	_ = cmd.MarkFlagFilename("file")
 
