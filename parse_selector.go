@@ -54,14 +54,31 @@ func processParseSelectorDynamic(selector string, sel Selector) (Selector, error
 	}
 
 	for _, g := range dynamicGroups {
+		// evaluable, err := gvalInstance.NewEvaluable(g)
+		// if err != nil {
+		// 	return sel, fmt.Errorf("could not parse dynamic expression: %w", err)
+		// }
+		//
+		// todo : how do we execute sub queries?
+		// sel.Conditions = append(sel.Conditions, &GvalCondition{
+		// 	Evaluable: evaluable,
+		// })
+
 		m := FindDynamicSelectorParts(g)
 
 		var cond Condition
+
 		switch m.Comparison {
 		case "=":
 			cond = &EqualCondition{
 				Key:   m.Key,
 				Value: m.Value,
+			}
+		case "!=":
+			cond = &EqualCondition{
+				Key:   m.Key,
+				Value: m.Value,
+				Not:   true,
 			}
 		case ">=":
 			cond = &SortedComparisonCondition{
@@ -121,6 +138,11 @@ func processParseSelectorSearch(selector string, sel Selector) (Selector, error)
 				cond = &KeyEqualCondition{
 					Value: m.Value,
 				}
+			case "!=":
+				cond = &KeyEqualCondition{
+					Value: m.Value,
+					Not:   true,
+				}
 			default:
 				return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
 			}
@@ -130,6 +152,12 @@ func processParseSelectorSearch(selector string, sel Selector) (Selector, error)
 				cond = &EqualCondition{
 					Key:   m.Key,
 					Value: m.Value,
+				}
+			case "!=":
+				cond = &EqualCondition{
+					Key:   m.Key,
+					Value: m.Value,
+					Not:   true,
 				}
 			case ">=":
 				cond = &SortedComparisonCondition{

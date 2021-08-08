@@ -181,6 +181,19 @@ func TestParseSelector(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("SearchNotEqual", testParseSelector(".(?:name!=asd)", dasel.Selector{
+		Raw:       ".(?:name!=asd)",
+		Current:   ".(?:name!=asd)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.EqualCondition{
+				Key:   "name",
+				Value: "asd",
+				Not:   true,
+			},
+		},
+	}))
 	t.Run("SearchMoreThan", testParseSelector(".(?:name.[#]>3)", dasel.Selector{
 		Raw:       ".(?:name.[#]>3)",
 		Current:   ".(?:name.[#]>3)",
@@ -244,6 +257,18 @@ func TestParseSelector(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("SearchKeyNotEqual", testParseSelector(".(?:-!=asd)", dasel.Selector{
+		Raw:       ".(?:-!=asd)",
+		Current:   ".(?:-!=asd)",
+		Remaining: "",
+		Type:      "SEARCH",
+		Conditions: []dasel.Condition{
+			&dasel.KeyEqualCondition{
+				Value: "asd",
+				Not:   true,
+			},
+		},
+	}))
 	t.Run("DynamicEqual", testParseSelector(".(name=asd)", dasel.Selector{
 		Raw:       ".(name=asd)",
 		Current:   ".(name=asd)",
@@ -253,6 +278,19 @@ func TestParseSelector(t *testing.T) {
 			&dasel.EqualCondition{
 				Key:   "name",
 				Value: "asd",
+			},
+		},
+	}))
+	t.Run("DynamicNotEqual", testParseSelector(".(name!=asd)", dasel.Selector{
+		Raw:       ".(name!=asd)",
+		Current:   ".(name!=asd)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.EqualCondition{
+				Key:   "name",
+				Value: "asd",
+				Not:   true,
 			},
 		},
 	}))
@@ -383,7 +421,13 @@ func TestNode_QueryMultiple(t *testing.T) {
 	t.Run("SingleResultDynamic", testNodeQueryMultipleArray(".(age=25).name", []interface{}{
 		"Amelia",
 	}))
-	t.Run("SingleResultDynamic", testNodeQueryMultipleArray(".(age=27).name", []interface{}{
+	t.Run("SingleResultDynamic", testNodeQueryMultipleArray(".(age!=27).name", []interface{}{
+		"Amelia",
+	}))
+	t.Run("MultipleResultSearchKeyNotEqual", testNodeQueryMultipleArray(".[*].(?:-!=name)", []interface{}{
+		"27", "27", "25",
+	}))
+	t.Run("MultipleResultDynamic", testNodeQueryMultipleArray(".(age=27).name", []interface{}{
 		"Tom",
 		"Jim",
 	}))

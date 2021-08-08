@@ -12,6 +12,16 @@ type EqualCondition struct {
 	Key string
 	// Value is the value we are looking for.
 	Value string
+	// Not is true if this is a not equal check.
+	Not bool
+}
+
+func (c EqualCondition) check(a interface{}, b interface{}) (bool, error) {
+	var res = fmt.Sprint(a) == b
+	if c.Not {
+		res = !res
+	}
+	return res, nil
 }
 
 // Check checks to see if other contains the required key value pair.
@@ -23,7 +33,7 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 	value := unwrapValue(other)
 
 	if c.Key == "value" || c.Key == "." {
-		return fmt.Sprint(value.Interface()) == c.Value, nil
+		return c.check(value.Interface(), c.Value)
 	}
 
 	switch value.Kind() {
@@ -39,7 +49,7 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 			return false, fmt.Errorf("subquery failed: %w", err)
 		}
 
-		return fmt.Sprint(foundNode.InterfaceValue()) == c.Value, nil
+		return c.check(foundNode.InterfaceValue(), c.Value)
 	}
 
 	return false, &UnhandledCheckType{Value: value.String()}
