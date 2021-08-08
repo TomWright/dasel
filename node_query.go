@@ -119,12 +119,21 @@ func findNextAvailableIndex(n *Node, createIfNotExists bool) (reflect.Value, err
 }
 
 // processFindDynamicItem is used by findValueDynamic.
-func processFindDynamicItem(n *Node, object reflect.Value) (bool, error) {
+func processFindDynamicItem(n *Node, object reflect.Value, key string) (bool, error) {
 	// Loop through each condition.
 	allConditionsMatched := true
 	for _, c := range n.Selector.Conditions {
 		// If the object doesn't match any checks, return a ValueNotFound.
-		found, err := c.Check(object)
+
+		var found bool
+		var err error
+		switch cond := c.(type) {
+		case *KeyEqualCondition:
+			found, err = cond.Check(reflect.ValueOf(key))
+		default:
+			found, err = cond.Check(object)
+		}
+
 		if err != nil {
 			return false, err
 		}
@@ -152,7 +161,7 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	case reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
 			object := value.Index(i)
-			found, err := processFindDynamicItem(n, object)
+			found, err := processFindDynamicItem(n, object, fmt.Sprint(i))
 			if err != nil {
 				return nilValue(), err
 			}
@@ -171,7 +180,7 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	case reflect.Map:
 		for _, key := range value.MapKeys() {
 			object := value.MapIndex(key)
-			found, err := processFindDynamicItem(n, object)
+			found, err := processFindDynamicItem(n, object, key.String())
 			if err != nil {
 				return nilValue(), err
 			}
