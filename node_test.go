@@ -269,6 +269,29 @@ func TestParseSelector(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("DynamicKey", testParseSelector(".(-=asd)", dasel.Selector{
+		Raw:       ".(-=asd)",
+		Current:   ".(-=asd)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.KeyEqualCondition{
+				Value: "asd",
+			},
+		},
+	}))
+	t.Run("DynamicKeyNotEqual", testParseSelector(".(-!=asd)", dasel.Selector{
+		Raw:       ".(-!=asd)",
+		Current:   ".(-!=asd)",
+		Remaining: "",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.KeyEqualCondition{
+				Value: "asd",
+				Not:   true,
+			},
+		},
+	}))
 	t.Run("DynamicEqual", testParseSelector(".(name=asd)", dasel.Selector{
 		Raw:       ".(name=asd)",
 		Current:   ".(name=asd)",
@@ -418,11 +441,17 @@ func TestNode_QueryMultiple(t *testing.T) {
 	t.Run("SingleResult", testNodeQueryMultipleArray(".[0].name", []interface{}{
 		"Tom",
 	}))
-	t.Run("SingleResultDynamic", testNodeQueryMultipleArray(".(age=25).name", []interface{}{
+	t.Run("SingleResultDynamicEqual", testNodeQueryMultipleArray(".(age=25).name", []interface{}{
 		"Amelia",
 	}))
-	t.Run("SingleResultDynamic", testNodeQueryMultipleArray(".(age!=27).name", []interface{}{
+	t.Run("SingleResultDynamicNotEqual", testNodeQueryMultipleArray(".(age!=27).name", []interface{}{
 		"Amelia",
+	}))
+	t.Run("SingleResultDynamicKeyEqual", testNodeQueryMultipleArray(".(-=0).name", []interface{}{
+		"Tom",
+	}))
+	t.Run("MultipleResultDynamicKeyNotEqual", testNodeQueryMultipleArray(".(-!=0).name", []interface{}{
+		"Jim", "Amelia",
 	}))
 	t.Run("MultipleResultSearchKeyNotEqual", testNodeQueryMultipleArray(".[*].(?:-!=name)", []interface{}{
 		"27", "27", "25",

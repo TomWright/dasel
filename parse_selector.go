@@ -46,6 +46,66 @@ func ParseSelector(selector string) (Selector, error) {
 	return sel, err
 }
 
+func getCondition(parts DynamicSelectorParts) (Condition, error) {
+	switch parts.Key {
+	case "-", "keyValue":
+		switch parts.Comparison {
+		case "=":
+			return &KeyEqualCondition{
+				Value: parts.Value,
+			}, nil
+		case "!=":
+			return &KeyEqualCondition{
+				Value: parts.Value,
+				Not:   true,
+			}, nil
+		default:
+			return nil, &UnknownComparisonOperatorErr{Operator: parts.Comparison}
+		}
+	default:
+
+		switch parts.Comparison {
+		case "=":
+			return &EqualCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+			}, nil
+		case "!=":
+			return &EqualCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+				Not:   true,
+			}, nil
+		case ">=":
+			return &SortedComparisonCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+				Equal: true,
+				After: true,
+			}, nil
+		case ">":
+			return &SortedComparisonCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+				After: true,
+			}, nil
+		case "<=":
+			return &SortedComparisonCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+				Equal: true,
+			}, nil
+		case "<":
+			return &SortedComparisonCondition{
+				Key:   parts.Key,
+				Value: parts.Value,
+			}, nil
+		default:
+			return nil, &UnknownComparisonOperatorErr{Operator: parts.Comparison}
+		}
+	}
+}
+
 func processParseSelectorDynamic(selector string, sel Selector) (Selector, error) {
 	sel.Type = "DYNAMIC"
 	dynamicGroups, err := DynamicSelectorToGroups(selector)
@@ -54,61 +114,14 @@ func processParseSelectorDynamic(selector string, sel Selector) (Selector, error
 	}
 
 	for _, g := range dynamicGroups {
-		// evaluable, err := gvalInstance.NewEvaluable(g)
-		// if err != nil {
-		// 	return sel, fmt.Errorf("could not parse dynamic expression: %w", err)
-		// }
-		//
-		// todo : how do we execute sub queries?
-		// sel.Conditions = append(sel.Conditions, &GvalCondition{
-		// 	Evaluable: evaluable,
-		// })
-
-		m := FindDynamicSelectorParts(g)
-
-		var cond Condition
-
-		switch m.Comparison {
-		case "=":
-			cond = &EqualCondition{
-				Key:   m.Key,
-				Value: m.Value,
-			}
-		case "!=":
-			cond = &EqualCondition{
-				Key:   m.Key,
-				Value: m.Value,
-				Not:   true,
-			}
-		case ">=":
-			cond = &SortedComparisonCondition{
-				Key:   m.Key,
-				Value: m.Value,
-				Equal: true,
-				After: true,
-			}
-		case ">":
-			cond = &SortedComparisonCondition{
-				Key:   m.Key,
-				Value: m.Value,
-				After: true,
-			}
-		case "<=":
-			cond = &SortedComparisonCondition{
-				Key:   m.Key,
-				Value: m.Value,
-				Equal: true,
-			}
-		case "<":
-			cond = &SortedComparisonCondition{
-				Key:   m.Key,
-				Value: m.Value,
-			}
-		default:
-			return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
+		parts := FindDynamicSelectorParts(g)
+		cond, err := getCondition(parts)
+		if err != nil {
+			return sel, err
 		}
-
-		sel.Conditions = append(sel.Conditions, cond)
+		if cond != nil {
+			sel.Conditions = append(sel.Conditions, cond)
+		}
 	}
 
 	return sel, nil
@@ -126,69 +139,15 @@ func processParseSelectorSearch(selector string, sel Selector) (Selector, error)
 	}
 
 	for _, g := range dynamicGroups {
-		m := FindDynamicSelectorParts(g)
-
-		m.Key = strings.TrimPrefix(m.Key, "?:")
-
-		var cond Condition
-		switch m.Key {
-		case "-", "keyValue":
-			switch m.Comparison {
-			case "=":
-				cond = &KeyEqualCondition{
-					Value: m.Value,
-				}
-			case "!=":
-				cond = &KeyEqualCondition{
-					Value: m.Value,
-					Not:   true,
-				}
-			default:
-				return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
-			}
-		default:
-			switch m.Comparison {
-			case "=":
-				cond = &EqualCondition{
-					Key:   m.Key,
-					Value: m.Value,
-				}
-			case "!=":
-				cond = &EqualCondition{
-					Key:   m.Key,
-					Value: m.Value,
-					Not:   true,
-				}
-			case ">=":
-				cond = &SortedComparisonCondition{
-					Key:   m.Key,
-					Value: m.Value,
-					Equal: true,
-					After: true,
-				}
-			case ">":
-				cond = &SortedComparisonCondition{
-					Key:   m.Key,
-					Value: m.Value,
-					After: true,
-				}
-			case "<=":
-				cond = &SortedComparisonCondition{
-					Key:   m.Key,
-					Value: m.Value,
-					Equal: true,
-				}
-			case "<":
-				cond = &SortedComparisonCondition{
-					Key:   m.Key,
-					Value: m.Value,
-				}
-			default:
-				return sel, &UnknownComparisonOperatorErr{Operator: m.Comparison}
-			}
+		parts := FindDynamicSelectorParts(g)
+		parts.Key = strings.TrimPrefix(parts.Key, "?:")
+		cond, err := getCondition(parts)
+		if err != nil {
+			return sel, err
 		}
-
-		sel.Conditions = append(sel.Conditions, cond)
+		if cond != nil {
+			sel.Conditions = append(sel.Conditions, cond)
+		}
 	}
 
 	return sel, nil
