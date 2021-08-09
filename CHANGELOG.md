@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.17.0] - 2021-08-08
+
 ### Added
 
 - Support for `!=` comparison operator in dynamic and search selectors.
@@ -338,7 +342,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.16.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.17.0...HEAD
+[v1.17.0]: https://github.com/TomWright/dasel/compare/v1.16.1...v1.17.0
 [v1.16.1]: https://github.com/TomWright/dasel/compare/v1.16.0...v1.16.1
 [v1.16.0]: https://github.com/TomWright/dasel/compare/v1.15.0...v1.16.0
 [v1.15.0]: https://github.com/TomWright/dasel/compare/v1.14.1...v1.15.0
