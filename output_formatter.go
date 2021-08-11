@@ -60,12 +60,14 @@ type formatTemplateFuncs struct {
 
 func (funcs *formatTemplateFuncs) funcMap() template.FuncMap {
 	return template.FuncMap{
-		"query":         funcs.query,
-		"queryMultiple": funcs.queryMultiple,
-		"format":        funcs.format,
-		"isFirst":       funcs.isFirst,
-		"isLast":        funcs.isLast,
-		"newline":       funcs.newline,
+		"query":          funcs.query,
+		"queryMultiple":  funcs.queryMultiple,
+		"select":         funcs.query,
+		"selectMultiple": funcs.queryMultiple,
+		"format":         funcs.format,
+		"isFirst":        funcs.isFirst,
+		"isLast":         funcs.isLast,
+		"newline":        funcs.newline,
 	}
 }
 

@@ -59,6 +59,14 @@ func TestFormatNode(t *testing.T) {
 		`{{ query ".name" }}, {{ query ".email" }}`,
 		`Tom, contact@tomwright.me`,
 	))
+	t.Run("SelectAccess", testFormatNode(
+		map[string]interface{}{
+			"name":  "Tom",
+			"email": "contact@tomwright.me",
+		},
+		`{{ select ".name" }}, {{ select ".email" }}`,
+		`Tom, contact@tomwright.me`,
+	))
 	t.Run("Format", testFormatNode(
 		map[string]interface{}{
 			"name":  "Tom",
@@ -185,6 +193,20 @@ Jim, jim@gmail.com`,
 			},
 		},
 		`{{ query ".name" }}, {{ query ".email" }}{{ if not isLast }}{{ newline }}{{ end }}`,
+		`Tom, contact@tomwright.me
+Jim, jim@gmail.com`))
+	t.Run("SelectAccess", testFormatNodes(
+		[]interface{}{
+			map[string]interface{}{
+				"name":  "Tom",
+				"email": "contact@tomwright.me",
+			},
+			map[string]interface{}{
+				"name":  "Jim",
+				"email": "jim@gmail.com",
+			},
+		},
+		`{{ select ".name" }}, {{ select ".email" }}{{ if not isLast }}{{ newline }}{{ end }}`,
 		`Tom, contact@tomwright.me
 Jim, jim@gmail.com`))
 	t.Run("QueryAccessInvalidSelector", testFormatNodes(
