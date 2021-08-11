@@ -60,6 +60,12 @@ type Node struct {
 	wasInitialised bool
 }
 
+// String returns the value of the node as a string.
+// No formatting is done here, you get the raw value.
+func (n *Node) String() string {
+	return fmt.Sprint(n.InterfaceValue())
+}
+
 // InterfaceValue returns the value stored within the node as an interface{}.
 func (n *Node) InterfaceValue() interface{} {
 	// We shouldn't be able to get here but this will stop a panic if we do.
