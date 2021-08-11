@@ -649,3 +649,48 @@ ESTAT,Eurostat
 ILO,International Labor Organization
 `, nil, "-w", "csv"))
 }
+
+func TestRootCmd_Select_JSON_Format(t *testing.T) {
+	t.Run("RootElementFormattedToProperty", selectTest(jsonData, "json", ".", newline(`1111`), nil,
+		"--format", `{{ query ".id" }}`))
+	t.Run("SelectorFormatted", selectTest(jsonData, "json", ".id", newline(`1111`), nil,
+		"--format", `{{ . }}`))
+	t.Run("SelectorFormattedMultiple", selectTest(jsonData, "json", ".details.addresses.[*]",
+		newline(`101 Some Street
+34 Another Street`), nil,
+		"-m", "--format", `{{ query ".street" }}`))
+	t.Run("SelectorFormattedToMultiple", selectTest(jsonData, "json", ".",
+		newline(`101 Some Street
+34 Another Street`), nil,
+		"-m", "--format", `{{ queryMultiple ".details.addresses.[*]" | format "{{ .street }}{{ if not isLast }}{{ newline }}{{end}}" }}`))
+
+	// https://github.com/TomWright/dasel/discussions/146
+	t.Run("Discussion146", selectTest(
+		`[{"name": "click", "version": "7.1.2", "latest_version": "8.0.1", "latest_filetype": "wheel"}, {"name": "decorator", "version": "4.4.2", "latest_version": "5.0.9", "latest_filetype": "wheel"}, {"name": "ipython", "version": "7.20.0", "latest_version": "7.25.0", "latest_filetype": "wheel"}, {"name": "pandas", "version": "1.3.0", "latest_version": "1.3.1", "latest_filetype": "wheel"}, {"name": "parso", "version": "0.8.1", "latest_version": "0.8.2", "latest_filetype": "wheel"}, {"name": "pip", "version": "21.1.3", "latest_version": "21.2.1", "latest_filetype": "wheel"}, {"name": "prompt-toolkit", "version": "3.0.14", "latest_version": "3.0.19", "latest_filetype": "wheel"}, {"name": "Pygments", "version": "2.7.4", "latest_version": "2.9.0", "latest_filetype": "wheel"}, {"name": "setuptools", "version": "49.2.1", "latest_version": "57.4.0", "latest_filetype": "wheel"}, {"name": "tomli", "version": "1.0.4", "latest_version": "1.1.0", "latest_filetype": "wheel"}]`,
+		"json", ".(name!=setuptools)(name!=six)(name!=pip)(name!=pip-tools)",
+		newline(`click
+7.1.2
+8.0.1
+decorator
+4.4.2
+5.0.9
+ipython
+7.20.0
+7.25.0
+pandas
+1.3.0
+1.3.1
+parso
+0.8.1
+0.8.2
+prompt-toolkit
+3.0.14
+3.0.19
+Pygments
+2.7.4
+2.9.0
+tomli
+1.0.4
+1.1.0`), nil,
+		"-m", "--format", `{{ query ".name" }}{{ newline }}{{ query ".version" }}{{ newline }}{{ query ".latest_version" }}`))
+}

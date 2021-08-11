@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- `--format` flag to `select` command.
 
 ## [v1.17.0] - 2021-08-08
 
