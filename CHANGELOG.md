@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.18.0] - 2021-08-11
+
 ### Added
 
 - `--format` flag to `select` command.
@@ -344,7 +348,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.17.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.18.0...HEAD
+[v1.18.0]: https://github.com/TomWright/dasel/compare/v1.17.0...v1.18.0
 [v1.17.0]: https://github.com/TomWright/dasel/compare/v1.16.1...v1.17.0
 [v1.16.1]: https://github.com/TomWright/dasel/compare/v1.16.0...v1.16.1
 [v1.16.0]: https://github.com/TomWright/dasel/compare/v1.15.0...v1.16.0
