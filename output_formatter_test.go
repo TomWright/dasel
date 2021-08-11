@@ -132,6 +132,23 @@ Jim
 ---
 Frank`,
 	))
+	t.Run("QueryMultipleBadSelector", testFormatNode(
+		map[string]interface{}{
+			"users": []map[string]interface{}{
+				{
+					"name": "Tom",
+				},
+				{
+					"name": "Jim",
+				},
+				{
+					"name": "Frank",
+				},
+			},
+		},
+		`{{ queryMultiple ".users.[*].names" | format "{{ . }}{{ if not isLast }}{{ newline }}{{ end }}" }}`,
+		``,
+	))
 }
 
 func TestFormatNodes(t *testing.T) {
