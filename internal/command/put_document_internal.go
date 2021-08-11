@@ -58,7 +58,7 @@ func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
 		}
 	}
 
-	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File)
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File, "")
 	if err != nil {
 		return err
 	}

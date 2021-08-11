@@ -22,6 +22,7 @@ type selectOptions struct {
 	Compact             bool
 	DisplayLength       bool
 	MergeInputDocuments bool
+	FormatTemplate      string
 }
 
 func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
@@ -72,9 +73,10 @@ func runSelectMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts select
 	}
 
 	if err := writeNodesToOutput(writeNodesToOutputOpts{
-		Nodes:  results,
-		Parser: writeParser,
-		Writer: opts.Writer,
+		Nodes:          results,
+		Parser:         writeParser,
+		Writer:         opts.Writer,
+		FormatTemplate: opts.FormatTemplate,
 	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -106,7 +108,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		opts.Writer = cmd.OutOrStdout()
 	}
 
-	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, "-", opts.File)
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, "-", opts.File, opts.FormatTemplate)
 	if err != nil {
 		return err
 	}
@@ -151,9 +153,10 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	}
 
 	if err := writeNodeToOutput(writeNodeToOutputOpts{
-		Node:   res,
-		Parser: writeParser,
-		Writer: opts.Writer,
+		Node:           res,
+		Parser:         writeParser,
+		Writer:         opts.Writer,
+		FormatTemplate: opts.FormatTemplate,
 	}, cmd, writeOptions...); err != nil {
 		return fmt.Errorf("could not write output: %w", err)
 	}
@@ -162,7 +165,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 }
 
 func selectCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, formatTemplateFlag string
 	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag bool
 
 	cmd := &cobra.Command{
@@ -187,6 +190,7 @@ func selectCommand() *cobra.Command {
 				Compact:             compactFlag,
 				DisplayLength:       lengthFlag,
 				MergeInputDocuments: mergeInputDocumentsFlag,
+				FormatTemplate:      formatTemplateFlag,
 			}, cmd)
 		},
 	}
@@ -202,6 +206,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&lengthFlag, "length", false, "Output the length of the selected value.")
 	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
+	cmd.Flags().StringVar(&formatTemplateFlag, "format", "", "Formatting template to use when writing results.")
 
 	_ = cmd.MarkFlagFilename("file")
 

@@ -70,7 +70,12 @@ func getReadParser(fileFlag string, readParserFlag string, parserFlag string) (s
 	return parser, nil
 }
 
-func getWriteParser(readParser storage.ReadParser, writeParserFlag string, parserFlag string, outFlag string, fileFlag string) (storage.WriteParser, error) {
+func getWriteParser(readParser storage.ReadParser, writeParserFlag string, parserFlag string,
+	outFlag string, fileFlag string, formatTemplateFlag string) (storage.WriteParser, error) {
+	if formatTemplateFlag != "" {
+		writeParserFlag = "plain"
+	}
+
 	if writeParserFlag == "" {
 		writeParserFlag = parserFlag
 	}
@@ -136,11 +141,12 @@ func getRootNode(opts getRootNodeOpts, cmd *cobra.Command) (*dasel.Node, error) 
 }
 
 type writeNodeToOutputOpts struct {
-	Node   *dasel.Node
-	Parser storage.WriteParser
-	File   string
-	Out    string
-	Writer io.Writer
+	Node           *dasel.Node
+	Parser         storage.WriteParser
+	File           string
+	Out            string
+	Writer         io.Writer
+	FormatTemplate string
 }
 
 type customErrorHandlingOpts struct {
@@ -195,7 +201,20 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command, options .
 	opts.Writer = writer
 	defer writerCleanUp()
 
-	if err := storage.Write(opts.Parser, opts.Node.InterfaceValue(), opts.Node.OriginalValue, opts.Writer, options...); err != nil {
+	var value, originalValue interface{}
+	if opts.FormatTemplate == "" {
+		value = opts.Node.InterfaceValue()
+		originalValue = opts.Node.OriginalValue
+	} else {
+		result, err := dasel.FormatNode(opts.Node, opts.FormatTemplate)
+		if err != nil {
+			return fmt.Errorf("could not format node: %w", err)
+		}
+		value = result.String()
+		originalValue = value
+	}
+
+	if err := storage.Write(opts.Parser, value, originalValue, opts.Writer, options...); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
 	}
 
@@ -203,11 +222,12 @@ func writeNodeToOutput(opts writeNodeToOutputOpts, cmd *cobra.Command, options .
 }
 
 type writeNodesToOutputOpts struct {
-	Nodes  []*dasel.Node
-	Parser storage.WriteParser
-	File   string
-	Out    string
-	Writer io.Writer
+	Nodes          []*dasel.Node
+	Parser         storage.WriteParser
+	File           string
+	Out            string
+	Writer         io.Writer
+	FormatTemplate string
 }
 
 func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command, options ...storage.ReadWriteOption) error {
@@ -222,9 +242,10 @@ func writeNodesToOutput(opts writeNodesToOutputOpts, cmd *cobra.Command, options
 
 	for i, n := range opts.Nodes {
 		subOpts := writeNodeToOutputOpts{
-			Node:   n,
-			Parser: opts.Parser,
-			Writer: buf,
+			Node:           n,
+			Parser:         opts.Parser,
+			Writer:         buf,
+			FormatTemplate: opts.FormatTemplate,
 		}
 		if err := writeNodeToOutput(subOpts, cmd, options...); err != nil {
 			return fmt.Errorf("could not write node %d to output: %w", i, err)
@@ -375,7 +396,7 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 		}
 	}
 
-	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File)
+	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File, "")
 	if err != nil {
 		return err
 	}
