@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/alecthomas/chroma/quick"
 	"io"
 )
 
@@ -93,10 +92,8 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 	}
 
 	if colourise {
-		source := buffer.String()
-		buffer.Reset()
-		if err := quick.Highlight(buffer, source, "json", ColouriseFormatter, ColouriseStyle); err != nil {
-			return nil, fmt.Errorf("could not colourise json output: %w", err)
+		if err := ColouriseBuffer(buffer, "json"); err != nil {
+			return nil, fmt.Errorf("could not colourise output: %w", err)
 		}
 	}
 

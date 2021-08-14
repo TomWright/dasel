@@ -1,8 +1,6 @@
 package storage_test
 
 import (
-	"bytes"
-	"github.com/alecthomas/chroma/quick"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -69,9 +67,8 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			return
 		}
 
-		buf := new(bytes.Buffer)
-		_ = quick.Highlight(buf, string(tomlBytes), "toml", storage.ColouriseFormatter, storage.ColouriseStyle)
-		exp := buf.Bytes()
+		expBuf, _ := storage.Colourise(string(tomlBytes), "toml")
+		exp := expBuf.Bytes()
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}

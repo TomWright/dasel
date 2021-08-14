@@ -3,7 +3,6 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/alecthomas/chroma/quick"
 	"github.com/clbanning/mxj/v2"
 	"strings"
 )
@@ -88,10 +87,8 @@ func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]by
 	}
 
 	if colourise {
-		source := buf.String()
-		buf.Reset()
-		if err := quick.Highlight(buf, source, "xml", ColouriseFormatter, ColouriseStyle); err != nil {
-			return nil, fmt.Errorf("could not colourise json output: %w", err)
+		if err := ColouriseBuffer(buf, "xml"); err != nil {
+			return nil, fmt.Errorf("could not colourise output: %w", err)
 		}
 	}
 

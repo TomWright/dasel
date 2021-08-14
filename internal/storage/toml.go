@@ -3,7 +3,6 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/alecthomas/chroma/quick"
 	"github.com/pelletier/go-toml"
 )
 
@@ -78,10 +77,8 @@ func (p *TOMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 	}
 
 	if colourise {
-		source := buf.String()
-		buf.Reset()
-		if err := quick.Highlight(buf, source, "toml", ColouriseFormatter, ColouriseStyle); err != nil {
-			return nil, fmt.Errorf("could not colourise json output: %w", err)
+		if err := ColouriseBuffer(buf, "toml"); err != nil {
+			return nil, fmt.Errorf("could not colourise output: %w", err)
 		}
 	}
 

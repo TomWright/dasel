@@ -3,7 +3,6 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/alecthomas/chroma/quick"
 	"gopkg.in/yaml.v2"
 	"io"
 )
@@ -111,10 +110,8 @@ func (p *YAMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 	}
 
 	if colourise {
-		source := buffer.String()
-		buffer.Reset()
-		if err := quick.Highlight(buffer, source, "yaml", ColouriseFormatter, ColouriseStyle); err != nil {
-			return nil, fmt.Errorf("could not colourise json output: %w", err)
+		if err := ColouriseBuffer(buffer, "yaml"); err != nil {
+			return nil, fmt.Errorf("could not colourise output: %w", err)
 		}
 	}
 

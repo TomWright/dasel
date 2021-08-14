@@ -1,8 +1,6 @@
 package storage_test
 
 import (
-	"bytes"
-	"github.com/alecthomas/chroma/quick"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
@@ -117,12 +115,11 @@ func TestJSONParser_ToBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		buf := new(bytes.Buffer)
-		_ = quick.Highlight(buf, `{
+		expBuf, _ := storage.Colourise(`{
   "name": "Tom"
 }
-`, "json", storage.ColouriseFormatter, storage.ColouriseStyle)
-		exp := buf.Bytes()
+`, "json")
+		exp := expBuf.Bytes()
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
