@@ -13,10 +13,8 @@ function run_file() {
 
   while IFS= read -r line
   do
-    counter=$(($counter+1))
-    if [ -z "$line" ]
+    if [ "$line" == "END" ]
     then
-      counter=0
       jsonFile="benchmark/data/${key}.json"
       imagePath="benchmark/diagrams/${key}.jpg"
       readmeImagePath="diagrams/${key}.jpg"
@@ -30,7 +28,11 @@ function run_file() {
 
       rm "${mdOutputFile}"
 
+    elif [ "$line" == "START" ]
+    then
+      counter=0
     else
+      counter=$(($counter+1))
       case $counter in
         1)  name=$line
             ;;
