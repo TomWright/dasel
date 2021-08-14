@@ -53,7 +53,7 @@ For more information see the [installation documentation](https://daseldocs.tomw
 ### Select
 
 ```bash
-echo '{"name": "Tom"}' | dasel -p json '.name'
+echo '{"name": "Tom"}' | dasel -r json '.name'
 "Tom"
 ```
 
@@ -62,7 +62,7 @@ See [select documentation](https://daseldocs.tomwright.me/usage/select).
 ### Put
 
 ```bash
-echo '{"name": "Tom"}' | dasel put string -p json '.email' 'contact@tomwright.me'
+echo '{"name": "Tom"}' | dasel put string -r json '.email' 'contact@tomwright.me'
 {
   "email": "contact@tomwright.me",
   "name": "Tom"
@@ -77,7 +77,7 @@ See [put documentation](https://daseldocs.tomwright.me/usage/put).
 echo '{
   "email": "contact@tomwright.me",
   "name": "Tom"
-}' | dasel delete -p json '.email' 'contact@tomwright.me'
+}' | dasel delete -r json '.email' 'contact@tomwright.me'
 {
   "name": "Tom"
 }
