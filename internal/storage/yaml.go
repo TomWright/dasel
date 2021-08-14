@@ -81,6 +81,17 @@ func (p *YAMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 	encoder := yaml.NewEncoder(buffer)
 	defer encoder.Close()
 
+	colourise := false
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionColourise:
+			if value, ok := o.Value.(bool); ok {
+				colourise = value
+			}
+		}
+	}
+
 	switch v := value.(type) {
 	case SingleDocument:
 		if err := encoder.Encode(v.Document()); err != nil {
@@ -97,5 +108,12 @@ func (p *YAMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 			return nil, fmt.Errorf("could not encode default document type: %w", err)
 		}
 	}
+
+	if colourise {
+		if err := ColouriseBuffer(buffer, "yaml"); err != nil {
+			return nil, fmt.Errorf("could not colourise output: %w", err)
+		}
+	}
+
 	return buffer.Bytes(), nil
 }

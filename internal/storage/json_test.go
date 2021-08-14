@@ -109,6 +109,22 @@ func TestJSONParser_ToBytes(t *testing.T) {
 		}
 	})
 
+	t.Run("ValidSingleColourise", func(t *testing.T) {
+		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.ColouriseOption(true))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		expBuf, _ := storage.Colourise(`{
+  "name": "Tom"
+}
+`, "json")
+		exp := expBuf.Bytes()
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+
 	t.Run("ValidSingleCustomIndent", func(t *testing.T) {
 		res, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.IndentOption("   "))
 		if err != nil {

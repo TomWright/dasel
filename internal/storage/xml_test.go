@@ -71,6 +71,19 @@ func TestXMLParser_ToBytes_SingleDocument(t *testing.T) {
 		t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
 	}
 }
+func TestXMLParser_ToBytes_SingleDocument_Colourise(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap}, storage.ColouriseOption(true))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+
+	expBuf, _ := storage.Colourise(string(xmlBytes), "xml")
+	exp := expBuf.Bytes()
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", exp, got)
+	}
+}
 func TestXMLParser_ToBytes_MultiDocument(t *testing.T) {
 	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{xmlMap, xmlMap}})
 	if err != nil {

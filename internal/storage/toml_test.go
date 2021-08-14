@@ -60,6 +60,19 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			t.Errorf("expected:\n%s\ngot:\n%s", tomlBytes, got)
 		}
 	})
+	t.Run("SingleDocumentColourise", func(t *testing.T) {
+		got, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: tomlMap}, storage.ColouriseOption(true))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+
+		expBuf, _ := storage.Colourise(string(tomlBytes), "toml")
+		exp := expBuf.Bytes()
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
 	t.Run("SingleDocumentCustomIndent", func(t *testing.T) {
 		res, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: tomlMap}, storage.IndentOption("   "))
 		if err != nil {

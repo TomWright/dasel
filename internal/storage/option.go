@@ -16,6 +16,14 @@ func PrettyPrintOption(enabled bool) ReadWriteOption {
 	}
 }
 
+// ColouriseOption returns an option that enables or disables colourised output.
+func ColouriseOption(enabled bool) ReadWriteOption {
+	return ReadWriteOption{
+		Key:   OptionColourise,
+		Value: enabled,
+	}
+}
+
 // OptionKey is a defined type for keys within a ReadWriteOption.
 type OptionKey string
 
@@ -24,6 +32,8 @@ const (
 	OptionIndent OptionKey = "indent"
 	// OptionPrettyPrint is the key used with PrettyPrintOption.
 	OptionPrettyPrint OptionKey = "prettyPrint"
+	// OptionColourise is the key used with ColouriseOption.
+	OptionColourise OptionKey = "colourise"
 )
 
 // ReadWriteOption is an option to be used when writing.
