@@ -59,6 +59,15 @@ echo '{"name": "Tom"}' | dasel -r json '.name'
 
 See [select documentation](https://daseldocs.tomwright.me/usage/select).
 
+### Convert json to yaml
+
+```bash
+echo '{"name": "Tom"}' | dasel -r json -w yaml
+name: Tom
+```
+
+See [select documentation](https://daseldocs.tomwright.me/usage/select).
+
 ### Put
 
 ```bash
