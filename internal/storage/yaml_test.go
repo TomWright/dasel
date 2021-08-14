@@ -1,6 +1,8 @@
 package storage_test
 
 import (
+	"bytes"
+	"github.com/alecthomas/chroma/quick"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -95,6 +97,19 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 		if string(yamlBytes) != string(got) {
 			t.Errorf("expected %s, got %s", yamlBytes, got)
+		}
+	})
+	t.Run("ValidSingleColourise", func(t *testing.T) {
+		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: yamlMap}, storage.ColouriseOption(true))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		buf := new(bytes.Buffer)
+		_ = quick.Highlight(buf, string(yamlBytes), "yaml", storage.ColouriseFormatter, storage.ColouriseStyle)
+		exp := buf.Bytes()
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
 	t.Run("ValidMulti", func(t *testing.T) {

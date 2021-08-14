@@ -23,6 +23,7 @@ type selectOptions struct {
 	DisplayLength       bool
 	MergeInputDocuments bool
 	FormatTemplate      string
+	Colourise           bool
 }
 
 func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
@@ -118,6 +119,9 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 	if opts.Compact {
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
 	}
+	if opts.Colourise {
+		writeOptions = append(writeOptions, storage.ColouriseOption(true))
+	}
 
 	if opts.Multi {
 		return runSelectMultiCommand(cmd, rootNode, opts, writeParser, writeOptions)
@@ -166,7 +170,7 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, formatTemplateFlag string
-	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag, colourFlag, colorFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -191,6 +195,7 @@ func selectCommand() *cobra.Command {
 				DisplayLength:       lengthFlag,
 				MergeInputDocuments: mergeInputDocumentsFlag,
 				FormatTemplate:      formatTemplateFlag,
+				Colourise:           colourFlag || colorFlag,
 			}, cmd)
 		},
 	}
@@ -207,6 +212,8 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 	cmd.Flags().StringVar(&formatTemplateFlag, "format", "", "Formatting template to use when writing results.")
+	cmd.Flags().BoolVar(&colourFlag, "colour", false, "Print colourised output.")
+	cmd.Flags().BoolVar(&colorFlag, "color", false, "Alias of --colour.")
 
 	_ = cmd.MarkFlagFilename("file")
 

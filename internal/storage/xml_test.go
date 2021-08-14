@@ -1,6 +1,8 @@
 package storage_test
 
 import (
+	"bytes"
+	"github.com/alecthomas/chroma/quick"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
@@ -69,6 +71,20 @@ func TestXMLParser_ToBytes_SingleDocument(t *testing.T) {
 	}
 	if !reflect.DeepEqual(xmlBytes, got) {
 		t.Errorf("expected %v, got %v", string(xmlBytes), string(got))
+	}
+}
+func TestXMLParser_ToBytes_SingleDocument_Colourise(t *testing.T) {
+	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap}, storage.ColouriseOption(true))
+	if err != nil {
+		t.Errorf("unexpected error: %s", err)
+		return
+	}
+
+	buf := new(bytes.Buffer)
+	_ = quick.Highlight(buf, string(xmlBytes), "xml", storage.ColouriseFormatter, storage.ColouriseStyle)
+	exp := buf.Bytes()
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("expected %v, got %v", exp, got)
 	}
 }
 func TestXMLParser_ToBytes_MultiDocument(t *testing.T) {

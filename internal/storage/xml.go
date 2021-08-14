@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"fmt"
+	"github.com/alecthomas/chroma/quick"
 	"github.com/clbanning/mxj/v2"
 	"strings"
 )
@@ -40,6 +41,17 @@ func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
+	colourise := false
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionColourise:
+			if value, ok := o.Value.(bool); ok {
+				colourise = value
+			}
+		}
+	}
+
 	writeMap := func(val interface{}) error {
 		if m, ok := val.(map[string]interface{}); ok {
 			mv := mxj.New()
@@ -72,6 +84,14 @@ func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]by
 	default:
 		if err := writeMap(d); err != nil {
 			return nil, err
+		}
+	}
+
+	if colourise {
+		source := buf.String()
+		buf.Reset()
+		if err := quick.Highlight(buf, source, "xml", ColouriseFormatter, ColouriseStyle); err != nil {
+			return nil, fmt.Errorf("could not colourise json output: %w", err)
 		}
 	}
 

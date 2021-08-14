@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/alecthomas/chroma/quick"
 	"io"
 )
 
@@ -50,6 +51,7 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 
 	indent := "  "
 	prettyPrint := true
+	colourise := false
 
 	for _, o := range options {
 		switch o.Key {
@@ -60,6 +62,10 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 		case OptionPrettyPrint:
 			if value, ok := o.Value.(bool); ok {
 				prettyPrint = value
+			}
+		case OptionColourise:
+			if value, ok := o.Value.(bool); ok {
+				colourise = value
 			}
 		}
 	}
@@ -85,5 +91,14 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 			return nil, fmt.Errorf("could not encode default document type: %w", err)
 		}
 	}
+
+	if colourise {
+		source := buffer.String()
+		buffer.Reset()
+		if err := quick.Highlight(buffer, source, "json", ColouriseFormatter, ColouriseStyle); err != nil {
+			return nil, fmt.Errorf("could not colourise json output: %w", err)
+		}
+	}
+
 	return buffer.Bytes(), nil
 }

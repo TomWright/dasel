@@ -1,6 +1,8 @@
 package storage_test
 
 import (
+	"bytes"
+	"github.com/alecthomas/chroma/quick"
 	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"strings"
@@ -58,6 +60,20 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 		}
 		if string(tomlBytes) != string(got) {
 			t.Errorf("expected:\n%s\ngot:\n%s", tomlBytes, got)
+		}
+	})
+	t.Run("SingleDocumentColourise", func(t *testing.T) {
+		got, err := (&storage.TOMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: tomlMap}, storage.ColouriseOption(true))
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+
+		buf := new(bytes.Buffer)
+		_ = quick.Highlight(buf, string(tomlBytes), "toml", storage.ColouriseFormatter, storage.ColouriseStyle)
+		exp := buf.Bytes()
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
 	t.Run("SingleDocumentCustomIndent", func(t *testing.T) {

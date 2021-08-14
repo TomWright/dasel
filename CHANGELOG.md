@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- `--colour`,`--color` flag to enable colourised output in select command.
 
 ## [v1.18.0] - 2021-08-11
 
