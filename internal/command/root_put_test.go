@@ -60,15 +60,19 @@ func TestRootCMD_Put(t *testing.T) {
 }
 
 func putTest(in string, varType string, parser string, selector string, value string, out string, expErr error, additionalArgs ...string) func(t *testing.T) {
+	args := []string{
+		"put", varType,
+	}
+	args = append(args, additionalArgs...)
+	args = append(args, "-p", parser, selector, value)
+
+	return baseTest(in, out, expErr, args...)
+}
+
+func baseTest(in string, out string, expErr error, args ...string) func(t *testing.T) {
 	return func(t *testing.T) {
 		cmd := command.NewRootCMD()
 		outputBuffer := bytes.NewBuffer([]byte{})
-
-		args := []string{
-			"put", varType,
-		}
-		args = append(args, additionalArgs...)
-		args = append(args, "-p", parser, selector, value)
 
 		cmd.SetOut(outputBuffer)
 		cmd.SetIn(strings.NewReader(in))
@@ -653,6 +657,37 @@ foo: true
 ]
 `, nil, "--merge-input-documents"))
 
+	t.Run("ValueFlag", func(t *testing.T) {
+		// Test -v/--value flag
+		// Workaround for https://github.com/TomWright/dasel/issues/117
+
+		t.Run("StringWithDash", baseTest(`{
+  "id": "x"
+}`, `{
+  "id": "-abc"
+}
+`, nil, "put", "string", "-p", "json", "-v", "-abc", ".id"))
+
+		t.Run("NegativeInt", baseTest(`{
+  "id": 1
+}`, `{
+  "id": -1
+}
+`, nil, "put", "int", "-p", "json", "-v", "-1", ".id"))
+	})
+	t.Run("StringWithDashWithSelectorFlag", baseTest(`{
+  "id": "x"
+}`, `{
+  "id": "-abc"
+}
+`, nil, "put", "string", "-p", "json", "-v", "-abc", "-s", ".id"))
+
+	t.Run("NegativeIntWithSelectorFlag", baseTest(`{
+  "id": 1
+}`, `{
+  "id": -1
+}
+`, nil, "put", "int", "-p", "json", "-v", "-1", "-s", ".id"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {

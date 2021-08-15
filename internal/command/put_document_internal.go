@@ -98,15 +98,21 @@ func putDocumentCommand() *cobra.Command {
 				Parser:         cmd.Flag("parser").Value.String(),
 				Selector:       cmd.Flag("selector").Value.String(),
 				DocumentParser: documentParserFlag,
-				DocumentString: args[0],
 			}
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
 			opts.Compact, _ = cmd.Flags().GetBool("compact")
+			opts.DocumentString, _ = cmd.Flags().GetString("value")
 
-			if opts.Selector == "" && len(args) > 1 {
+			if opts.Selector == "" && len(args) > 0 {
 				opts.Selector = args[0]
-				opts.DocumentString = args[1]
+				args = args[1:]
 			}
+
+			if opts.DocumentString == "" && len(args) > 0 {
+				opts.DocumentString = args[0]
+				args = args[1:]
+			}
+
 			return runPutDocumentCommand(opts, cmd)
 		},
 	}

@@ -290,7 +290,7 @@ func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) 
 }
 
 func putCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag, valueFlag string
 	var multiFlag, compactFlag, mergeInputDocumentsFlag bool
 
 	cmd := &cobra.Command{
@@ -315,6 +315,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVarP(&multiFlag, "multiple", "m", false, "Select multiple results.")
 	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 	cmd.PersistentFlags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
+	cmd.PersistentFlags().StringVarP(&valueFlag, "value", "v", "", "Value to put.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 
@@ -349,14 +350,16 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.Multi, _ = cmd.Flags().GetBool("multiple")
 		opts.Compact, _ = cmd.Flags().GetBool("compact")
 		opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
+		opts.Value, _ = cmd.Flags().GetString("value")
 
 		if opts.Selector == "" && len(args) > 0 {
 			opts.Selector = args[0]
 			args = args[1:]
 		}
 
-		if len(args) > 0 {
+		if opts.Value == "" && len(args) > 0 {
 			opts.Value = args[0]
+			args = args[1:]
 		}
 
 		return opts
