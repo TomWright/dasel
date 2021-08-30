@@ -15,10 +15,12 @@ func ExtractNextSelector(input string) (string, int) {
 	i := 0
 	read := 0
 	for k, v := range input {
+		curRuneStr := string(v)
+		curRuneLength := len(curRuneStr)
 		if escapedIndex == k-1 && k != 0 {
 			// last character was escape character
-			res += string(v)
-			read++
+			res += curRuneStr
+			read += curRuneLength
 			continue
 		}
 
@@ -30,15 +32,15 @@ func ExtractNextSelector(input string) (string, int) {
 
 		if v == '\\' {
 			escapedIndex = k
-			read++
+			read += curRuneLength
 			continue
 		}
 
 		if i == 0 && v == '.' && k != 0 {
 			break
 		}
-		res += string(v)
-		read++
+		res += curRuneStr
+		read += curRuneLength
 	}
 	return res, read
 }

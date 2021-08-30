@@ -369,6 +369,18 @@ func TestParseSelector(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("Unicode", testParseSelector(".(name=Ägir).b", dasel.Selector{
+		Raw:       ".(name=Ägir).b",
+		Current:   ".(name=Ägir)",
+		Remaining: ".b",
+		Type:      "DYNAMIC",
+		Conditions: []dasel.Condition{
+			&dasel.EqualCondition{
+				Key:   "name",
+				Value: "Ägir",
+			},
+		},
+	}))
 }
 
 func extractValues(nodes []*dasel.Node) []interface{} {

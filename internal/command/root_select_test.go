@@ -648,6 +648,18 @@ ECB,European Central Bank
 ESTAT,Eurostat
 ILO,International Labor Organization
 `, nil, "-w", "csv"))
+
+	// https://github.com/TomWright/dasel/issues/159
+	t.Run("SelectFilterOnUnicode", selectTest(`
+{
+   "data": [
+     {"name": "Fu Shun", "ship_type": "Destroyer"},
+     {"name": "Sheffield", "ship_type": "Light Cruiser"},
+     {"name": "Ägir", "ship_type": "Large Cruiser"}
+   ]
+ }
+`, "json", ".data.(name=Ägir).ship_type", `"Large Cruiser"
+`, nil))
 }
 
 func TestRootCmd_Select_JSON_Format(t *testing.T) {
