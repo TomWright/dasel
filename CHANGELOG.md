@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `-v`, `--value` flag to workaround [dash issue](https://github.com/TomWright/dasel/issues/117).
 
+### Fixed
+
+- Fixed an issue in which unicode characters could cause issues when parsing selectors.
+
 ## [v1.19.0] - 2021-08-14
 
 ### Added

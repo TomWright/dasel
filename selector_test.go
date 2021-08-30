@@ -49,6 +49,7 @@ func TestExtractNextSelector(t *testing.T) {
 	t.Run("SimpleProp", testExtractNextSelector(`.name`, `.name`, 5))
 	t.Run("SimpleIndex", testExtractNextSelector(`.[123]`, `.[123]`, 6))
 	t.Run("SimpleLength", testExtractNextSelector(`.[#]`, `.[#]`, 4))
+	t.Run("UnicodeCharacter", testExtractNextSelector(`.(name=Ägir).asd`, `.(name=Ägir)`, 13))
 }
 
 func TestDynamicSelectorToGroups(t *testing.T) {
@@ -73,6 +74,10 @@ func TestDynamicSelectorToGroups(t *testing.T) {
 	t.Run("Dot", testDynamicSelectorToGroups("(a=.)(b=2)", []string{
 		"a=.",
 		"b=2",
+	}))
+	t.Run("Unicode", testDynamicSelectorToGroups("(a=.)(b=Ägir)", []string{
+		"a=.",
+		"b=Ägir",
 	}))
 }
 
@@ -101,6 +106,11 @@ func TestFindDynamicSelectorParts(t *testing.T) {
 		Key:        "a",
 		Comparison: "<=",
 		Value:      "b",
+	}))
+	t.Run("UnicodeEqual", testFindDynamicSelectorParts("name=Ägir", dasel.DynamicSelectorParts{
+		Key:        "name",
+		Comparison: "=",
+		Value:      "Ägir",
 	}))
 	t.Run("NestedGroupIgnored", testFindDynamicSelectorParts("(.(x=y)).x=1", dasel.DynamicSelectorParts{
 		Key:        "(.(x=y)).x",
