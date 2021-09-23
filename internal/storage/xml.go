@@ -3,13 +3,19 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/clbanning/mxj/v2"
 	"strings"
+
+	"github.com/clbanning/mxj/v2"
+	"github.com/paulrosania/go-charset/charset"
+	_ "github.com/paulrosania/go-charset/data"
 )
 
 func init() {
 	// Required for https://github.com/TomWright/dasel/issues/61
 	mxj.XMLEscapeCharsDecoder(true)
+
+	// Required for https://github.com/TomWright/dasel/issues/164
+	mxj.XmlCharsetReader = charset.NewReader
 
 	registerReadParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
 	registerWriteParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
