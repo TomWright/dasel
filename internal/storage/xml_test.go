@@ -1,9 +1,15 @@
 package storage_test
 
 import (
-	"github.com/tomwright/dasel/internal/storage"
+	"bytes"
+	"fmt"
+	"io"
 	"reflect"
 	"testing"
+
+	"github.com/tomwright/dasel/internal/storage"
+	"golang.org/x/text/encoding/charmap"
+	"golang.org/x/text/encoding/unicode"
 )
 
 var xmlBytes = []byte(`<user>
@@ -13,6 +19,11 @@ var xmlBytes = []byte(`<user>
 var xmlMap = map[string]interface{}{
 	"user": map[string]interface{}{
 		"name": "Tom",
+	},
+}
+var encodedXmlMap = map[string]interface{}{
+	"user": map[string]interface{}{
+		"name": "Tõm",
 	},
 }
 
@@ -176,4 +187,57 @@ func TestXMLParser_ToBytes_Entities(t *testing.T) {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
+}
+
+func TestXMLParser_DifferentEncodings(t *testing.T) {
+	newXmlBytes := func(newWriter func(io.Writer) io.Writer, encoding, text string) []byte {
+		const encodedXmlBytesFmt = `<?xml version='1.0' encoding='%s'?>`
+		const xmlBody = `<user><name>%s</name></user>`
+
+		var buf bytes.Buffer
+
+		w := newWriter(&buf)
+		fmt.Fprintf(w, xmlBody, text)
+
+		return []byte(fmt.Sprintf(encodedXmlBytesFmt, encoding) + buf.String())
+	}
+
+	testCases := []struct {
+		name string
+		xml  []byte
+	}{
+		{
+			name: "supports ISO-8859-1",
+			xml:  newXmlBytes(charmap.ISO8859_1.NewEncoder().Writer, "ISO-8859-1", "Tõm"),
+		},
+		{
+			name: "supports UTF-8",
+			xml:  newXmlBytes(unicode.UTF8.NewEncoder().Writer, "UTF-8", "Tõm"),
+		},
+		{
+			name: "supports latin1",
+			xml:  newXmlBytes(charmap.Windows1252.NewEncoder().Writer, "latin1", "Tõm"),
+		},
+		{
+			name: "supports UTF-16",
+			xml:  newXmlBytes(unicode.UTF16(unicode.LittleEndian, unicode.UseBOM).NewEncoder().Writer, "UTF-16", "Tõm"),
+		},
+		{
+			name: "supports UTF-16 (big endian)",
+			xml:  newXmlBytes(unicode.UTF16(unicode.BigEndian, unicode.UseBOM).NewEncoder().Writer, "UTF-16BE", "Tõm"),
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			got, err := (&storage.XMLParser{}).FromBytes(tc.xml)
+			if err != nil {
+				t.Errorf("unexpected error: %s", err)
+				return
+			}
+			if !reflect.DeepEqual(&storage.BasicSingleDocument{Value: encodedXmlMap}, got) {
+				t.Errorf("expected %v, got %v", encodedXmlMap, got)
+			}
+		})
+	}
 }

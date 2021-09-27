@@ -6,8 +6,7 @@ import (
 	"strings"
 
 	"github.com/clbanning/mxj/v2"
-	"github.com/paulrosania/go-charset/charset"
-	_ "github.com/paulrosania/go-charset/data"
+	"golang.org/x/net/html/charset"
 )
 
 func init() {
@@ -15,7 +14,7 @@ func init() {
 	mxj.XMLEscapeCharsDecoder(true)
 
 	// Required for https://github.com/TomWright/dasel/issues/164
-	mxj.XmlCharsetReader = charset.NewReader
+	mxj.XmlCharsetReader = charset.NewReaderLabel
 
 	registerReadParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
 	registerWriteParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
