@@ -1,9 +1,9 @@
 on:
   push:
-    branches:
+    branches-ignore:
       - master
       - main
-name: Build Dev
+name: Build Test
 jobs:
   publish:
     strategy:
@@ -22,31 +22,37 @@ jobs:
             artifact_name: dasel_linux_amd64
             build_docker: true
             test_version: true
+            test_execution: true
           - os: linux
             arch: 386
             artifact_name: dasel_linux_386
             build_docker: false
             test_version: false
+            test_execution: false
           - os: darwin
             arch: amd64
             artifact_name: dasel_darwin_amd64
             build_docker: false
             test_version: false
+            test_execution: false
           - os: windows
             arch: amd64
             artifact_name: dasel_windows_amd64.exe
             build_docker: false
             test_version: false
+            test_execution: false
           - os: windows
             arch: 386
             artifact_name: dasel_windows_386.exe
             build_docker: false
             test_version: false
+            test_execution: false
           - os: linux
             arch: arm64
             artifact_name: dasel_linux_arm64
             build_docker: false
             test_version: false
+            test_execution: false
         exclude:
           - os: darwin
             arch: 386
@@ -68,6 +74,10 @@ jobs:
       - name: Test version
         if: matrix.test_version == true
         run: ./target/release/${{ matrix.artifact_name }} --version
+      - name: Test execution
+        if: matrix.test_execution == true
+        run: |
+          echo '{"hello": "World"}' | ./target/release/${{ matrix.artifact_name }} -p json '.hello'
       - name: Build docker image
         if: matrix.build_docker == true
         run: |
@@ -78,18 +88,3 @@ jobs:
         run: |
           echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:latest -p json '.hello'
           echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:alpine -p json '.hello'
-      - name: Docker login
-        if: matrix.build_docker == true
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
-      - name: Docker tag release
-        if: matrix.build_docker == true
-        run: |
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
-          docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
-      - name: Docker push release
-        if: matrix.build_docker == true
-        run: |
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
