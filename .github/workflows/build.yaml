@@ -98,6 +98,7 @@ jobs:
         if: matrix.build_docker == true
         run: |
           docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
+          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:buster-slim
           docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:alpine
       - name: Docker tag release
         if: matrix.build_docker == true
@@ -109,6 +110,7 @@ jobs:
         if: matrix.build_docker == true
         run: |
           docker push ghcr.io/tomwright/dasel:latest
+          docker push ghcr.io/tomwright/dasel:buster-slim
           docker push ghcr.io/tomwright/dasel:alpine
       - name: Docker push release
         if: matrix.build_docker == true
