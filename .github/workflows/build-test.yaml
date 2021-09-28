@@ -3,6 +3,10 @@ on:
     branches-ignore:
       - master
       - main
+  pull_request:
+    branches:
+      - master
+      - main
 name: Build Test
 jobs:
   publish:
