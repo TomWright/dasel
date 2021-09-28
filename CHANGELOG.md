@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.20.1] - 2021-08-28
+
+### Added
+
+- `buster-slim` and `alpine` tags to built docker images.
+
+### Fixed
+
+- Different encodings in XML files are now [handled as expected](https://github.com/TomWright/dasel/issues/164).
+
 ## [v1.20.0] - 2021-08-30
 
 ### Added
@@ -364,7 +374,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.20.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.20.1...HEAD
+[v1.20.1]: https://github.com/TomWright/dasel/compare/v1.20.0...v1.20.1
 [v1.20.0]: https://github.com/TomWright/dasel/compare/v1.19.0...v1.20.0
 [v1.19.0]: https://github.com/TomWright/dasel/compare/v1.18.0...v1.19.0
 [v1.18.0]: https://github.com/TomWright/dasel/compare/v1.17.0...v1.18.0
