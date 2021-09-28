@@ -88,22 +88,34 @@ jobs:
           tag: ${{ github.ref }}
       - name: Build docker image
         if: matrix.build_docker == true
-        run: docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
+        run: |
+          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
+          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/alpine.Dockerfile -t tomwright/dasel:alpine .
       - name: Docker login
         if: matrix.build_docker == true
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
       - name: Docker tag latest
         if: matrix.build_docker == true
-        run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
+        run: |
+          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
+          docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:alpine
       - name: Docker tag release
         if: matrix.build_docker == true
-        run: docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
+        run: |
+          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
+          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
+          docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
       - name: Docker push latest
         if: matrix.build_docker == true
-        run: docker push ghcr.io/tomwright/dasel:latest
+        run: |
+          docker push ghcr.io/tomwright/dasel:latest
+          docker push ghcr.io/tomwright/dasel:alpine
       - name: Docker push release
         if: matrix.build_docker == true
-        run: docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
+        run: |
+          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
+          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
+          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
       - name: Homebrew bump formula
         if: matrix.bump_homebrew == true
         uses: dawidd6/action-homebrew-bump-formula@v3.7.2
