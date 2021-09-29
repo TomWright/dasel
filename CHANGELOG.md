@@ -7,13 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.21.0] - 2021-09-29
+
 ### Added
 - `--escape-html` flag.
 
 ### Fixed
 - `put document` and `put object` are now aware of the `--merge-input-documents` flag.
 
-## [v1.20.1] - 2021-08-28
+## [v1.20.1] - 2021-09-28
 
 ### Added
 
@@ -378,7 +382,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.20.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.21.0...HEAD
+[v1.21.0]: https://github.com/TomWright/dasel/compare/v1.20.1...v1.21.0
 [v1.20.1]: https://github.com/TomWright/dasel/compare/v1.20.0...v1.20.1
 [v1.20.0]: https://github.com/TomWright/dasel/compare/v1.19.0...v1.20.0
 [v1.19.0]: https://github.com/TomWright/dasel/compare/v1.18.0...v1.19.0
