@@ -18,5 +18,4 @@ jobs:
           token: ${{ secrets.GH_HOMEBREW_TOKEN }}
           formula: dasel
           tap: homebrew/core
-          tag: ${{ env.RELEASE_VERSION }}
           force: true
