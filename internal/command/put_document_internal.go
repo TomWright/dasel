@@ -21,6 +21,7 @@ type putDocumentOpts struct {
 	Multi               bool
 	Compact             bool
 	MergeInputDocuments bool
+	EscapeHTML          bool
 }
 
 func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
@@ -63,7 +64,9 @@ func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
 		return err
 	}
 
-	writeOptions := make([]storage.ReadWriteOption, 0)
+	writeOptions := []storage.ReadWriteOption{
+		storage.EscapeHTMLOption(opts.EscapeHTML),
+	}
 
 	if opts.Compact {
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
@@ -102,6 +105,8 @@ func putDocumentCommand() *cobra.Command {
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
 			opts.Compact, _ = cmd.Flags().GetBool("compact")
 			opts.DocumentString, _ = cmd.Flags().GetString("value")
+			opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
+			opts.EscapeHTML, _ = cmd.Flags().GetBool("escape-html")
 
 			if opts.Selector == "" && len(args) > 0 {
 				opts.Selector = args[0]

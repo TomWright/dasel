@@ -20,6 +20,7 @@ type deleteOptions struct {
 	Compact             bool
 	MergeInputDocuments bool
 	Out                 string
+	EscapeHTML          bool
 }
 
 func runDeleteMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts deleteOptions, writeParser storage.WriteParser, writeOptions []storage.ReadWriteOption) error {
@@ -78,7 +79,9 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	writeOptions := make([]storage.ReadWriteOption, 0)
+	writeOptions := []storage.ReadWriteOption{
+		storage.EscapeHTMLOption(opts.EscapeHTML),
+	}
 
 	if opts.Compact {
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
@@ -121,7 +124,7 @@ func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
 
 func deleteCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
-	var plainFlag, multiFlag, compactFlag, mergeInputDocumentsFlag bool
+	var plainFlag, multiFlag, compactFlag, mergeInputDocumentsFlag, escapeHTMLFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "delete -f <file> -p <json,yaml> -s <selector>",
@@ -144,6 +147,7 @@ func deleteCommand() *cobra.Command {
 				Compact:             compactFlag,
 				MergeInputDocuments: mergeInputDocumentsFlag,
 				Out:                 outFlag,
+				EscapeHTML:          escapeHTMLFlag,
 			}, cmd)
 		},
 	}
@@ -157,6 +161,7 @@ func deleteCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Delete multiple results.")
 	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
+	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", true, "Escape HTML tags when writing output.")
 	cmd.Flags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 
 	_ = cmd.MarkFlagFilename("file")

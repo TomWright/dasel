@@ -24,6 +24,14 @@ func ColouriseOption(enabled bool) ReadWriteOption {
 	}
 }
 
+// EscapeHTMLOption returns an option that enables or disables HTML escaping.
+func EscapeHTMLOption(enabled bool) ReadWriteOption {
+	return ReadWriteOption{
+		Key:   OptionEscapeHTML,
+		Value: enabled,
+	}
+}
+
 // OptionKey is a defined type for keys within a ReadWriteOption.
 type OptionKey string
 
@@ -34,6 +42,8 @@ const (
 	OptionPrettyPrint OptionKey = "prettyPrint"
 	// OptionColourise is the key used with ColouriseOption.
 	OptionColourise OptionKey = "colourise"
+	// OptionEscapeHTML is the key used with EscapeHTMLOption.
+	OptionEscapeHTML OptionKey = "escapeHtml"
 )
 
 // ReadWriteOption is an option to be used when writing.

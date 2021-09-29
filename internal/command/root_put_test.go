@@ -688,6 +688,54 @@ foo: true
   "id": -1
 }
 `, nil, "put", "int", "-p", "json", "-v", "-1", "-s", ".id"))
+
+	t.Run("PutStringEscapeHTMLOn", putStringTest(`{
+  "user": "Old"
+}
+`, "json", `.user`, `Tom <contact@tomwright.me>`, `{
+  "user": "Tom \u003ccontact@tomwright.me\u003e"
+}
+`, nil, "--escape-html=true"))
+
+	t.Run("PutStringEscapeHTMLOff", putStringTest(`{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.user`, `Tom <contact@tomwright.me>`, `{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, nil, "--escape-html=false"))
+
+	t.Run("PutObjectEscapeHTMLOn", putObjectTest(`{
+  "user": "Old"
+}
+`, "json", `.`, []string{`user=Tom <contact@tomwright.me>`}, []string{"string"}, `{
+  "user": "Tom \u003ccontact@tomwright.me\u003e"
+}
+`, nil, "--escape-html=true"))
+
+	t.Run("PutObjectEscapeHTMLOff", putObjectTest(`{
+  "user": "Old"
+}
+`, "json", `.`, []string{`user=Tom <contact@tomwright.me>`}, []string{"string"}, `{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, nil, "--escape-html=false"))
+
+	t.Run("PutDocumentEscapeHTMLOn", putDocumentTest(`{
+  "user": "Old"
+}
+`, "json", `.`, `{"user": "Tom <contact@tomwright.me>"}`, `{
+  "user": "Tom \u003ccontact@tomwright.me\u003e"
+}
+`, nil, "--escape-html=true"))
+
+	t.Run("PutDocumentEscapeHTMLOff", putDocumentTest(`{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.`, `{"user": "Tom <contact@tomwright.me>"}`, `{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, nil, "--escape-html=false"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {

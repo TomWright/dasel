@@ -66,6 +66,10 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 			if value, ok := o.Value.(bool); ok {
 				colourise = value
 			}
+		case OptionEscapeHTML:
+			if value, ok := o.Value.(bool); ok {
+				encoder.SetEscapeHTML(value)
+			}
 		}
 	}
 
