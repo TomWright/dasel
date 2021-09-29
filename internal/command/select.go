@@ -24,6 +24,7 @@ type selectOptions struct {
 	MergeInputDocuments bool
 	FormatTemplate      string
 	Colourise           bool
+	EscapeHTML          bool
 }
 
 func outputNodeLength(writer io.Writer, nodes ...*dasel.Node) error {
@@ -114,7 +115,9 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	writeOptions := make([]storage.ReadWriteOption, 0)
+	writeOptions := []storage.ReadWriteOption{
+		storage.EscapeHTMLOption(opts.EscapeHTML),
+	}
 
 	if opts.Compact {
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
@@ -170,7 +173,8 @@ func runSelectCommand(opts selectOptions, cmd *cobra.Command) error {
 
 func selectCommand() *cobra.Command {
 	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, formatTemplateFlag string
-	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag, colourFlag, colorFlag bool
+	var plainFlag, multiFlag, nullValueNotFoundFlag, compactFlag, lengthFlag, mergeInputDocumentsFlag,
+		colourFlag, colorFlag, escapeHTMLFlag bool
 
 	cmd := &cobra.Command{
 		Use:   "select -f <file> -p <json,yaml> -s <selector>",
@@ -196,6 +200,7 @@ func selectCommand() *cobra.Command {
 				MergeInputDocuments: mergeInputDocumentsFlag,
 				FormatTemplate:      formatTemplateFlag,
 				Colourise:           colourFlag || colorFlag,
+				EscapeHTML:          escapeHTMLFlag,
 			}, cmd)
 		},
 	}
@@ -214,6 +219,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVar(&formatTemplateFlag, "format", "", "Formatting template to use when writing results.")
 	cmd.Flags().BoolVar(&colourFlag, "colour", false, "Print colourised output.")
 	cmd.Flags().BoolVar(&colorFlag, "color", false, "Alias of --colour.")
+	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", true, "Escape HTML tags when writing output.")
 
 	_ = cmd.MarkFlagFilename("file")
 

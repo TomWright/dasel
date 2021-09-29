@@ -7,7 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+- `--escape-html` flag.
+
+### Fixed
+- `put document` and `put object` are now aware of the `--merge-input-documents` flag.
 
 ## [v1.20.1] - 2021-08-28
 

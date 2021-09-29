@@ -477,6 +477,22 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 ]
 `, nil, "--merge-input-documents"))
 
+	t.Run("EscapeHTMLOn", selectTest(`{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.`, `{
+  "user": "Tom \u003ccontact@tomwright.me\u003e"
+}
+`, nil, "--escape-html=true"))
+
+	t.Run("EscapeHTMLOff", selectTest(`{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.`, `{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, nil, "--escape-html=false"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {

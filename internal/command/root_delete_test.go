@@ -163,4 +163,21 @@ func TestRootCmd_Delete_JSON(t *testing.T) {
 	t.Run("RootArray", deleteTest(`[1, 2, 3]`, "json", ".", newline(`[]`), nil))
 	t.Run("RootArrayMulti", deleteTest(`[1, 2, 3]`, "json", ".", newline(`[]`), nil, "-m"))
 
+	t.Run("DeleteStringEscapeHTMLOn", deleteTest(`{
+  "name": "Tom",
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.name`, `{
+  "user": "Tom \u003ccontact@tomwright.me\u003e"
+}
+`, nil, "--escape-html=true"))
+
+	t.Run("DeleteStringEscapeHTMLOff", deleteTest(`{
+  "name": "Tom",
+  "user": "Tom <contact@tomwright.me>"
+}
+`, "json", `.name`, `{
+  "user": "Tom <contact@tomwright.me>"
+}
+`, nil, "--escape-html=false"))
 }

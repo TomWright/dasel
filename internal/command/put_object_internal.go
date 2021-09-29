@@ -23,6 +23,7 @@ type putObjectOpts struct {
 	Multi               bool
 	Compact             bool
 	MergeInputDocuments bool
+	EscapeHTML          bool
 }
 
 func getMapFromTypesValues(inputTypes []string, inputValues []string) (map[string]interface{}, error) {
@@ -81,7 +82,9 @@ func runPutObjectCommand(opts putObjectOpts, cmd *cobra.Command) error {
 		return err
 	}
 
-	writeOptions := make([]storage.ReadWriteOption, 0)
+	writeOptions := []storage.ReadWriteOption{
+		storage.EscapeHTMLOption(opts.EscapeHTML),
+	}
 
 	if opts.Compact {
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
@@ -120,6 +123,8 @@ func putObjectCommand() *cobra.Command {
 			}
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
 			opts.Compact, _ = cmd.Flags().GetBool("compact")
+			opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
+			opts.EscapeHTML, _ = cmd.Flags().GetBool("escape-html")
 
 			if opts.Selector == "" && len(opts.InputValues) > 0 {
 				opts.Selector = opts.InputValues[0]
