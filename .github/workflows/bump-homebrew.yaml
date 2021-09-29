@@ -10,8 +10,6 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v2
-      - name: Set env
-        run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
       - name: Homebrew bump formula
         uses: dawidd6/action-homebrew-bump-formula@v3.8.0
         with:
