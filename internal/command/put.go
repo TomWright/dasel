@@ -316,7 +316,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 	cmd.PersistentFlags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.PersistentFlags().StringVarP(&valueFlag, "value", "v", "", "Value to put.")
-	cmd.PersistentFlags().BoolVar(&escapeHTMLFlag, "escape-html", true, "Escape HTML tags when writing output.")
+	cmd.PersistentFlags().BoolVar(&escapeHTMLFlag, "escape-html", false, "Escape HTML tags when writing output.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
 

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.21.1] - 2021-09-30
+
+### Changed
+- `--escape-html` flag now defaults to false.
+
 ## [v1.21.0] - 2021-09-29
 
 ### Added

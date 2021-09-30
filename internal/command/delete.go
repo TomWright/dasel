@@ -161,7 +161,7 @@ func deleteCommand() *cobra.Command {
 	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Delete multiple results.")
 	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
-	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", true, "Escape HTML tags when writing output.")
+	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", false, "Escape HTML tags when writing output.")
 	cmd.Flags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
 
 	_ = cmd.MarkFlagFilename("file")

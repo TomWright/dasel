@@ -219,7 +219,7 @@ func selectCommand() *cobra.Command {
 	cmd.Flags().StringVar(&formatTemplateFlag, "format", "", "Formatting template to use when writing results.")
 	cmd.Flags().BoolVar(&colourFlag, "colour", false, "Print colourised output.")
 	cmd.Flags().BoolVar(&colorFlag, "color", false, "Alias of --colour.")
-	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", true, "Escape HTML tags when writing output.")
+	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", false, "Escape HTML tags when writing output.")
 
 	_ = cmd.MarkFlagFilename("file")
 
