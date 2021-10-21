@@ -15,6 +15,7 @@ jobs:
           - amd64
           - 386
           - arm64
+          - arm
         include:
           - os: linux
             arch: amd64
@@ -52,6 +53,11 @@ jobs:
             asset_name: dasel_linux_arm64
             build_docker: false
             test_version: false
+          - os: linux
+            arch: arm
+            artifact_name: dasel_linux_arm32
+            build_docker: false
+            test_version: false
         exclude:
             - os: darwin
               arch: 386
@@ -59,6 +65,10 @@ jobs:
               arch: arm64
             - os: windows
               arch: arm64
+            - os: windows
+              arch: arm
+            - os: darwin
+              arch: arm
     name: Build ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ubuntu-latest
     steps:
