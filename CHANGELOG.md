@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.21.2] - 2021-10-21
+
+### Added
+
+- Linux arm32 build target.
+
 ## [v1.21.1] - 2021-09-30
 
 ### Changed
@@ -387,7 +393,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.21.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.21.2...HEAD
+[v1.21.2]: https://github.com/TomWright/dasel/compare/v1.21.1...v1.21.2
 [v1.21.1]: https://github.com/TomWright/dasel/compare/v1.21.0...v1.21.1
 [v1.21.0]: https://github.com/TomWright/dasel/compare/v1.20.1...v1.21.0
 [v1.20.1]: https://github.com/TomWright/dasel/compare/v1.20.0...v1.20.1
