@@ -67,11 +67,6 @@ func TestEqualCondition_Check(t *testing.T) {
 		nil,
 		false, &dasel.UnhandledCheckType{Value: nil},
 	))
-	t.Run("String", conditionTest(
-		c,
-		"",
-		false, &dasel.UnhandledCheckType{Value: ""},
-	))
 }
 
 func TestSortedComparisonCondition_Check(t *testing.T) {
@@ -162,11 +157,6 @@ func TestSortedComparisonCondition_Check(t *testing.T) {
 		&dasel.SortedComparisonCondition{Key: "x", Value: "4"},
 		nil,
 		false, &dasel.UnhandledCheckType{Value: nil},
-	))
-	t.Run("String", conditionTest(
-		&dasel.SortedComparisonCondition{Key: "x", Value: "4"},
-		"",
-		false, &dasel.UnhandledCheckType{Value: ""},
 	))
 }
 

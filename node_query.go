@@ -218,6 +218,37 @@ func findValueLength(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
+// findValueType returns the type of the current node.
+func findValueType(n *Node, createIfNotExists bool) (reflect.Value, error) {
+	if !isValid(n.Previous.Value) {
+		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
+	}
+
+	value := unwrapValue(n.Previous.Value)
+
+	switch value.Kind() {
+	case reflect.Slice:
+		return reflect.ValueOf("array"), nil
+
+	case reflect.Map:
+		return reflect.ValueOf("map"), nil
+
+	case reflect.String:
+		return reflect.ValueOf("string"), nil
+
+	case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+		return reflect.ValueOf("int"), nil
+
+	case reflect.Float32, reflect.Float64:
+		return reflect.ValueOf("float"), nil
+
+	case reflect.Bool:
+		return reflect.ValueOf("bool"), nil
+	}
+
+	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
+}
+
 // findValue finds the value for the given node.
 // The value is essentially pulled from the previous node, using the (already parsed) selector
 // information stored on the current node.
@@ -242,6 +273,8 @@ func findValue(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		return findValueDynamic(n, createIfNotExists)
 	case "LENGTH":
 		return findValueLength(n, createIfNotExists)
+	case "TYPE":
+		return findValueType(n, createIfNotExists)
 	default:
 		return nilValue(), &UnsupportedSelector{Selector: n.Selector.Raw}
 	}

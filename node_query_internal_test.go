@@ -145,32 +145,6 @@ func TestFindValueDynamic(t *testing.T) {
 			return
 		}
 	})
-	t.Run("UnsupportedCheckType", func(t *testing.T) {
-		itemVal := 1
-		val := []interface{}{
-			itemVal,
-		}
-		n := getNodeWithValue(val)
-		n.Selector.Current = "(name=x)"
-		n.Selector.Conditions = []Condition{
-			&EqualCondition{Key: "name", Value: "x"},
-		}
-		got, err := findValueDynamic(n, false)
-		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
-	})
-	t.Run("UnsupportedCheckTypeMap", func(t *testing.T) {
-		itemVal := 1
-		val := map[string]interface{}{
-			"x": itemVal,
-		}
-		n := getNodeWithValue(val)
-		n.Selector.Current = "(name=x)"
-		n.Selector.Conditions = []Condition{
-			&EqualCondition{Key: "name", Value: "x"},
-		}
-		got, err := findValueDynamic(n, false)
-		assertQueryResult(t, nilValue(), &UnhandledCheckType{Value: reflect.TypeOf(itemVal).Kind().String()}, got, err)
-	})
 	t.Run("UnsupportedType", func(t *testing.T) {
 		val := 0
 		n := getNodeWithValue(val)
@@ -224,6 +198,57 @@ func TestFindValueLength(t *testing.T) {
 		n.Previous.Selector.Current = ".[#]"
 		got, err := findValueLength(n, false)
 		assertQueryResult(t, reflect.ValueOf(5), nil, got, err)
+	})
+}
+
+func TestFindValueType(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		n := getNodeWithValue(nil)
+		n.Previous.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, nilValue(), &UnexpectedPreviousNilValue{Selector: ".[#]"}, got, err)
+	})
+	t.Run("Int", func(t *testing.T) {
+		val := 0
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("int"), nil, got, err)
+	})
+	t.Run("Float", func(t *testing.T) {
+		val := 1.1
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("float"), nil, got, err)
+	})
+	t.Run("Bool", func(t *testing.T) {
+		val := true
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("bool"), nil, got, err)
+	})
+	t.Run("String", func(t *testing.T) {
+		val := "x"
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("string"), nil, got, err)
+	})
+	t.Run("Map", func(t *testing.T) {
+		val := map[string]interface{}{"x": 1}
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("map"), nil, got, err)
+	})
+	t.Run("Array", func(t *testing.T) {
+		val := []interface{}{1}
+		n := getNodeWithValue(val)
+		n.Selector.Current = ".[#]"
+		got, err := findValueType(n, false)
+		assertQueryResult(t, reflect.ValueOf("array"), nil, got, err)
 	})
 }
 

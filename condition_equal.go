@@ -36,21 +36,22 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 		return c.check(value.Interface(), c.Value)
 	}
 
-	switch value.Kind() {
-	case reflect.Map, reflect.Slice:
-		subRootNode := New(value.Interface())
-		foundNode, err := subRootNode.Query(c.Key)
-		if err != nil {
-			var valueNotFound = &ValueNotFound{}
-			if errors.As(err, &valueNotFound) {
-				return false, nil
-			}
-
-			return false, fmt.Errorf("subquery failed: %w", err)
+	fmt.Println("here456")
+	subRootNode := New(value.Interface())
+	foundNode, err := subRootNode.Query(c.Key)
+	fmt.Println("789", err)
+	if err != nil {
+		fmt.Println("here123")
+		var valueNotFound = &ValueNotFound{}
+		if errors.As(err, &valueNotFound) {
+			return false, nil
+		}
+		var unsupportedType = &UnsupportedTypeForSelector{}
+		if errors.As(err, &unsupportedType) {
+			return false, nil
 		}
 
-		return c.check(foundNode.InterfaceValue(), c.Value)
+		return false, fmt.Errorf("subquery failed: %w", err)
 	}
-
-	return false, &UnhandledCheckType{Value: value.String()}
+	return c.check(foundNode.InterfaceValue(), c.Value)
 }

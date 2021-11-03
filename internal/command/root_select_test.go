@@ -493,6 +493,44 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 }
 `, nil, "--escape-html=false"))
 
+	t.Run("MixedDynamicSelectors", selectTest(`{
+  "plugins": [
+    "@semantic-release/commit-analyzer",
+    "@semantic-release/release-notes-generator",
+    "@semantic-release/gitlab",
+    [
+      "@semantic-release/git",
+      {
+        "assets": [
+          "tbump.toml",
+          "**/pyproject.toml",
+          "**/setup.py",
+          "README.md"
+        ],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      }
+    ],
+	[
+      "@semantic-release/git",
+      {
+        "assets": [
+          "y"
+        ],
+        "message": "chore(release): ${nextRelease.version}\n\n${nextRelease.notes}"
+      }
+    ]
+  ]
+}`, "json", `.plugins.([@]=array).([@]=map).assets`, `[
+  "tbump.toml",
+  "**/pyproject.toml",
+  "**/setup.py",
+  "README.md"
+]
+[
+  "y"
+]
+`, nil, "-m"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
