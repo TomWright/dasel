@@ -131,6 +131,50 @@ func TestFindNodesLength(t *testing.T) {
 	})
 }
 
+func TestFindNodesType(t *testing.T) {
+	t.Run("NilValue", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		got, err := findNodesType(selector, nilValue())
+		assertQueryMultipleResult(t, []reflect.Value{}, &UnexpectedPreviousNilValue{Selector: ".[#]"}, got, err)
+	})
+	t.Run("Int", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := 0
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("int")}, nil, got, err)
+	})
+	t.Run("Float", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := 1.1
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("float")}, nil, got, err)
+	})
+	t.Run("Bool", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := true
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("bool")}, nil, got, err)
+	})
+	t.Run("String", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := "a"
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("string")}, nil, got, err)
+	})
+	t.Run("Map", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := map[string]interface{}{"x": 1}
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("map")}, nil, got, err)
+	})
+	t.Run("Array", func(t *testing.T) {
+		selector := Selector{Current: ".[#]", Raw: ".[#]"}
+		val := []interface{}{"x"}
+		got, err := findNodesType(selector, reflect.ValueOf(val))
+		assertQueryMultipleResult(t, []reflect.Value{reflect.ValueOf("array")}, nil, got, err)
+	})
+}
+
 func TestFindNodesPropertyKeys(t *testing.T) {
 	t.Run("NilValue", func(t *testing.T) {
 		selector := Selector{Current: ".", Raw: "."}
@@ -278,32 +322,6 @@ func TestFindNodesDynamic(t *testing.T) {
 			t.Errorf("expected type of %s, got %s", exp, got)
 			return
 		}
-	})
-	t.Run("UnsupportedCheckType", func(t *testing.T) {
-		previousValue := reflect.ValueOf([]interface{}{
-			1,
-		})
-		selector := Selector{
-			Current: "(name=x)",
-			Conditions: []Condition{
-				&EqualCondition{Key: "name", Value: "x"},
-			},
-		}
-		got, err := findNodesDynamic(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnhandledCheckType{Value: previousValue.Kind().String()}, got, err)
-	})
-	t.Run("UnsupportedCheckTypeMap", func(t *testing.T) {
-		previousValue := reflect.ValueOf(map[string]interface{}{
-			"x": 1,
-		})
-		selector := Selector{
-			Current: "(name=x)",
-			Conditions: []Condition{
-				&EqualCondition{Key: "name", Value: "x"},
-			},
-		}
-		got, err := findNodesDynamic(selector, previousValue, false)
-		assertQueryMultipleResult(t, []reflect.Value{}, &UnhandledCheckType{Value: previousValue.Kind().String()}, got, err)
 	})
 	t.Run("UnsupportedType", func(t *testing.T) {
 		previousValue := reflect.ValueOf(0)

@@ -31,37 +31,32 @@ func (c SortedComparisonCondition) Check(other reflect.Value) (bool, error) {
 		return fmt.Sprint(value.Interface()) == c.Value, nil
 	}
 
-	switch value.Kind() {
-	case reflect.Map, reflect.Slice:
-		subRootNode := New(value.Interface())
-		foundNode, err := subRootNode.Query(c.Key)
-		if err != nil {
-			var valueNotFound = &ValueNotFound{}
-			if errors.As(err, &valueNotFound) {
-				return false, nil
-			}
-
-			return false, fmt.Errorf("subquery failed: %w", err)
+	subRootNode := New(value.Interface())
+	foundNode, err := subRootNode.Query(c.Key)
+	if err != nil {
+		var valueNotFound = &ValueNotFound{}
+		if errors.As(err, &valueNotFound) {
+			return false, nil
 		}
 
-		foundValueStr := fmt.Sprint(foundNode.InterfaceValue())
-
-		// Check if the values are equal
-		if foundValueStr == c.Value {
-			return c.Equal, nil
-		}
-
-		sortedVals := []string{foundValueStr, c.Value}
-		sort.Strings(sortedVals)
-
-		if !c.After && sortedVals[1] == c.Value {
-			return true, nil
-		} else if c.After && sortedVals[0] == c.Value {
-			return true, nil
-		}
-
-		return false, nil
+		return false, fmt.Errorf("subquery failed: %w", err)
 	}
 
-	return false, &UnhandledCheckType{Value: value.String()}
+	foundValueStr := fmt.Sprint(foundNode.InterfaceValue())
+
+	// Check if the values are equal
+	if foundValueStr == c.Value {
+		return c.Equal, nil
+	}
+
+	sortedVals := []string{foundValueStr, c.Value}
+	sort.Strings(sortedVals)
+
+	if !c.After && sortedVals[1] == c.Value {
+		return true, nil
+	} else if c.After && sortedVals[0] == c.Value {
+		return true, nil
+	}
+
+	return false, nil
 }
