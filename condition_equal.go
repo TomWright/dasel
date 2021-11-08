@@ -36,12 +36,9 @@ func (c EqualCondition) Check(other reflect.Value) (bool, error) {
 		return c.check(value.Interface(), c.Value)
 	}
 
-	fmt.Println("here456")
 	subRootNode := New(value.Interface())
 	foundNode, err := subRootNode.Query(c.Key)
-	fmt.Println("789", err)
 	if err != nil {
-		fmt.Println("here123")
 		var valueNotFound = &ValueNotFound{}
 		if errors.As(err, &valueNotFound) {
 			return false, nil
