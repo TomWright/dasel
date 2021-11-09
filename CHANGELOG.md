@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
-## [v1.22.0] - 2021-11-09
+## [v1.22.1] - 2021-11-09
+
+### Fixed
+
+- Cleaned up error output
+
+- ## [v1.22.0] - 2021-11-09
 
 ### Added
 
@@ -403,7 +409,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.22.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.22.1...HEAD
+[v1.22.1]: https://github.com/TomWright/dasel/compare/v1.22.0...v1.22.1
 [v1.22.0]: https://github.com/TomWright/dasel/compare/v1.21.2...v1.22.0
 [v1.21.2]: https://github.com/TomWright/dasel/compare/v1.21.1...v1.21.2
 [v1.21.1]: https://github.com/TomWright/dasel/compare/v1.21.0...v1.21.1
