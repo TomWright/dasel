@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.22.0] - 2021-11-09
+
+### Added
+
+- Type selector `[@]`.
+
+### Fixed
+
+- Errors are now written to stderr as expected.
+
 ## [v1.21.2] - 2021-10-21
 
 ### Added
