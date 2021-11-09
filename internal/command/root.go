@@ -10,8 +10,10 @@ import (
 // NewRootCMD returns the root command for use with cobra.
 func NewRootCMD() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "dasel",
-		Short: "Query and modify data structures using selector strings.",
+		Use:           "dasel",
+		Short:         "Query and modify data structures using selector strings.",
+		SilenceErrors: true,
+		SilenceUsage:  true,
 	}
 	cmd.Version = internal.Version
 	cmd.AddCommand(
