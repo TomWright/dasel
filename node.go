@@ -148,7 +148,7 @@ func NewFromFile(path, parser string) (*Node, error) {
 
 // WriteFile writes data to disk using specified write parser and options.
 // TODO: use io.Writer insted of file path? This should help with tests...
-func WriteFile(data interface{}, file string, parser string, compact, escapeHTML bool) error {
+func WriteFile(node *Node, file string, parser string, compact, escapeHTML bool) error {
 	writeParser, err := storage.NewWriteParserFromString(parser)
 	if err != nil {
 		return err
@@ -169,7 +169,10 @@ func WriteFile(data interface{}, file string, parser string, compact, escapeHTML
 		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
 	}
 
-	if err := storage.Write(writeParser, data, nil, f, writeOptions...); err != nil {
+	value := node.InterfaceValue()
+	originalValue := node.OriginalValue
+
+	if err := storage.Write(writeParser, value, originalValue, f, writeOptions...); err != nil {
 		return fmt.Errorf("could not write to output file: %w", err)
 	}
 
