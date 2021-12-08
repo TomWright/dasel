@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"os"
 	"reflect"
 	"regexp"
 
@@ -130,7 +131,7 @@ func New(value interface{}) *Node {
 	return rootNode
 }
 
-// NewFromFile returns a new root node by parsing file.
+// NewFromFile returns a new root node by parsing file using specified read parser.
 func NewFromFile(path, parser string) (*Node, error) {
 	readParser, err := storage.NewReadParserFromString(parser)
 	if err != nil {
@@ -143,6 +144,36 @@ func NewFromFile(path, parser string) (*Node, error) {
 	}
 
 	return New(data), nil
+}
+
+// WriteFile writes data to disk using specified write parser and options.
+// TODO: use io.Writer insted of file path? This should help with tests...
+func WriteFile(data interface{}, file string, parser string, compact, escapeHTML bool) error {
+	writeParser, err := storage.NewWriteParserFromString(parser)
+	if err != nil {
+		return err
+	}
+
+	f, err := os.Create(file)
+	if err != nil {
+		return fmt.Errorf("could not open output file: %w", err)
+	}
+
+	defer f.Close()
+
+	writeOptions := []storage.ReadWriteOption{
+		storage.EscapeHTMLOption(escapeHTML),
+	}
+
+	if compact {
+		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
+	}
+
+	if err := storage.Write(writeParser, data, nil, f, writeOptions...); err != nil {
+		return fmt.Errorf("could not write to output file: %w", err)
+	}
+
+	return nil
 }
 
 func (n *Node) setValue(newValue interface{}) {
