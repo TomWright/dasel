@@ -2,9 +2,10 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"regexp"
+
+	"github.com/tomwright/dasel/internal/storage"
 )
 
 // Selector represents the selector for a node.
@@ -127,6 +128,35 @@ func New(value interface{}) *Node {
 	}
 	rootNode.setRealValue(value)
 	return rootNode
+}
+
+// NewFromFile returns a new root node by parsing file.
+func NewFromFile(path, parser string) (*Node, error) {
+	readParser, err := storage.NewReadParserFromString(parser)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := storage.LoadFromFile(path, readParser)
+	if err != nil {
+		return nil, err
+	}
+
+	rootNode := &Node{
+		Previous:     nil,
+		Next:         nil,
+		NextMultiple: nil,
+		Selector: Selector{
+			Raw:       ".",
+			Current:   ".",
+			Remaining: "",
+			Type:      "ROOT",
+			Property:  "",
+		},
+	}
+
+	rootNode.setRealValue(data)
+	return rootNode, nil
 }
 
 func (n *Node) setValue(newValue interface{}) {
