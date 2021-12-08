@@ -142,21 +142,7 @@ func NewFromFile(path, parser string) (*Node, error) {
 		return nil, err
 	}
 
-	rootNode := &Node{
-		Previous:     nil,
-		Next:         nil,
-		NextMultiple: nil,
-		Selector: Selector{
-			Raw:       ".",
-			Current:   ".",
-			Remaining: "",
-			Type:      "ROOT",
-			Property:  "",
-		},
-	}
-
-	rootNode.setRealValue(data)
-	return rootNode, nil
+	return New(data), nil
 }
 
 func (n *Node) setValue(newValue interface{}) {
