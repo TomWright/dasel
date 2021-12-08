@@ -20,7 +20,7 @@ func init() {
 	registerWriteParser([]string{"xml"}, []string{".xml"}, &XMLParser{})
 }
 
-// XMLParser is a Parser implementation to handle yaml files.
+// XMLParser is a Parser implementation to handle xml files.
 type XMLParser struct {
 }
 

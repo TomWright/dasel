@@ -12,7 +12,7 @@ func init() {
 	registerWriteParser([]string{"json"}, []string{".json"}, &JSONParser{})
 }
 
-// JSONParser is a Parser implementation to handle yaml files.
+// JSONParser is a Parser implementation to handle json files.
 type JSONParser struct {
 }
 

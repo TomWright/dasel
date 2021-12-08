@@ -12,7 +12,7 @@ func init() {
 	registerWriteParser([]string{"csv"}, []string{".csv"}, &CSVParser{})
 }
 
-// CSVParser is a Parser implementation to handle yaml files.
+// CSVParser is a Parser implementation to handle csv files.
 type CSVParser struct {
 }
 
