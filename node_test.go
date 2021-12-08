@@ -4,10 +4,11 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/internal/storage"
 	"reflect"
 	"testing"
+
+	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/internal/storage"
 )
 
 // ExampleNode_ReadmeExample tests the code from the readme explanation.
@@ -1311,4 +1312,54 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 		"name", "Tom",
 	}), ".", []interface{}{}))
 	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
+}
+
+func TestNodeNewFromFile(t *testing.T) {
+	// Not sure what to test here:
+	// should all file/parser tests be duplicated?
+	// E.g.: TestLoadFromFile, TestNewReadParserFromString
+
+	tests := []struct {
+		Name   string
+		File   string
+		Parser string
+		Err    error
+	}{
+		{
+			Name: "File exists and valid parser specified",
+			File: "./tests/assets/example.json", Parser: "json", Err: nil,
+		},
+		{
+			Name: "File exists and invalid parser specified",
+			File: "./tests/assets/example.json", Parser: "bad", Err: storage.UnknownParserErr{Parser: "bad"},
+		},
+		{
+			Name: "File not exists and valid parser specified",
+			File: "no_such_file", Parser: "json", Err: errors.New("could not open file: open no_such_file: The system cannot find the file specified."),
+		},
+		{
+			Name: "File not exists and invalid parser specified",
+			File: "no_such_file", Parser: "bad", Err: storage.UnknownParserErr{Parser: "bad"},
+		},
+	}
+
+	for _, testCase := range tests {
+		tc := testCase
+		t.Run(tc.Name, func(t *testing.T) {
+			_, err := dasel.NewFromFile(tc.File, tc.Parser)
+
+			if tc.Err == nil && err != nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err == nil {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+			if tc.Err != nil && err != nil && err.Error() != tc.Err.Error() {
+				t.Errorf("expected err %v, got %v", tc.Err, err)
+				return
+			}
+		})
+	}
 }
