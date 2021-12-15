@@ -3,6 +3,7 @@ package dasel
 import (
 	"fmt"
 	"io"
+	"os"
 	"reflect"
 	"regexp"
 
@@ -132,13 +133,13 @@ func New(value interface{}) *Node {
 }
 
 // NewFromFile returns a new root node by parsing file using specified read parser.
-func NewFromFile(path, parser string) (*Node, error) {
+func NewFromFile(filename, parser string) (*Node, error) {
 	readParser, err := storage.NewReadParserFromString(parser)
 	if err != nil {
 		return nil, err
 	}
 
-	data, err := storage.LoadFromFile(path, readParser)
+	data, err := storage.LoadFromFile(filename, readParser)
 	if err != nil {
 		return nil, err
 	}
@@ -146,8 +147,40 @@ func NewFromFile(path, parser string) (*Node, error) {
 	return New(data), nil
 }
 
-// WriteFile writes data to disk using specified write parser and options.
-func (n *Node) WriteFile(writer io.Writer, parser string, compact, escapeHTML bool) error {
+// NewFromReader returns a new root node by parsing from Reader using specified read parser.
+func NewFromReader(reader io.Reader, parser string) (*Node, error) {
+	readParser, err := storage.NewReadParserFromString(parser)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := storage.Load(readParser, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(data), nil
+}
+
+// Write writes data to file using specified write parser and options.
+func (n *Node) WriteToFile(filename, parser string, compact, escapeHTML bool) error {
+	f, err := os.Create(filename)
+
+	if err != nil {
+		return err
+	}
+
+	// https://www.joeshaw.org/dont-defer-close-on-writable-files/
+	if err = n.Write(f, parser, compact, escapeHTML); err != nil {
+		f.Close()
+		return err
+	}
+
+	return f.Close()
+}
+
+// Write writes data to Writer using specified write parser and options.
+func (n *Node) Write(writer io.Writer, parser string, compact, escapeHTML bool) error {
 	writeParser, err := storage.NewWriteParserFromString(parser)
 	if err != nil {
 		return err
@@ -165,7 +198,7 @@ func (n *Node) WriteFile(writer io.Writer, parser string, compact, escapeHTML bo
 	originalValue := n.OriginalValue
 
 	if err := storage.Write(writeParser, value, originalValue, writer, writeOptions...); err != nil {
-		return fmt.Errorf("could not write to output file: %w", err)
+		return err
 	}
 
 	return nil
