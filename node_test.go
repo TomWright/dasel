@@ -1,6 +1,7 @@
 package dasel_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -1314,51 +1315,128 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
 }
 
+// TestNodeNewFromFile tests parsing from file
+//
+// Not sure what to test here:
+// should all file/parser tests be duplicated?
+// E.g.: TestLoadFromFile, TestNewReadParserFromString
 func TestNodeNewFromFile(t *testing.T) {
-	// Not sure what to test here:
-	// should all file/parser tests be duplicated?
-	// E.g.: TestLoadFromFile, TestNewReadParserFromString
-
 	tests := []struct {
-		Name   string
-		File   string
-		Parser string
-		Err    error
+		name   string
+		file   string
+		parser string
+		err    error
 	}{
 		{
-			Name: "File exists and valid parser specified",
-			File: "./tests/assets/example.json", Parser: "json", Err: nil,
+			name:   "File exists and valid parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "json",
+			err:    nil,
 		},
 		{
-			Name: "File exists and invalid parser specified",
-			File: "./tests/assets/example.json", Parser: "bad", Err: storage.UnknownParserErr{Parser: "bad"},
+			name:   "File exists and invalid parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "bad",
+			err:    storage.UnknownParserErr{Parser: "bad"},
 		},
 		{
-			Name: "File not exists and valid parser specified",
-			File: "no_such_file", Parser: "json", Err: errors.New("could not open file: open no_such_file: The system cannot find the file specified."),
+			name:   "File not exists and valid parser specified",
+			file:   "no_such_file",
+			parser: "json",
+			err:    errors.New("could not open file: open no_such_file: The system cannot find the file specified."),
 		},
 		{
-			Name: "File not exists and invalid parser specified",
-			File: "no_such_file", Parser: "bad", Err: storage.UnknownParserErr{Parser: "bad"},
+			name:   "File not exists and invalid parser specified",
+			file:   "no_such_file",
+			parser: "bad",
+			err:    storage.UnknownParserErr{Parser: "bad"},
 		},
 	}
 
 	for _, testCase := range tests {
 		tc := testCase
-		t.Run(tc.Name, func(t *testing.T) {
-			_, err := dasel.NewFromFile(tc.File, tc.Parser)
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := dasel.NewFromFile(tc.file, tc.parser)
 
-			if tc.Err == nil && err != nil {
-				t.Errorf("expected err %v, got %v", tc.Err, err)
+			if tc.err == nil && err != nil {
+				t.Errorf("expected err %v, got %v", tc.err, err)
 				return
 			}
-			if tc.Err != nil && err == nil {
-				t.Errorf("expected err %v, got %v", tc.Err, err)
+			if tc.err != nil && err == nil {
+				t.Errorf("expected err %v, got %v", tc.err, err)
 				return
 			}
-			if tc.Err != nil && err != nil && err.Error() != tc.Err.Error() {
-				t.Errorf("expected err %v, got %v", tc.Err, err)
+			if tc.err != nil && err != nil && err.Error() != tc.err.Error() {
+				t.Errorf("expected err %v, got %v", tc.err, err)
 				return
+			}
+		})
+	}
+}
+
+// TestNode_WriteFile tests writing to file
+//
+// Not sure what to test here:
+// should all file/parser tests be duplicated?
+// E.g.: TestWrite, TestNewWriteParserFromString
+func TestNode_WriteFile(t *testing.T) {
+	type data map[string]interface{}
+	type args struct {
+		parser     string
+		compact    bool
+		escapeHTML bool
+	}
+	tests := []struct {
+		name       string
+		data       map[string]interface{}
+		args       args
+		wantWriter string
+		wantErr    bool
+	}{
+		{
+			name: "JSON, compact, no escape",
+			data: data{">": "&"},
+			args: args{
+				parser:     "json",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "{\">\":\"&\"}\n",
+			wantErr:    false,
+		},
+		{
+			name: "JSON, pretty, escape",
+			data: data{">": "&"},
+			args: args{
+				parser:     "json",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "{\n  \"\\u003e\": \"\\u0026\"\n}\n",
+			wantErr:    false,
+		},
+		{
+			name: "Invalid parser",
+			data: data{">": "&"},
+			args: args{
+				parser:     "foo",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "",
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			node := dasel.New(tt.data)
+			if err := node.WriteFile(writer, tt.args.parser, tt.args.compact, tt.args.escapeHTML); (err != nil) != tt.wantErr {
+				t.Errorf("Node.WriteFile() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotWriter := writer.String(); gotWriter != tt.wantWriter {
+				t.Errorf("Node.WriteFile() = %v want %v", gotWriter, tt.wantWriter)
 			}
 		})
 	}
