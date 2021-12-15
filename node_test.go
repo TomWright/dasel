@@ -1315,12 +1315,12 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
 }
 
-// TestNodeNewFromFile tests parsing from file
+// TestNode_NewFromFile tests parsing from file
 //
 // Not sure what to test here:
 // should all file/parser tests be duplicated?
 // E.g.: TestLoadFromFile, TestNewReadParserFromString
-func TestNodeNewFromFile(t *testing.T) {
+func TestNode_NewFromFile(t *testing.T) {
 	tests := []struct {
 		name   string
 		file   string
@@ -1374,12 +1374,12 @@ func TestNodeNewFromFile(t *testing.T) {
 	}
 }
 
-// TestNode_WriteFile tests writing to file
+// TestNode_Write tests writing to Writer
 //
 // Not sure what to test here:
 // should all file/parser tests be duplicated?
 // E.g.: TestWrite, TestNewWriteParserFromString
-func TestNode_WriteFile(t *testing.T) {
+func TestNode_Write(t *testing.T) {
 	type data map[string]interface{}
 	type args struct {
 		parser     string
@@ -1431,7 +1431,7 @@ func TestNode_WriteFile(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			writer := &bytes.Buffer{}
 			node := dasel.New(tt.data)
-			if err := node.WriteFile(writer, tt.args.parser, tt.args.compact, tt.args.escapeHTML); (err != nil) != tt.wantErr {
+			if err := node.Write(writer, tt.args.parser, tt.args.compact, tt.args.escapeHTML); (err != nil) != tt.wantErr {
 				t.Errorf("Node.WriteFile() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
