@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/tomwright/dasel"
@@ -1340,13 +1341,13 @@ func TestNode_NewFromFile(t *testing.T) {
 			err:    storage.UnknownParserErr{Parser: "bad"},
 		},
 		{
-			name:   "File not exists and valid parser specified",
+			name:   "File doesn't exist and valid parser specified",
 			file:   "no_such_file",
 			parser: "json",
-			err:    errors.New("could not open file: open no_such_file: The system cannot find the file specified."),
+			err:    errors.New("could not open file: open no_such_file"),
 		},
 		{
-			name:   "File not exists and invalid parser specified",
+			name:   "File doesn't exist and invalid parser specified",
 			file:   "no_such_file",
 			parser: "bad",
 			err:    storage.UnknownParserErr{Parser: "bad"},
@@ -1366,7 +1367,7 @@ func TestNode_NewFromFile(t *testing.T) {
 				t.Errorf("expected err %v, got %v", tc.err, err)
 				return
 			}
-			if tc.err != nil && err != nil && err.Error() != tc.err.Error() {
+			if tc.err != nil && err != nil && !strings.Contains(err.Error(), tc.err.Error()) {
 				t.Errorf("expected err %v, got %v", tc.err, err)
 				return
 			}
