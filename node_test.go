@@ -1316,12 +1316,12 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
 }
 
-// TestNode_NewFromFile tests parsing from file
-//
-// Not sure what to test here:
-// should all file/parser tests be duplicated?
-// E.g.: TestLoadFromFile, TestNewReadParserFromString
+// TestNode_NewFromFile tests parsing from file.
 func TestNode_NewFromFile(t *testing.T) {
+	noSuchFileName := "no_such_file"
+	noSuchFileErrMsg := "could not open file: open " + noSuchFileName
+	unmarshalFailMsg := "could not unmarshal data"
+
 	tests := []struct {
 		name   string
 		file   string
@@ -1329,28 +1329,96 @@ func TestNode_NewFromFile(t *testing.T) {
 		err    error
 	}{
 		{
-			name:   "File exists and valid parser specified",
+			name:   "Existing JSON file and JSON Read parser specified",
 			file:   "./tests/assets/example.json",
 			parser: "json",
 			err:    nil,
 		},
 		{
-			name:   "File exists and invalid parser specified",
+			name:   "Existing JSON file and YAML Read parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "yaml",
+			// JSON is a subset of YAML v1.2
+			// https://stackoverflow.com/questions/21584985/what-valid-json-files-are-not-valid-yaml-1-1-files
+			err: nil,
+		},
+		{
+			name:   "Existing YAML file and YAML Read parser specified",
+			file:   "./tests/assets/example.yaml",
+			parser: "yaml",
+			err:    nil,
+		},
+		{
+			name:   "Existing YAML file and XML Read parser specified",
+			file:   "./tests/assets/example.yaml",
+			parser: "xml",
+			err:    errors.New(unmarshalFailMsg),
+		},
+		{
+			name:   "Existing XML file and XML Read parser specified",
+			file:   "./tests/assets/example.xml",
+			parser: "xml",
+			err:    nil,
+		},
+		{
+			name:   "Existing XML file and JSON Read parser specified",
+			file:   "./tests/assets/example.xml",
+			parser: "json",
+			err:    errors.New(unmarshalFailMsg),
+		},
+		{
+			name:   "Existing JSON file and invalid Read parser specified",
 			file:   "./tests/assets/example.json",
 			parser: "bad",
 			err:    storage.UnknownParserErr{Parser: "bad"},
 		},
 		{
-			name:   "File doesn't exist and valid parser specified",
-			file:   "no_such_file",
+			name:   "File doesn't exist and JSON Read parser specified",
+			file:   noSuchFileName,
 			parser: "json",
-			err:    errors.New("could not open file: open no_such_file"),
+			err:    errors.New(noSuchFileErrMsg),
 		},
 		{
-			name:   "File doesn't exist and invalid parser specified",
-			file:   "no_such_file",
+			name:   "File doesn't exist and YAML Read parser specified",
+			file:   noSuchFileName,
+			parser: "yaml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and YML Read parser specified",
+			file:   noSuchFileName,
+			parser: "yml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and TOML Read parser specified",
+			file:   noSuchFileName,
+			parser: "toml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and XML Read parser specified",
+			file:   noSuchFileName,
+			parser: "xml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and CSV Read parser specified",
+			file:   noSuchFileName,
+			parser: "csv",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and invalid ('bad') Read parser specified",
+			file:   noSuchFileName,
 			parser: "bad",
 			err:    storage.UnknownParserErr{Parser: "bad"},
+		},
+		{
+			name:   "File doesn't exist and invalid ('-') Read parser specified",
+			file:   noSuchFileName,
+			parser: "-",
+			err:    storage.UnknownParserErr{Parser: "-"},
 		},
 	}
 
@@ -1381,22 +1449,35 @@ func TestNode_NewFromFile(t *testing.T) {
 // should all file/parser tests be duplicated?
 // E.g.: TestWrite, TestNewWriteParserFromString
 func TestNode_Write(t *testing.T) {
-	type data map[string]interface{}
+	type testData = map[string]interface{}
 	type args struct {
 		parser     string
 		compact    bool
 		escapeHTML bool
 	}
+
+	commonData := testData{">": "&"}
+	xmlData := testData{
+		"key": testData{
+			"value": "<&>",
+		},
+	}
+	xmlEscapedData := testData{
+		"key": testData{
+			"value": "&lt;&amp;&gt;",
+		},
+	}
+
 	tests := []struct {
 		name       string
-		data       map[string]interface{}
+		data       testData
 		args       args
 		wantWriter string
 		wantErr    bool
 	}{
 		{
 			name: "JSON, compact, no escape",
-			data: data{">": "&"},
+			data: commonData,
 			args: args{
 				parser:     "json",
 				compact:    true,
@@ -1407,7 +1488,7 @@ func TestNode_Write(t *testing.T) {
 		},
 		{
 			name: "JSON, pretty, escape",
-			data: data{">": "&"},
+			data: commonData,
 			args: args{
 				parser:     "json",
 				compact:    false,
@@ -1416,11 +1497,250 @@ func TestNode_Write(t *testing.T) {
 			wantWriter: "{\n  \"\\u003e\": \"\\u0026\"\n}\n",
 			wantErr:    false,
 		},
+
 		{
-			name: "Invalid parser",
-			data: data{">": "&"},
+			name: "YAML, compact, no escape",
+			data: commonData,
 			args: args{
-				parser:     "foo",
+				parser:     "yaml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+		{
+			name: "YAML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "yaml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "YML, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "yml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+		{
+			name: "YML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "yml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "TOML, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "toml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "\">\" = \"&\"\n",
+			wantErr:    false,
+		},
+		{
+			name: "TOML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "toml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "\">\" = \"&\"\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "PLAIN, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "plain",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+		{
+			name: "PLAIN, pretty, no escape",
+			data: commonData,
+			args: args{
+				parser:     "plain",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "-, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "-",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+		{
+			name: "-, pretty, no escape",
+			data: commonData,
+			args: args{
+				parser:     "-",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce valid XML (value not escaped)
+			name: "XML, pretty, escape",
+			data: xmlData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "<key>\n  <value>&lt;&amp;&gt;</value>\n</key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce compact output
+			name: "XML, pretty, no escape",
+			data: xmlData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: false,
+			},
+			// Invalid XML, but since we were asked not to escape,
+			// this is probably the best we should do
+			wantWriter: "<key>\n  <value><&></value>\n</key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce valid XML (value not escaped)
+			// 2. Doesn't produce compact output
+			name: "XML, compact, escape",
+			data: xmlData,
+			args: args{
+				parser:     "xml",
+				compact:    true,
+				escapeHTML: true,
+			},
+			wantWriter: "<key><value>&lt;&amp;&gt;</value></key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 2. Doesn't produce compact output
+			name: "XML, compact, no escape",
+			data: xmlData,
+			args: args{
+				parser:     "xml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			// Invalid XML, but since we were asked not to escape,
+			// this is probably the best we should do
+			wantWriter: "<key><value><&></value></key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce valid XML (value not double-escaped)
+			name: "Pre-escaped XML, pretty, escape",
+			data: xmlEscapedData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			// Double-escaped XML, but since we were asked to escape,
+			// this is probably the best we should do
+			wantWriter: "<key>\n  <value>&amp;lt;&amp;amp;&amp;gt;</value>\n</key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce compact output
+			name: "Pre-escaped XML, pretty, no escape",
+			data: xmlEscapedData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "<key>\n  <value>&lt;&amp;&gt;</value>\n</key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 1. Doesn't produce valid XML (value not double-escaped)
+			// 2. Doesn't produce compact output
+			name: "Pre-escaped XML, compact, escape",
+			data: xmlEscapedData,
+			args: args{
+				parser:     "xml",
+				compact:    true,
+				escapeHTML: true,
+			},
+			// Double-escaped XML, but since we were asked to escape,
+			// this is probably the best we should do
+			wantWriter: "<key><value>&amp;lt;&amp;amp;&amp;gt;</value></key>\n",
+			wantErr:    false,
+		},
+		{
+			// Issues:
+			//
+			// 2. Doesn't produce compact output
+			name: "Pre-escaped XML, compact, no escape",
+			data: xmlEscapedData,
+			args: args{
+				parser:     "xml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "<key><value>&lt;&amp;&gt;</value></key>\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "Invalid Write parser: bad",
+			data: commonData,
+			args: args{
+				parser:     "bad",
 				compact:    false,
 				escapeHTML: false,
 			},
@@ -1433,11 +1753,11 @@ func TestNode_Write(t *testing.T) {
 			writer := &bytes.Buffer{}
 			node := dasel.New(tt.data)
 			if err := node.Write(writer, tt.args.parser, tt.args.compact, tt.args.escapeHTML); (err != nil) != tt.wantErr {
-				t.Errorf("Node.WriteFile() error = %v, wantErr %v", err, tt.wantErr)
+				t.Errorf("Node.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}
 			if gotWriter := writer.String(); gotWriter != tt.wantWriter {
-				t.Errorf("Node.WriteFile() = %v want %v", gotWriter, tt.wantWriter)
+				t.Errorf("Node.Write() = %v want %v", gotWriter, tt.wantWriter)
 			}
 		})
 	}
