@@ -1443,11 +1443,7 @@ func TestNode_NewFromFile(t *testing.T) {
 	}
 }
 
-// TestNode_Write tests writing to Writer
-//
-// Not sure what to test here:
-// should all file/parser tests be duplicated?
-// E.g.: TestWrite, TestNewWriteParserFromString
+// TestNode_Write tests writing to Writer.
 func TestNode_Write(t *testing.T) {
 	type testData = map[string]interface{}
 	type args struct {
