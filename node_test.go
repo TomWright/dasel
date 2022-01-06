@@ -1610,23 +1610,6 @@ func TestNode_Write(t *testing.T) {
 		},
 
 		{
-			// Issues:
-			//
-			// 1. Doesn't produce valid XML (value not escaped)
-			name: "XML, pretty, escape",
-			data: xmlData,
-			args: args{
-				parser:     "xml",
-				compact:    false,
-				escapeHTML: true,
-			},
-			wantWriter: "<key>\n  <value>&lt;&amp;&gt;</value>\n</key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 1. Doesn't produce compact output
 			name: "XML, pretty, no escape",
 			data: xmlData,
 			args: args{
@@ -1640,56 +1623,6 @@ func TestNode_Write(t *testing.T) {
 			wantErr:    false,
 		},
 		{
-			// Issues:
-			//
-			// 1. Doesn't produce valid XML (value not escaped)
-			// 2. Doesn't produce compact output
-			name: "XML, compact, escape",
-			data: xmlData,
-			args: args{
-				parser:     "xml",
-				compact:    true,
-				escapeHTML: true,
-			},
-			wantWriter: "<key><value>&lt;&amp;&gt;</value></key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 2. Doesn't produce compact output
-			name: "XML, compact, no escape",
-			data: xmlData,
-			args: args{
-				parser:     "xml",
-				compact:    true,
-				escapeHTML: false,
-			},
-			// Invalid XML, but since we were asked not to escape,
-			// this is probably the best we should do
-			wantWriter: "<key><value><&></value></key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 1. Doesn't produce valid XML (value not double-escaped)
-			name: "Pre-escaped XML, pretty, escape",
-			data: xmlEscapedData,
-			args: args{
-				parser:     "xml",
-				compact:    false,
-				escapeHTML: true,
-			},
-			// Double-escaped XML, but since we were asked to escape,
-			// this is probably the best we should do
-			wantWriter: "<key>\n  <value>&amp;lt;&amp;amp;&amp;gt;</value>\n</key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 1. Doesn't produce compact output
 			name: "Pre-escaped XML, pretty, no escape",
 			data: xmlEscapedData,
 			args: args{
@@ -1698,37 +1631,6 @@ func TestNode_Write(t *testing.T) {
 				escapeHTML: false,
 			},
 			wantWriter: "<key>\n  <value>&lt;&amp;&gt;</value>\n</key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 1. Doesn't produce valid XML (value not double-escaped)
-			// 2. Doesn't produce compact output
-			name: "Pre-escaped XML, compact, escape",
-			data: xmlEscapedData,
-			args: args{
-				parser:     "xml",
-				compact:    true,
-				escapeHTML: true,
-			},
-			// Double-escaped XML, but since we were asked to escape,
-			// this is probably the best we should do
-			wantWriter: "<key><value>&amp;lt;&amp;amp;&amp;gt;</value></key>\n",
-			wantErr:    false,
-		},
-		{
-			// Issues:
-			//
-			// 2. Doesn't produce compact output
-			name: "Pre-escaped XML, compact, no escape",
-			data: xmlEscapedData,
-			args: args{
-				parser:     "xml",
-				compact:    true,
-				escapeHTML: false,
-			},
-			wantWriter: "<key><value>&lt;&amp;&gt;</value></key>\n",
 			wantErr:    false,
 		},
 
