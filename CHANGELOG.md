@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Update github.com/pelletier/go-toml to consume fix for https://github.com/TomWright/dasel/issues/191.
 
+### Added
+
+- Sprig functions to output formatter template.
+
 ## [v1.22.1] - 2021-11-09
 
 ### Fixed
