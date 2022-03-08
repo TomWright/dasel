@@ -86,7 +86,7 @@ See [put documentation](https://daseldocs.tomwright.me/usage/put).
 echo '{
   "email": "contact@tomwright.me",
   "name": "Tom"
-}' | dasel delete -r json '.email' 'contact@tomwright.me'
+}' | dasel delete -p json '.email'
 {
   "name": "Tom"
 }
