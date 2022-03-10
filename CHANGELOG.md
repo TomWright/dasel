@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.22.2] - 2022-03-10
+
 ### Fixed
 
 - Update github.com/pelletier/go-toml to consume fix for https://github.com/TomWright/dasel/issues/191.
