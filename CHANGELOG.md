@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.24.0] - 2022-03-18
+
 ### Added
 
 - `Node.NewFromFile` func to load a root node from a file.
@@ -424,7 +428,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.23.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.0...HEAD
+[v1.24.0]: https://github.com/TomWright/dasel/compare/v1.23.0...v1.24.0
 [v1.23.0]: https://github.com/TomWright/dasel/compare/v1.22.1...v1.23.0
 [v1.22.1]: https://github.com/TomWright/dasel/compare/v1.22.0...v1.22.1
 [v1.22.0]: https://github.com/TomWright/dasel/compare/v1.21.2...v1.22.0
