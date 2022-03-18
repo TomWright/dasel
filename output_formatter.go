@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"bytes"
+	"github.com/Masterminds/sprig/v3"
 	"text/template"
 )
 
@@ -123,7 +124,8 @@ func formatNodeTemplate(node *templateNode) *template.Template {
 	funcs := &formatTemplateFuncs{
 		node: node,
 	}
-	tpl := template.New("nodeFormat")
-	tpl.Funcs(funcs.funcMap())
-	return tpl
+	return template.
+		New("nodeFormat").
+		Funcs(sprig.TxtFuncMap()).
+		Funcs(funcs.funcMap())
 }
