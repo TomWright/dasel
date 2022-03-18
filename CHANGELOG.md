@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
-## [v1.24.0] - 2022-03-18
+## [v1.24.0] - 2022-03-18
 
 ### Added
 
@@ -34,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Cleaned up error output
 
-- ## [v1.22.0] - 2021-11-09
+## [v1.22.0] - 2021-11-09
 
 ### Added
 
