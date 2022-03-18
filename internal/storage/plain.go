@@ -9,7 +9,7 @@ func init() {
 	registerWriteParser([]string{"-", "plain"}, []string{}, &PlainParser{})
 }
 
-// PlainParser is a Parser implementation to handle yaml files.
+// PlainParser is a Parser implementation to handle plain files.
 type PlainParser struct {
 }
 

@@ -7,7 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- `Node.NewFromFile` func to load a root node from a file.
+- `Node.NewFromReader` func to load a root node from an `io.Reader`.
+- `Node.WriteToFile` func to write results to a file.
+- `Node.Write` func to write results to an `io.Writer`.
 
 ## [v1.23.0] - 2022-03-10
 

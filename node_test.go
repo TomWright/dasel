@@ -1,13 +1,16 @@
 package dasel_test
 
 import (
+	"bytes"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"reflect"
+	"strings"
+	"testing"
+
 	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/internal/storage"
-	"reflect"
-	"testing"
 )
 
 // ExampleNode_ReadmeExample tests the code from the readme explanation.
@@ -1311,4 +1314,352 @@ func TestNode_DeleteMultiple_Query(t *testing.T) {
 		"name", "Tom",
 	}), ".", []interface{}{}))
 	t.Run("RootNodeUnknown", deleteMultipleTest(dasel.New(false), ".", map[string]interface{}{}))
+}
+
+// TestNode_NewFromFile tests parsing from file.
+func TestNode_NewFromFile(t *testing.T) {
+	noSuchFileName := "no_such_file"
+	noSuchFileErrMsg := "could not open file: open " + noSuchFileName
+	unmarshalFailMsg := "could not unmarshal data"
+
+	tests := []struct {
+		name   string
+		file   string
+		parser string
+		err    error
+	}{
+		{
+			name:   "Existing JSON file and JSON Read parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "json",
+			err:    nil,
+		},
+		{
+			name:   "Existing JSON file and YAML Read parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "yaml",
+			// JSON is a subset of YAML v1.2
+			// https://stackoverflow.com/questions/21584985/what-valid-json-files-are-not-valid-yaml-1-1-files
+			err: nil,
+		},
+		{
+			name:   "Existing YAML file and YAML Read parser specified",
+			file:   "./tests/assets/example.yaml",
+			parser: "yaml",
+			err:    nil,
+		},
+		{
+			name:   "Existing YAML file and XML Read parser specified",
+			file:   "./tests/assets/example.yaml",
+			parser: "xml",
+			err:    errors.New(unmarshalFailMsg),
+		},
+		{
+			name:   "Existing XML file and XML Read parser specified",
+			file:   "./tests/assets/example.xml",
+			parser: "xml",
+			err:    nil,
+		},
+		{
+			name:   "Existing XML file and JSON Read parser specified",
+			file:   "./tests/assets/example.xml",
+			parser: "json",
+			err:    errors.New(unmarshalFailMsg),
+		},
+		{
+			name:   "Existing JSON file and invalid Read parser specified",
+			file:   "./tests/assets/example.json",
+			parser: "bad",
+			err:    storage.UnknownParserErr{Parser: "bad"},
+		},
+		{
+			name:   "File doesn't exist and JSON Read parser specified",
+			file:   noSuchFileName,
+			parser: "json",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and YAML Read parser specified",
+			file:   noSuchFileName,
+			parser: "yaml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and YML Read parser specified",
+			file:   noSuchFileName,
+			parser: "yml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and TOML Read parser specified",
+			file:   noSuchFileName,
+			parser: "toml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and XML Read parser specified",
+			file:   noSuchFileName,
+			parser: "xml",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and CSV Read parser specified",
+			file:   noSuchFileName,
+			parser: "csv",
+			err:    errors.New(noSuchFileErrMsg),
+		},
+		{
+			name:   "File doesn't exist and invalid ('bad') Read parser specified",
+			file:   noSuchFileName,
+			parser: "bad",
+			err:    storage.UnknownParserErr{Parser: "bad"},
+		},
+		{
+			name:   "File doesn't exist and invalid ('-') Read parser specified",
+			file:   noSuchFileName,
+			parser: "-",
+			err:    storage.UnknownParserErr{Parser: "-"},
+		},
+	}
+
+	for _, testCase := range tests {
+		tc := testCase
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := dasel.NewFromFile(tc.file, tc.parser)
+
+			if tc.err == nil && err != nil {
+				t.Errorf("expected err %v, got %v", tc.err, err)
+				return
+			}
+			if tc.err != nil && err == nil {
+				t.Errorf("expected err %v, got %v", tc.err, err)
+				return
+			}
+			if tc.err != nil && err != nil && !strings.Contains(err.Error(), tc.err.Error()) {
+				t.Errorf("expected err %v, got %v", tc.err, err)
+				return
+			}
+		})
+	}
+}
+
+// TestNode_Write tests writing to Writer.
+func TestNode_Write(t *testing.T) {
+	type testData = map[string]interface{}
+	type args struct {
+		parser     string
+		compact    bool
+		escapeHTML bool
+	}
+
+	commonData := testData{">": "&"}
+	xmlData := testData{
+		"key": testData{
+			"value": "<&>",
+		},
+	}
+	xmlEscapedData := testData{
+		"key": testData{
+			"value": "&lt;&amp;&gt;",
+		},
+	}
+
+	tests := []struct {
+		name       string
+		data       testData
+		args       args
+		wantWriter string
+		wantErr    bool
+	}{
+		{
+			name: "JSON, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "json",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "{\">\":\"&\"}\n",
+			wantErr:    false,
+		},
+		{
+			name: "JSON, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "json",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "{\n  \"\\u003e\": \"\\u0026\"\n}\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "YAML, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "yaml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+		{
+			name: "YAML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "yaml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "YML, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "yml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+		{
+			name: "YML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "yml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "'>': '&'\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "TOML, compact, no escape",
+			data: commonData,
+			args: args{
+				parser:     "toml",
+				compact:    true,
+				escapeHTML: false,
+			},
+			wantWriter: "\">\" = \"&\"\n",
+			wantErr:    false,
+		},
+		{
+			name: "TOML, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "toml",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "\">\" = \"&\"\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "PLAIN, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "plain",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+		{
+			name: "PLAIN, pretty, no escape",
+			data: commonData,
+			args: args{
+				parser:     "plain",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "-, pretty, escape",
+			data: commonData,
+			args: args{
+				parser:     "-",
+				compact:    false,
+				escapeHTML: true,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+		{
+			name: "-, pretty, no escape",
+			data: commonData,
+			args: args{
+				parser:     "-",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "map[>:&]\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "XML, pretty, no escape",
+			data: xmlData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: false,
+			},
+			// Invalid XML, but since we were asked not to escape,
+			// this is probably the best we should do
+			wantWriter: "<key>\n  <value><&></value>\n</key>\n",
+			wantErr:    false,
+		},
+		{
+			name: "Pre-escaped XML, pretty, no escape",
+			data: xmlEscapedData,
+			args: args{
+				parser:     "xml",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "<key>\n  <value>&lt;&amp;&gt;</value>\n</key>\n",
+			wantErr:    false,
+		},
+
+		{
+			name: "Invalid Write parser: bad",
+			data: commonData,
+			args: args{
+				parser:     "bad",
+				compact:    false,
+				escapeHTML: false,
+			},
+			wantWriter: "",
+			wantErr:    true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			writer := &bytes.Buffer{}
+			node := dasel.New(tt.data)
+			if err := node.Write(writer, tt.args.parser, []storage.ReadWriteOption{
+				storage.EscapeHTMLOption(tt.args.escapeHTML),
+				storage.PrettyPrintOption(!tt.args.compact),
+			}); (err != nil) != tt.wantErr {
+				t.Errorf("Node.Write() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if gotWriter := writer.String(); gotWriter != tt.wantWriter {
+				t.Errorf("Node.Write() = %v want %v", gotWriter, tt.wantWriter)
+			}
+		})
+	}
 }

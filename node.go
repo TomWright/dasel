@@ -2,9 +2,12 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/internal/storage"
+	"io"
+	"os"
 	"reflect"
 	"regexp"
+
+	"github.com/tomwright/dasel/internal/storage"
 )
 
 // Selector represents the selector for a node.
@@ -127,6 +130,70 @@ func New(value interface{}) *Node {
 	}
 	rootNode.setRealValue(value)
 	return rootNode
+}
+
+// NewFromFile returns a new root node by parsing file using specified read parser.
+func NewFromFile(filename, parser string) (*Node, error) {
+	readParser, err := storage.NewReadParserFromString(parser)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := storage.LoadFromFile(filename, readParser)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(data), nil
+}
+
+// NewFromReader returns a new root node by parsing from Reader using specified read parser.
+func NewFromReader(reader io.Reader, parser string) (*Node, error) {
+	readParser, err := storage.NewReadParserFromString(parser)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := storage.Load(readParser, reader)
+	if err != nil {
+		return nil, err
+	}
+
+	return New(data), nil
+}
+
+// WriteToFile writes data to the given file with the specified options.
+func (n *Node) WriteToFile(filename, parser string, writeOptions []storage.ReadWriteOption) error {
+	f, err := os.Create(filename)
+
+	if err != nil {
+		return err
+	}
+
+	// https://www.joeshaw.org/dont-defer-close-on-writable-files/
+	if err = n.Write(f, parser, writeOptions); err != nil {
+		_ = f.Close()
+		return err
+	}
+
+	return f.Close()
+}
+
+// Write writes data to Writer using specified write parser and options.
+func (n *Node) Write(writer io.Writer, parser string, writeOptions []storage.ReadWriteOption) error {
+	writeParser, err := storage.NewWriteParserFromString(parser)
+	if err != nil {
+		return err
+	}
+
+	value := n.InterfaceValue()
+	originalValue := n.OriginalValue
+
+	if err := storage.Write(writeParser, value, originalValue, writer, writeOptions...); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (n *Node) setValue(newValue interface{}) {
