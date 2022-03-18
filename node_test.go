@@ -1650,7 +1650,10 @@ func TestNode_Write(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			writer := &bytes.Buffer{}
 			node := dasel.New(tt.data)
-			if err := node.Write(writer, tt.args.parser, tt.args.compact, tt.args.escapeHTML); (err != nil) != tt.wantErr {
+			if err := node.Write(writer, tt.args.parser, []storage.ReadWriteOption{
+				storage.EscapeHTMLOption(tt.args.escapeHTML),
+				storage.PrettyPrintOption(!tt.args.compact),
+			}); (err != nil) != tt.wantErr {
 				t.Errorf("Node.Write() error = %v, wantErr %v", err, tt.wantErr)
 				return
 			}

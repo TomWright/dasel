@@ -162,8 +162,8 @@ func NewFromReader(reader io.Reader, parser string) (*Node, error) {
 	return New(data), nil
 }
 
-// Write writes data to file using specified write parser and options.
-func (n *Node) WriteToFile(filename, parser string, compact, escapeHTML bool) error {
+// WriteToFile writes data to the given file with the specified options.
+func (n *Node) WriteToFile(filename, parser string, writeOptions []storage.ReadWriteOption) error {
 	f, err := os.Create(filename)
 
 	if err != nil {
@@ -171,8 +171,8 @@ func (n *Node) WriteToFile(filename, parser string, compact, escapeHTML bool) er
 	}
 
 	// https://www.joeshaw.org/dont-defer-close-on-writable-files/
-	if err = n.Write(f, parser, compact, escapeHTML); err != nil {
-		f.Close()
+	if err = n.Write(f, parser, writeOptions); err != nil {
+		_ = f.Close()
 		return err
 	}
 
@@ -180,18 +180,10 @@ func (n *Node) WriteToFile(filename, parser string, compact, escapeHTML bool) er
 }
 
 // Write writes data to Writer using specified write parser and options.
-func (n *Node) Write(writer io.Writer, parser string, compact, escapeHTML bool) error {
+func (n *Node) Write(writer io.Writer, parser string, writeOptions []storage.ReadWriteOption) error {
 	writeParser, err := storage.NewWriteParserFromString(parser)
 	if err != nil {
 		return err
-	}
-
-	writeOptions := []storage.ReadWriteOption{
-		storage.EscapeHTMLOption(escapeHTML),
-	}
-
-	if compact {
-		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
 	}
 
 	value := n.InterfaceValue()
