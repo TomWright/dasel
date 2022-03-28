@@ -2,7 +2,7 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/internal/storage"
+	"github.com/tomwright/dasel/storage"
 	"reflect"
 )
 

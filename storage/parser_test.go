@@ -3,7 +3,7 @@ package storage_test
 import (
 	"bytes"
 	"errors"
-	"github.com/tomwright/dasel/internal/storage"
+	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"strings"
 	"testing"
@@ -194,7 +194,7 @@ var jsonData = map[string]interface{}{
 
 func TestLoadFromFile(t *testing.T) {
 	t.Run("ValidJSON", func(t *testing.T) {
-		data, err := storage.LoadFromFile("../../tests/assets/example.json", &storage.JSONParser{})
+		data, err := storage.LoadFromFile("../tests/assets/example.json", &storage.JSONParser{})
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

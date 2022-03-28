@@ -2,7 +2,7 @@ package storage_test
 
 import (
 	"errors"
-	"github.com/tomwright/dasel/internal/storage"
+	"github.com/tomwright/dasel/storage"
 	"testing"
 )
 

@@ -1,7 +1,7 @@
 package storage_test
 
 import (
-	"github.com/tomwright/dasel/internal/storage"
+	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"testing"
 )

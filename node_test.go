@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/internal/storage"
 )
 
 // ExampleNode_ReadmeExample tests the code from the readme explanation.

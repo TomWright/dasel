@@ -3,7 +3,7 @@ package command
 import (
 	"bytes"
 	"fmt"
-	"github.com/tomwright/dasel/internal/storage"
+	"github.com/tomwright/dasel/storage"
 	"io"
 	"reflect"
 	"strings"

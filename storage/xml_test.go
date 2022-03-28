@@ -3,11 +3,11 @@ package storage_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/tomwright/dasel/storage"
 	"io"
 	"reflect"
 	"testing"
 
-	"github.com/tomwright/dasel/internal/storage"
 	"golang.org/x/text/encoding/charmap"
 	"golang.org/x/text/encoding/unicode"
 )
