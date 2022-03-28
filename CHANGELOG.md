@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.24.1] - 2022-03-28
+
+### Changed
+
+- `storage` package has been moved outside the `internal` package.
+
+### Fixed
+
+- New funcs added in `v1.24.0` can now be used as expected since you can now access the `storage.ReadWriteOption`.
+
 ## [v1.24.0] - 2022-03-18
 
 ### Added
@@ -428,7 +438,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.1...HEAD
+[v1.24.1]: https://github.com/TomWright/dasel/compare/v1.24.0...v1.24.1
 [v1.24.0]: https://github.com/TomWright/dasel/compare/v1.23.0...v1.24.0
 [v1.23.0]: https://github.com/TomWright/dasel/compare/v1.22.1...v1.23.0
 [v1.22.1]: https://github.com/TomWright/dasel/compare/v1.22.0...v1.22.1

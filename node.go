@@ -2,12 +2,11 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/storage"
 	"io"
 	"os"
 	"reflect"
 	"regexp"
-
-	"github.com/tomwright/dasel/internal/storage"
 )
 
 // Selector represents the selector for a node.
