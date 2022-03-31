@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 var tomlBytes = []byte(`names = ["John", "Frank"]
@@ -133,6 +134,19 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 		}
 		exp := `asd
 123
+`
+		if exp != string(got) {
+			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
+		}
+	})
+	t.Run("time.Time", func(t *testing.T) {
+		v, _ := time.Parse(time.RFC3339, "2022-01-02T12:34:56Z")
+		got, err := (&storage.TOMLParser{}).ToBytes(v)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := `2022-01-02T12:34:56Z
 `
 		if exp != string(got) {
 			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
