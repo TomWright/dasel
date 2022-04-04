@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pelletier/go-toml"
+	"time"
 )
 
 func init() {
@@ -66,6 +67,8 @@ func (p *TOMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 				}
 			}
 		}
+	case time.Time:
+		buf.Write([]byte(fmt.Sprintf("%s\n", d.Format(time.RFC3339))))
 	default:
 		if err := enc.Encode(d); err != nil {
 			if err.Error() == "Only a struct or map can be marshaled to TOML" {
