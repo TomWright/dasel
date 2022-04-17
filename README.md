@@ -140,3 +140,8 @@ Source code for the playground can be found at  [github.com/TomWright/daselplayg
 In my tests dasel has been up to 3x faster than jq and 15x faster than yq.
 
 See the [benchmark directory](./benchmark/README.md).
+
+
+## Stargazers over time
+
+[![Stargazers over time](https://starchart.cc/TomWright/dasel.svg)](https://starchart.cc/TomWright/dasel)
