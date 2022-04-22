@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.24.2] - 2022-04-22
+
+### Fixed
+
+- Update a package to avoid a High Vulnerability in golang.org/x/crypto with CVE ID [CVE-2022-27191](https://github.com/advisories/GHSA-8c26-wmh5-6g9v)
+
 ## [v1.24.1] - 2022-03-28
 
 ### Changed
@@ -438,7 +444,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.2...HEAD
+[v1.24.2]: https://github.com/TomWright/dasel/compare/v1.24.1...v1.24.2
 [v1.24.1]: https://github.com/TomWright/dasel/compare/v1.24.0...v1.24.1
 [v1.24.0]: https://github.com/TomWright/dasel/compare/v1.23.0...v1.24.0
 [v1.23.0]: https://github.com/TomWright/dasel/compare/v1.22.1...v1.23.0
