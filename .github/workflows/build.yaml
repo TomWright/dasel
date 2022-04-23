@@ -84,12 +84,21 @@ jobs:
       - name: Test version
         if: matrix.test_version == true
         run: ./target/release/${{ matrix.artifact_name }} --version
+      - name: Gzip binaries
+        run: gzip -c ./target/release/${{ matrix.artifact_name }} > ./target/release/${{ matrix.artifact_name }}.gz
       - name: Upload binaries to release
         uses: svenstaro/upload-release-action@v1-release
         with:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           file: target/release/${{ matrix.artifact_name }}
           asset_name: ${{ matrix.asset_name }}
+          tag: ${{ github.ref }}
+      - name: Upload gzip binaries to release
+        uses: svenstaro/upload-release-action@v1-release
+        with:
+          repo_token: ${{ secrets.GITHUB_TOKEN }}
+          file: target/release/${{ matrix.artifact_name }}.gz
+          asset_name: ${{ matrix.asset_name }}.gz
           tag: ${{ github.ref }}
       - name: Build docker image
         if: matrix.build_docker == true
