@@ -8,6 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 - Nothing yet.
+- 
+## [v1.24.3] - 2022-04-23
+
+### Added
+
+- Gzip compressed binaries on releases.
 
 ## [v1.24.2] - 2022-04-22
 
@@ -444,7 +450,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.3...HEAD
+[v1.24.3]: https://github.com/TomWright/dasel/compare/v1.24.2...v1.24.3
 [v1.24.2]: https://github.com/TomWright/dasel/compare/v1.24.1...v1.24.2
 [v1.24.1]: https://github.com/TomWright/dasel/compare/v1.24.0...v1.24.1
 [v1.24.0]: https://github.com/TomWright/dasel/compare/v1.23.0...v1.24.0
