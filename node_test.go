@@ -859,6 +859,42 @@ func TestNode_Query_Data(t *testing.T) {
 			t.Errorf("expected %s, got %s", exp, got)
 		}
 	})
+	t.Run("SelectFromStruct", func(t *testing.T) {
+		rootNode := dasel.New([]struct {
+			Name string
+		}{
+			{Name: "Tom"},
+			{Name: "Jim"},
+		})
+
+		got, err := rootNode.Query(".[0].Name")
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("ConditionalSelectFromStruct", func(t *testing.T) {
+		rootNode := dasel.New([]struct {
+			Name string
+		}{
+			{Name: "Tom"},
+			{Name: "Jim"},
+		})
+
+		got, err := rootNode.Query(".(Name=Tom).Name")
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
 }
 
 func putQueryTest(rootNode *dasel.Node, putSelector string, newValue interface{}, querySelector string) func(t *testing.T) {
@@ -1137,6 +1173,18 @@ func TestNode_Delete(t *testing.T) {
 				"name": "Jim",
 			},
 		},
+	}))
+	t.Run("ExistingStringInStruct", deleteTest(dasel.New(struct {
+		Name string
+		Age  int
+	}{
+		Name: "Tom",
+		Age:  123,
+	}), ".Name", struct {
+		Name string
+		Age  int
+	}{
+		Age: 123,
 	}))
 	t.Run("ExistingObjectInArray", deleteTest(dasel.New(data()), "people.[0]", map[string]interface{}{
 		"id": "123",

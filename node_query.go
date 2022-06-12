@@ -70,7 +70,8 @@ func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 
 	value := unwrapValue(n.Previous.Value)
 
-	if value.Kind() == reflect.Map {
+	switch value.Kind() {
+	case reflect.Map:
 		for _, key := range value.MapKeys() {
 			if fmt.Sprint(key.Interface()) == n.Selector.Property {
 				return value.MapIndex(key), nil
@@ -78,6 +79,13 @@ func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 		}
 		if createIfNotExists {
 			return nilValue(), nil
+		}
+		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
+
+	case reflect.Struct:
+		fieldV := value.FieldByName(n.Selector.Property)
+		if fieldV.IsValid() {
+			return fieldV, nil
 		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
 	}

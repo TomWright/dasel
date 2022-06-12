@@ -111,8 +111,15 @@ func deleteFromParentProperty(n *Node) error {
 
 	value := unwrapValue(n.Previous.Value)
 
-	if value.Kind() == reflect.Map {
+	switch value.Kind() {
+	case reflect.Map:
 		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), reflect.Value{})
+		return nil
+	case reflect.Struct:
+		fieldV := value.FieldByName(n.Selector.Property)
+		if !fieldV.IsZero() && fieldV.CanSet() && fieldV.IsValid() {
+			fieldV.Set(reflect.Value{})
+		}
 		return nil
 	}
 
