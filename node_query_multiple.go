@@ -490,14 +490,7 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 	return findNodesAnyIndexWork(selector, previousValue, unwrapValue(previousValue))
 }
 
-// findNodesLength returns the length
-func findNodesLength(selector Selector, previousValue reflect.Value) ([]*Node, error) {
-	if !isValid(previousValue) {
-		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
-	}
-
-	value := unwrapValue(previousValue)
-
+func findNodesLengthWork(selector Selector, previousValue reflect.Value, value reflect.Value) ([]*Node, error) {
 	switch value.Kind() {
 	case reflect.Slice:
 		node := &Node{
@@ -519,19 +512,30 @@ func findNodesLength(selector Selector, previousValue reflect.Value) ([]*Node, e
 			Selector: selector,
 		}
 		return []*Node{node}, nil
+
+	case reflect.Struct:
+		node := &Node{
+			Value:    reflect.ValueOf(value.NumField()),
+			Selector: selector,
+		}
+		return []*Node{node}, nil
+
+	case reflect.Ptr:
+		return findNodesLengthWork(selector, previousValue, derefValue(value))
 	}
 
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
 }
 
-// findNodesType returns the length
-func findNodesType(selector Selector, previousValue reflect.Value) ([]*Node, error) {
+// findNodesLength returns the length
+func findNodesLength(selector Selector, previousValue reflect.Value) ([]*Node, error) {
 	if !isValid(previousValue) {
 		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
 	}
+	return findNodesLengthWork(selector, previousValue, unwrapValue(previousValue))
+}
 
-	value := unwrapValue(previousValue)
-
+func findNodesTypeWork(selector Selector, value reflect.Value) ([]*Node, error) {
 	switch value.Kind() {
 	case reflect.Slice:
 		node := &Node{
@@ -574,9 +578,27 @@ func findNodesType(selector Selector, previousValue reflect.Value) ([]*Node, err
 			Selector: selector,
 		}
 		return []*Node{node}, nil
+
+	case reflect.Struct:
+		node := &Node{
+			Value:    reflect.ValueOf("struct"),
+			Selector: selector,
+		}
+		return []*Node{node}, nil
+
+	case reflect.Ptr:
+		return findNodesTypeWork(selector, derefValue(value))
 	}
 
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+}
+
+// findNodesType returns the type
+func findNodesType(selector Selector, previousValue reflect.Value) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	return findNodesTypeWork(selector, unwrapValue(previousValue))
 }
 
 func initialiseEmptyValue(selector Selector, previousValue reflect.Value) reflect.Value {

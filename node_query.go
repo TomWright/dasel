@@ -208,14 +208,7 @@ func findValueDynamic(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
-// findValueLength returns the length of the current node.
-func findValueLength(n *Node, createIfNotExists bool) (reflect.Value, error) {
-	if !isValid(n.Previous.Value) {
-		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
-	}
-
-	value := unwrapValue(n.Previous.Value)
-
+func findValueLengthWork(n *Node, value reflect.Value) (reflect.Value, error) {
 	switch value.Kind() {
 	case reflect.Slice:
 		return reflect.ValueOf(value.Len()), nil
@@ -225,19 +218,26 @@ func findValueLength(n *Node, createIfNotExists bool) (reflect.Value, error) {
 
 	case reflect.String:
 		return reflect.ValueOf(value.Len()), nil
+
+	case reflect.Struct:
+		return reflect.ValueOf(value.NumField()), nil
+
+	case reflect.Ptr:
+		return findValueLengthWork(n, derefValue(value))
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
 }
 
-// findValueType returns the type of the current node.
-func findValueType(n *Node, createIfNotExists bool) (reflect.Value, error) {
+// findValueLength returns the length of the current node.
+func findValueLength(n *Node, createIfNotExists bool) (reflect.Value, error) {
 	if !isValid(n.Previous.Value) {
 		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
+	return findValueLengthWork(n, unwrapValue(n.Previous.Value))
+}
 
-	value := unwrapValue(n.Previous.Value)
-
+func findValueTypeWork(n *Node, value reflect.Value) (reflect.Value, error) {
 	switch value.Kind() {
 	case reflect.Slice:
 		return reflect.ValueOf("array"), nil
@@ -256,9 +256,23 @@ func findValueType(n *Node, createIfNotExists bool) (reflect.Value, error) {
 
 	case reflect.Bool:
 		return reflect.ValueOf("bool"), nil
+
+	case reflect.Struct:
+		return reflect.ValueOf("struct"), nil
+
+	case reflect.Ptr:
+		return findValueTypeWork(n, derefValue(value))
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
+}
+
+// findValueType returns the type of the current node.
+func findValueType(n *Node, createIfNotExists bool) (reflect.Value, error) {
+	if !isValid(n.Previous.Value) {
+		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
+	}
+	return findValueTypeWork(n, unwrapValue(n.Previous.Value))
 }
 
 // findValue finds the value for the given node.
