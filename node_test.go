@@ -1186,6 +1186,16 @@ func TestNode_Delete(t *testing.T) {
 	}{
 		Age: 123,
 	}))
+	t.Run("AnyIndexInStruct", deleteMultipleTest(dasel.New(&struct {
+		Name string
+		Age  int
+	}{
+		Name: "Tom",
+		Age:  123,
+	}), ".[*]", &struct {
+		Name string
+		Age  int
+	}{}))
 	t.Run("ExistingObjectInArray", deleteTest(dasel.New(data()), "people.[0]", map[string]interface{}{
 		"id": "123",
 		"names": []string{

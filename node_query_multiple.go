@@ -116,16 +116,7 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 	return findNodesPropertyWork(selector, previousValue, createIfNotExists, unwrapValue(previousValue))
 }
 
-func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
-	if !isValid(previousValue) {
-		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
-	}
-	if createIfNotExists {
-		return nil, &UnsupportedSelector{Selector: selector.Raw}
-	}
-
-	value := unwrapValue(previousValue)
-
+func findNodesPropertyKeysWork(selector Selector, previousValue reflect.Value, createIfNotExists bool, value reflect.Value) ([]*Node, error) {
 	results := make([]*Node, 0)
 
 	switch value.Kind() {
@@ -139,6 +130,7 @@ func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, creat
 				Selector: sel,
 			})
 		}
+		return results, nil
 
 	case reflect.Map:
 		for _, key := range value.MapKeys() {
@@ -150,11 +142,37 @@ func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, creat
 				Selector: sel,
 			})
 		}
-	default:
-		return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+		return results, nil
+
+	case reflect.Struct:
+		valueType := value.Type()
+		for i := 0; i < value.NumField(); i++ {
+			field := valueType.Field(i)
+			sel := selector.Copy()
+			sel.Type = "PROPERTY"
+			sel.Property = field.Name
+			results = append(results, &Node{
+				Value:    reflect.ValueOf(field.Name),
+				Selector: sel,
+			})
+		}
+		return results, nil
+
+	case reflect.Ptr:
+		return findNodesPropertyKeysWork(selector, previousValue, createIfNotExists, derefValue(value))
 	}
 
-	return results, nil
+	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+}
+
+func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	if createIfNotExists {
+		return nil, &UnsupportedSelector{Selector: selector.Raw}
+	}
+	return findNodesPropertyKeysWork(selector, previousValue, createIfNotExists, unwrapValue(previousValue))
 }
 
 // findNodesIndex finds the value for the given node using the index selector
@@ -237,6 +255,8 @@ func findNodesDynamic(selector Selector, previousValue reflect.Value, createIfNo
 		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
 	}
 	value := unwrapValue(previousValue)
+
+	// todo : handle struct type
 
 	switch value.Kind() {
 	case reflect.Slice:
@@ -343,6 +363,8 @@ func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNot
 
 	results := make([]*Node, 0)
 
+	// todo : handle struct type
+
 	switch value.Kind() {
 	case reflect.Slice:
 		for i := 0; i < value.Len(); i++ {
@@ -401,13 +423,7 @@ func findNodesSearch(selector Selector, previousNode *Node, createIfNotExists bo
 	return res, nil
 }
 
-// findNodesAnyIndex returns a node for every value in the previous value list.
-func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node, error) {
-	if !isValid(previousValue) {
-		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
-	}
-	value := unwrapValue(previousValue)
-
+func findNodesAnyIndexWork(selector Selector, previousValue reflect.Value, value reflect.Value) ([]*Node, error) {
 	switch value.Kind() {
 	case reflect.Slice:
 		results := make([]*Node, 0)
@@ -424,6 +440,7 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 			return results, nil
 		}
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
 	case reflect.Map:
 		results := make([]*Node, 0)
 		for _, key := range value.MapKeys() {
@@ -439,9 +456,38 @@ func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node,
 			return results, nil
 		}
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
+	case reflect.Struct:
+		valueType := value.Type()
+		results := make([]*Node, 0)
+		for i := 0; i < valueType.NumField(); i++ {
+			field := valueType.Field(i)
+			object := value.Field(i)
+			selector.Type = "PROPERTY"
+			selector.Property = field.Name
+			results = append(results, &Node{
+				Value:    object,
+				Selector: selector,
+			})
+		}
+		if len(results) > 0 {
+			return results, nil
+		}
+		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
+	case reflect.Ptr:
+		return findNodesAnyIndexWork(selector, previousValue, derefValue(previousValue))
 	}
 
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+}
+
+// findNodesAnyIndex returns a node for every value in the previous value list.
+func findNodesAnyIndex(selector Selector, previousValue reflect.Value) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+	return findNodesAnyIndexWork(selector, previousValue, unwrapValue(previousValue))
 }
 
 // findNodesLength returns the length
