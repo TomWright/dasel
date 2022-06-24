@@ -1174,13 +1174,13 @@ func TestNode_Delete(t *testing.T) {
 			},
 		},
 	}))
-	t.Run("ExistingStringInStruct", deleteTest(dasel.New(struct {
+	t.Run("ExistingStringInStruct", deleteTest(dasel.New(&struct {
 		Name string
 		Age  int
 	}{
 		Name: "Tom",
 		Age:  123,
-	}), ".Name", struct {
+	}), ".Name", &struct {
 		Name string
 		Age  int
 	}{

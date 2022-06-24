@@ -61,15 +61,7 @@ func buildFindChain(n *Node) error {
 	return buildFindChain(nextNode)
 }
 
-// findValueProperty finds the value for the given node using the property selector
-// information.
-func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
-	if !isValid(n.Previous.Value) {
-		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
-	}
-
-	value := unwrapValue(n.Previous.Value)
-
+func findValuePropertyWork(n *Node, createIfNotExists bool, value reflect.Value) (reflect.Value, error) {
 	switch value.Kind() {
 	case reflect.Map:
 		for _, key := range value.MapKeys() {
@@ -88,9 +80,21 @@ func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
 			return fieldV, nil
 		}
 		return nilValue(), &ValueNotFound{Selector: n.Selector.Current, PreviousValue: n.Previous.Value}
+
+	case reflect.Ptr:
+		return findValuePropertyWork(n, createIfNotExists, derefValue(value))
 	}
 
 	return nilValue(), &UnsupportedTypeForSelector{Selector: n.Selector, Value: value}
+}
+
+// findValueProperty finds the value for the given node using the property selector
+// information.
+func findValueProperty(n *Node, createIfNotExists bool) (reflect.Value, error) {
+	if !isValid(n.Previous.Value) {
+		return nilValue(), &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
+	}
+	return findValuePropertyWork(n, createIfNotExists, unwrapValue(n.Previous.Value))
 }
 
 // findValueIndex finds the value for the given node using the index selector

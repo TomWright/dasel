@@ -113,6 +113,14 @@ func unwrapValue(value reflect.Value) reflect.Value {
 	return value
 }
 
+// This is very similar to unwrapValue. Could it serve as a replacement?
+func derefValue(value reflect.Value) reflect.Value {
+	if value.Kind() == reflect.Ptr {
+		return value.Elem()
+	}
+	return value
+}
+
 // New returns a new root node with the given value.
 func New(value interface{}) *Node {
 	rootNode := &Node{

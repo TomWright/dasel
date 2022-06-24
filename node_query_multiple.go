@@ -64,19 +64,7 @@ func buildFindMultipleChain(n *Node) error {
 	return nil
 }
 
-// findNodesProperty finds the value for the given node using the property selector
-// information.
-func findNodesProperty(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
-	if !isValid(previousValue) {
-		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
-	}
-
-	if selector.Property == "-" {
-		res, err := findNodesPropertyKeys(selector, previousValue, createIfNotExists)
-		return res, err
-	}
-
-	value := unwrapValue(previousValue)
+func findNodesPropertyWork(selector Selector, previousValue reflect.Value, createIfNotExists bool, value reflect.Value) ([]*Node, error) {
 	switch value.Kind() {
 	case reflect.Map:
 		node := &Node{
@@ -93,6 +81,7 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 			return []*Node{node}, nil
 		}
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
 	case reflect.Struct:
 		node := &Node{
 			Value:    nilValue(),
@@ -104,9 +93,27 @@ func findNodesProperty(selector Selector, previousValue reflect.Value, createIfN
 			return []*Node{node}, nil
 		}
 		return nil, &ValueNotFound{Selector: selector.Current, PreviousValue: previousValue}
+
+	case reflect.Ptr:
+		return findNodesPropertyWork(selector, previousValue, createIfNotExists, derefValue(value))
 	}
 
 	return nil, &UnsupportedTypeForSelector{Selector: selector, Value: value}
+}
+
+// findNodesProperty finds the value for the given node using the property selector
+// information.
+func findNodesProperty(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
+	if !isValid(previousValue) {
+		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+	}
+
+	if selector.Property == "-" {
+		res, err := findNodesPropertyKeys(selector, previousValue, createIfNotExists)
+		return res, err
+	}
+
+	return findNodesPropertyWork(selector, previousValue, createIfNotExists, unwrapValue(previousValue))
 }
 
 func findNodesPropertyKeys(selector Selector, previousValue reflect.Value, createIfNotExists bool) ([]*Node, error) {
