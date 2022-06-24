@@ -204,7 +204,7 @@ func getDeletePlaceholder(item reflect.Value) reflect.Value {
 }
 
 func isDeletePlaceholder(item reflect.Value) bool {
-	// todo : handle struct types?
+	// No need to handle structs since on delete we set the field to a zero value.
 	switch i := unwrapValue(item); i.Kind() {
 	case reflect.Map:
 		if val, ok := i.Interface().(map[string]interface{})[deletePlaceholderKey]; ok {
