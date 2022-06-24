@@ -106,14 +106,12 @@ func nilValue() reflect.Value {
 }
 
 func unwrapValue(value reflect.Value) reflect.Value {
-	// value = reflect.Indirect(value)
 	if value.Kind() == reflect.Interface {
 		return value.Elem()
 	}
 	return value
 }
 
-// This is very similar to unwrapValue. Could it serve as a replacement?
 func derefValue(value reflect.Value) reflect.Value {
 	if value.Kind() == reflect.Ptr {
 		return value.Elem()
