@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"io"
+	"path/filepath"
 	"sync"
 )
 
@@ -118,10 +119,17 @@ func validateCommand() *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			files := make([]validationFile, 0)
 			for _, a := range args {
-				files = append(files, validationFile{
-					File:   a,
-					Parser: "",
-				})
+				matches, err := filepath.Glob(a)
+				if err != nil {
+					return err
+				}
+
+				for _, m := range matches {
+					files = append(files, validationFile{
+						File:   m,
+						Parser: "",
+					})
+				}
 			}
 
 			return runValidateCommand(validateOptions{

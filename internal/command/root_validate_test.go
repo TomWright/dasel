@@ -23,6 +23,14 @@ fail ./../../tests/assets/broken.xml could not load input: could not unmarshal d
 `,
 	))
 
+	t.Run("PartialGlob", expectOutputAndErr(
+		[]string{"validate", "./../../tests/assets/*.json"},
+		"1 files failed validation",
+		`fail ../../tests/assets/broken.json could not load input: could not unmarshal data: invalid character '}' after array element
+pass ../../tests/assets/example.json
+`,
+	))
+
 	t.Run("AllFail", expectOutputAndErr(
 		[]string{"validate", "./../../tests/assets/broken.json", "./../../tests/assets/broken.xml"},
 		"2 files failed validation",
