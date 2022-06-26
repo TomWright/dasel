@@ -678,6 +678,50 @@ func TestNode_PutMultiple(t *testing.T) {
 			t.Errorf("expected %v, got %v", exp, value)
 		}
 	})
+	t.Run("StructAnyIndex", func(t *testing.T) {
+		type user struct {
+			Name string
+			Age  int
+		}
+		value := []user{
+			{
+				Name: "Tom",
+				Age:  27,
+			},
+			{
+				Name: "Jim",
+				Age:  27,
+			},
+			{
+				Name: "Amelia",
+				Age:  25,
+			},
+		}
+		err := dasel.New(value).PutMultiple(".[*].Name", "Frank")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		exp := []user{
+			{
+				Name: "Frank",
+				Age:  27,
+			},
+			{
+				Name: "Frank",
+				Age:  27,
+			},
+			{
+				Name: "Frank",
+				Age:  25,
+			},
+		}
+
+		if !reflect.DeepEqual(exp, value) {
+			t.Errorf("expected %v, got %v", exp, value)
+		}
+	})
 }
 
 func TestNode_Query(t *testing.T) {
