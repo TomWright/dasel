@@ -31,6 +31,14 @@ fail ./../../tests/assets/broken.xml could not load input: could not unmarshal d
 `,
 	))
 
+	t.Run("AllFailNoErrors", expectOutputAndErr(
+		[]string{"validate", "--include-error=false", "./../../tests/assets/broken.json", "./../../tests/assets/broken.xml"},
+		"2 files failed validation",
+		`fail ./../../tests/assets/broken.json
+fail ./../../tests/assets/broken.xml
+`,
+	))
+
 	t.Run("NoFilesPass", expectOutputAndErr(
 		[]string{"validate"},
 		"",
