@@ -21,6 +21,7 @@ func NewRootCMD() *cobra.Command {
 		putCommand(),
 		deleteCommand(),
 		updateCommand(selfupdate.NewUpdater(internal.Version)),
+		validateCommand(),
 	)
 	return cmd
 }
