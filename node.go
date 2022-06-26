@@ -106,8 +106,14 @@ func nilValue() reflect.Value {
 }
 
 func unwrapValue(value reflect.Value) reflect.Value {
-	// value = reflect.Indirect(value)
 	if value.Kind() == reflect.Interface {
+		return value.Elem()
+	}
+	return value
+}
+
+func derefValue(value reflect.Value) reflect.Value {
+	if value.Kind() == reflect.Ptr {
 		return value.Elem()
 	}
 	return value

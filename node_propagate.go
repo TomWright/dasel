@@ -35,23 +35,34 @@ func propagateValue(n *Node) error {
 	}
 }
 
-// propagateValueProperty sends the value of the current node up to the previous node in the chain.
-func propagateValueProperty(n *Node) error {
-	if !isValid(n.Previous.Value) {
-		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
-	}
-
-	value := unwrapValue(n.Previous.Value)
-
-	if value.Kind() == reflect.Map {
+func propagateValuePropertyWork(n *Node, value reflect.Value) error {
+	switch value.Kind() {
+	case reflect.Map:
 		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), n.Value)
 		return nil
+	case reflect.Struct:
+		fieldV := value.FieldByName(n.Selector.Property)
+		if fieldV.IsValid() {
+			fieldV.Set(n.Value)
+		}
+		return nil
+	case reflect.Ptr:
+		return propagateValuePropertyWork(n, derefValue(value))
 	}
 
 	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
 }
 
+// propagateValueProperty sends the value of the current node up to the previous node in the chain.
+func propagateValueProperty(n *Node) error {
+	if !isValid(n.Previous.Value) {
+		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
+	}
+	return propagateValuePropertyWork(n, unwrapValue(n.Previous.Value))
+}
+
 // propagateValueIndex sends the value of the current node up to the previous node in the chain.
+// No need to support structs here since a struct can't have an index.
 func propagateValueIndex(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
@@ -103,20 +114,30 @@ func deleteFromParent(n *Node) error {
 	}
 }
 
+func deleteFromParentPropertyWork(n *Node, value reflect.Value) error {
+	switch value.Kind() {
+	case reflect.Map:
+		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), reflect.Value{})
+		return nil
+	case reflect.Struct:
+		fieldV := value.FieldByName(n.Selector.Property)
+		if fieldV.CanSet() && fieldV.IsValid() && !fieldV.IsZero() {
+			fieldV.Set(reflect.New(fieldV.Type()).Elem())
+		}
+		return nil
+	case reflect.Ptr:
+		return deleteFromParentPropertyWork(n, derefValue(value))
+	}
+
+	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
+}
+
 // deleteFromParentProperty sends the value of the current node up to the previous node in the chain.
 func deleteFromParentProperty(n *Node) error {
 	if !isValid(n.Previous.Value) {
 		return &UnexpectedPreviousNilValue{Selector: n.Previous.Selector.Current}
 	}
-
-	value := unwrapValue(n.Previous.Value)
-
-	if value.Kind() == reflect.Map {
-		value.SetMapIndex(reflect.ValueOf(n.Selector.Property), reflect.Value{})
-		return nil
-	}
-
-	return &UnsupportedTypeForSelector{Selector: n.Selector, Value: n.Previous.Value}
+	return deleteFromParentPropertyWork(n, unwrapValue(n.Previous.Value))
 }
 
 // deleteFromParentIndex sends the value of the current node up to the previous node in the chain.
@@ -183,6 +204,7 @@ func getDeletePlaceholder(item reflect.Value) reflect.Value {
 }
 
 func isDeletePlaceholder(item reflect.Value) bool {
+	// No need to handle structs since on delete we set the field to a zero value.
 	switch i := unwrapValue(item); i.Kind() {
 	case reflect.Map:
 		if val, ok := i.Interface().(map[string]interface{})[deletePlaceholderKey]; ok {

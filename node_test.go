@@ -678,6 +678,50 @@ func TestNode_PutMultiple(t *testing.T) {
 			t.Errorf("expected %v, got %v", exp, value)
 		}
 	})
+	t.Run("StructAnyIndex", func(t *testing.T) {
+		type user struct {
+			Name string
+			Age  int
+		}
+		value := []user{
+			{
+				Name: "Tom",
+				Age:  27,
+			},
+			{
+				Name: "Jim",
+				Age:  27,
+			},
+			{
+				Name: "Amelia",
+				Age:  25,
+			},
+		}
+		err := dasel.New(value).PutMultiple(".[*].Name", "Frank")
+		if err != nil {
+			t.Errorf("unexpected query error: %s", err)
+			return
+		}
+
+		exp := []user{
+			{
+				Name: "Frank",
+				Age:  27,
+			},
+			{
+				Name: "Frank",
+				Age:  27,
+			},
+			{
+				Name: "Frank",
+				Age:  25,
+			},
+		}
+
+		if !reflect.DeepEqual(exp, value) {
+			t.Errorf("expected %v, got %v", exp, value)
+		}
+	})
 }
 
 func TestNode_Query(t *testing.T) {
@@ -850,6 +894,42 @@ func TestNode_Query_Data(t *testing.T) {
 		})
 
 		got, err := rootNode.Query(".(name=Tom).name")
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("SelectFromStruct", func(t *testing.T) {
+		rootNode := dasel.New([]struct {
+			Name string
+		}{
+			{Name: "Tom"},
+			{Name: "Jim"},
+		})
+
+		got, err := rootNode.Query(".[0].Name")
+		if err != nil {
+			t.Errorf("unexpected query error: %v", err)
+			return
+		}
+
+		if exp, got := "Tom", got.InterfaceValue().(string); exp != got {
+			t.Errorf("expected %s, got %s", exp, got)
+		}
+	})
+	t.Run("ConditionalSelectFromStruct", func(t *testing.T) {
+		rootNode := dasel.New([]struct {
+			Name string
+		}{
+			{Name: "Tom"},
+			{Name: "Jim"},
+		})
+
+		got, err := rootNode.Query(".(Name=Tom).Name")
 		if err != nil {
 			t.Errorf("unexpected query error: %v", err)
 			return
@@ -1138,6 +1218,28 @@ func TestNode_Delete(t *testing.T) {
 			},
 		},
 	}))
+	t.Run("ExistingStringInStruct", deleteTest(dasel.New(&struct {
+		Name string
+		Age  int
+	}{
+		Name: "Tom",
+		Age:  123,
+	}), ".Name", &struct {
+		Name string
+		Age  int
+	}{
+		Age: 123,
+	}))
+	t.Run("AnyIndexInStruct", deleteMultipleTest(dasel.New(&struct {
+		Name string
+		Age  int
+	}{
+		Name: "Tom",
+		Age:  123,
+	}), ".[*]", &struct {
+		Name string
+		Age  int
+	}{}))
 	t.Run("ExistingObjectInArray", deleteTest(dasel.New(data()), "people.[0]", map[string]interface{}{
 		"id": "123",
 		"names": []string{
