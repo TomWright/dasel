@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for struct type usage in go package.
+- Validate command.
 
 ## [v1.24.3] - 2022-04-23
 

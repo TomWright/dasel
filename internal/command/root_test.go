@@ -114,3 +114,29 @@ func expectOutput(in string, args []string, exp string) func(t *testing.T) {
 		}
 	}
 }
+
+func expectOutputAndErr(args []string, expErr string, expOutput string) func(t *testing.T) {
+	return func(t *testing.T) {
+		cmd := command.NewRootCMD()
+		outputBuffer := bytes.NewBuffer([]byte{})
+
+		cmd.SetOut(outputBuffer)
+		cmd.SetArgs(args)
+
+		err := cmd.Execute()
+
+		gotErr := ""
+		if err != nil {
+			gotErr = err.Error()
+		}
+
+		if expErr != gotErr {
+			t.Errorf("expected err %s, got %s", expErr, gotErr)
+		}
+
+		gotOutput := outputBuffer.String()
+		if expOutput != gotOutput {
+			t.Errorf("expected:\n%s\ngot:\n%s", expOutput, gotOutput)
+		}
+	}
+}
