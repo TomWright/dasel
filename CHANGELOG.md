@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v1.25.0] - 2022-06-26
+
 ### Added
 
 - Support for struct type usage in go package.
@@ -453,7 +457,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.24.3...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.25.0...HEAD
+[v1.25.0]: https://github.com/TomWright/dasel/compare/v1.24.3...v1.25.0
 [v1.24.3]: https://github.com/TomWright/dasel/compare/v1.24.2...v1.24.3
 [v1.24.2]: https://github.com/TomWright/dasel/compare/v1.24.1...v1.24.2
 [v1.24.1]: https://github.com/TomWright/dasel/compare/v1.24.0...v1.24.1
