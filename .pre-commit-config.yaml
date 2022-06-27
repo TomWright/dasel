@@ -1,0 +1,9 @@
+# yaml-language-server: $schema=https://json.schemastore.org/pre-commit-config.json
+
+repos:
+  - repo: https://github.com/TomWright/dasel
+    rev: master
+    hooks:
+      - id: dasel-validate-bin
+      - id: dasel-validate-docker
+      - id: dasel-validate
