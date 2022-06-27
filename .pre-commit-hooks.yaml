@@ -1,0 +1,38 @@
+- id: dasel-validate-docker
+  name: Validate JSON, YAML, XML, TOML files
+  description: Validate JSON files
+  language: docker_image
+  types_or:
+    - json
+    - yaml
+    - xml
+    - toml
+  entry: ghcr.io/tomwright/dasel
+  args:
+    - validate
+
+- id: dasel-validate-bin
+  name: Validate JSON, YAML, XML, TOML
+  description: Validate JSON, YAML, XML, TOML files
+  language: system
+  types_or:
+    - json
+    - yaml
+    - xml
+    - toml
+  entry: dasel
+  args:
+    - validate
+
+- id: dasel-validate
+  name: Validate JSON, YAML, XML, TOML
+  description: Validate JSON, YAML, XML, TOML files
+  language: golang
+  types_or:
+    - json
+    - yaml
+    - xml
+    - toml
+  entry: dasel
+  args:
+    - validate

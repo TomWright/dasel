@@ -34,6 +34,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 * [Documentation](#documentation)
 * [Playground](#playground)
 * [Benchmarks](#benchmarks)
+* [Pre-Commit](#pre-commit)
 
 ## Quickstart
 
@@ -94,6 +95,22 @@ echo '{
 
 See [delete documentation](https://daseldocs.tomwright.me/usage/delete).
 
+
+## Pre-Commit
+
+Add `dasel` hooks to `.pre-commit-config.yaml` file
+
+```yaml
+- repo: https://github.com/TomWright/dasel
+  rev: v1.25.1
+  hooks:
+    - id: dasel-validate
+```
+
+for a native execution of dasel, or use:
+- `dasel-validate-docker` pre-commit hook for executing dasel using the official [Docker images](https://daseldocs.tomwright.me/installation#docker)
+- `dasel-validate-bin` pre-commit hook for executing dasel using the official [binary](https://daseldocs.tomwright.me/installation)
+
 ## Issue vs Discussion
 
 I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on this repository.
@@ -124,6 +141,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
 - [Self update](https://daseldocs.tomwright.me/installation/update).
+- [Pre-commit hooks]()
 
 ## Documentation
 
