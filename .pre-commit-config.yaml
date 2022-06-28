@@ -1,7 +1,0 @@
-repos:
-  - repo: https://github.com/TomWright/dasel
-    rev: master
-    hooks:
-      - id: dasel-validate-bin
-      - id: dasel-validate-docker
-      - id: dasel-validate
