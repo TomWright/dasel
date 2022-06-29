@@ -20,20 +20,22 @@ Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kis
 
 Say good bye to learning new tools just to work with a different data format.
 
-Dasel uses a standard selector syntax no matter the data format. This means that once you learn how to use dasel you immediately have the ability to query/modify any of the supported data types without any additional tools or effort. 
+Dasel uses a standard selector syntax no matter the data format. This means that once you learn how to use dasel you immediately have the ability to query/modify any of the supported data types without any additional tools or effort.
 
 ![Update Kubernetes Manifest](update_kubernetes.gif)
 
 ## Table of contents
-* [Dasel](#dasel)
-* [One tool to rule them all](#one-tool-to-rule-them-all)
-* [Quickstart](#quickstart)
-* [Issue vs discussion](#issue-vs-discussion)
-* [Features](#features)
-* [Table of contents](#table-of-contents)
-* [Documentation](#documentation)
-* [Playground](#playground)
-* [Benchmarks](#benchmarks)
+
+- [Dasel](#dasel)
+- [One tool to rule them all](#one-tool-to-rule-them-all)
+- [Quickstart](#quickstart)
+- [Issue vs discussion](#issue-vs-discussion)
+- [Features](#features)
+- [Table of contents](#table-of-contents)
+- [Documentation](#documentation)
+- [Playground](#playground)
+- [Benchmarks](#benchmarks)
+- [Pre-Commit](#pre-commit)
 
 ## Quickstart
 
@@ -44,6 +46,7 @@ brew install dasel
 ```
 
 You can also install a [development version](https://daseldocs.tomwright.me/installation#development-version) with:
+
 ```bash
 go install github.com/tomwright/dasel/cmd/dasel@master
 ```
@@ -94,6 +97,22 @@ echo '{
 
 See [delete documentation](https://daseldocs.tomwright.me/usage/delete).
 
+## Pre-Commit
+
+Add `dasel` hooks to `.pre-commit-config.yaml` file
+
+```yaml
+- repo: https://github.com/TomWright/dasel
+  rev: v1.25.1
+  hooks:
+    - id: dasel-validate
+```
+
+for a native execution of dasel, or use:
+
+- `dasel-validate-docker` pre-commit hook for executing dasel using the official [Docker images](https://daseldocs.tomwright.me/installation#docker)
+- `dasel-validate-bin` pre-commit hook for executing dasel using the official [binary](https://daseldocs.tomwright.me/installation)
+
 ## Issue vs Discussion
 
 I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on this repository.
@@ -101,10 +120,12 @@ I have enabled [discussions](https://github.com/TomWright/dasel/discussions) on 
 I am aware there may be some confusion when deciding where you should communicate when reporting issues, asking questions or raising feature requests so this section aims to help us align on that.
 
 Please [raise an issue](https://github.com/TomWright/dasel/issues) if:
+
 - You find a bug.
 - You have a feature request and can clearly describe your request.
 
 Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
+
 - You have a question.
 - You're not sure how to achieve something with dasel.
 - You have an idea but don't quite know how you would like it to work.
@@ -112,6 +133,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Anything else!
 
 ## Features
+
 - [Query/select data from structured data files](https://daseldocs.tomwright.me/usage/select).
 - [Update data in structured data files](https://daseldocs.tomwright.me/usage/put).
 - [Create data files](https://daseldocs.tomwright.me/usage/put#create-documents-from-scratch).
@@ -124,6 +146,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
 - [Self update](https://daseldocs.tomwright.me/installation/update).
+- [Pre-commit hooks](https://daseldocs.tomwright.me/usage/validate#pre-commit).
 
 ## Documentation
 
@@ -133,14 +156,13 @@ The official dasel docs can be found at [daseldocs.tomwright.me](https://daseldo
 
 You can test out dasel commands using the [playground](https://dasel.tomwright.me).
 
-Source code for the playground can be found at  [github.com/TomWright/daselplayground](https://github.com/TomWright/daselplayground).
+Source code for the playground can be found at [github.com/TomWright/daselplayground](https://github.com/TomWright/daselplayground).
 
 ## Benchmarks
 
 In my tests dasel has been up to 3x faster than jq and 15x faster than yq.
 
 See the [benchmark directory](./benchmark/README.md).
-
 
 ## Stargazers over time
 

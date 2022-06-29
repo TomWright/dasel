@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [v1.25.1] - 2022-06-29
+
+## Added
+
+- Pre-commit hooks for validate command.
+
 ## [v1.25.0] - 2022-06-26
 
 ### Added
@@ -457,7 +463,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.25.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.25.1...HEAD
+[v1.25.1]: https://github.com/TomWright/dasel/compare/v1.25.0...v1.25.1
 [v1.25.0]: https://github.com/TomWright/dasel/compare/v1.24.3...v1.25.0
 [v1.24.3]: https://github.com/TomWright/dasel/compare/v1.24.2...v1.24.3
 [v1.24.2]: https://github.com/TomWright/dasel/compare/v1.24.1...v1.24.2
