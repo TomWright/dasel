@@ -531,6 +531,23 @@ func TestRootCmd_Select_JSON(t *testing.T) {
 ]
 `, nil, "-m"))
 
+	t.Run("SearchOptional", selectTest(`{
+  "users": [
+    {
+      "name": "Tom",
+      "blocked": true
+    },
+    {
+      "name": "Jim",
+      "blocked": false
+    },
+    {
+      "name": "Frank"
+    }
+  ]
+}`, "json", `.users.(#:blocked=true).name`, `Tom
+`, nil, "-m", "--plain"))
+
 }
 
 func TestRootCmd_Select_YAML(t *testing.T) {
