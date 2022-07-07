@@ -164,9 +164,6 @@ func processParseSelectorSearchOptional(selector string, sel Selector) (Selector
 	if err != nil {
 		return sel, err
 	}
-	if len(dynamicGroups) != 1 {
-		return sel, fmt.Errorf("require exactly 1 group in search selector")
-	}
 
 	for _, g := range dynamicGroups {
 		parts := FindDynamicSelectorParts(g)
