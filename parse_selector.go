@@ -29,6 +29,8 @@ func ParseSelector(selector string) (Selector, error) {
 	switch {
 	case strings.HasPrefix(nextSel, "(?:") && strings.HasSuffix(nextSel, ")"):
 		sel, err = processParseSelectorSearch(nextSel, sel)
+	case strings.HasPrefix(nextSel, "(#:") && strings.HasSuffix(nextSel, ")"):
+		sel, err = processParseSelectorSearchOptional(nextSel, sel)
 	case strings.HasPrefix(nextSel, "(") && strings.HasSuffix(nextSel, ")"):
 		sel, err = processParseSelectorDynamic(nextSel, sel)
 	case nextSel == "[]":
@@ -143,6 +145,32 @@ func processParseSelectorSearch(selector string, sel Selector) (Selector, error)
 	for _, g := range dynamicGroups {
 		parts := FindDynamicSelectorParts(g)
 		parts.Key = strings.TrimPrefix(parts.Key, "?:")
+		cond, err := getCondition(parts)
+		if err != nil {
+			return sel, err
+		}
+		if cond != nil {
+			sel.Conditions = append(sel.Conditions, cond)
+		}
+	}
+
+	return sel, nil
+}
+
+func processParseSelectorSearchOptional(selector string, sel Selector) (Selector, error) {
+	sel.Type = "SEARCH_OPTIONAL"
+
+	dynamicGroups, err := DynamicSelectorToGroups(selector)
+	if err != nil {
+		return sel, err
+	}
+	if len(dynamicGroups) != 1 {
+		return sel, fmt.Errorf("require exactly 1 group in search selector")
+	}
+
+	for _, g := range dynamicGroups {
+		parts := FindDynamicSelectorParts(g)
+		parts.Key = strings.TrimPrefix(parts.Key, "#:")
 		cond, err := getCondition(parts)
 		if err != nil {
 			return sel, err
