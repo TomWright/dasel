@@ -7,11 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Added
+
+- Search optional selector - `(#:key=value)`
 
 ## [v1.25.1] - 2022-06-29
 
-## Added
+### Added
 
 - Pre-commit hooks for validate command.
 

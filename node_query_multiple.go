@@ -454,7 +454,9 @@ func findNodesSearchRecursiveWork(selector Selector, previousNode *Node, createI
 // If any of those nodes match the checks they are returned.
 func findNodesSearchRecursive(selector Selector, previousNode *Node, createIfNotExists bool, firstNode bool) ([]*Node, error) {
 	if !isValid(previousNode.Value) {
-		return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+		if selector.Type != "SEARCH_OPTIONAL" {
+			return nil, &UnexpectedPreviousNilValue{Selector: selector.Raw}
+		}
 	}
 	return findNodesSearchRecursiveWork(selector, previousNode, createIfNotExists, firstNode, unwrapValue(previousNode.Value))
 }
@@ -687,6 +689,8 @@ func findNodes(selector Selector, previousNode *Node, createIfNotExists bool) ([
 	case "DYNAMIC":
 		res, err = findNodesDynamic(selector, previousNode.Value, createIfNotExists)
 	case "SEARCH":
+		res, err = findNodesSearch(selector, previousNode, createIfNotExists)
+	case "SEARCH_OPTIONAL":
 		res, err = findNodesSearch(selector, previousNode, createIfNotExists)
 	default:
 		err = &UnsupportedSelector{Selector: selector.Raw}

@@ -371,6 +371,19 @@ func TestFindNodesSearch(t *testing.T) {
 		got, err := findNodesSearch(selector, previousNode, false)
 		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousNode.Value}, got, err)
 	})
+	t.Run("NotFoundOptional", func(t *testing.T) {
+		previousNode := New(map[string]interface{}{})
+		selector := Selector{
+			Type:    "SEARCH_OPTIONAL",
+			Raw:     ".(#:name=x)",
+			Current: ".(#:name=x)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "x"},
+			},
+		}
+		got, err := findNodesSearch(selector, previousNode, false)
+		assertQueryMultipleResult(t, []reflect.Value{}, &ValueNotFound{Selector: selector.Current, PreviousValue: previousNode.Value}, got, err)
+	})
 	t.Run("FoundAllMatches", func(t *testing.T) {
 		users := []interface{}{
 			map[string]interface{}{
@@ -391,6 +404,46 @@ func TestFindNodesSearch(t *testing.T) {
 			Type:    "SEARCH",
 			Raw:     ".(?:name=Tom).name",
 			Current: ".(?:name=Tom)",
+			Conditions: []Condition{
+				&EqualCondition{Key: "name", Value: "Tom"},
+			},
+		}
+		got, err := findNodesSearch(selector, previousNode, false)
+		if err != nil {
+			t.Errorf("unexpected error: %s", err)
+			return
+		}
+		exp := []interface{}{
+			users[0], users[2],
+		}
+		gotVals := make([]interface{}, len(got))
+		for i, val := range got {
+			gotVals[i] = val.Value.Interface()
+		}
+		if !reflect.DeepEqual(exp, gotVals) {
+			t.Errorf("expected %v, got %v", exp, gotVals)
+		}
+	})
+	t.Run("FoundAllMatchesOptional", func(t *testing.T) {
+		users := []interface{}{
+			map[string]interface{}{
+				"id":   1,
+				"name": "Tom",
+			},
+			map[string]interface{}{
+				"id":   2,
+				"name": "Jim",
+			},
+			map[string]interface{}{
+				"id":   3,
+				"name": "Tom",
+			},
+		}
+		previousNode := New(users)
+		selector := Selector{
+			Type:    "SEARCH_OPTIONAL",
+			Raw:     ".(#:name=Tom).name",
+			Current: ".(#:name=Tom)",
 			Conditions: []Condition{
 				&EqualCondition{Key: "name", Value: "Tom"},
 			},
