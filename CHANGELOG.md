@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Fixed
+
+- Make the completion command available for use ([Issue 216](https://github.com/TomWright/dasel/issues/216))
 
 ## [v1.26.0] - 2022-07-09
 
