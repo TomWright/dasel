@@ -30,18 +30,18 @@ func NewRootCMD() *cobra.Command {
 // If they do not they are adjusted to target the given command.
 // If any of the blacklisted args are set in os.Args, no action is taken.
 func ChangeDefaultCommand(cmd *cobra.Command, command string, blacklistedArgs ...string) {
-	subCommands := func() []string {
-		results := make([]string, 0)
-		for _, subCmd := range cmd.Commands() {
-			results = append(results, append(subCmd.Aliases, subCmd.Name())...)
-		}
-		return results
-	}
-
 	if len(os.Args) > 1 {
 		potentialCommand := os.Args[1]
-		for _, command := range subCommands() {
-			if command == potentialCommand {
+
+		// The completion command is registered internally during execution so cmd.Commands() can't
+		// pick it up here.
+		subCommands := []string{"completion"}
+		for _, subCmd := range cmd.Commands() {
+			subCommands = append(subCommands, append(subCmd.Aliases, subCmd.Name())...)
+		}
+
+		for _, availableCommand := range subCommands {
+			if availableCommand == potentialCommand {
 				return
 			}
 		}
