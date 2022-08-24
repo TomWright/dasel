@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Make the completion command available for use ([Issue 216](https://github.com/TomWright/dasel/issues/216))
+- Make the `__complete` command available for use
 
 ## [v1.26.0] - 2022-07-09
 
