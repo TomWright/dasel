@@ -35,7 +35,7 @@ func ChangeDefaultCommand(cmd *cobra.Command, command string, blacklistedArgs ..
 
 		// The completion command is registered internally during execution so cmd.Commands() can't
 		// pick it up here.
-		subCommands := []string{"completion"}
+		subCommands := []string{"completion", "__complete"}
 		for _, subCmd := range cmd.Commands() {
 			subCommands = append(subCommands, append(subCmd.Aliases, subCmd.Name())...)
 		}
