@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v1.26.1] - 2022-08-24
+
 ### Fixed
 
 - Make the completion command available for use ([Issue 216](https://github.com/TomWright/dasel/issues/216))
@@ -472,7 +476,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.26.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.26.1...HEAD
+[v1.26.1]: https://github.com/TomWright/dasel/compare/v1.26.0...v1.26.1
 [v1.26.0]: https://github.com/TomWright/dasel/compare/v1.25.1...v1.26.0
 [v1.25.1]: https://github.com/TomWright/dasel/compare/v1.25.0...v1.25.1
 [v1.25.0]: https://github.com/TomWright/dasel/compare/v1.24.3...v1.25.0
