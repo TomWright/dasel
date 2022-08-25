@@ -29,6 +29,7 @@ Dasel uses a standard selector syntax no matter the data format. This means that
 - [Dasel](#dasel)
 - [One tool to rule them all](#one-tool-to-rule-them-all)
 - [Quickstart](#quickstart)
+- [Completion](#completion)
 - [Issue vs discussion](#issue-vs-discussion)
 - [Features](#features)
 - [Table of contents](#table-of-contents)
@@ -96,6 +97,18 @@ echo '{
 ```
 
 See [delete documentation](https://daseldocs.tomwright.me/usage/delete).
+
+## Completion
+
+If you want to use completion from the terminal you can do the following (using zsh in this example):
+
+Add the following to `~/.zshrc` and reload your terminal.
+```bash
+export fpath=(~/zsh/site-functions $fpath)
+mkdir -p ~/zsh/site-functions
+dasel completion zsh > ~/zsh/site-functions/_dasel
+compinit
+```
 
 ## Pre-Commit
 
