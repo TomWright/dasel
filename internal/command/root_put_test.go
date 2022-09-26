@@ -736,6 +736,32 @@ foo: true
   "user": "Tom <contact@tomwright.me>"
 }
 `, nil, "--escape-html=false"))
+
+	t.Run("StringFromFile", putStringTest(`{
+  "id": "x"
+}`, "json", ".value", "", `{
+  "id": "x",
+  "value": "This is a string value"
+}
+`, nil, "--value-file", "../../tests/assets/string-value.txt"))
+
+	t.Run("IntFromFile", putIntTest(`{
+  "id": "x"
+}`, "json", ".value", "", `{
+  "id": "x",
+  "value": 12345
+}
+`, nil, "--value-file", "../../tests/assets/int-value.txt"))
+
+	t.Run("DocumentFromFile", putDocumentTest(`{
+  "id": "x"
+}`, "json", ".value", "", `{
+  "id": "x",
+  "value": {
+    "this": "is a value"
+  }
+}
+`, nil, "--value-file", "../../tests/assets/json-value.json"))
 }
 
 func TestRootCMD_Put_YAML(t *testing.T) {
