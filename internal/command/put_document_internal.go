@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/storage"
 	"io"
+	"os"
 )
 
 type putDocumentOpts struct {
@@ -14,6 +15,7 @@ type putDocumentOpts struct {
 	WriteParser         string
 	Parser              string
 	Selector            string
+	DocumentFile        string
 	DocumentString      string
 	DocumentParser      string
 	Reader              io.Reader
@@ -22,6 +24,21 @@ type putDocumentOpts struct {
 	Compact             bool
 	MergeInputDocuments bool
 	EscapeHTML          bool
+}
+
+func readFileContents(path string) ([]byte, error) {
+	docFile, err := os.Open(path)
+	if err != nil {
+		return nil, fmt.Errorf("could not open file: %s: %w", path, err)
+	}
+	defer docFile.Close()
+
+	bytes, err := io.ReadAll(docFile)
+	if err != nil {
+		return nil, fmt.Errorf("could not read file: %s: %w", path, err)
+	}
+
+	return bytes, nil
 }
 
 func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
@@ -42,6 +59,14 @@ func runPutDocumentCommand(opts putDocumentOpts, cmd *cobra.Command) error {
 	documentParser, err := getPutDocumentParser(readParser, opts.DocumentParser)
 	if err != nil {
 		return err
+	}
+
+	if opts.DocumentFile != "" {
+		docFile, err := readFileContents(opts.DocumentFile)
+		if err != nil {
+			return err
+		}
+		opts.DocumentString = string(docFile)
 	}
 
 	documentValue, err := documentParser.FromBytes([]byte(opts.DocumentString))
@@ -105,6 +130,7 @@ func putDocumentCommand() *cobra.Command {
 			opts.Multi, _ = cmd.Flags().GetBool("multiple")
 			opts.Compact, _ = cmd.Flags().GetBool("compact")
 			opts.DocumentString, _ = cmd.Flags().GetString("value")
+			opts.DocumentFile, _ = cmd.Flags().GetString("value-file")
 			opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
 			opts.EscapeHTML, _ = cmd.Flags().GetBool("escape-html")
 
@@ -113,7 +139,7 @@ func putDocumentCommand() *cobra.Command {
 				args = args[1:]
 			}
 
-			if opts.DocumentString == "" && len(args) > 0 {
+			if opts.DocumentString == "" && opts.DocumentFile == "" && len(args) > 0 {
 				opts.DocumentString = args[0]
 				args = args[1:]
 			}

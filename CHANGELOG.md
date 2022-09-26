@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Added
+
+- New `value-file` flag allows you to `put` values read from a file ([Issue 246](https://github.com/TomWright/dasel/issues/246))
 
 ## [v1.26.1] - 2022-08-24
 
