@@ -28,6 +28,7 @@ fail ./../../tests/assets/broken.xml could not load input: could not unmarshal d
 		"1 files failed validation",
 		`fail ../../tests/assets/broken.json could not load input: could not unmarshal data: invalid character '}' after array element
 pass ../../tests/assets/example.json
+pass ../../tests/assets/json-value.json
 `,
 	))
 
