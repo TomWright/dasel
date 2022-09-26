@@ -290,7 +290,7 @@ func getOutputWriter(cmd *cobra.Command, in io.Writer, file string, out string) 
 }
 
 func putCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag, valueFlag string
+	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag, valueFlag, valueFileFlag string
 	var multiFlag, compactFlag, mergeInputDocumentsFlag, escapeHTMLFlag bool
 
 	cmd := &cobra.Command{
@@ -316,6 +316,7 @@ func putCommand() *cobra.Command {
 	cmd.PersistentFlags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
 	cmd.PersistentFlags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
 	cmd.PersistentFlags().StringVarP(&valueFlag, "value", "v", "", "Value to put.")
+	cmd.PersistentFlags().StringVar(&valueFileFlag, "value-file", "", "File containing value to put.")
 	cmd.PersistentFlags().BoolVar(&escapeHTMLFlag, "escape-html", false, "Escape HTML tags when writing output.")
 
 	_ = cmd.MarkPersistentFlagFilename("file")
@@ -331,6 +332,7 @@ type genericPutOptions struct {
 	WriteParser         string
 	Selector            string
 	Value               string
+	ValueFile           string
 	ValueType           string
 	Init                func(genericPutOptions) genericPutOptions
 	Reader              io.Reader
@@ -353,6 +355,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 		opts.Compact, _ = cmd.Flags().GetBool("compact")
 		opts.MergeInputDocuments, _ = cmd.Flags().GetBool("merge-input-documents")
 		opts.Value, _ = cmd.Flags().GetString("value")
+		opts.ValueFile, _ = cmd.Flags().GetString("value-file")
 		opts.EscapeHTML, _ = cmd.Flags().GetBool("escape-html")
 
 		if opts.Selector == "" && len(args) > 0 {
@@ -360,7 +363,7 @@ func getGenericInit(cmd *cobra.Command, args []string) func(options genericPutOp
 			args = args[1:]
 		}
 
-		if opts.Value == "" && len(args) > 0 {
+		if opts.Value == "" && opts.ValueFile == "" && len(args) > 0 {
 			opts.Value = args[0]
 			args = args[1:]
 		}
@@ -385,6 +388,14 @@ func runGenericPutCommand(opts genericPutOptions, cmd *cobra.Command) error {
 	}, cmd)
 	if err != nil {
 		return err
+	}
+
+	if opts.ValueFile != "" {
+		valueFile, err := readFileContents(opts.ValueFile)
+		if err != nil {
+			return err
+		}
+		opts.Value = string(valueFile)
 	}
 
 	updateValue, err := parseValue(opts.Value, opts.ValueType)
