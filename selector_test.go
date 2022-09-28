@@ -92,6 +92,11 @@ func TestFindDynamicSelectorParts(t *testing.T) {
 		Comparison: "=",
 		Value:      "b",
 	}))
+	t.Run("EqualWithEqualsInValue", testFindDynamicSelectorParts("a=b=c", dasel.DynamicSelectorParts{
+		Key:        "a",
+		Comparison: "=",
+		Value:      "b=c",
+	}))
 	t.Run("NotEqual", testFindDynamicSelectorParts("a!=b", dasel.DynamicSelectorParts{
 		Key:        "a",
 		Comparison: "!=",
