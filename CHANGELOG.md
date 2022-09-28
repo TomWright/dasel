@@ -9,7 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v1.27.1] - 2022-09-28
+
+### Fixed
+
+- Improved selector comparison parsing to allow matching on values containing special characters.
+
 ## [v1.27.0] - 2022-09-26
+
 ### Added
 
 - New `value-file` flag allows you to `put` values read from a file ([Issue 246](https://github.com/TomWright/dasel/issues/246))
@@ -481,7 +488,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.1...HEAD
+[v1.27.1]: https://github.com/TomWright/dasel/compare/v1.27.0...v1.27.1
 [v1.27.0]: https://github.com/TomWright/dasel/compare/v1.26.1...v1.27.0
 [v1.26.1]: https://github.com/TomWright/dasel/compare/v1.26.0...v1.26.1
 [v1.26.0]: https://github.com/TomWright/dasel/compare/v1.25.1...v1.26.0
