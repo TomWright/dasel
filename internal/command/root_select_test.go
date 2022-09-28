@@ -650,6 +650,21 @@ spec:
 	t.Run("NullInput", selectTest(`null`, "yaml", `.`, newline("{}"), nil))
 	t.Run("EmptyDocument", selectTest(`---`, "yaml", `.`, newline("{}"), nil))
 	t.Run("BlankInput", selectTest(``, "yaml", `.`, newline("{}"), nil))
+
+	// https://github.com/TomWright/dasel/discussions/244
+	t.Run("DynamicSelectorContainingEqualsInValue", selectTest(`
+options:
+  k3s:
+    extraArgs:
+      - arg: --no-deploy=traefik
+        nodeFilters:
+          - server:*
+      - arg: --kube-apiserver-arg=feature-gates=HPAContainerMetrics=true
+        nodeFilters:
+          - server:*
+`, "yaml", `.options.k3s.extraArgs.(arg=--no-deploy=traefik)`, newline(`arg: --no-deploy=traefik
+nodeFilters:
+- server:*`), nil))
 }
 
 func TestRootCmd_Select_TOML(t *testing.T) {
