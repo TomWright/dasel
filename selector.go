@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"errors"
+	"strings"
 )
 
 // ErrDynamicSelectorBracketMismatch is returned when the number of opening brackets doesn't equal that
@@ -85,6 +86,33 @@ type DynamicSelectorParts struct {
 	Value      string
 }
 
+var comparisons = []string{
+	"=",
+	"!=",
+	"<",
+	"<=",
+	">",
+	">=",
+}
+
+func isBuildingComparison(comparison string) bool {
+	for _, c := range comparisons {
+		if strings.HasPrefix(c, comparison) {
+			return true
+		}
+	}
+	return false
+}
+
+func isValidComparison(comparison string) bool {
+	for _, c := range comparisons {
+		if comparison == c {
+			return true
+		}
+	}
+	return false
+}
+
 // FindDynamicSelectorParts extracts the parts from the dynamic selector given.
 func FindDynamicSelectorParts(selector string) DynamicSelectorParts {
 	i := 0
@@ -110,8 +138,12 @@ func FindDynamicSelectorParts(selector string) DynamicSelectorParts {
 				parts.Value += string(v)
 			}
 
-		// Matches a comparison character
-		case i == 0 && (v == '<' || v == '>' || v == '=' || v == '!'):
+		// Matches a comparison operator
+		case i == 0 && isValidComparison(parts.Comparison+string(v)):
+			parts.Comparison += string(v)
+
+		// Is building a comparison character
+		case i == 0 && isBuildingComparison(parts.Comparison+string(v)):
 			parts.Comparison += string(v)
 
 		// Add to key or value based on comparison existence

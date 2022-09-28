@@ -138,8 +138,8 @@ func TestParseSelector(t *testing.T) {
 		}
 	})
 	t.Run("InvalidDynamicComparison", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(x<=>2)")
-		exp := &dasel.UnknownComparisonOperatorErr{Operator: "<=>"}
+		_, err := dasel.ParseSelector(".(x@2)")
+		exp := &dasel.UnknownComparisonOperatorErr{Operator: ""}
 		if err == nil || err.Error() != exp.Error() {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
@@ -152,15 +152,15 @@ func TestParseSelector(t *testing.T) {
 		}
 	})
 	t.Run("UnknownComparisonOperator", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(a<=>b)")
-		exp := "unknown comparison operator: <=>"
+		_, err := dasel.ParseSelector(".(a@b)")
+		exp := "unknown comparison operator: "
 		if err == nil || err.Error() != exp {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
 	})
 	t.Run("UnknownSearchComparisonOperator", func(t *testing.T) {
-		_, err := dasel.ParseSelector(".(?:a<=>b)")
-		exp := "unknown comparison operator: <=>"
+		_, err := dasel.ParseSelector(".(?:a@b)")
+		exp := "unknown comparison operator: "
 		if err == nil || err.Error() != exp {
 			t.Errorf("expected error %v, got %v", exp, err)
 		}
