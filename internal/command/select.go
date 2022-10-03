@@ -177,7 +177,7 @@ func selectCommand() *cobra.Command {
 		colourFlag, colorFlag, escapeHTMLFlag bool
 
 	cmd := &cobra.Command{
-		Use:   "select -f <file> -p <json,yaml> -s <selector>",
+		Use:   "select -f <file> -p <json,yaml,toml,xml,csv> <selector>",
 		Short: "Select properties from the given file.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if selectorFlag == "" && len(args) > 0 {

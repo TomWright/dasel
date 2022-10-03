@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Fixed
+
+- Help text for select and delete commands now contain all available parsers.
 
 ## [v1.27.1] - 2022-09-28
 

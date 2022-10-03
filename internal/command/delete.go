@@ -127,7 +127,7 @@ func deleteCommand() *cobra.Command {
 	var plainFlag, multiFlag, compactFlag, mergeInputDocumentsFlag, escapeHTMLFlag bool
 
 	cmd := &cobra.Command{
-		Use:   "delete -f <file> -p <json,yaml> -s <selector>",
+		Use:   "delete -f <file> -p <json,yaml,toml,xml,csv> <selector>",
 		Short: "Delete properties from the given file.",
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if selectorFlag == "" && len(args) > 0 {
