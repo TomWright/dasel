@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Help text for select and delete commands now contain all available parsers.
+- Errors now implement the `Is` interface so they are easier to use from go.
 
 ## [v1.27.1] - 2022-09-28
 
