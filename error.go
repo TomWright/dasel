@@ -19,6 +19,12 @@ func (e UnknownComparisonOperatorErr) Error() string {
 	return fmt.Sprintf("unknown comparison operator: %s", e.Operator)
 }
 
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e UnknownComparisonOperatorErr) Is(err error) bool {
+	_, ok := err.(*UnknownComparisonOperatorErr)
+	return ok
+}
+
 // InvalidIndexErr is returned when a selector targets an index that does not exist.
 type InvalidIndexErr struct {
 	Index string
@@ -29,6 +35,12 @@ func (e InvalidIndexErr) Error() string {
 	return fmt.Sprintf("invalid index: %s", e.Index)
 }
 
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e InvalidIndexErr) Is(err error) bool {
+	_, ok := err.(*InvalidIndexErr)
+	return ok
+}
+
 // UnsupportedSelector is returned when a specific selector type is used in the wrong context.
 type UnsupportedSelector struct {
 	Selector string
@@ -37,6 +49,12 @@ type UnsupportedSelector struct {
 // Error returns the error message.
 func (e UnsupportedSelector) Error() string {
 	return fmt.Sprintf("selector is not supported here: %s", e.Selector)
+}
+
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e UnsupportedSelector) Is(err error) bool {
+	_, ok := err.(*UnsupportedSelector)
+	return ok
 }
 
 // UnsupportedTypeForSelector is returned when a selector attempts to handle a data type it can't handle.
@@ -50,6 +68,12 @@ func (e UnsupportedTypeForSelector) Error() string {
 	return fmt.Sprintf("selector [type:%s selector:%s] does not support value: [kind:%s type:%T] %v", e.Selector.Type, e.Selector.Raw, e.Value.Kind().String(), e.Value.Interface(), e.Value.Interface())
 }
 
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e UnsupportedTypeForSelector) Is(err error) bool {
+	_, ok := err.(*UnsupportedTypeForSelector)
+	return ok
+}
+
 // ValueNotFound is returned when a selector string cannot be fully resolved.
 type ValueNotFound struct {
 	Selector      string
@@ -59,6 +83,12 @@ type ValueNotFound struct {
 // Error returns the error message.
 func (e ValueNotFound) Error() string {
 	return fmt.Sprintf("no value found for selector: %s: %v", e.Selector, e.PreviousValue)
+}
+
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e ValueNotFound) Is(err error) bool {
+	_, ok := err.(*ValueNotFound)
+	return ok
 }
 
 // UnexpectedPreviousNilValue is returned when the previous node contains a nil value.
@@ -71,6 +101,12 @@ func (e UnexpectedPreviousNilValue) Error() string {
 	return fmt.Sprintf("previous value is nil: %s", e.Selector)
 }
 
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e UnexpectedPreviousNilValue) Is(err error) bool {
+	_, ok := err.(*UnexpectedPreviousNilValue)
+	return ok
+}
+
 // UnhandledCheckType is returned when the a check doesn't know how to deal with the given type
 type UnhandledCheckType struct {
 	Value interface{}
@@ -79,4 +115,10 @@ type UnhandledCheckType struct {
 // Error returns the error message.
 func (e UnhandledCheckType) Error() string {
 	return fmt.Sprintf("unhandled check type: %T", e.Value)
+}
+
+// Is implements the errors interface, so the errors.Is() function can be used.
+func (e UnhandledCheckType) Is(err error) bool {
+	_, ok := err.(*UnhandledCheckType)
+	return ok
 }
