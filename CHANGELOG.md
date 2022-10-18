@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v1.27.3] - 2022-10-18
+
 ### Fixed
 
 - The compact flag now works with the XML parser.
@@ -498,7 +502,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.3...HEAD
+[v1.27.3]: https://github.com/TomWright/dasel/compare/v1.27.2...v1.27.3
 [v1.27.2]: https://github.com/TomWright/dasel/compare/v1.27.1...v1.27.2
 [v1.27.1]: https://github.com/TomWright/dasel/compare/v1.27.0...v1.27.1
 [v1.27.0]: https://github.com/TomWright/dasel/compare/v1.26.1...v1.27.0
