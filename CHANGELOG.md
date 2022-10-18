@@ -7,10 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v1.27.2] - 2022-10-18
+
 ### Fixed
 
 - Help text for select and delete commands now contain all available parsers.
 - Errors now implement the `Is` interface so they are easier to use from go.
+- Floats are now formatted in decimal format instead of scientific notification when writing to CSV ([Issue 245](https://github.com/TomWright/dasel/issues/245), [Issue 229](https://github.com/TomWright/dasel/issues/229))
 
 ## [v1.27.1] - 2022-09-28
 
@@ -491,7 +496,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.2...HEAD
+[v1.27.2]: https://github.com/TomWright/dasel/compare/v1.27.1...v1.27.2
 [v1.27.1]: https://github.com/TomWright/dasel/compare/v1.27.0...v1.27.1
 [v1.27.0]: https://github.com/TomWright/dasel/compare/v1.26.1...v1.27.0
 [v1.26.1]: https://github.com/TomWright/dasel/compare/v1.26.0...v1.26.1

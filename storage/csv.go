@@ -194,7 +194,12 @@ func (p *CSVParser) toBytesHandleDoc(writer *csv.Writer, doc *CSVDocument) error
 			if !ok {
 				val = ""
 			}
-			values = append(values, fmt.Sprint(val))
+			switch val.(type) {
+			case float32, float64:
+				values = append(values, fmt.Sprintf("%f", val))
+			default:
+				values = append(values, fmt.Sprint(val))
+			}
 		}
 
 		if err := writer.Write(values); err != nil {
