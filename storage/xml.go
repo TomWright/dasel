@@ -45,10 +45,20 @@ func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
 func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
+	prettyPrint := true
 	colourise := false
+	indent := "  "
 
 	for _, o := range options {
 		switch o.Key {
+		case OptionIndent:
+			if value, ok := o.Value.(string); ok {
+				indent = value
+			}
+		case OptionPrettyPrint:
+			if value, ok := o.Value.(bool); ok {
+				prettyPrint = value
+			}
 		case OptionColourise:
 			if value, ok := o.Value.(bool); ok {
 				colourise = value
@@ -62,7 +72,15 @@ func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]by
 			for k, v := range m {
 				mv[k] = v
 			}
-			byteData, err := mv.XmlIndent("", "  ")
+
+			var byteData []byte
+			var err error
+			if prettyPrint {
+				byteData, err = mv.XmlIndent("", indent)
+			} else {
+				byteData, err = mv.Xml()
+			}
+
 			if err != nil {
 				return err
 			}
