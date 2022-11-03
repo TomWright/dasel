@@ -4,7 +4,7 @@ go 1.17
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.2
-	github.com/alecthomas/chroma v0.9.2
+	github.com/alecthomas/chroma v0.10.0
 	github.com/clbanning/mxj/v2 v2.3.3-0.20201214204241-e937bdee5a3e
 	github.com/pelletier/go-toml v1.9.5-0.20220105141732-fed146406641
 	github.com/spf13/cobra v1.2.1
@@ -16,7 +16,6 @@ require (
 require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.1.1 // indirect
-	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dlclark/regexp2 v1.4.0 // indirect
 	github.com/google/uuid v1.1.2 // indirect
 	github.com/huandu/xstrings v1.3.1 // indirect
