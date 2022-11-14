@@ -2,7 +2,10 @@ package dasel
 
 import (
 	"bytes"
+	"fmt"
 	"github.com/Masterminds/sprig/v3"
+	"reflect"
+	"strings"
 	"text/template"
 )
 
@@ -69,6 +72,7 @@ func (funcs *formatTemplateFuncs) funcMap() template.FuncMap {
 		"isFirst":        funcs.isFirst,
 		"isLast":         funcs.isLast,
 		"newline":        funcs.newline,
+		"joinToString":   funcs.joinToString,
 	}
 }
 
@@ -98,6 +102,24 @@ func (funcs *formatTemplateFuncs) queryMultiple(selector string) []*Node {
 		return nil
 	}
 	return res
+}
+
+func (funcs *formatTemplateFuncs) joinToString(target interface{}, separator string) string {
+	targetReflect := reflect.ValueOf(target)
+
+	var elems []string
+
+	switch targetReflect.Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < targetReflect.Len(); i++ {
+			el := targetReflect.Index(i)
+			elems = append(elems, fmt.Sprintf("%s", el))
+		}
+	default:
+		elems = append(elems, fmt.Sprintf("%s", target))
+	}
+
+	return strings.Join(elems, separator)
 }
 
 func (funcs *formatTemplateFuncs) format(format string, target interface{}) string {
