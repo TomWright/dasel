@@ -150,19 +150,6 @@ func TestNewContext(t *testing.T) {
 		),
 	)
 
-	t.Run(
-		"All",
-		selectTest(
-			"colours.all()",
-			original,
-			[]interface{}{
-				"red",
-				"green",
-				"blue",
-			},
-		),
-	)
-
 	t.Run("map propagation", func(t *testing.T) {
 		orig := map[string]interface{}{
 			"name": "Tom",

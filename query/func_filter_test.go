@@ -4,12 +4,12 @@ import (
 	"testing"
 )
 
-func TestEqualFunc(t *testing.T) {
+func TestFilterlFunc(t *testing.T) {
 
 	t.Run(
-		"Single Equal",
+		"Filter Equal Key",
 		selectTest(
-			"name.all().equal(key(),first)",
+			"name.all().filter(equal(key(),first))",
 			map[string]interface{}{
 				"name": map[string]interface{}{
 					"first": "Tom",
@@ -17,33 +17,15 @@ func TestEqualFunc(t *testing.T) {
 				},
 			},
 			[]interface{}{
-				true,
-				false,
+				"Tom",
 			},
 		),
 	)
 
 	t.Run(
-		"Multi Equal",
+		"Filter Equal Prop",
 		selectTest(
-			"name.all().equal(key(),first,key(),first)",
-			map[string]interface{}{
-				"name": map[string]interface{}{
-					"first": "Tom",
-					"last":  "Wright",
-				},
-			},
-			[]interface{}{
-				true,
-				false,
-			},
-		),
-	)
-
-	t.Run(
-		"Single Equal Optional Field",
-		selectTest(
-			"all().equal(primary,true)",
+			"all().filter(equal(primary,true)).name",
 			[]interface{}{
 				map[string]interface{}{
 					"name":    "red",
@@ -67,7 +49,31 @@ func TestEqualFunc(t *testing.T) {
 				},
 			},
 			[]interface{}{
-				true, true, true, false,
+				"red", "green", "blue",
+			},
+		),
+	)
+
+	t.Run(
+		"FilterNestedProp",
+		selectTest(
+			"all().filter(equal(flags.banned,false)).name",
+			[]map[string]interface{}{
+				{
+					"flags": map[string]interface{}{
+						"banned": false,
+					},
+					"name": "Tom",
+				},
+				{
+					"flags": map[string]interface{}{
+						"banned": true,
+					},
+					"name": "Jim",
+				},
+			},
+			[]interface{}{
+				"Tom",
 			},
 		),
 	)

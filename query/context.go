@@ -155,3 +155,12 @@ func (c *Context) inputValue(s *Step) Values {
 func (c *Context) subContext(value interface{}, selector string) *Context {
 	return newContextWithFunctions(value, selector, c.functions)
 }
+
+func performSubQuery(c *Context, value Value, selector string) (Values, error) {
+	matchC := c.subContext(value, selector)
+	finalStep, err := matchC.Run()
+	if err != nil {
+		return nil, err
+	}
+	return finalStep.output, nil
+}

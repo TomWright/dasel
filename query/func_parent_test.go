@@ -46,4 +46,28 @@ func TestParentFunc(t *testing.T) {
 			},
 		),
 	)
+
+	t.Run(
+		"FilteredParent",
+		selectTest(
+			"all().flags.filter(equal(banned,false)).parent().name",
+			[]map[string]interface{}{
+				{
+					"flags": map[string]interface{}{
+						"banned": false,
+					},
+					"name": "Tom",
+				},
+				{
+					"flags": map[string]interface{}{
+						"banned": true,
+					},
+					"name": "Jim",
+				},
+			},
+			[]interface{}{
+				"Tom",
+			},
+		),
+	)
 }

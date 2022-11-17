@@ -2,6 +2,7 @@ package query
 
 import (
 	"fmt"
+	"reflect"
 )
 
 var EqualFunc = BasicFunction{
@@ -29,33 +30,39 @@ var EqualFunc = BasicFunction{
 			}
 		}
 
-		match := func(target Value, cmp comparison) (Values, error) {
-			matchC := c.subContext(target, cmp.selector)
-			finalStep, err := matchC.Run()
+		runComparison := func(value Value, cmp comparison) (bool, error) {
+			gotValues, err := performSubQuery(c, value, cmp.selector)
 			if err != nil {
-				return nil, err
+				return false, err
 			}
-			res := make(Values, 0)
-			for _, o := range finalStep.output {
-				stringExp := cmp.value
-				stringGot := fmt.Sprint(o.Interface())
-				if stringExp == stringGot {
-					res = append(res, target)
-				}
+
+			if len(gotValues) > 1 {
+				return false, fmt.Errorf("equal expects selector to return a single value")
 			}
-			return res, nil
+
+			if len(gotValues) == 0 {
+				return false, nil
+			}
+
+			gotValue := fmt.Sprint(gotValues[0].Interface())
+			return gotValue == cmp.value, nil
 		}
 
 		res := make(Values, 0)
 
 		for _, val := range input {
+			valPassed := true
 			for _, cmp := range comparisons {
-				vals, err := match(val, cmp)
+				pass, err := runComparison(val, cmp)
 				if err != nil {
 					return nil, err
 				}
-				res = append(res, vals...)
+				if !pass {
+					valPassed = false
+					break
+				}
 			}
+			res = append(res, Value{Value: reflect.ValueOf(valPassed)})
 		}
 
 		return res, nil

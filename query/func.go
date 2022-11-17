@@ -17,7 +17,7 @@ func (e ErrUnknownFunction) Is(other error) bool {
 
 func standardFunctions() *FunctionCollection {
 	collection := &FunctionCollection{}
-	collection.Add(AllFunc, FirstFunc, IndexFunc, LastFunc, MetadataFunc, PropertyFunc, EqualFunc, ParentFunc, KeyFunc)
+	collection.Add(AllFunc, FirstFunc, IndexFunc, LastFunc, MetadataFunc, PropertyFunc, EqualFunc, ParentFunc, KeyFunc, FilterFunc)
 	return collection
 }
 
