@@ -4,7 +4,7 @@ import (
 	"testing"
 )
 
-func TestFilterlFunc(t *testing.T) {
+func TestFilterFunc(t *testing.T) {
 
 	t.Run(
 		"Filter Equal Key",
@@ -19,6 +19,20 @@ func TestFilterlFunc(t *testing.T) {
 			[]interface{}{
 				"Tom",
 			},
+		),
+	)
+
+	t.Run(
+		"Multiple Filter Equal Key",
+		selectTest(
+			"name.all().filter(equal(key(),first),equal(key(),last))",
+			map[string]interface{}{
+				"name": map[string]interface{}{
+					"first": "Tom",
+					"last":  "Wright",
+				},
+			},
+			[]interface{}{},
 		),
 	)
 
