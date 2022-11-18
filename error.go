@@ -57,23 +57,6 @@ func (e UnsupportedSelector) Is(err error) bool {
 	return ok
 }
 
-// UnsupportedTypeForSelector is returned when a selector attempts to handle a data type it can't handle.
-type UnsupportedTypeForSelector struct {
-	Selector Selector
-	Value    reflect.Value
-}
-
-// Error returns the error message.
-func (e UnsupportedTypeForSelector) Error() string {
-	return fmt.Sprintf("selector [type:%s selector:%s] does not support value: [kind:%s type:%T] %v", e.Selector.Type, e.Selector.Raw, e.Value.Kind().String(), e.Value.Interface(), e.Value.Interface())
-}
-
-// Is implements the errors interface, so the errors.Is() function can be used.
-func (e UnsupportedTypeForSelector) Is(err error) bool {
-	_, ok := err.(*UnsupportedTypeForSelector)
-	return ok
-}
-
 // ValueNotFound is returned when a selector string cannot be fully resolved.
 type ValueNotFound struct {
 	Selector      string

@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
+	"github.com/tomwright/dasel"
 	"sort"
 )
 
@@ -19,39 +20,24 @@ type CSVParser struct {
 // CSVDocument represents a CSV file.
 // This is required to keep headers in the expected order.
 type CSVDocument struct {
-	originalRequired
 	Value   []map[string]interface{}
 	Headers []string
 }
 
-// RealValue returns the real value that dasel should use when processing data.
-func (d *CSVDocument) RealValue() interface{} {
-	return d.Value
-}
-
-// Documents returns the documents that should be written to output.
-func (d *CSVDocument) Documents() []interface{} {
-	res := make([]interface{}, len(d.Value))
-	for i := range d.Value {
-		res[i] = d.Value[i]
-	}
-	return res
-}
-
 // FromBytes returns some data that is represented by the given bytes.
-func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *CSVParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	if byteData == nil {
-		return nil, fmt.Errorf("could not read csv file: no data")
+		return dasel.Value{}, fmt.Errorf("could not read csv file: no data")
 	}
 
 	reader := csv.NewReader(bytes.NewBuffer(byteData))
 	res := make([]map[string]interface{}, 0)
 	records, err := reader.ReadAll()
 	if err != nil {
-		return nil, fmt.Errorf("could not read csv file: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not read csv file: %w", err)
 	}
 	if len(records) == 0 {
-		return nil, nil
+		return dasel.Value{}, nil
 	}
 	var headers []string
 	for i, row := range records {
@@ -71,10 +57,9 @@ func (p *CSVParser) FromBytes(byteData []byte) (interface{}, error) {
 			res = append(res, rowRes)
 		}
 	}
-	return &CSVDocument{
-		Value:   res,
-		Headers: headers,
-	}, nil
+
+	return dasel.ValueOf(res).
+		WithMetadata("csvHeaders", headers), nil
 }
 
 func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
@@ -123,7 +108,7 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *CSVParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
+func (p *CSVParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	writer := csv.NewWriter(buffer)
 
@@ -133,25 +118,29 @@ func (p *CSVParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]by
 
 	docs := make([]*CSVDocument, 0)
 
-	switch d := value.(type) {
-	case *CSVDocument:
-		docs = append(docs, d)
-	case SingleDocument:
-		doc, err := interfaceToCSVDocument(d.Document())
+	// headers, _ := value.Metadata("csvHeaders").([]string)
+
+	switch {
+	case value.Metadata("isSingleDocument") == true:
+		doc, err := interfaceToCSVDocument(value.Interface())
 		if err != nil {
 			return nil, err
 		}
 		docs = append(docs, doc)
-	case MultiDocument:
-		for _, dd := range d.Documents() {
-			doc, err := interfaceToCSVDocument(dd)
+	case value.Metadata("isMultiDocument") == true:
+		for i := 0; i < value.Len(); i++ {
+			doc, err := interfaceToCSVDocument(value.Index(i).Interface())
 			if err != nil {
 				return nil, err
 			}
 			docs = append(docs, doc)
 		}
 	default:
-		return []byte(fmt.Sprintf("%v\n", value)), nil
+		doc, err := interfaceToCSVDocument(value.Interface())
+		if err != nil {
+			return nil, err
+		}
+		docs = append(docs, doc)
 	}
 
 	for _, doc := range docs {

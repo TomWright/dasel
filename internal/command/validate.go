@@ -8,15 +8,44 @@ import (
 	"sync"
 )
 
-type validationFile struct {
-	File   string
-	Parser string
+func validateCommand() *cobra.Command {
+	cmd := &cobra.Command{
+		Use:   "validate <file> <file> <file>",
+		Short: "Validate a list of files.",
+		RunE:  validateRunE,
+	}
+
+	validateFlags(cmd)
+
+	return cmd
 }
 
-type validationFileResult struct {
-	File  validationFile
-	Pass  bool
-	Error error
+func validateFlags(cmd *cobra.Command) {
+	cmd.Flags().Bool("include-error", true, "Show error/validation information")
+}
+
+func validateRunE(cmd *cobra.Command, args []string) error {
+	includeErrorFlag, _ := cmd.Flags().GetBool("include-error")
+
+	files := make([]validationFile, 0)
+	for _, a := range args {
+		matches, err := filepath.Glob(a)
+		if err != nil {
+			return err
+		}
+
+		for _, m := range matches {
+			files = append(files, validationFile{
+				File:   m,
+				Parser: "",
+			})
+		}
+	}
+
+	return runValidateCommand(validateOptions{
+		Files:        files,
+		IncludeError: includeErrorFlag,
+	}, cmd)
 }
 
 type validateOptions struct {
@@ -40,7 +69,7 @@ func runValidateCommand(opts validateOptions, cmd *cobra.Command) error {
 		go func() {
 			defer wg.Done()
 
-			pass, err := validateFile(file)
+			pass, err := validateFile(cmd, file)
 			results[index] = validationFileResult{
 				File:  file,
 				Pass:  pass,
@@ -93,55 +122,23 @@ func runValidateCommand(opts validateOptions, cmd *cobra.Command) error {
 	return nil
 }
 
-func validateFile(file validationFile) (bool, error) {
-	readParser, err := getReadParser(file.File, file.Parser, "")
-	if err != nil {
-		return false, err
-	}
-	_, err = getRootNode(getRootNodeOpts{
-		File:   file.File,
-		Parser: readParser,
-		Reader: nil,
-	}, nil)
-	if err != nil {
-		return false, err
-	}
-
-	return true, nil
+type validationFile struct {
+	File   string
+	Parser string
 }
 
-func validateCommand() *cobra.Command {
-	var includeErrorFlag bool
+type validationFileResult struct {
+	File  validationFile
+	Pass  bool
+	Error error
+}
 
-	cmd := &cobra.Command{
-		Use:   "validate <file> <file> <file>",
-		Short: "Validate a list of files.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			files := make([]validationFile, 0)
-			for _, a := range args {
-				matches, err := filepath.Glob(a)
-				if err != nil {
-					return err
-				}
-
-				for _, m := range matches {
-					files = append(files, validationFile{
-						File:   m,
-						Parser: "",
-					})
-				}
-			}
-
-			return runValidateCommand(validateOptions{
-				Files:        files,
-				IncludeError: includeErrorFlag,
-			}, cmd)
-		},
+func validateFile(cmd *cobra.Command, file validationFile) (bool, error) {
+	opts := readOptions{
+		Parser:   file.Parser,
+		FilePath: file.File,
 	}
+	_, err := opts.rootValue(cmd)
 
-	cmd.Flags().BoolVar(&includeErrorFlag, "include-error", true, "Show error/validation information")
-
-	_ = cmd.MarkFlagFilename("file")
-
-	return cmd
+	return err == nil, err
 }

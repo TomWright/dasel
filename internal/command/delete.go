@@ -1,170 +1,100 @@
 package command
 
 import (
-	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/storage"
-	"io"
 )
 
-type deleteOptions struct {
-	File                string
-	Parser              string
-	ReadParser          string
-	WriteParser         string
-	Selector            string
-	Reader              io.Reader
-	Writer              io.Writer
-	Multi               bool
-	Compact             bool
-	MergeInputDocuments bool
-	Out                 string
-	EscapeHTML          bool
-}
-
-func runDeleteMultiCommand(cmd *cobra.Command, rootNode *dasel.Node, opts deleteOptions, writeParser storage.WriteParser, writeOptions []storage.ReadWriteOption) error {
-	err := rootNode.DeleteMultiple(opts.Selector)
-
-	written, err := customErrorHandling(customErrorHandlingOpts{
-		File:     opts.File,
-		Writer:   opts.Writer,
-		Err:      err,
-		Cmd:      cmd,
-		NullFlag: false,
-		Out:      opts.Out,
-	})
-	if err != nil {
-		return fmt.Errorf("could not delete multiple node: %w", err)
-	}
-	if written {
-		return nil
-	}
-
-	if err := writeNodeToOutput(writeNodeToOutputOpts{
-		Node:   rootNode,
-		Parser: writeParser,
-		Writer: opts.Writer,
-		File:   opts.File,
-		Out:    opts.Out,
-	}, cmd, writeOptions...); err != nil {
-		return fmt.Errorf("could not write output: %w", err)
-	}
-	return nil
-}
-
-func runDeleteCommand(opts deleteOptions, cmd *cobra.Command) error {
-	readParser, err := getReadParser(opts.File, opts.ReadParser, opts.Parser)
-	if err != nil {
-		return err
-	}
-	rootNode, err := getRootNode(getRootNodeOpts{
-		File:                opts.File,
-		Parser:              readParser,
-		Reader:              opts.Reader,
-		MergeInputDocuments: opts.MergeInputDocuments,
-	}, cmd)
-	if err != nil {
-		return err
-	}
-
-	if !rootNode.Value.IsValid() {
-		rootNode = dasel.New(&storage.BasicSingleDocument{
-			Value: map[string]interface{}{},
-		})
-	}
-
-	writeParser, err := getWriteParser(readParser, opts.WriteParser, opts.Parser, opts.Out, opts.File, "")
-	if err != nil {
-		return err
-	}
-
-	writeOptions := []storage.ReadWriteOption{
-		storage.EscapeHTMLOption(opts.EscapeHTML),
-	}
-
-	if opts.Compact {
-		writeOptions = append(writeOptions, storage.PrettyPrintOption(false))
-	}
-
-	if opts.Multi {
-		return runDeleteMultiCommand(cmd, rootNode, opts, writeParser, writeOptions)
-	}
-
-	if deleteErr := rootNode.Delete(opts.Selector); deleteErr != nil {
-		err = fmt.Errorf("could not delete node: %w", deleteErr)
-	}
-	written, err := customErrorHandling(customErrorHandlingOpts{
-		File:     opts.File,
-		Writer:   opts.Writer,
-		Err:      err,
-		Cmd:      cmd,
-		NullFlag: false,
-		Out:      opts.Out,
-	})
-	if err != nil {
-		return err
-	}
-	if written {
-		return nil
-	}
-
-	if err := writeNodeToOutput(writeNodeToOutputOpts{
-		Node:   rootNode,
-		Parser: writeParser,
-		Writer: opts.Writer,
-		File:   opts.File,
-		Out:    opts.Out,
-	}, cmd, writeOptions...); err != nil {
-		return fmt.Errorf("could not write output: %w", err)
-	}
-
-	return nil
-}
-
 func deleteCommand() *cobra.Command {
-	var fileFlag, selectorFlag, parserFlag, readParserFlag, writeParserFlag, outFlag string
-	var plainFlag, multiFlag, compactFlag, mergeInputDocumentsFlag, escapeHTMLFlag bool
-
 	cmd := &cobra.Command{
-		Use:   "delete -f <file> -p <json,yaml,toml,xml,csv> <selector>",
+		Use:   "delete -f <file> -r <json,yaml,toml,xml,csv> <selector>",
 		Short: "Delete properties from the given file.",
-		RunE: func(cmd *cobra.Command, args []string) error {
-			if selectorFlag == "" && len(args) > 0 {
-				selectorFlag = args[0]
-				args = args[1:]
-			}
-			if plainFlag {
-				writeParserFlag = "-"
-			}
-			return runDeleteCommand(deleteOptions{
-				File:                fileFlag,
-				Parser:              parserFlag,
-				ReadParser:          readParserFlag,
-				WriteParser:         writeParserFlag,
-				Selector:            selectorFlag,
-				Multi:               multiFlag,
-				Compact:             compactFlag,
-				MergeInputDocuments: mergeInputDocumentsFlag,
-				Out:                 outFlag,
-				EscapeHTML:          escapeHTMLFlag,
-			}, cmd)
-		},
+		RunE:  deleteRunE,
 	}
 
-	cmd.Flags().StringVarP(&fileFlag, "file", "f", "", "The file to delete from.")
-	cmd.Flags().StringVarP(&selectorFlag, "selector", "s", "", "The selector to use when deleting from the data structure.")
-	cmd.Flags().StringVarP(&parserFlag, "parser", "p", "", "Shorthand for -r FORMAT -w FORMAT.")
-	cmd.Flags().StringVarP(&readParserFlag, "read", "r", "", "The parser to use when reading.")
-	cmd.Flags().StringVarP(&writeParserFlag, "write", "w", "", "The parser to use when writing.")
-	cmd.Flags().BoolVar(&plainFlag, "plain", false, "Alias of -w plain")
-	cmd.Flags().BoolVarP(&multiFlag, "multiple", "m", false, "Delete multiple results.")
-	cmd.Flags().BoolVar(&mergeInputDocumentsFlag, "merge-input-documents", false, "Merge multiple input documents into an array.")
-	cmd.Flags().BoolVarP(&compactFlag, "compact", "c", false, "Compact the output by removing all pretty-printing where possible.")
-	cmd.Flags().BoolVar(&escapeHTMLFlag, "escape-html", false, "Escape HTML tags when writing output.")
-	cmd.Flags().StringVarP(&outFlag, "out", "o", "", "Output destination.")
-
-	_ = cmd.MarkFlagFilename("file")
+	deleteFlags(cmd)
 
 	return cmd
+}
+
+func deleteFlags(cmd *cobra.Command) {
+	cmd.Flags().StringP("selector", "s", "", "The selector to use when querying the data structure.")
+	cmd.Flags().StringP("read", "r", "", "The parser to use when reading.")
+	cmd.Flags().StringP("file", "f", "", "The file to query.")
+	cmd.Flags().StringP("write", "w", "", "The parser to use when writing. Defaults to the read parser if not provided.")
+	cmd.Flags().Bool("pretty", true, "Pretty print the output.")
+	cmd.Flags().Bool("colour", false, "Print colourised output.")
+	cmd.Flags().Bool("escape-html", false, "Escape HTML tags when writing output.")
+
+	_ = cmd.MarkFlagFilename("file")
+}
+
+func deleteRunE(cmd *cobra.Command, args []string) error {
+	selectorFlag, _ := cmd.Flags().GetString("selector")
+	readParserFlag, _ := cmd.Flags().GetString("read")
+	fileFlag, _ := cmd.Flags().GetString("file")
+	writeParserFlag, _ := cmd.Flags().GetString("write")
+	prettyPrintFlag, _ := cmd.Flags().GetBool("pretty")
+	colourFlag, _ := cmd.Flags().GetBool("colour")
+	escapeHTMLFlag, _ := cmd.Flags().GetBool("escape-html")
+
+	opts := &deleteOptions{
+		Read: &readOptions{
+			Reader:   nil,
+			Parser:   readParserFlag,
+			FilePath: fileFlag,
+		},
+		Write: &writeOptions{
+			Writer:      nil,
+			Parser:      writeParserFlag,
+			FilePath:    "stdout",
+			PrettyPrint: prettyPrintFlag,
+			Colourise:   colourFlag,
+			EscapeHTML:  escapeHTMLFlag,
+		},
+		Selector: selectorFlag,
+	}
+
+	if opts.Selector == "" && len(args) > 0 {
+		opts.Selector = args[0]
+		args = args[1:]
+	}
+
+	if opts.Selector == "" {
+		opts.Selector = "."
+	}
+
+	return deletePutCommand(opts, cmd)
+}
+
+type deleteOptions struct {
+	Read     *readOptions
+	Write    *writeOptions
+	Selector string
+}
+
+func deletePutCommand(opts *deleteOptions, cmd *cobra.Command) error {
+
+	rootValue, err := opts.Read.rootValue(cmd)
+	if err != nil {
+		return err
+	}
+
+	c := dasel.NewContext(rootValue, opts.Selector).WithCreateWhenMissing(true)
+
+	values, err := c.Run()
+	if err != nil {
+		return err
+	}
+
+	for _, v := range values {
+		v.Delete()
+	}
+
+	// There are issues deleting
+	if err := opts.Write.writeValue(cmd, opts.Read, c.Data(dasel.WithoutDeletePlaceholders)); err != nil {
+		return err
+	}
+
+	return nil
 }

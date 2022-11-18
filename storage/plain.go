@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"fmt"
+	"github.com/tomwright/dasel"
 )
 
 func init() {
@@ -17,22 +18,24 @@ type PlainParser struct {
 var ErrPlainParserNotImplemented = fmt.Errorf("PlainParser.FromBytes not implemented")
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *PlainParser) FromBytes(byteData []byte) (interface{}, error) {
-	return nil, ErrPlainParserNotImplemented
+func (p *PlainParser) FromBytes(byteData []byte) (dasel.Value, error) {
+	return dasel.Value{}, ErrPlainParserNotImplemented
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *PlainParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
+func (p *PlainParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
-	switch val := value.(type) {
-	case SingleDocument:
-		buf.Write([]byte(fmt.Sprintf("%v\n", val.Document())))
-	case MultiDocument:
-		for _, doc := range val.Documents() {
-			buf.Write([]byte(fmt.Sprintf("%v\n", doc)))
+
+	switch {
+	case value.Metadata("isSingleDocument") == true:
+		buf.Write([]byte(fmt.Sprintf("%v\n", value.Interface())))
+	case value.Metadata("isMultiDocument") == true:
+		for i := 0; i < value.Len(); i++ {
+			buf.Write([]byte(fmt.Sprintf("%v\n", value.Index(i).Interface())))
 		}
 	default:
-		buf.Write([]byte(fmt.Sprintf("%v\n", val)))
+		buf.Write([]byte(fmt.Sprintf("%v\n", value.Interface())))
 	}
+
 	return buf.Bytes(), nil
 }

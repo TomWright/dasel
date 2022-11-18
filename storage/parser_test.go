@@ -3,6 +3,7 @@ package storage_test
 import (
 	"bytes"
 	"errors"
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"strings"
@@ -199,8 +200,8 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicSingleDocument{Value: jsonData}
-		if !reflect.DeepEqual(exp, data) {
+		exp := jsonData
+		if !reflect.DeepEqual(exp, data.Interface()) {
 			t.Errorf("data does not match: exp %v, got %v", exp, data)
 		}
 	})
@@ -227,11 +228,11 @@ var errFailingParserErr = errors.New("i am meant to fail at parsing")
 type failingParser struct {
 }
 
-func (fp *failingParser) FromBytes(_ []byte) (interface{}, error) {
-	return nil, errFailingParserErr
+func (fp *failingParser) FromBytes(_ []byte) (dasel.Value, error) {
+	return dasel.Value{}, errFailingParserErr
 }
 
-func (fp *failingParser) ToBytes(_ interface{}, options ...storage.ReadWriteOption) ([]byte, error) {
+func (fp *failingParser) ToBytes(_ dasel.Value, options ...storage.ReadWriteOption) ([]byte, error) {
 	return nil, errFailingParserErr
 }
 
@@ -256,7 +257,7 @@ func (fp *failingReader) Read(_ []byte) (n int, err error) {
 func TestWrite(t *testing.T) {
 	t.Run("Success", func(t *testing.T) {
 		var buf bytes.Buffer
-		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, nil, &buf); err != nil {
+		if err := storage.Write(&storage.JSONParser{}, dasel.ValueOf(map[string]interface{}{"name": "Tom"}), &buf); err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
@@ -271,14 +272,14 @@ func TestWrite(t *testing.T) {
 
 	t.Run("ParserErrHandled", func(t *testing.T) {
 		var buf bytes.Buffer
-		if err := storage.Write(&failingParser{}, map[string]interface{}{"name": "Tom"}, nil, &buf); !errors.Is(err, errFailingParserErr) {
+		if err := storage.Write(&failingParser{}, dasel.ValueOf(map[string]interface{}{"name": "Tom"}), &buf); !errors.Is(err, errFailingParserErr) {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}
 	})
 
 	t.Run("WriterErrHandled", func(t *testing.T) {
-		if err := storage.Write(&storage.JSONParser{}, map[string]interface{}{"name": "Tom"}, nil, &failingWriter{}); !errors.Is(err, errFailingWriterErr) {
+		if err := storage.Write(&storage.JSONParser{}, dasel.ValueOf(map[string]interface{}{"name": "Tom"}), &failingWriter{}); !errors.Is(err, errFailingWriterErr) {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}

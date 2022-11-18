@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"testing"
@@ -27,11 +28,9 @@ func TestCSVParser_FromBytes(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if !reflect.DeepEqual(&storage.CSVDocument{
-		Value:   csvMap,
-		Headers: []string{"id", "name"},
-	}, got) {
-		t.Errorf("expected %v, got %v", csvMap, got)
+	exp := dasel.ValueOf(csvMap).WithMetadata("csvHeaders", []string{"id", "name"})
+	if !reflect.DeepEqual(exp.Interface(), got.Interface()) {
+		t.Errorf("expected %v, got %v", exp, got)
 	}
 }
 
@@ -56,26 +55,13 @@ a,b`))
 }
 
 func TestCSVParser_ToBytes(t *testing.T) {
-	t.Run("CSVDocument", func(t *testing.T) {
-		got, err := (&storage.CSVParser{}).ToBytes(&storage.CSVDocument{
-			Value:   csvMap,
-			Headers: []string{"id", "name"},
-		})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		if !reflect.DeepEqual(csvBytes, got) {
-			t.Errorf("expected %v, got %v", string(csvBytes), string(got))
-		}
-	})
 	t.Run("SingleDocument", func(t *testing.T) {
-		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicSingleDocument{
-			Value: map[string]interface{}{
-				"id":   "1",
-				"name": "Tom",
-			},
-		})
+		value := dasel.ValueOf(map[string]interface{}{
+			"id":   "1",
+			"name": "Tom",
+		}).
+			WithMetadata("isSingleDocument", true)
+		got, err := (&storage.CSVParser{}).ToBytes(value)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -87,18 +73,18 @@ Tom,1
 `))
 	})
 	t.Run("SingleDocumentSlice", func(t *testing.T) {
-		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicSingleDocument{
-			Value: []interface{}{
-				map[string]interface{}{
-					"id":   "1",
-					"name": "Tom",
-				},
-				map[string]interface{}{
-					"id":   "2",
-					"name": "Tommy",
-				},
+		value := dasel.ValueOf([]interface{}{
+			map[string]interface{}{
+				"id":   "1",
+				"name": "Tom",
 			},
-		})
+			map[string]interface{}{
+				"id":   "2",
+				"name": "Tommy",
+			},
+		}).
+			WithMetadata("isSingleDocument", true)
+		got, err := (&storage.CSVParser{}).ToBytes(value)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -111,18 +97,18 @@ Tom,1
 `))
 	})
 	t.Run("MultiDocument", func(t *testing.T) {
-		got, err := (&storage.CSVParser{}).ToBytes(&storage.BasicMultiDocument{
-			Values: []interface{}{
-				map[string]interface{}{
-					"id":   "1",
-					"name": "Tom",
-				},
-				map[string]interface{}{
-					"id":   "2",
-					"name": "Jim",
-				},
+		value := dasel.ValueOf([]interface{}{
+			map[string]interface{}{
+				"id":   "1",
+				"name": "Tom",
 			},
-		})
+			map[string]interface{}{
+				"id":   "2",
+				"name": "Jim",
+			},
+		}).
+			WithMetadata("isMultiDocument", true)
+		got, err := (&storage.CSVParser{}).ToBytes(value)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -145,15 +131,6 @@ name,id
 Jim,2
 `))
 	})
-	t.Run("DefaultDocType", func(t *testing.T) {
-		got, err := (&storage.CSVParser{}).ToBytes([]interface{}{"x", "y"})
-		if err != nil {
-			t.Errorf("unexpected error: %s", err)
-			return
-		}
-		deepEqualOneOf(t, got, []byte(`[x y]
-`))
-	})
 }
 
 func deepEqualOneOf(t *testing.T, got []byte, exps ...[]byte) {
@@ -163,55 +140,4 @@ func deepEqualOneOf(t *testing.T, got []byte, exps ...[]byte) {
 		}
 	}
 	t.Errorf("%s did not match any of the expected values", string(got))
-}
-
-func TestCSVDocument_Documents(t *testing.T) {
-	in := &storage.CSVDocument{
-		Value: []map[string]interface{}{
-			{
-				"id":   1,
-				"name": "Tom",
-			},
-			{
-				"id":   2,
-				"name": "Jim",
-			},
-		},
-		Headers: []string{"id", "name"},
-	}
-	exp := []interface{}{
-		map[string]interface{}{
-			"id":   1,
-			"name": "Tom",
-		},
-		map[string]interface{}{
-			"id":   2,
-			"name": "Jim",
-		},
-	}
-	got := in.Documents()
-	if !reflect.DeepEqual(exp, got) {
-		t.Errorf("expected %v, got %v", exp, got)
-	}
-}
-
-func TestCSVDocument_RealValue(t *testing.T) {
-	exp := []map[string]interface{}{
-		{
-			"id":   1,
-			"name": "Tom",
-		},
-		{
-			"id":   2,
-			"name": "Jim",
-		},
-	}
-	in := &storage.CSVDocument{
-		Value:   exp,
-		Headers: []string{"id", "name"},
-	}
-	got := in.RealValue()
-	if !reflect.DeepEqual(exp, got) {
-		t.Errorf("expected %v, got %v", exp, got)
-	}
 }

@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"errors"
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"testing"
 )
@@ -15,7 +16,7 @@ func TestPlainParser_FromBytes(t *testing.T) {
 
 func TestPlainParser_ToBytes(t *testing.T) {
 	t.Run("Basic", func(t *testing.T) {
-		gotVal, err := (&storage.PlainParser{}).ToBytes("asd")
+		gotVal, err := (&storage.PlainParser{}).ToBytes(dasel.ValueOf("asd"))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -28,7 +29,7 @@ func TestPlainParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("SingleDocument", func(t *testing.T) {
-		gotVal, err := (&storage.PlainParser{}).ToBytes(&storage.BasicSingleDocument{Value: "asd"})
+		gotVal, err := (&storage.PlainParser{}).ToBytes(dasel.ValueOf("asd").WithMetadata("isSingleDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -41,7 +42,10 @@ func TestPlainParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("MultiDocument", func(t *testing.T) {
-		gotVal, err := (&storage.PlainParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{"asd", "123"}})
+		val := dasel.ValueOf([]interface{}{"asd", "123"})
+		daselVal := dasel.ValueOf(val).WithMetadata("isMultiDocument", true)
+
+		gotVal, err := (&storage.PlainParser{}).ToBytes(daselVal)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

@@ -18,16 +18,6 @@ func TestErrorMessages(t *testing.T) {
 		{In: &dasel.UnknownComparisonOperatorErr{Operator: "<"}, Out: "unknown comparison operator: <"},
 		{In: &dasel.InvalidIndexErr{Index: "1"}, Out: "invalid index: 1"},
 		{In: &dasel.UnsupportedSelector{Selector: "..."}, Out: "selector is not supported here: ..."},
-		{In: &dasel.UnsupportedTypeForSelector{
-			Value: reflect.ValueOf(map[string]interface{}{}),
-			Selector: dasel.Selector{
-				Raw:       ".a.b.c",
-				Current:   ".a",
-				Remaining: ".b.c",
-				Type:      "INDEX",
-				Index:     1,
-			},
-		}, Out: "selector [type:INDEX selector:.a.b.c] does not support value: [kind:map type:map[string]interface {}] map[]"},
 		{In: &dasel.ValueNotFound{
 			Selector: ".name",
 		}, Out: "no value found for selector: .name: <invalid reflect.Value>"},
@@ -119,27 +109,6 @@ func TestErrorsIs(t *testing.T) {
 			In: args{
 				Err:    errors.New("some error"),
 				Target: &dasel.UnsupportedSelector{},
-			},
-			Out: false,
-		},
-		{
-			In: args{
-				Err:    &dasel.UnsupportedTypeForSelector{},
-				Target: &dasel.UnsupportedTypeForSelector{},
-			},
-			Out: true,
-		},
-		{
-			In: args{
-				Err:    fmt.Errorf("some error: %w", &dasel.UnsupportedTypeForSelector{}),
-				Target: &dasel.UnsupportedTypeForSelector{},
-			},
-			Out: true,
-		},
-		{
-			In: args{
-				Err:    errors.New("some error"),
-				Target: &dasel.UnsupportedTypeForSelector{},
 			},
 			Out: false,
 		},

@@ -3,6 +3,7 @@ package storage_test
 import (
 	"bytes"
 	"fmt"
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"io"
 	"reflect"
@@ -33,7 +34,7 @@ func TestXMLParser_FromBytes(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if !reflect.DeepEqual(&storage.BasicSingleDocument{Value: xmlMap}, got) {
+	if !reflect.DeepEqual(xmlMap, got.Interface()) {
 		t.Errorf("expected %v, got %v", xmlMap, got)
 	}
 }
@@ -44,7 +45,7 @@ func TestXMLParser_FromBytes_Empty(t *testing.T) {
 		t.Errorf("unexpected error: %s", err)
 		return
 	}
-	if got != nil {
+	if !got.IsEmpty() {
 		t.Errorf("expected %v, got %v", nil, got)
 	}
 }
@@ -63,7 +64,7 @@ func TestXMLParser_FromBytes_Error(t *testing.T) {
 }
 
 func TestXMLParser_ToBytes_Default(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(xmlMap)
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf(xmlMap))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -73,7 +74,7 @@ func TestXMLParser_ToBytes_Default(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_SingleDocument(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap})
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf(xmlMap).WithMetadata("isSingleDocument", true))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -83,7 +84,7 @@ func TestXMLParser_ToBytes_SingleDocument(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_SingleDocument_Colourise(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: xmlMap}, storage.ColouriseOption(true))
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf(xmlMap).WithMetadata("isSingleDocument", true), storage.ColouriseOption(true))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -96,7 +97,7 @@ func TestXMLParser_ToBytes_SingleDocument_Colourise(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_MultiDocument(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{xmlMap, xmlMap}})
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf([]interface{}{xmlMap, xmlMap}).WithMetadata("isMultiDocument", true))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -108,7 +109,7 @@ func TestXMLParser_ToBytes_MultiDocument(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_DefaultValue(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes("asd")
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf("asd"))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -120,7 +121,7 @@ func TestXMLParser_ToBytes_DefaultValue(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_SingleDocumentValue(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: "asd"})
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf("asd"))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -132,7 +133,7 @@ func TestXMLParser_ToBytes_SingleDocumentValue(t *testing.T) {
 	}
 }
 func TestXMLParser_ToBytes_MultiDocumentValue(t *testing.T) {
-	got, err := (&storage.XMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: []interface{}{"asd", "123"}})
+	got, err := (&storage.XMLParser{}).ToBytes(dasel.ValueOf([]interface{}{"asd", "123"}).WithMetadata("isMultiDocument", true))
 	if err != nil {
 		t.Errorf("unexpected error: %s", err)
 		return
@@ -167,7 +168,7 @@ func TestXMLParser_ToBytes_Entities(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		doc = res.(storage.SingleDocument).Document()
+		doc = res.Interface()
 		got := doc.(map[string]interface{})["systemList"].(map[string]interface{})["system"].(map[string]interface{})["command"]
 		exp := "sudo /home/fozz/RetroPie-Setup/retropie_packages.sh retropiemenu launch %ROM% &lt;/dev/tty &gt;/dev/tty"
 		if exp != got {
@@ -176,7 +177,7 @@ func TestXMLParser_ToBytes_Entities(t *testing.T) {
 	})
 
 	t.Run("ToBytes", func(t *testing.T) {
-		gotBytes, err := p.ToBytes(doc)
+		gotBytes, err := p.ToBytes(dasel.ValueOf(doc))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -235,7 +236,7 @@ func TestXMLParser_DifferentEncodings(t *testing.T) {
 				t.Errorf("unexpected error: %s", err)
 				return
 			}
-			if !reflect.DeepEqual(&storage.BasicSingleDocument{Value: encodedXmlMap}, got) {
+			if !reflect.DeepEqual(encodedXmlMap, got.Interface()) {
 				t.Errorf("expected %v, got %v", encodedXmlMap, got)
 			}
 		})
