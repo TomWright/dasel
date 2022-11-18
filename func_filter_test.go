@@ -91,4 +91,98 @@ func TestFilterFunc(t *testing.T) {
 			},
 		),
 	)
+
+	t.Run(
+		"Filter And",
+		selectTest(
+			"all().filter(and(equal(primary,true),equal(name,red))).name",
+			[]interface{}{
+				map[string]interface{}{
+					"name":    "red",
+					"hex":     "ff0000",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "green",
+					"hex":     "00ff00",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "blue",
+					"hex":     "0000ff",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "orange",
+					"hex":     "ffa500",
+					"primary": false,
+				},
+			},
+			[]interface{}{
+				"red",
+			},
+		),
+	)
+
+	t.Run(
+		"Filter And",
+		selectTest(
+			"all().filter(and(equal(primary,true),equal(name,orange))).name",
+			[]interface{}{
+				map[string]interface{}{
+					"name":    "red",
+					"hex":     "ff0000",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "green",
+					"hex":     "00ff00",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "blue",
+					"hex":     "0000ff",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "orange",
+					"hex":     "ffa500",
+					"primary": false,
+				},
+			},
+			[]interface{}{},
+		),
+	)
+
+	t.Run(
+		"Filter Or",
+		selectTest(
+			"all().filter(or(equal(primary,true),equal(name,orange))).name",
+			[]interface{}{
+				map[string]interface{}{
+					"name":    "red",
+					"hex":     "ff0000",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "green",
+					"hex":     "00ff00",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "blue",
+					"hex":     "0000ff",
+					"primary": true,
+				},
+				map[string]interface{}{
+					"name":    "orange",
+					"hex":     "ffa500",
+					"primary": false,
+				},
+			},
+			[]interface{}{
+				"red", "green", "blue", "orange",
+			},
+		),
+	)
 }
