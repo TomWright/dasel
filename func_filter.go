@@ -7,6 +7,10 @@ import (
 var FilterFunc = BasicFunction{
 	name: "filter",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
+		if err := requireXOrMoreArgs("filter", args, 1); err != nil {
+			return nil, err
+		}
+
 		input := c.inputValue(s)
 
 		runComparison := func(value Value, selector string) (bool, error) {

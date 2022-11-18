@@ -3,6 +3,10 @@ package dasel
 var ParentFunc = BasicFunction{
 	name: "parent",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
+		if err := requireNoArgs("parent", args); err != nil {
+			return nil, err
+		}
+
 		input := c.inputValue(s)
 
 		res := make(Values, 0)

@@ -22,11 +22,11 @@ func (e ErrPropertyNotFound) Is(other error) bool {
 var PropertyFunc = BasicFunction{
 	name: "property",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		input := c.inputValue(s)
-
-		if len(args) == 0 {
-			return nil, fmt.Errorf("no property arg given")
+		if err := requireXOrMoreArgs("property", args, 1); err != nil {
+			return nil, err
 		}
+
+		input := c.inputValue(s)
 
 		res := make(Values, 0)
 

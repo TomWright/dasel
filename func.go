@@ -1,6 +1,9 @@
 package dasel
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
 type ErrUnknownFunction struct {
 	Function string
@@ -12,6 +15,21 @@ func (e ErrUnknownFunction) Error() string {
 
 func (e ErrUnknownFunction) Is(other error) bool {
 	_, ok := other.(ErrUnknownFunction)
+	return ok
+}
+
+type ErrUnexpectedFunctionArgs struct {
+	Function string
+	Args     []string
+	Message  string
+}
+
+func (e ErrUnexpectedFunctionArgs) Error() string {
+	return fmt.Sprintf("unexpected function args: %s(%s): %s", e.Function, strings.Join(e.Args, ", "), e.Message)
+}
+
+func (e ErrUnexpectedFunctionArgs) Is(other error) bool {
+	_, ok := other.(ErrUnexpectedFunctionArgs)
 	return ok
 }
 
@@ -106,4 +124,48 @@ func (bf BasicFunction) AlternativeSelector(part string) *Selector {
 		return nil
 	}
 	return bf.alternativeSelectorFn(part)
+}
+
+func requireNoArgs(name string, args []string) error {
+	if len(args) > 0 {
+		return &ErrUnexpectedFunctionArgs{
+			Function: name,
+			Args:     args,
+			Message:  "0 arguments expected",
+		}
+	}
+	return nil
+}
+
+func requireExactlyXArgs(name string, args []string, x int) error {
+	if len(args) != x {
+		return &ErrUnexpectedFunctionArgs{
+			Function: name,
+			Args:     args,
+			Message:  fmt.Sprintf("exactly %d arguments expected", x),
+		}
+	}
+	return nil
+}
+
+func requireXOrMoreArgs(name string, args []string, x int) error {
+	if len(args) < x {
+		return &ErrUnexpectedFunctionArgs{
+			Function: name,
+			Args:     args,
+			Message:  fmt.Sprintf("expected %d or more arguments", x),
+		}
+	}
+	return nil
+}
+
+func requireModulusXArgs(name string, args []string, x int) error {
+	if len(args)%x != 0 {
+		return &ErrUnexpectedFunctionArgs{
+			Function: name,
+			Args:     args,
+			Message:  fmt.Sprintf("expected arguments in groups of %d", x),
+		}
+	}
+	return nil
 }

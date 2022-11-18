@@ -8,6 +8,13 @@ import (
 var EqualFunc = BasicFunction{
 	name: "equal",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
+		if err := requireXOrMoreArgs("equal", args, 2); err != nil {
+			return nil, err
+		}
+		if err := requireModulusXArgs("equal", args, 2); err != nil {
+			return nil, err
+		}
+
 		input := c.inputValue(s)
 
 		type comparison struct {

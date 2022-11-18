@@ -9,6 +9,10 @@ import (
 var LessThanFunc = BasicFunction{
 	name: "lessThan",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
+		if err := requireExactlyXArgs("lessThan", args, 2); err != nil {
+			return nil, err
+		}
+
 		input := c.inputValue(s)
 
 		type comparison struct {

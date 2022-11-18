@@ -8,11 +8,11 @@ import (
 var LastFunc = BasicFunction{
 	name: "last",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		input := c.inputValue(s)
-
-		if len(args) > 0 {
-			return nil, fmt.Errorf("unexpected last args given")
+		if err := requireNoArgs("last", args); err != nil {
+			return nil, err
 		}
+
+		input := c.inputValue(s)
 
 		res := make(Values, 0)
 

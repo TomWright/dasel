@@ -1,17 +1,13 @@
 package dasel
 
-import (
-	"fmt"
-)
-
 var MetadataFunc = BasicFunction{
 	name: "metadata",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		input := c.inputValue(s)
-
-		if len(args) == 0 {
-			return nil, fmt.Errorf("unexpected metadata args given")
+		if err := requireXOrMoreArgs("metadata", args, 1); err != nil {
+			return nil, err
 		}
+
+		input := c.inputValue(s)
 
 		res := make(Values, 0)
 
