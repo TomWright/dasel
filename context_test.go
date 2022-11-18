@@ -10,7 +10,25 @@ func sameSlice(x, y []interface{}) bool {
 		return false
 	}
 
-	return reflect.DeepEqual(x, y)
+	if reflect.DeepEqual(x, y) {
+		return true
+	}
+
+	// Test for equality ignoring ordering
+	diff := make([]interface{}, len(y))
+	for k, v := range y {
+		diff[k] = v
+	}
+	for _, xv := range x {
+		for di, dv := range diff {
+			if reflect.DeepEqual(xv, dv) {
+				diff = append(diff[0:di], diff[di+1:]...)
+				break
+			}
+		}
+	}
+
+	return len(diff) == 0
 }
 
 func selectTest(selector string, original interface{}, exp []interface{}) func(t *testing.T) {
@@ -24,9 +42,9 @@ func selectTest(selector string, original interface{}, exp []interface{}) func(t
 		}
 
 		got := values.Interfaces()
-
 		if !sameSlice(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
+			return
 		}
 	}
 }
