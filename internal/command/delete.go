@@ -10,6 +10,7 @@ func deleteCommand() *cobra.Command {
 		Use:   "delete -f <file> -r <json,yaml,toml,xml,csv> <selector>",
 		Short: "Delete properties from the given file.",
 		RunE:  deleteRunE,
+		Args:  cobra.MaximumNArgs(1),
 	}
 
 	deleteFlags(cmd)

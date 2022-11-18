@@ -10,6 +10,7 @@ func selectCommand() *cobra.Command {
 		Use:   "dasel -f <file> -r <json,yaml,toml,xml,csv> <selector>",
 		Short: "Select properties from the given file.",
 		RunE:  selectRunE,
+		Args:  cobra.MaximumNArgs(1),
 	}
 
 	selectFlags(cmd)

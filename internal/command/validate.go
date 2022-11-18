@@ -13,6 +13,7 @@ func validateCommand() *cobra.Command {
 		Use:   "validate <file> <file> <file>",
 		Short: "Validate a list of files.",
 		RunE:  validateRunE,
+		Args:  cobra.ArbitraryArgs,
 	}
 
 	validateFlags(cmd)

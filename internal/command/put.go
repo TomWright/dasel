@@ -13,6 +13,7 @@ func putCommand() *cobra.Command {
 		Use:   "put -t <string,int,bool,json,yaml,toml,xml,csv> -v <value> -f <file> -r <json,yaml,toml,xml,csv> <selector>",
 		Short: "Write properties to the given file.",
 		RunE:  putRunE,
+		Args:  cobra.MaximumNArgs(1),
 	}
 
 	putFlags(cmd)
