@@ -112,8 +112,8 @@ jobs:
       - name: Test docker image
         if: matrix.build_docker == true
         run: |
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:latest -p json '.hello'
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:alpine -p json '.hello'
+          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:latest -r json 'hello'
+          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:alpine -r json 'hello'
       - name: Docker login
         if: matrix.build_docker == true
         run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
