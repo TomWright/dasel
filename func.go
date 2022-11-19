@@ -58,6 +58,7 @@ func standardFunctions() *FunctionCollection {
 		LessThanFunc,
 		AndFunc,
 		OrFunc,
+		NotFunc,
 
 		// Metadata
 		MetadataFunc,
