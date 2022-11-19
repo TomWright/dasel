@@ -8,7 +8,7 @@ import (
 var AndFunc = BasicFunction{
 	name: "and",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		if err := requireXOrMoreArgs("filter", args, 1); err != nil {
+		if err := requireXOrMoreArgs("and", args, 1); err != nil {
 			return nil, err
 		}
 

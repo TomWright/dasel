@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -44,6 +45,19 @@ func selectTest(selector string, original interface{}, exp []interface{}) func(t
 		got := values.Interfaces()
 		if !sameSlice(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
+			return
+		}
+	}
+}
+
+func selectTestErr(selector string, original interface{}, expErr error) func(t *testing.T) {
+	return func(t *testing.T) {
+		c := newSelectContext(original, selector)
+
+		_, err := c.Run()
+
+		if !errors.Is(err, expErr) {
+			t.Errorf("expected error: %v, got %v", expErr, err)
 			return
 		}
 	}

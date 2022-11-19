@@ -5,6 +5,15 @@ import (
 )
 
 func TestPropertyFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"property()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "property",
+			Args:     []string{},
+		}),
+	)
+
 	original := map[string]interface{}{
 		"name": map[string]interface{}{
 			"first": "Tom",

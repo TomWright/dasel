@@ -5,6 +5,14 @@ import (
 )
 
 func TestThisFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"this(x)",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "this",
+			Args:     []string{"x"},
+		}),
+	)
 	t.Run(
 		"SimpleThis",
 		selectTest(

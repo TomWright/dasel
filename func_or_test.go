@@ -5,6 +5,15 @@ import (
 )
 
 func TestOrFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"or()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "or",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"NoneEqualMoreThan",
 		selectTest(

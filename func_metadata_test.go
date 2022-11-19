@@ -6,6 +6,15 @@ import (
 )
 
 func TestMetadataFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"metadata()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "metadata",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run("Type", func(t *testing.T) {
 		orig := []interface{}{
 			"abc", true, false, 1, 1.1, []interface{}{1},

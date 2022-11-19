@@ -6,6 +6,15 @@ import (
 
 func TestMoreThanFunc(t *testing.T) {
 
+	t.Run("Args", selectTestErr(
+		"moreThan()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "moreThan",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"More Than",
 		selectTest(

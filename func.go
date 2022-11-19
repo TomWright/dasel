@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"reflect"
 	"strings"
 )
 
@@ -14,7 +15,7 @@ func (e ErrUnknownFunction) Error() string {
 }
 
 func (e ErrUnknownFunction) Is(other error) bool {
-	_, ok := other.(ErrUnknownFunction)
+	_, ok := other.(*ErrUnknownFunction)
 	return ok
 }
 
@@ -29,8 +30,20 @@ func (e ErrUnexpectedFunctionArgs) Error() string {
 }
 
 func (e ErrUnexpectedFunctionArgs) Is(other error) bool {
-	_, ok := other.(ErrUnexpectedFunctionArgs)
-	return ok
+	o, ok := other.(*ErrUnexpectedFunctionArgs)
+	if !ok {
+		return false
+	}
+	if o.Function != "" && o.Function != e.Function {
+		return false
+	}
+	if o.Message != "" && o.Message != e.Message {
+		return false
+	}
+	if o.Args != nil && !reflect.DeepEqual(o.Args, e.Args) {
+		return false
+	}
+	return true
 }
 
 func standardFunctions() *FunctionCollection {

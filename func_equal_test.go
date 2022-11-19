@@ -6,6 +6,15 @@ import (
 
 func TestEqualFunc(t *testing.T) {
 
+	t.Run("Args", selectTestErr(
+		"equal()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "equal",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"Single Equal",
 		selectTest(

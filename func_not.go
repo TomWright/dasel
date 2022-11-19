@@ -8,7 +8,7 @@ import (
 var NotFunc = BasicFunction{
 	name: "not",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		if err := requireXOrMoreArgs("filter", args, 1); err != nil {
+		if err := requireXOrMoreArgs("not", args, 1); err != nil {
 			return nil, err
 		}
 

@@ -5,6 +5,15 @@ import (
 )
 
 func TestParentFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"parent(x)",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "parent",
+			Args:     []string{"x"},
+		}),
+	)
+
 	t.Run(
 		"SimpleParent",
 		selectTest(

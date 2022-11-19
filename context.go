@@ -30,8 +30,7 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 		}
 
 		v = Value{
-			Value:    reflectVal,
-			metadata: map[string]interface{}{},
+			Value: reflectVal,
 		}
 	}
 
@@ -44,10 +43,6 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 
 	v.setFn = func(value Value) {
 		v.Unpack().Set(value.Value)
-	}
-
-	if v.metadata == nil {
-		v.metadata = map[string]interface{}{}
 	}
 
 	if v.Metadata("key") == nil {

@@ -6,6 +6,15 @@ import (
 
 func TestFilterOrFunc(t *testing.T) {
 
+	t.Run("Args", selectTestErr(
+		"filterOr()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "filterOr",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"Filter Equal Key",
 		selectTest(

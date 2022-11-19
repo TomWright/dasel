@@ -48,12 +48,9 @@ func (r *standardSelectorResolver) nextPart() (string, bool) {
 	b := &strings.Builder{}
 	bracketDepth := 0
 	for {
-		readRune, size, err := r.reader.ReadRune()
+		readRune, _, err := r.reader.ReadRune()
 		if err == io.EOF {
 			return b.String(), false
-		}
-		if size == 0 {
-			continue
 		}
 		if readRune == r.openFunc {
 			bracketDepth++
@@ -97,7 +94,7 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 	args := make([]string, 0)
 
 	for {
-		nextRune, size, err := nextPartReader.ReadRune()
+		nextRune, _, err := nextPartReader.ReadRune()
 		if err == io.EOF {
 			if funcNameBuilder.Len() > 0 {
 				funcName = funcNameBuilder.String()
@@ -106,10 +103,6 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 		}
 		if err != nil {
 			return nil, fmt.Errorf("could not read selector: %w", err)
-		}
-
-		if size == 0 {
-			continue
 		}
 
 		switch {
@@ -166,11 +159,6 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 			funcArgs: []string{funcName},
 		}, nil
 	}
-
-	// Missing func close
-	// if hasOpenedFunc && !hasClosedFunc {
-	// 	return nil, fmt.Errorf("unclosed function around \"%s\"", nextPart)
-	// }
 
 	return &Selector{
 		funcName: funcName,

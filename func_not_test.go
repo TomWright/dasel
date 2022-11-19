@@ -5,6 +5,14 @@ import (
 )
 
 func TestNotFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"not()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "not",
+			Args:     []string{},
+		}),
+	)
 
 	t.Run(
 		"Single Equal",

@@ -5,6 +5,15 @@ import (
 )
 
 func TestLenFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"len(x)",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "len",
+			Args:     []string{"x"},
+		}),
+	)
+
 	data := map[string]interface{}{
 		"string": "hello",
 		"slice": []interface{}{

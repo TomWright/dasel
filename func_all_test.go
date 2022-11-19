@@ -3,6 +3,15 @@ package dasel
 import "testing"
 
 func TestAllFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"all(x)",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "all",
+			Args:     []string{"x"},
+		}),
+	)
+
 	t.Run(
 		"RootAll",
 		selectTest(

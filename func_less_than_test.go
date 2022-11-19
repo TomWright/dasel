@@ -6,6 +6,15 @@ import (
 
 func TestLessThanFunc(t *testing.T) {
 
+	t.Run("Args", selectTestErr(
+		"lessThan()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "lessThan",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"Less Than",
 		selectTest(

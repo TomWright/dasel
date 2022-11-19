@@ -5,6 +5,15 @@ import (
 )
 
 func TestLastFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"last(x)",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "last",
+			Args:     []string{"x"},
+		}),
+	)
+
 	original := map[string]interface{}{
 		"name": map[string]interface{}{
 			"first": "Tom",

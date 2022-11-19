@@ -34,6 +34,9 @@ func ValueOf(value interface{}) Value {
 
 // Metadata returns the metadata with a key of key for v.
 func (v Value) Metadata(key string) interface{} {
+	if v.metadata == nil {
+		return nil
+	}
 	if m, ok := v.metadata[key]; ok {
 		return m
 	}
@@ -51,14 +54,7 @@ func (v Value) WithMetadata(key string, value interface{}) Value {
 
 // Interface returns the interface{} value of v.
 func (v Value) Interface() interface{} {
-	if v.IsEmpty() {
-		return nil
-	}
-	unpacked := v.Unpack()
-	if !unpacked.CanInterface() {
-		return nil
-	}
-	return unpacked.Interface()
+	return v.Unpack().Interface()
 }
 
 // Len returns v's length.
@@ -159,12 +155,10 @@ func (v Value) MapIndex(key Value) Value {
 		deleteFn: func() {
 			v.Unpack().SetMapIndex(key.Value, reflect.Value{})
 		},
-		metadata: map[string]interface{}{
-			"type":   unpackReflectValue(v.Unpack().MapIndex(key.Value)).Kind().String(),
-			"key":    key.Interface(),
-			"parent": v,
-		},
-	}
+	}.
+		WithMetadata("type", unpackReflectValue(v.Unpack().MapIndex(key.Value)).Kind().String()).
+		WithMetadata("key", key.Interface()).
+		WithMetadata("parent", v)
 }
 
 func (v Value) MapKeys() []Value {
@@ -187,12 +181,10 @@ func (v Value) FieldByName(name string) Value {
 			field := v.Unpack().FieldByName(name)
 			field.Set(reflect.New(field.Type()))
 		},
-		metadata: map[string]interface{}{
-			"type":   unpackReflectValue(v.Unpack().FieldByName(name)).Kind().String(),
-			"key":    name,
-			"parent": v,
-		},
-	}
+	}.
+		WithMetadata("type", unpackReflectValue(v.Unpack().FieldByName(name)).Kind().String()).
+		WithMetadata("key", name).
+		WithMetadata("parent", v)
 }
 
 // NumField returns the number of fields in the struct v.
@@ -226,12 +218,10 @@ func (v Value) Index(i int) Value {
 
 			v.Unpack(reflect.Ptr).Set(updatedSlice)
 		},
-		metadata: map[string]interface{}{
-			"type":   unpackReflectValue(v.Unpack().Index(i)).Kind().String(),
-			"key":    i,
-			"parent": v,
-		},
-	}
+	}.
+		WithMetadata("type", unpackReflectValue(v.Unpack().Index(i)).Kind().String()).
+		WithMetadata("key", i).
+		WithMetadata("parent", v)
 }
 
 // Append appends an empty value to the end of the slice.

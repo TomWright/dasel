@@ -17,11 +17,9 @@ func IsTruthy(value interface{}) bool {
 		return v
 
 	case string:
-		v = strings.TrimSpace(v)
+		v = strings.ToLower(strings.TrimSpace(v))
 		switch v {
-		case "false":
-			return false
-		case "0":
+		case "false", "no", "0":
 			return false
 		default:
 			return v != ""

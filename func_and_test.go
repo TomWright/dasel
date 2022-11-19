@@ -5,6 +5,15 @@ import (
 )
 
 func TestAndFunc(t *testing.T) {
+	t.Run("Args", selectTestErr(
+		"and()",
+		map[string]interface{}{},
+		&ErrUnexpectedFunctionArgs{
+			Function: "and",
+			Args:     []string{},
+		}),
+	)
+
 	t.Run(
 		"NoneEqualMoreThan",
 		selectTest(
