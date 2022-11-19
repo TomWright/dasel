@@ -26,7 +26,11 @@ var PropertyFunc = BasicFunction{
 			return nil, err
 		}
 
-		input := c.inputValue(s)
+		input := s.inputs()
+
+		if c.CreateWhenMissing() {
+			input = input.initEmptyMaps()
+		}
 
 		res := make(Values, 0)
 
@@ -44,7 +48,9 @@ var PropertyFunc = BasicFunction{
 						if isOptional {
 							continue
 						}
-						return nil, fmt.Errorf("could not access map index: %w", &ErrPropertyNotFound{Property: property})
+						if !c.CreateWhenMissing() {
+							return nil, fmt.Errorf("could not access map index: %w", &ErrPropertyNotFound{Property: property})
+						}
 					}
 					res = append(res, index)
 				case reflect.Struct:

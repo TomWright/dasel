@@ -13,7 +13,7 @@ var MoreThanFunc = BasicFunction{
 			return nil, err
 		}
 
-		input := c.inputValue(s)
+		input := s.inputs()
 
 		type comparison struct {
 			selector string
@@ -36,7 +36,7 @@ var MoreThanFunc = BasicFunction{
 		}
 
 		runComparison := func(value Value, cmp comparison) (bool, error) {
-			gotValues, err := performSubQuery(c, value, cmp.selector)
+			gotValues, err := c.subSelect(value, cmp.selector)
 			if err != nil {
 				return false, err
 			}

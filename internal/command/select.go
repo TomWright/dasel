@@ -81,10 +81,7 @@ func runSelectCommand(opts *selectOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	values, err := dasel.NewContext(rootValue, opts.Selector).Run()
-	if err != nil {
-		return err
-	}
+	values, err := dasel.Select(rootValue, opts.Selector)
 
 	if err := opts.Write.writeValues(cmd, opts.Read, values); err != nil {
 		return err

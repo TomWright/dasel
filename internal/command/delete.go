@@ -65,7 +65,7 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 		opts.Selector = "."
 	}
 
-	return deletePutCommand(opts, cmd)
+	return runDeleteCommand(opts, cmd)
 }
 
 type deleteOptions struct {
@@ -74,26 +74,19 @@ type deleteOptions struct {
 	Selector string
 }
 
-func deletePutCommand(opts *deleteOptions, cmd *cobra.Command) error {
+func runDeleteCommand(opts *deleteOptions, cmd *cobra.Command) error {
 
 	rootValue, err := opts.Read.rootValue(cmd)
 	if err != nil {
 		return err
 	}
 
-	c := dasel.NewContext(rootValue, opts.Selector).WithCreateWhenMissing(true)
-
-	values, err := c.Run()
+	value, err := dasel.Delete(rootValue, opts.Selector)
 	if err != nil {
 		return err
 	}
 
-	for _, v := range values {
-		v.Delete()
-	}
-
-	// There are issues deleting
-	if err := opts.Write.writeValue(cmd, opts.Read, c.Data(dasel.WithoutDeletePlaceholders)); err != nil {
+	if err := opts.Write.writeValue(cmd, opts.Read, value); err != nil {
 		return err
 	}
 

@@ -6,6 +6,6 @@ var ThisFunc = BasicFunction{
 		if err := requireNoArgs("this", args); err != nil {
 			return nil, err
 		}
-		return c.inputValue(s), nil
+		return s.inputs(), nil
 	},
 }

@@ -5,27 +5,6 @@ import (
 	"reflect"
 )
 
-// Step is a single step in the query.
-// Each function call has its own step.
-// Each value in the output is simply a pointer to the actual data point in the context data.
-type Step struct {
-	selector Selector
-	index    int
-	output   Values
-}
-
-func (s *Step) Selector() Selector {
-	return s.selector
-}
-
-func (s *Step) Index() int {
-	return s.index
-}
-
-func (s *Step) Output() Values {
-	return s.output
-}
-
 // Context has scope over the entire query.
 // Each individual function has its own step within the context.
 // The context holds the entire data structure we're accessing/modifying.
@@ -36,6 +15,7 @@ type Context struct {
 	data              Value
 	functions         *FunctionCollection
 	createWhenMissing bool
+	filters           []valueFilterFn
 }
 
 func newContextWithFunctions(value interface{}, selector string, functions *FunctionCollection) *Context {
@@ -53,6 +33,7 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 		v = Value{
 			Value: reflectVal,
 			setFn: func(value Value) {
+				fmt.Println("root set")
 				reflectVal.Set(value.Value)
 			},
 			metadata: map[string]interface{}{},
@@ -91,6 +72,59 @@ func NewContext(value interface{}, selector string) *Context {
 	return newContextWithFunctions(value, selector, standardFunctions())
 }
 
+func newSelectContext(value interface{}, selector string) *Context {
+	return newContextWithFunctions(value, selector, standardFunctions())
+}
+
+func newPutContext(value interface{}, selector string) *Context {
+	return newContextWithFunctions(value, selector, standardFunctions()).
+		WithCreateWhenMissing(true)
+}
+
+func newDeleteContext(value interface{}, selector string) *Context {
+	c := newContextWithFunctions(value, selector, standardFunctions())
+	c.filters = append(c.filters, withoutDeletePlaceholders)
+	return c
+}
+
+func Select(root interface{}, selector string) (Values, error) {
+	c := newSelectContext(root, selector)
+	return c.Run()
+}
+
+func Put(root interface{}, selector string, value interface{}) (Value, error) {
+	toSet := ValueOf(value)
+	c := newPutContext(root, selector)
+	values, err := c.Run()
+	if err != nil {
+		return Value{}, err
+	}
+	for _, v := range values {
+		v.Set(toSet)
+	}
+	return c.Data(), nil
+}
+
+func Delete(root interface{}, selector string) (Value, error) {
+	c := newDeleteContext(root, selector)
+	values, err := c.Run()
+	if err != nil {
+		return Value{}, err
+	}
+	for _, v := range values {
+		v.Delete()
+	}
+	return c.Data(), nil
+}
+
+func (c *Context) subSelectContext(value interface{}, selector string) *Context {
+	return newContextWithFunctions(value, selector, c.functions)
+}
+
+func (c *Context) subSelect(value interface{}, selector string) (Values, error) {
+	return c.subSelectContext(value, selector).Run()
+}
+
 func (c *Context) WithSelector(s string) *Context {
 	c.selector = s
 	c.selectorResolver = NewSelectorResolver(s, c.functions)
@@ -102,11 +136,15 @@ func (c *Context) WithCreateWhenMissing(create bool) *Context {
 	return c
 }
 
-func (c *Context) Data(filters ...ValueFilterFn) Value {
-	if len(filters) == 0 {
+func (c *Context) CreateWhenMissing() bool {
+	return c.createWhenMissing
+}
+
+func (c *Context) Data() Value {
+	if len(c.filters) == 0 {
 		return c.data
 	}
-	changed, _ := rebuildWithFilter(c.data, filters...)
+	changed, _ := rebuildWithFilter(c.data, c.filters...)
 	return changed
 }
 
@@ -139,6 +177,7 @@ func (c *Context) Next() (*Step, error) {
 	}
 
 	nextStep := &Step{
+		context:  c,
 		selector: *nextSelector,
 		index:    len(c.steps),
 		output:   nil,
@@ -146,7 +185,7 @@ func (c *Context) Next() (*Step, error) {
 
 	c.steps = append(c.steps, nextStep)
 
-	if err := c.processStep(nextStep); err != nil {
+	if err := nextStep.execute(); err != nil {
 		return nextStep, err
 	}
 
@@ -161,42 +200,17 @@ func (c *Context) Step(i int) *Step {
 	return c.steps[i]
 }
 
-func (c *Context) processStep(step *Step) error {
-	f, err := c.functions.Get(step.selector.funcName)
-	if err != nil {
-		return err
-	}
-	output, err := f(c, step, step.selector.funcArgs)
-	step.output = output
-	return err
-}
-
-func (c *Context) inputValue(s *Step) Values {
-	prevStep := c.Step(s.index - 1)
-	if prevStep == nil {
-		return Values{}
-	}
-	return prevStep.output
-}
-
-func (c *Context) subContext(value interface{}, selector string) *Context {
-	return newContextWithFunctions(value, selector, c.functions)
-}
-
-func performSubQuery(c *Context, value Value, selector string) (Values, error) {
-	return c.subContext(value, selector).Run()
-}
-
-// ValueFilterFn represents a filter that can be used to remove values
+// valueFilterFn represents a filter that can be used to remove values
 // from the output data.
 // If the filter returns true, the value is removed.
-type ValueFilterFn func(value Value) bool
+type valueFilterFn func(value Value) bool
 
-func WithoutDeletePlaceholders(value Value) bool {
+// withoutDeletePlaceholders implements valueFilterFn.
+func withoutDeletePlaceholders(value Value) bool {
 	return value.IsDeletePlaceholder()
 }
 
-func rebuildWithFilter(value Value, filters ...ValueFilterFn) (Value, bool) {
+func rebuildWithFilter(value Value, filters ...valueFilterFn) (Value, bool) {
 	changes := 0
 
 	remove := func(v Value) bool {

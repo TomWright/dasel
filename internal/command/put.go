@@ -92,24 +92,17 @@ func runPutCommand(opts *putOptions, cmd *cobra.Command) error {
 		return err
 	}
 
-	c := dasel.NewContext(rootValue, opts.Selector).WithCreateWhenMissing(true)
-
-	values, err := c.Run()
-	if err != nil {
-		return err
-	}
-
-	var toSet dasel.Value
+	var toSet interface{}
 
 	switch opts.ValueType {
 	case "string":
-		toSet = dasel.ValueOf(opts.Value)
+		toSet = opts.Value
 	case "int":
 		intValue, err := strconv.Atoi(opts.Value)
 		if err != nil {
 			return fmt.Errorf("invalid int value: %w", err)
 		}
-		toSet = dasel.ValueOf(intValue)
+		toSet = intValue
 	case "bool":
 		toSet = dasel.ValueOf(dasel.IsTruthy(opts.Value))
 	default:
@@ -124,11 +117,12 @@ func runPutCommand(opts *putOptions, cmd *cobra.Command) error {
 		toSet = docValue
 	}
 
-	for _, v := range values {
-		v.Set(toSet)
+	value, err := dasel.Put(rootValue, opts.Selector, toSet)
+	if err != nil {
+		return err
 	}
 
-	if err := opts.Write.writeValue(cmd, opts.Read, c.Data()); err != nil {
+	if err := opts.Write.writeValue(cmd, opts.Read, value); err != nil {
 		return err
 	}
 

@@ -16,6 +16,22 @@ type Value struct {
 	metadata map[string]interface{}
 }
 
+// ValueOf wraps value in a Value.
+func ValueOf(value interface{}) Value {
+	switch v := value.(type) {
+	case Value:
+		return v
+	case reflect.Value:
+		return Value{
+			Value: v,
+		}
+	default:
+		return Value{
+			Value: reflect.ValueOf(value),
+		}
+	}
+}
+
 // Metadata returns the metadata with a key of key for v.
 func (v Value) Metadata(key string) interface{} {
 	if m, ok := v.metadata[key]; ok {
@@ -35,7 +51,14 @@ func (v Value) WithMetadata(key string, value interface{}) Value {
 
 // Interface returns the interface{} value of v.
 func (v Value) Interface() interface{} {
-	return v.Unpack().Interface()
+	if v.IsEmpty() {
+		return nil
+	}
+	unpacked := v.Unpack()
+	if !unpacked.CanInterface() {
+		return nil
+	}
+	return unpacked.Interface()
 }
 
 // Len returns v's length.
@@ -56,7 +79,11 @@ func (v Value) Len() int {
 
 // IsEmpty returns true is v represents an empty reflect.Value.
 func (v Value) IsEmpty() bool {
-	return unpackReflectValue(v.Value) == reflect.Value{}
+	return isEmptyReflectValue(unpackReflectValue(v.Value))
+}
+
+func isEmptyReflectValue(v reflect.Value) bool {
+	return v == reflect.Value{}
 }
 
 // IsDeletePlaceholder returns true is v represents a delete placeholder.
@@ -69,17 +96,29 @@ func (v Value) Kind() reflect.Kind {
 	return v.Unpack().Kind()
 }
 
-func unpackReflectValue(value reflect.Value) reflect.Value {
+func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
+	for _, v := range kinds {
+		if v == kind {
+			return true
+		}
+	}
+	return false
+}
+
+func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Value {
+	if len(kinds) == 0 {
+		kinds = append(kinds, reflect.Ptr, reflect.Interface)
+	}
 	res := value
-	for res.Kind() == reflect.Ptr || res.Kind() == reflect.Interface {
+	for containsKind(kinds, res.Kind()) {
 		res = res.Elem()
 	}
 	return res
 }
 
 // Unpack returns the underlying reflect.Value after resolving any pointers or interface types.
-func (v Value) Unpack() reflect.Value {
-	return unpackReflectValue(v.Value)
+func (v Value) Unpack(kinds ...reflect.Kind) reflect.Value {
+	return unpackReflectValue(v.Value, kinds...)
 }
 
 func (v Value) Type() reflect.Type {
@@ -88,7 +127,6 @@ func (v Value) Type() reflect.Type {
 
 // Set sets underlying value of v.
 // Depends on setFn since the implementation can differ depending on how the Value was initialised.
-// Will panic if no setFn is present.
 func (v Value) Set(value Value) {
 	if v.setFn != nil {
 		v.setFn(value)
@@ -97,6 +135,8 @@ func (v Value) Set(value Value) {
 	log.Println("unable to set value with missing setFn")
 }
 
+// Delete deletes the current element.
+// Depends on deleteFn since the implementation can differ depending on how the Value was initialised.
 func (v Value) Delete() {
 	if v.deleteFn != nil {
 		v.deleteFn()
@@ -179,6 +219,15 @@ func (v Value) Index(i int) Value {
 	}
 }
 
+var mapStringInterfaceType = reflect.TypeOf(map[string]interface{}{})
+
+func (v Value) initEmptyMap() Value {
+	emptyMap := reflect.MakeMap(mapStringInterfaceType)
+	v.Set(Value{Value: emptyMap})
+	v.Value = emptyMap
+	return v
+}
+
 // Values represents a list of Value's.
 type Values []Value
 
@@ -191,18 +240,14 @@ func (v Values) Interfaces() []interface{} {
 	return res
 }
 
-// ValueOf returns a Value wrapped around value.
-func ValueOf(value interface{}) Value {
-	switch v := value.(type) {
-	case Value:
-		return v
-	case reflect.Value:
-		return Value{
-			Value: v,
-		}
-	default:
-		return Value{
-			Value: reflect.ValueOf(value),
+func (v Values) initEmptyMaps() Values {
+	res := make(Values, len(v))
+	for k, value := range v {
+		if value.IsEmpty() {
+			res[k] = value.initEmptyMap()
+		} else {
+			res[k] = value
 		}
 	}
+	return res
 }

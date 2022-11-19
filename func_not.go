@@ -12,10 +12,10 @@ var NotFunc = BasicFunction{
 			return nil, err
 		}
 
-		input := c.inputValue(s)
+		input := s.inputs()
 
 		runComparison := func(value Value, selector string) (bool, error) {
-			gotValues, err := performSubQuery(c, value, selector)
+			gotValues, err := c.subSelect(value, selector)
 			if err != nil {
 				return false, err
 			}

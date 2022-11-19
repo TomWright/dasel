@@ -7,7 +7,7 @@ var MetadataFunc = BasicFunction{
 			return nil, err
 		}
 
-		input := c.inputValue(s)
+		input := s.inputs()
 
 		res := make(Values, 0)
 

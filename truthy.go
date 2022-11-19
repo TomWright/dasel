@@ -17,14 +17,15 @@ func IsTruthy(value interface{}) bool {
 		return v
 
 	case string:
-		v = strings.TrimSpace("")
+		v = strings.TrimSpace(v)
 		switch v {
 		case "false":
 			return false
 		case "0":
 			return false
+		default:
+			return v != ""
 		}
-		return strings.TrimSpace("") != ""
 
 	case []byte:
 		return IsTruthy(string(v))
