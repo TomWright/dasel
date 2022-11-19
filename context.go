@@ -15,7 +15,6 @@ type Context struct {
 	data              Value
 	functions         *FunctionCollection
 	createWhenMissing bool
-	filters           []valueFilterFn
 }
 
 func newContextWithFunctions(value interface{}, selector string, functions *FunctionCollection) *Context {
@@ -31,13 +30,20 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 		}
 
 		v = Value{
-			Value: reflectVal,
-			setFn: func(value Value) {
-				fmt.Println("root set")
-				reflectVal.Set(value.Value)
-			},
+			Value:    reflectVal,
 			metadata: map[string]interface{}{},
 		}
+	}
+
+	// Make sure we have an addressable root value.
+	if !v.CanAddr() {
+		pointerValue := reflect.New(v.Value.Type())
+		pointerValue.Elem().Set(v.Value)
+		v.Value = pointerValue
+	}
+
+	v.setFn = func(value Value) {
+		v.Unpack().Set(value.Value)
 	}
 
 	if v.metadata == nil {
@@ -67,11 +73,6 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 	}
 }
 
-// NewContext returns a new query context.
-func NewContext(value interface{}, selector string) *Context {
-	return newContextWithFunctions(value, selector, standardFunctions())
-}
-
 func newSelectContext(value interface{}, selector string) *Context {
 	return newContextWithFunctions(value, selector, standardFunctions())
 }
@@ -82,9 +83,7 @@ func newPutContext(value interface{}, selector string) *Context {
 }
 
 func newDeleteContext(value interface{}, selector string) *Context {
-	c := newContextWithFunctions(value, selector, standardFunctions())
-	c.filters = append(c.filters, withoutDeletePlaceholders)
-	return c
+	return newContextWithFunctions(value, selector, standardFunctions())
 }
 
 func Select(root interface{}, selector string) (Values, error) {
@@ -141,11 +140,7 @@ func (c *Context) CreateWhenMissing() bool {
 }
 
 func (c *Context) Data() Value {
-	if len(c.filters) == 0 {
-		return c.data
-	}
-	changed, _ := rebuildWithFilter(c.data, c.filters...)
-	return changed
+	return c.data
 }
 
 // Run calls Next repeatedly until no more steps are left.
@@ -198,74 +193,4 @@ func (c *Context) Step(i int) *Step {
 		return nil
 	}
 	return c.steps[i]
-}
-
-// valueFilterFn represents a filter that can be used to remove values
-// from the output data.
-// If the filter returns true, the value is removed.
-type valueFilterFn func(value Value) bool
-
-// withoutDeletePlaceholders implements valueFilterFn.
-func withoutDeletePlaceholders(value Value) bool {
-	return value.IsDeletePlaceholder()
-}
-
-func rebuildWithFilter(value Value, filters ...valueFilterFn) (Value, bool) {
-	changes := 0
-
-	remove := func(v Value) bool {
-		for _, f := range filters {
-			if f(v) {
-				return true
-			}
-		}
-		return false
-	}
-
-	var replacement reflect.Value
-	changed := false
-
-	switch value.Kind() {
-
-	case reflect.Map:
-		replacement = reflect.MakeMap(value.Type())
-
-		for _, key := range value.MapKeys() {
-			v := value.MapIndex(key)
-			if remove(v) {
-				changes++
-			} else {
-				newV, c := rebuildWithFilter(v, filters...)
-				if c {
-					changed = true
-				}
-				replacement.SetMapIndex(key.Value, newV.Value)
-			}
-		}
-
-	case reflect.Slice:
-		replacement = reflect.MakeSlice(value.Type(), 0, 0)
-		for i := 0; i < value.Len(); i++ {
-			v := value.Index(i)
-			if remove(v) {
-				changes++
-			} else {
-				newV, c := rebuildWithFilter(v, filters...)
-				if c {
-					changed = true
-				}
-				replacement = reflect.Append(replacement, newV.Value)
-			}
-		}
-	}
-
-	if changes > 0 {
-		changed = true
-	}
-
-	if changed {
-		return Value{Value: replacement}, true
-	}
-
-	return value, false
 }

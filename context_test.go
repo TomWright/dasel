@@ -33,7 +33,7 @@ func sameSlice(x, y []interface{}) bool {
 
 func selectTest(selector string, original interface{}, exp []interface{}) func(t *testing.T) {
 	return func(t *testing.T) {
-		c := NewContext(original, selector)
+		c := newSelectContext(original, selector)
 
 		values, err := c.Run()
 		if err != nil {
@@ -54,7 +54,7 @@ func TestNewContext(t *testing.T) {
 		orig := map[string]interface{}{
 			"name": "Tom",
 		}
-		ctx := NewContext(orig, "property(name)")
+		ctx := newPutContext(orig, "property(name)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -81,7 +81,7 @@ func TestNewContext(t *testing.T) {
 				"last":  "Wright",
 			},
 		}
-		ctx := NewContext(orig, "property(name).property(first)")
+		ctx := newPutContext(orig, "property(name).property(first)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -110,7 +110,7 @@ func TestNewContext(t *testing.T) {
 		}
 
 		orig := User{Name: "Tom"}
-		ctx := NewContext(&orig, "property(Name)")
+		ctx := newPutContext(&orig, "property(Name)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -138,7 +138,7 @@ func TestNewContext(t *testing.T) {
 		}
 
 		orig := User{Name: Name{First: "Tom", Last: "Wright"}}
-		ctx := NewContext(&orig, "property(Name).property(First)")
+		ctx := newPutContext(&orig, "property(Name).property(First)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
@@ -160,7 +160,7 @@ func TestNewContext(t *testing.T) {
 		orig := []interface{}{
 			"a", "b", "c",
 		}
-		ctx := NewContext(&orig, "index(0)")
+		ctx := newPutContext(&orig, "index(0)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)

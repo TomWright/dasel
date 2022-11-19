@@ -83,7 +83,10 @@ func (v Value) IsEmpty() bool {
 }
 
 func isEmptyReflectValue(v reflect.Value) bool {
-	return v == reflect.Value{}
+	if (v == reflect.Value{}) {
+		return true
+	}
+	return v.Kind() == reflect.String && v.Interface() == UninitialisedPlaceholder
 }
 
 // IsDeletePlaceholder returns true is v represents a delete placeholder.
@@ -206,10 +209,22 @@ func (v Value) Index(i int) Value {
 			v.Unpack().Index(i).Set(value.Value)
 		},
 		deleteFn: func() {
-			// todo : find a way to remove this slice element
-			// The slice index, v, and v.Metadata("parent") are all returning false for CanSet.
-			v.Unpack().Index(i).Set(deletePlaceholder)
-			return
+			currentLen := v.Len()
+			updatedSlice := reflect.MakeSlice(sliceInterfaceType, currentLen-1, v.Len()-1)
+			for indexToRead := 0; indexToRead < currentLen; indexToRead++ {
+				indexToWrite := indexToRead
+				if indexToRead == i {
+					continue
+				}
+				if indexToRead > i {
+					indexToWrite--
+				}
+				updatedSlice.Index(indexToWrite).Set(
+					v.Index(indexToRead).Value,
+				)
+			}
+
+			v.Unpack(reflect.Ptr).Set(updatedSlice)
 		},
 		metadata: map[string]interface{}{
 			"type":   unpackReflectValue(v.Unpack().Index(i)).Kind().String(),
@@ -219,12 +234,56 @@ func (v Value) Index(i int) Value {
 	}
 }
 
+// Append appends an empty value to the end of the slice.
+func (v Value) Append() Value {
+	emptyElement := reflect.ValueOf(UninitialisedPlaceholder)
+	updatedSlice := reflect.Append(v.Unpack(), emptyElement)
+
+	unpackedPtr := v.Unpack(reflect.Ptr)
+	if unpackedPtr.CanSet() {
+		unpackedPtr.Set(updatedSlice)
+		return v
+	}
+
+	unpackedInterface := v.Unpack()
+	if unpackedInterface.CanSet() {
+		unpackedInterface.Set(updatedSlice)
+		return v
+	}
+
+	if v.Value.CanSet() {
+		v.Value.Set(updatedSlice)
+		return v
+	}
+
+	panic("cannot find addressable element in slice")
+}
+
+var sliceInterfaceType = reflect.TypeOf([]interface{}{})
 var mapStringInterfaceType = reflect.TypeOf(map[string]interface{}{})
+
+var UninitialisedPlaceholder interface{} = "__dasel_not_found__"
+
+func (v Value) asUninitialised() Value {
+	v.Value = reflect.ValueOf(UninitialisedPlaceholder)
+	return v
+}
 
 func (v Value) initEmptyMap() Value {
 	emptyMap := reflect.MakeMap(mapStringInterfaceType)
 	v.Set(Value{Value: emptyMap})
 	v.Value = emptyMap
+	return v
+}
+
+func (v Value) initEmptySlice() Value {
+	emptySlice := reflect.MakeSlice(sliceInterfaceType, 0, 0)
+
+	addressableSlice := reflect.New(emptySlice.Type())
+	addressableSlice.Elem().Set(emptySlice)
+
+	v.Set(Value{Value: addressableSlice})
+	v.Value = addressableSlice
 	return v
 }
 
@@ -245,6 +304,18 @@ func (v Values) initEmptyMaps() Values {
 	for k, value := range v {
 		if value.IsEmpty() {
 			res[k] = value.initEmptyMap()
+		} else {
+			res[k] = value
+		}
+	}
+	return res
+}
+
+func (v Values) initEmptySlices() Values {
+	res := make(Values, len(v))
+	for k, value := range v {
+		if value.IsEmpty() {
+			res[k] = value.initEmptySlice()
 		} else {
 			res[k] = value
 		}

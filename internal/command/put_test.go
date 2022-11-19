@@ -89,4 +89,44 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("SetStringOnExistingIndex", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "z", "[1]"},
+		[]byte(`["a","b","c"]`),
+		newline([]byte(`["a","z","c"]`)),
+		nil,
+		nil,
+	))
+
+	t.Run("SetStringOnExistingNestedIndex", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "z", "[0].[1]"},
+		[]byte(`[["a","b","c"],["d","e","f"]]`),
+		newline([]byte(`[["a","z","c"],["d","e","f"]]`)),
+		nil,
+		nil,
+	))
+
+	t.Run("AppendStringIndexToRoot", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "z", "[]"},
+		[]byte(`[]`),
+		newline([]byte(`["z"]`)),
+		nil,
+		nil,
+	))
+
+	t.Run("AppendStringIndexToNestedSlice", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "z", "[0].[]"},
+		[]byte(`[[]]`),
+		newline([]byte(`[["z"]]`)),
+		nil,
+		nil,
+	))
+
+	t.Run("AppendToChainOfMissingSlicesAndProperties", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "Tom", "users.[].name.first"},
+		[]byte(`{}`),
+		newline([]byte(`{"users":[{"name":{"first":"Tom"}}]}`)),
+		nil,
+		nil,
+	))
 }

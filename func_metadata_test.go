@@ -10,7 +10,7 @@ func TestMetadataFunc(t *testing.T) {
 		orig := []interface{}{
 			"abc", true, false, 1, 1.1, []interface{}{1},
 		}
-		ctx := NewContext(&orig, "all().metadata(type)")
+		ctx := newSelectContext(&orig, "all().metadata(type)")
 		s, err := ctx.Run()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)

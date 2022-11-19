@@ -51,6 +51,7 @@ var PropertyFunc = BasicFunction{
 						if !c.CreateWhenMissing() {
 							return nil, fmt.Errorf("could not access map index: %w", &ErrPropertyNotFound{Property: property})
 						}
+						index = index.asUninitialised()
 					}
 					res = append(res, index)
 				case reflect.Struct:
@@ -63,7 +64,7 @@ var PropertyFunc = BasicFunction{
 					}
 					res = append(res, value)
 				default:
-					return nil, fmt.Errorf("cannot use property selector on non map/struct types")
+					return nil, fmt.Errorf("cannot use property selector on non map/struct types: %s", val.Kind().String())
 				}
 			}
 		}

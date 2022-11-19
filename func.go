@@ -47,6 +47,7 @@ func standardFunctions() *FunctionCollection {
 		FirstFunc,
 		LastFunc,
 		PropertyFunc,
+		AppendFunc,
 
 		// Filters
 		FilterFunc,
