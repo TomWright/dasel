@@ -8,56 +8,56 @@ END
 START
 Top level property
 top_level_property
-dasel -f benchmark/data.json '.id'
+dasel -f benchmark/data.json 'id'
 jq '.id' benchmark/data.json
 yq --yaml-output '.id' benchmark/data.yaml
 END
 START
 Nested property
 nested_property
-dasel -f benchmark/data.json '.user.name.first'
+dasel -f benchmark/data.json 'user.name.first'
 jq '.user.name.first' benchmark/data.json
 yq --yaml-output '.user.name.first' benchmark/data.yaml
 END
 START
 Array index
 array_index
-dasel -f benchmark/data.json '.favouriteNumbers.[1]'
+dasel -f benchmark/data.json 'favouriteNumbers.[1]'
 jq '.favouriteNumbers[1]' benchmark/data.json
 yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml
 END
-START
-Append to array of strings
-append_array_of_strings
-dasel put string -f benchmark/data.json -o - '.favouriteColours.[]' blue
-jq '.favouriteColours += ["blue"]' benchmark/data.json
-yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
-END
+#START
+#Append to array of strings
+#append_array_of_strings
+#dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'
+#jq '.favouriteColours += ["blue"]' benchmark/data.json
+#yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
+#END
 START
 Update a string value
 update_string
-dasel put string -f benchmark/data.json -o - '.favouriteColours.[0]' blue
+dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[0]'
 jq '.favouriteColours[0] = "blue"' benchmark/data.json
 yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml
 END
 START
 Overwrite an object
 overwrite_object
-dasel put object -f benchmark/data.json -o - -t string -t string '.user.name' first=Frank last=Jones
+dasel put -f benchmark/data.json -o - -t json -v '{"first":"Frank","last":"Jones"}' '.user.name'
 jq '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.json
 yq --yaml-output '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.yaml
 END
 START
 List keys of an array
 list_array_keys
-dasel -f benchmark/data.json -m '.-'
+dasel -f benchmark/data.json 'all().key()'
 jq 'keys[]' benchmark/data.json
 yq --yaml-output 'keys[]' benchmark/data.yaml
 END
 START
 Delete property
 delete_property
-dasel delete -f benchmark/data.json -o - '.id'
+dasel delete -f benchmark/data.json -o - 'id'
 jq 'del(.id)' benchmark/data.json
 yq --yaml-output 'del(.id)' benchmark/data.yaml
 END

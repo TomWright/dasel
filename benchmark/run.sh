@@ -13,7 +13,10 @@ function run_file() {
 
   while IFS= read -r line
   do
-    if [ "$line" == "END" ]
+    if [ "$line" == "#" ]
+    then
+      echo "Skipping comment"
+    elif [ "$line" == "END" ]
     then
       jsonFile="benchmark/data/${key}.json"
       imagePath="benchmark/diagrams/${key}.jpg"

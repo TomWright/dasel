@@ -23,6 +23,7 @@ func deleteFlags(cmd *cobra.Command) {
 	cmd.Flags().StringP("read", "r", "", "The parser to use when reading.")
 	cmd.Flags().StringP("file", "f", "", "The file to query.")
 	cmd.Flags().StringP("write", "w", "", "The parser to use when writing. Defaults to the read parser if not provided.")
+	cmd.Flags().StringP("out", "o", "", "The file to write output to.")
 	cmd.Flags().Bool("pretty", true, "Pretty print the output.")
 	cmd.Flags().Bool("colour", false, "Print colourised output.")
 	cmd.Flags().Bool("escape-html", false, "Escape HTML tags when writing output.")
@@ -38,6 +39,7 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 	prettyPrintFlag, _ := cmd.Flags().GetBool("pretty")
 	colourFlag, _ := cmd.Flags().GetBool("colour")
 	escapeHTMLFlag, _ := cmd.Flags().GetBool("escape-html")
+	outFlag, _ := cmd.Flags().GetString("out")
 
 	opts := &deleteOptions{
 		Read: &readOptions{
@@ -48,7 +50,7 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 		Write: &writeOptions{
 			Writer:      nil,
 			Parser:      writeParserFlag,
-			FilePath:    "stdout",
+			FilePath:    outFlag,
 			PrettyPrint: prettyPrintFlag,
 			Colourise:   colourFlag,
 			EscapeHTML:  escapeHTMLFlag,

@@ -147,7 +147,7 @@ func (v Value) Delete() {
 // MapIndex returns the value associated with key in the map v.
 // It returns the zero Value if no field was found.
 func (v Value) MapIndex(key Value) Value {
-	return Value{
+	index := Value{
 		Value: v.Unpack().MapIndex(key.Value),
 		setFn: func(value Value) {
 			v.Unpack().SetMapIndex(key.Value, value.Value)
@@ -155,7 +155,13 @@ func (v Value) MapIndex(key Value) Value {
 		deleteFn: func() {
 			v.Unpack().SetMapIndex(key.Value, reflect.Value{})
 		},
-	}.
+	}
+	// if !v.Unpack().CanAddr() {
+	// 	pointerVal := reflect.New(v.Type())
+	// 	pointerVal.Elem().Set(v.Unpack())
+	// 	v.Value = pointerVal
+	// }
+	return index.
 		WithMetadata("type", unpackReflectValue(v.Unpack().MapIndex(key.Value)).Kind().String()).
 		WithMetadata("key", key.Interface()).
 		WithMetadata("parent", v)
