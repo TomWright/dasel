@@ -34,12 +34,10 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 		}
 	}
 
-	// Make sure we have an addressable root value.
-	if !v.CanAddr() {
-		pointerValue := reflect.New(v.Value.Type())
-		pointerValue.Elem().Set(v.Value)
-		v.Value = pointerValue
-	}
+	v.Value = makeAddressable(v.Value)
+
+	// v.SetMapIndex(reflect.ValueOf("users"), v.MapIndex(ValueOf("users")))
+	// v.MapIndex("users")
 
 	v.setFn = func(value Value) {
 		v.Unpack().Set(value.Value)

@@ -115,6 +115,14 @@ func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Valu
 	return res
 }
 
+func (v Value) FirstAddressable() reflect.Value {
+	res := v.Value
+	for !res.CanAddr() {
+		res = res.Elem()
+	}
+	return res
+}
+
 // Unpack returns the underlying reflect.Value after resolving any pointers or interface types.
 func (v Value) Unpack(kinds ...reflect.Kind) reflect.Value {
 	return unpackReflectValue(v.Value, kinds...)
@@ -156,11 +164,6 @@ func (v Value) MapIndex(key Value) Value {
 			v.Unpack().SetMapIndex(key.Value, reflect.Value{})
 		},
 	}
-	// if !v.Unpack().CanAddr() {
-	// 	pointerVal := reflect.New(v.Type())
-	// 	pointerVal.Elem().Set(v.Unpack())
-	// 	v.Value = pointerVal
-	// }
 	return index.
 		WithMetadata("type", unpackReflectValue(v.Unpack().MapIndex(key.Value)).Kind().String()).
 		WithMetadata("key", key.Interface()).
@@ -209,6 +212,7 @@ func (v Value) Index(i int) Value {
 		deleteFn: func() {
 			currentLen := v.Len()
 			updatedSlice := reflect.MakeSlice(sliceInterfaceType, currentLen-1, v.Len()-1)
+			// Rebuild the slice excluding the deleted element
 			for indexToRead := 0; indexToRead < currentLen; indexToRead++ {
 				indexToWrite := indexToRead
 				if indexToRead == i {
@@ -222,7 +226,7 @@ func (v Value) Index(i int) Value {
 				)
 			}
 
-			v.Unpack(reflect.Ptr).Set(updatedSlice)
+			v.Unpack().Set(updatedSlice)
 		},
 	}.
 		WithMetadata("type", unpackReflectValue(v.Unpack().Index(i)).Kind().String()).
@@ -232,27 +236,25 @@ func (v Value) Index(i int) Value {
 
 // Append appends an empty value to the end of the slice.
 func (v Value) Append() Value {
-	emptyElement := reflect.ValueOf(UninitialisedPlaceholder)
-	updatedSlice := reflect.Append(v.Unpack(), emptyElement)
-
-	unpackedPtr := v.Unpack(reflect.Ptr)
-	if unpackedPtr.CanSet() {
-		unpackedPtr.Set(updatedSlice)
-		return v
+	currentLen := v.Len()
+	newLen := currentLen + 1
+	updatedSlice := reflect.MakeSlice(sliceInterfaceType, newLen, newLen)
+	// copy all existing elements into updatedSlice.
+	// this leaves the last element empty.
+	for i := 0; i < currentLen; i++ {
+		updatedSlice.Index(i).Set(
+			v.Index(i).Value,
+		)
 	}
 
-	unpackedInterface := v.Unpack()
-	if unpackedInterface.CanSet() {
-		unpackedInterface.Set(updatedSlice)
-		return v
-	}
+	v.FirstAddressable().Set(updatedSlice)
 
-	if v.Value.CanSet() {
-		v.Value.Set(updatedSlice)
-		return v
-	}
+	// Set the last element to uninitialised.
+	updatedSlice.Index(currentLen).Set(
+		v.Index(currentLen).asUninitialised().Value,
+	)
 
-	panic("cannot find addressable element in slice")
+	return v
 }
 
 var sliceInterfaceType = reflect.TypeOf([]interface{}{})
@@ -281,6 +283,70 @@ func (v Value) initEmptySlice() Value {
 	v.Set(Value{Value: addressableSlice})
 	v.Value = addressableSlice
 	return v
+}
+
+func makeAddressableSlice(value reflect.Value) reflect.Value {
+	if !unpackReflectValue(value, reflect.Ptr).CanAddr() {
+		unpacked := unpackReflectValue(value)
+
+		emptySlice := reflect.MakeSlice(unpacked.Type(), unpacked.Len(), unpacked.Len())
+
+		for i := 0; i < unpacked.Len(); i++ {
+			emptySlice.Index(i).Set(makeAddressable(unpacked.Index(i)))
+		}
+
+		addressableSlice := reflect.New(emptySlice.Type())
+		addressableSlice.Elem().Set(emptySlice)
+
+		return addressableSlice
+	} else {
+		// Make contained values addressable
+		unpacked := unpackReflectValue(value)
+		for i := 0; i < unpacked.Len(); i++ {
+			unpacked.Index(i).Set(makeAddressable(unpacked.Index(i)))
+		}
+
+		return value
+	}
+}
+
+func makeAddressableMap(value reflect.Value) reflect.Value {
+	if !unpackReflectValue(value, reflect.Ptr).CanAddr() {
+		unpacked := unpackReflectValue(value)
+
+		emptyMap := reflect.MakeMap(unpacked.Type())
+
+		for _, key := range unpacked.MapKeys() {
+			emptyMap.SetMapIndex(key, makeAddressable(unpacked.MapIndex(key)))
+		}
+
+		addressableMap := reflect.New(emptyMap.Type())
+		addressableMap.Elem().Set(emptyMap)
+
+		return addressableMap
+	} else {
+		// Make contained values addressable
+		unpacked := unpackReflectValue(value)
+
+		for _, key := range unpacked.MapKeys() {
+			unpacked.SetMapIndex(key, makeAddressable(unpacked.MapIndex(key)))
+		}
+
+		return value
+	}
+}
+
+func makeAddressable(value reflect.Value) reflect.Value {
+	unpacked := unpackReflectValue(value)
+
+	switch unpacked.Kind() {
+	case reflect.Slice:
+		return makeAddressableSlice(value)
+	case reflect.Map:
+		return makeAddressableMap(value)
+	default:
+		return value
+	}
 }
 
 // Values represents a list of Value's.

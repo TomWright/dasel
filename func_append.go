@@ -24,7 +24,6 @@ var AppendFunc = BasicFunction{
 			switch val.Kind() {
 			case reflect.Slice, reflect.Array:
 				val = val.Append()
-
 				value := val.Index(val.Len() - 1)
 				res = append(res, value)
 			default:

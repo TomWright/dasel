@@ -129,4 +129,20 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("AppendToEmptyExistingSlice", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "Tom", "users.[]"},
+		[]byte(`{"users":[]}`),
+		newline([]byte(`{"users":["Tom"]}`)),
+		nil,
+		nil,
+	))
+
+	t.Run("AppendToEmptyMissingSlice", runTest(
+		[]string{"put", "-r", "json", "-t", "string", "--pretty=false", "-v", "Tom", "users.[]"},
+		[]byte(`{}`),
+		newline([]byte(`{"users":["Tom"]}`)),
+		nil,
+		nil,
+	))
 }
