@@ -26,12 +26,12 @@ dasel -f benchmark/data.json 'favouriteNumbers.[1]'
 jq '.favouriteNumbers[1]' benchmark/data.json
 yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml
 END
-#START
-#Append to array of strings
-#append_array_of_strings
-#dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'
-#jq '.favouriteColours += ["blue"]' benchmark/data.json
-#yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
+START
+Append to array of strings
+append_array_of_strings
+dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'
+jq '.favouriteColours += ["blue"]' benchmark/data.json
+yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
 #END
 START
 Update a string value
