@@ -32,7 +32,7 @@ append_array_of_strings
 dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'
 jq '.favouriteColours += ["blue"]' benchmark/data.json
 yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
-#END
+END
 START
 Update a string value
 update_string

@@ -19,9 +19,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel -f benchmark/data.json` | 6.7 ± 0.3 | 6.2 | 7.7 | 1.00 |
-| `jq '.' benchmark/data.json` | 28.2 ± 1.0 | 27.3 | 32.7 | 4.19 ± 0.22 |
-| `yq --yaml-output '.' benchmark/data.yaml` | 127.3 ± 2.1 | 124.2 | 134.2 | 18.94 ± 0.81 |
+| `dasel -f benchmark/data.json` | 6.4 ± 0.3 | 6.0 | 7.8 | 1.00 |
+| `jq '.' benchmark/data.json` | 28.0 ± 0.9 | 27.2 | 31.8 | 4.38 ± 0.22 |
+| `yq --yaml-output '.' benchmark/data.yaml` | 127.1 ± 2.6 | 124.0 | 141.2 | 19.87 ± 0.90 |
 
 ### Top level property
 
@@ -29,9 +29,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel -f benchmark/data.json 'id'` | 7.0 ± 1.1 | 6.3 | 13.2 | 1.00 |
-| `jq '.id' benchmark/data.json` | 28.4 ± 1.1 | 27.2 | 31.8 | 4.05 ± 0.66 |
-| `yq --yaml-output '.id' benchmark/data.yaml` | 129.0 ± 5.8 | 123.6 | 163.9 | 18.39 ± 3.05 |
+| `dasel -f benchmark/data.json 'id'` | 6.4 ± 0.4 | 5.9 | 8.3 | 1.00 |
+| `jq '.id' benchmark/data.json` | 28.0 ± 0.8 | 27.1 | 31.3 | 4.35 ± 0.29 |
+| `yq --yaml-output '.id' benchmark/data.yaml` | 126.2 ± 2.2 | 123.3 | 136.6 | 19.60 ± 1.21 |
 
 ### Nested property
 
@@ -39,9 +39,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel -f benchmark/data.json 'user.name.first'` | 7.0 ± 0.8 | 6.4 | 9.8 | 1.00 |
-| `jq '.user.name.first' benchmark/data.json` | 28.7 ± 0.9 | 27.2 | 30.9 | 4.07 ± 0.47 |
-| `yq --yaml-output '.user.name.first' benchmark/data.yaml` | 133.2 ± 14.8 | 124.9 | 227.0 | 18.92 ± 2.97 |
+| `dasel -f benchmark/data.json 'user.name.first'` | 6.4 ± 0.3 | 6.0 | 7.9 | 1.00 |
+| `jq '.user.name.first' benchmark/data.json` | 28.4 ± 1.2 | 27.1 | 36.0 | 4.41 ± 0.28 |
+| `yq --yaml-output '.user.name.first' benchmark/data.yaml` | 126.3 ± 1.8 | 123.4 | 131.2 | 19.63 ± 0.94 |
 
 ### Array index
 
@@ -49,9 +49,19 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel -f benchmark/data.json 'favouriteNumbers.[1]'` | 6.4 ± 0.5 | 5.8 | 8.9 | 1.00 |
-| `jq '.favouriteNumbers[1]' benchmark/data.json` | 30.5 ± 4.8 | 27.2 | 57.1 | 4.75 ± 0.85 |
-| `yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml` | 131.0 ± 14.6 | 123.8 | 219.5 | 20.39 ± 2.84 |
+| `dasel -f benchmark/data.json 'favouriteNumbers.[1]'` | 6.4 ± 0.3 | 6.0 | 7.2 | 1.00 |
+| `jq '.favouriteNumbers[1]' benchmark/data.json` | 28.2 ± 1.0 | 27.2 | 32.1 | 4.44 ± 0.24 |
+| `yq --yaml-output '.favouriteNumbers[1]' benchmark/data.yaml` | 126.6 ± 2.7 | 123.6 | 141.1 | 19.91 ± 0.92 |
+
+### Append to array of strings
+
+<img src="diagrams/append_array_of_strings.jpg" alt="Append to array of strings" width="500"/>
+
+| Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
+|:---|---:|---:|---:|---:|
+| `dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'` | 6.4 ± 0.2 | 6.0 | 7.3 | 1.00 |
+| `jq '.favouriteColours += ["blue"]' benchmark/data.json` | 28.4 ± 1.0 | 27.4 | 32.0 | 4.46 ± 0.21 |
+| `yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml` | 127.3 ± 2.7 | 124.3 | 142.0 | 20.00 ± 0.80 |
 
 ### Update a string value
 
@@ -59,9 +69,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[0]'` | 7.0 ± 0.7 | 6.4 | 9.4 | 1.00 |
-| `jq '.favouriteColours[0] = "blue"' benchmark/data.json` | 30.3 ± 3.2 | 27.5 | 54.9 | 4.33 ± 0.61 |
-| `yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml` | 128.6 ± 5.7 | 125.2 | 171.2 | 18.38 ± 1.92 |
+| `dasel put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[0]'` | 6.6 ± 0.9 | 6.1 | 15.3 | 1.00 |
+| `jq '.favouriteColours[0] = "blue"' benchmark/data.json` | 28.3 ± 1.0 | 27.2 | 32.4 | 4.31 ± 0.63 |
+| `yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml` | 127.3 ± 1.9 | 124.6 | 131.9 | 19.41 ± 2.77 |
 
 ### Overwrite an object
 
@@ -69,9 +79,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel put -f benchmark/data.json -o - -t json -v '{"first":"Frank","last":"Jones"}' '.user.name'` | 6.5 ± 0.7 | 5.5 | 8.7 | 1.00 |
-| `jq '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.json` | 27.8 ± 1.3 | 26.2 | 31.9 | 4.24 ± 0.47 |
-| `yq --yaml-output '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.yaml` | 127.8 ± 4.7 | 123.7 | 149.5 | 19.54 ± 2.11 |
+| `dasel put -f benchmark/data.json -o - -t json -v '{"first":"Frank","last":"Jones"}' '.user.name'` | 6.4 ± 0.3 | 5.9 | 7.7 | 1.00 |
+| `jq '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.json` | 28.2 ± 0.9 | 27.3 | 31.6 | 4.39 ± 0.22 |
+| `yq --yaml-output '.user.name = {"first":"Frank","last":"Jones"}' benchmark/data.yaml` | 130.9 ± 13.4 | 124.4 | 229.2 | 20.38 ± 2.24 |
 
 ### List keys of an array
 
@@ -79,9 +89,9 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel -f benchmark/data.json 'all().key()'` | 7.7 ± 1.1 | 6.5 | 10.9 | 1.00 |
-| `jq 'keys[]' benchmark/data.json` | 28.9 ± 2.9 | 27.3 | 51.4 | 3.75 ± 0.64 |
-| `yq --yaml-output 'keys[]' benchmark/data.yaml` | 129.6 ± 8.7 | 123.4 | 185.8 | 16.78 ± 2.56 |
+| `dasel -f benchmark/data.json 'all().key()'` | 6.5 ± 0.4 | 6.0 | 8.4 | 1.00 |
+| `jq 'keys[]' benchmark/data.json` | 28.1 ± 0.8 | 27.1 | 31.0 | 4.34 ± 0.28 |
+| `yq --yaml-output 'keys[]' benchmark/data.yaml` | 127.2 ± 5.4 | 123.2 | 171.9 | 19.63 ± 1.42 |
 
 ### Delete property
 
@@ -89,6 +99,6 @@ If you have any feedback or wish to add new benchmarks please submit a PR.
 
 | Command | Mean [ms] | Min [ms] | Max [ms] | Relative |
 |:---|---:|---:|---:|---:|
-| `dasel delete -f benchmark/data.json -o - 'id'` | 5.3 ± 0.2 | 4.9 | 6.3 | 1.00 |
-| `jq 'del(.id)' benchmark/data.json` | 26.7 ± 1.0 | 25.8 | 30.6 | 5.05 ± 0.30 |
-| `yq --yaml-output 'del(.id)' benchmark/data.yaml` | 141.8 ± 28.8 | 123.3 | 272.6 | 26.82 ± 5.59 |
+| `dasel delete -f benchmark/data.json -o - 'id'` | 6.3 ± 0.2 | 5.9 | 7.2 | 1.00 |
+| `jq 'del(.id)' benchmark/data.json` | 28.2 ± 1.0 | 27.1 | 31.4 | 4.45 ± 0.22 |
+| `yq --yaml-output 'del(.id)' benchmark/data.yaml` | 127.0 ± 2.1 | 124.4 | 134.9 | 20.01 ± 0.73 |
