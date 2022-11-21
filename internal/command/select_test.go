@@ -89,38 +89,37 @@ func TestSelectCommand(t *testing.T) {
 		nil,
 	))
 
-	// todo : find a way to make this work
-	// 	t.Run("Issue258", runTest(
-	// 		[]string{"-r", "json", "--pretty=false", "mapOf(first,user.name.first,last,user.name.last,phones,phones).phones.first()"},
-	// 		[]byte(`{
-	//   "id": "1234",
-	//   "user": {
-	//     "name": {
-	//       "first": "Tom",
-	//       "last": "Wright"
-	//     }
-	//   },
-	//   "favouriteNumbers": [
-	//     1, 2, 3, 4
-	//   ],
-	//   "favouriteColours": [
-	//     "red", "green"
-	//   ],
-	//   "phones": [
-	//     {
-	//       "make": "OnePlus",
-	//       "model": "8 Pro"
-	//     },
-	//     {
-	//       "make": "Apple",
-	//       "model": "iPhone 12"
-	//     }
-	//   ]
-	// }`),
-	// 		newline([]byte(`first,last,model
-	// Tom,Wright,8 Pro
-	// Tom,Wright,iPhone 12`)),
-	// 		nil,
-	// 		nil,
-	// 	))
+	t.Run("Issue258", runTest(
+		[]string{"-r", "json", "--pretty=false", "-w", "csv", "phones.all().mapOf(make,make,model,model,first,parent().parent().user.name.first,last,parent().parent().user.name.last).merge()"},
+		[]byte(`{
+	  "id": "1234",
+	  "user": {
+	    "name": {
+	      "first": "Tom",
+	      "last": "Wright"
+	    }
+	  },
+	  "favouriteNumbers": [
+	    1, 2, 3, 4
+	  ],
+	  "favouriteColours": [
+	    "red", "green"
+	  ],
+	  "phones": [
+	    {
+	      "make": "OnePlus",
+	      "model": "8 Pro"
+	    },
+	    {
+	      "make": "Apple",
+	      "model": "iPhone 12"
+	    }
+	  ]
+	}`),
+		newline([]byte(`first,last,make,model
+Tom,Wright,OnePlus,8 Pro
+Tom,Wright,Apple,iPhone 12`)),
+		nil,
+		nil,
+	))
 }

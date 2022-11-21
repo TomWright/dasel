@@ -15,6 +15,25 @@ type Context struct {
 	data              Value
 	functions         *FunctionCollection
 	createWhenMissing bool
+	metadata          map[string]interface{}
+}
+
+func (c *Context) WithMetadata(key string, value interface{}) *Context {
+	if c.metadata == nil {
+		c.metadata = map[string]interface{}{}
+	}
+	c.metadata[key] = value
+	return c
+}
+
+func (c *Context) Metadata(key string) interface{} {
+	if c.metadata == nil {
+		return nil
+	}
+	if val, ok := c.metadata[key]; ok {
+		return val
+	}
+	return nil
 }
 
 func newContextWithFunctions(value interface{}, selector string, functions *FunctionCollection) *Context {
@@ -117,7 +136,9 @@ func Delete(root interface{}, selector string) (Value, error) {
 }
 
 func (c *Context) subSelectContext(value interface{}, selector string) *Context {
-	return newContextWithFunctions(value, selector, c.functions)
+	subC := newContextWithFunctions(value, selector, c.functions)
+	subC.metadata = c.metadata
+	return subC
 }
 
 func (c *Context) subSelect(value interface{}, selector string) (Values, error) {
