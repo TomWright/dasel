@@ -2,7 +2,6 @@ package dasel
 
 import (
 	"fmt"
-	"log"
 	"reflect"
 )
 
@@ -139,7 +138,7 @@ func (v Value) Set(value Value) {
 		v.setFn(value)
 		return
 	}
-	log.Println("unable to set value with missing setFn")
+	panic("unable to set value with missing setFn")
 }
 
 // Delete deletes the current element.
@@ -149,7 +148,7 @@ func (v Value) Delete() {
 		v.deleteFn()
 		return
 	}
-	log.Println("unable to delete value with missing deleteFn")
+	panic("unable to delete value with missing deleteFn")
 }
 
 // MapIndex returns the value associated with key in the map v.

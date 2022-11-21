@@ -55,6 +55,7 @@ func standardFunctions() *FunctionCollection {
 		KeyFunc,
 		MergeFunc,
 		CountFunc,
+		MapOfFunc,
 
 		// Selectors
 		IndexFunc,

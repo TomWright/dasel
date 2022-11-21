@@ -6,17 +6,8 @@ import (
 
 func TestMergeFunc(t *testing.T) {
 
-	t.Run("Args", selectTestErr(
-		"merge()",
-		map[string]interface{}{},
-		&ErrUnexpectedFunctionArgs{
-			Function: "merge",
-			Args:     []string{},
-		}),
-	)
-
 	t.Run(
-		"Merge",
+		"MergeWithArgs",
 		selectTest(
 			"merge(name.first,firstNames.all())",
 			map[string]interface{}{
@@ -33,6 +24,23 @@ func TestMergeFunc(t *testing.T) {
 				"Tom",
 				"Jim",
 				"Bob",
+			},
+		),
+	)
+
+	t.Run(
+		"MergeNoArgs",
+		selectTest(
+			"name.all().merge()",
+			map[string]interface{}{
+				"name": map[string]interface{}{
+					"first": "Tom",
+					"last":  "Wright",
+				},
+			},
+			[]interface{}{
+				"Tom",
+				"Wright",
 			},
 		),
 	)

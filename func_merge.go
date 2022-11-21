@@ -3,10 +3,6 @@ package dasel
 var MergeFunc = BasicFunction{
 	name: "merge",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
-		if err := requireXOrMoreArgs("merge", args, 1); err != nil {
-			return nil, err
-		}
-
 		input := s.inputs()
 
 		type comparison struct {
@@ -15,6 +11,11 @@ var MergeFunc = BasicFunction{
 		}
 
 		res := make(Values, 0)
+
+		if len(args) == 0 {
+			res = append(res, input...)
+			return res, nil
+		}
 
 		for _, val := range input {
 			for _, a := range args {
