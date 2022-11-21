@@ -34,7 +34,7 @@ START
 Append to array of strings
 append_array_of_strings
 daselv2 put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[]'
-dasel put string -f benchmark/data.json -o - 'favouriteColours.[]' 'blue'
+dasel put string -f benchmark/data.json -o - '.favouriteColours.[]' blue
 jq '.favouriteColours += ["blue"]' benchmark/data.json
 yq --yaml-output '.favouriteColours += ["blue"]' benchmark/data.yaml
 END
@@ -42,7 +42,7 @@ START
 Update a string value
 update_string
 daselv2 put -f benchmark/data.json -t string -v 'blue' -o - 'favouriteColours.[0]'
-dasel put string -f benchmark/data.json -o - 'favouriteColours.[0]' 'blue'
+dasel put string -f benchmark/data.json -o - '.favouriteColours.[0]' blue
 jq '.favouriteColours[0] = "blue"' benchmark/data.json
 yq --yaml-output '.favouriteColours[0] = "blue"' benchmark/data.yaml
 END
@@ -58,7 +58,7 @@ START
 List keys of an array
 list_array_keys
 daselv2 -f benchmark/data.json 'all().key()'
-dasel -f benchmark/data.json '[*]'
+dasel -f benchmark/data.json -m '.-'
 jq 'keys[]' benchmark/data.json
 yq --yaml-output 'keys[]' benchmark/data.yaml
 END
