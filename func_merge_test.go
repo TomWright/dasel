@@ -39,6 +39,25 @@ func TestMergeFunc(t *testing.T) {
 				},
 			},
 			[]interface{}{
+				[]interface{}{
+					"Tom",
+					"Wright",
+				},
+			},
+		),
+	)
+
+	t.Run(
+		"MergeNoArgsAll",
+		selectTest(
+			"name.all().merge().all()",
+			map[string]interface{}{
+				"name": map[string]interface{}{
+					"first": "Tom",
+					"last":  "Wright",
+				},
+			},
+			[]interface{}{
 				"Tom",
 				"Wright",
 			},

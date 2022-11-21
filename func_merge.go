@@ -1,22 +1,28 @@
 package dasel
 
+import "reflect"
+
 var MergeFunc = BasicFunction{
 	name: "merge",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
 		input := s.inputs()
 
-		type comparison struct {
-			selector string
-			value    string
-		}
-
 		res := make(Values, 0)
 
 		if len(args) == 0 {
-			res = append(res, input...)
+			// Merge all inputs into a slice.
+			resSlice := reflect.MakeSlice(sliceInterfaceType, len(input), len(input))
+			for i, val := range input {
+				resSlice.Index(i).Set(val.Value)
+			}
+			resPointer := reflect.New(resSlice.Type())
+			resPointer.Elem().Set(resSlice)
+
+			res = append(res, ValueOf(resPointer))
 			return res, nil
 		}
 
+		// Merge all selects in args into a set of results.
 		for _, val := range input {
 			for _, a := range args {
 				gotValues, err := c.subSelect(val, a)
