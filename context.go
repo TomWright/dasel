@@ -79,11 +79,15 @@ func newDeleteContext(value interface{}, selector string) *Context {
 	return newContextWithFunctions(value, selector, standardFunctions())
 }
 
+// Select resolves the given selector and returns the resulting values.
 func Select(root interface{}, selector string) (Values, error) {
 	c := newSelectContext(root, selector)
 	return c.Run()
 }
 
+// Put resolves the given selector and writes the given value in their place.
+// The root value may be changed in-place. If this is not desired you should copy the input
+// value before passing it to Put.
 func Put(root interface{}, selector string, value interface{}) (Value, error) {
 	toSet := ValueOf(value)
 	c := newPutContext(root, selector)
@@ -97,6 +101,9 @@ func Put(root interface{}, selector string, value interface{}) (Value, error) {
 	return c.Data(), nil
 }
 
+// Delete resolves the given selector and deletes any found values.
+// The root value may be changed in-place. If this is not desired you should copy the input
+// value before passing it to Delete.
 func Delete(root interface{}, selector string) (Value, error) {
 	c := newDeleteContext(root, selector)
 	values, err := c.Run()
@@ -117,21 +124,27 @@ func (c *Context) subSelect(value interface{}, selector string) (Values, error) 
 	return c.subSelectContext(value, selector).Run()
 }
 
+// WithSelector updates c with the given selector.
 func (c *Context) WithSelector(s string) *Context {
 	c.selector = s
 	c.selectorResolver = NewSelectorResolver(s, c.functions)
 	return c
 }
 
+// WithCreateWhenMissing updates c with the given create value.
+// If this value is true, elements (such as properties) will be initialised instead
+// of return not found errors.
 func (c *Context) WithCreateWhenMissing(create bool) *Context {
 	c.createWhenMissing = create
 	return c
 }
 
+// CreateWhenMissing returns true if the internal createWhenMissing value is true.
 func (c *Context) CreateWhenMissing() bool {
 	return c.createWhenMissing
 }
 
+// Data returns the root element of the context.
 func (c *Context) Data() Value {
 	return c.data
 }

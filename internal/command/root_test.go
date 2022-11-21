@@ -41,14 +41,12 @@ func runTest(args []string, in []byte, expStdOut []byte, expStdErr []byte, expEr
 			return
 		}
 
-		if !reflect.DeepEqual(expStdOut, gotStdOut) {
-			t.Errorf("expected stdout %s, got %s", string(expStdOut), string(gotStdOut))
-			return
-		}
-
 		if !reflect.DeepEqual(expStdErr, gotStdErr) {
 			t.Errorf("expected stderr %s, got %s", string(expStdErr), string(gotStdErr))
-			return
+		}
+
+		if !reflect.DeepEqual(expStdOut, gotStdOut) {
+			t.Errorf("expected stdout %s, got %s", string(expStdOut), string(gotStdOut))
 		}
 	}
 }
