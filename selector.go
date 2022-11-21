@@ -25,6 +25,7 @@ func NewSelectorResolver(selector string, functions *FunctionCollection) Selecto
 		openFunc:     '(',
 		closeFunc:    ')',
 		argSeparator: ',',
+		escapeChar:   '\\',
 	}
 }
 
@@ -36,6 +37,7 @@ type standardSelectorResolver struct {
 	openFunc     rune
 	closeFunc    rune
 	argSeparator rune
+	escapeChar   rune
 }
 
 func (r *standardSelectorResolver) Original() string {
@@ -47,12 +49,18 @@ func (r *standardSelectorResolver) Original() string {
 func (r *standardSelectorResolver) nextPart() (string, bool) {
 	b := &strings.Builder{}
 	bracketDepth := 0
+	escaped := false
 	for {
 		readRune, _, err := r.reader.ReadRune()
 		if err == io.EOF {
 			return b.String(), false
 		}
-		if readRune == r.openFunc {
+		if escaped {
+			b.WriteRune(readRune)
+			escaped = false
+		} else if readRune == r.escapeChar {
+			escaped = true
+		} else if readRune == r.openFunc {
 			bracketDepth++
 		} else if readRune == r.closeFunc {
 			bracketDepth--

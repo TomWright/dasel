@@ -122,4 +122,15 @@ Tom,Wright,Apple,iPhone 12`)),
 		nil,
 		nil,
 	))
+
+	t.Run("Issue181", runTest(
+		[]string{"-r", "json", "--pretty=false", "all().filter(equal(this(),README.md))"},
+		[]byte(`[
+  "README.md",
+  "tbump.toml"
+]`),
+		newline([]byte(`"README.md"`)),
+		nil,
+		nil,
+	))
 }
