@@ -22,7 +22,8 @@ var MergeFunc = BasicFunction{
 			return res, nil
 		}
 
-		// Merge all selects in args into a set of results.
+		// Merge all inputs into a slice.
+		resSlice := reflect.MakeSlice(sliceInterfaceType, 0, 0)
 		for _, val := range input {
 			for _, a := range args {
 				gotValues, err := c.subSelect(val, a)
@@ -30,10 +31,15 @@ var MergeFunc = BasicFunction{
 					return nil, err
 				}
 
-				res = append(res, gotValues...)
+				for _, gotVal := range gotValues {
+					resSlice = reflect.Append(resSlice, gotVal.Value)
+				}
 			}
 		}
+		resPointer := reflect.New(resSlice.Type())
+		resPointer.Elem().Set(resSlice)
 
+		res = append(res, ValueOf(resPointer))
 		return res, nil
 	},
 }
