@@ -6,6 +6,29 @@ import (
 	"strings"
 )
 
+type ErrBadSelectorSyntax struct {
+	Part    string
+	Message string
+}
+
+func (e ErrBadSelectorSyntax) Error() string {
+	return fmt.Sprintf("bad syntax: %s, around %s", e.Message, e.Part)
+}
+
+func (e ErrBadSelectorSyntax) Is(other error) bool {
+	o, ok := other.(*ErrBadSelectorSyntax)
+	if !ok {
+		return false
+	}
+	if o.Part != "" && o.Part != e.Part {
+		return false
+	}
+	if o.Message != "" && o.Message != e.Message {
+		return false
+	}
+	return true
+}
+
 type Selector struct {
 	funcName string
 	funcArgs []string
@@ -119,7 +142,10 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 				hasOpenedFunc = true
 				funcName = funcNameBuilder.String()
 				if funcName == "" {
-					return nil, fmt.Errorf("syntax error around \"%s\"", nextPart)
+					return nil, &ErrBadSelectorSyntax{
+						Part:    nextPart,
+						Message: "function name required before open bracket",
+					}
 				}
 			} else {
 				argBuilder.WriteRune(nextRune)
@@ -134,6 +160,11 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 				arg := argBuilder.String()
 				if arg != "" {
 					args = append(args, argBuilder.String())
+				}
+			} else if bracketDepth < 1 {
+				return nil, &ErrBadSelectorSyntax{
+					Part:    nextPart,
+					Message: "too many closing brackets",
 				}
 			}
 			bracketDepth--
@@ -154,7 +185,10 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 
 		case hasClosedFunc:
 			// Do not allow anything after the closeFunc
-			return nil, fmt.Errorf("syntax error around \"%s\"", nextPart)
+			return nil, &ErrBadSelectorSyntax{
+				Part:    nextPart,
+				Message: "selector function must end after closing bracket",
+			}
 
 		default:
 			funcNameBuilder.WriteRune(nextRune)

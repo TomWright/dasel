@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"errors"
 	"reflect"
 	"testing"
 )
@@ -77,5 +78,21 @@ func TestStandardSelectorResolver_Next_Nested(t *testing.T) {
 
 	if !reflect.DeepEqual(exp, got) {
 		t.Errorf("exp: %v, got: %v", exp, got)
+	}
+}
+
+func TestStandardSelectorResolver_Next_ExtraClosingBracket(t *testing.T) {
+	r := NewSelectorResolver("all().filter(not(equal(x,true))))", nil)
+
+	expErr := &ErrBadSelectorSyntax{
+		Part:    "filter(not(equal(x,true))))",
+		Message: "too many closing brackets",
+	}
+
+	_, err := collectAll(r)
+
+	if !errors.Is(err, expErr) {
+		t.Errorf("expected error: %v, got %v", expErr, err)
+		return
 	}
 }
