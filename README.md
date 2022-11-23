@@ -16,6 +16,12 @@ Dasel (short for data-selector) allows you to query and modify data structures u
 
 Comparable to [jq](https://github.com/stedolan/jq) / [yq](https://github.com/kislyuk/yq), but supports JSON, YAML, TOML, XML and CSV with zero runtime dependencies.
 
+## V2 Pre-release
+
+Dasel V2 is now in it's pre-release stage.
+
+Please check out the docs at [https://daseldocs.tomwright.me](https://daseldocs.tomwright.me), or the code on branch `v2-wip` for more information.
+
 ## One tool to rule them all
 
 Say good bye to learning new tools just to work with a different data format.
