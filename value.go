@@ -164,7 +164,6 @@ func (v Value) MapIndex(key Value) Value {
 		},
 	}
 	return index.
-		WithMetadata("type", unpackReflectValue(v.Unpack().MapIndex(key.Value)).Kind().String()).
 		WithMetadata("key", key.Interface()).
 		WithMetadata("parent", v)
 }
@@ -190,7 +189,6 @@ func (v Value) FieldByName(name string) Value {
 			field.Set(reflect.New(field.Type()))
 		},
 	}.
-		WithMetadata("type", unpackReflectValue(v.Unpack().FieldByName(name)).Kind().String()).
 		WithMetadata("key", name).
 		WithMetadata("parent", v)
 }
@@ -228,7 +226,6 @@ func (v Value) Index(i int) Value {
 			v.Unpack().Set(updatedSlice)
 		},
 	}.
-		WithMetadata("type", unpackReflectValue(v.Unpack().Index(i)).Kind().String()).
 		WithMetadata("key", i).
 		WithMetadata("parent", v)
 }

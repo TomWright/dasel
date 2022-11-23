@@ -133,4 +133,28 @@ Tom,Wright,Apple,iPhone 12`)),
 		nil,
 		nil,
 	))
+
+	t.Run("Discussion242", runTest(
+		[]string{"-r", "json", "--pretty=false", "-w", "plain", "all().filter(equal(type(),array)).key()"},
+		[]byte(`{
+  "array1": [
+    {
+      "a": "aaa",
+      "b": "bbb",
+      "c": "ccc"
+    }
+  ],
+  "array2": [
+    {
+      "a": "aaa",
+      "b": "bbb",
+      "c": "ccc"
+    }
+  ]
+}`),
+		newline([]byte(`array1
+array2`)),
+		nil,
+		nil,
+	))
 }

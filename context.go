@@ -65,7 +65,6 @@ func newContextWithFunctions(value interface{}, selector string, functions *Func
 	if v.Metadata("key") == nil {
 		v.WithMetadata("key", "root")
 	}
-	v.WithMetadata("type", v.Unpack().Type().String())
 
 	return &Context{
 		selector: selector,
