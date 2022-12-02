@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v2.0.0] - 2022-12-02
+
+See [documentation](https://daseldocs.tomwright.me) for all changes.
+
+- Selector syntax 
+
 ## [v1.27.3] - 2022-10-18
 
 ### Fixed
@@ -502,7 +508,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v1.27.3...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.0.0...HEAD
+[v2.0.0]: https://github.com/TomWright/dasel/compare/v1.27.3...v2.0.0
 [v1.27.3]: https://github.com/TomWright/dasel/compare/v1.27.2...v1.27.3
 [v1.27.2]: https://github.com/TomWright/dasel/compare/v1.27.1...v1.27.2
 [v1.27.1]: https://github.com/TomWright/dasel/compare/v1.27.0...v1.27.1
