@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"testing"
@@ -21,8 +22,8 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicSingleDocument{Value: jsonMap}
-		if !reflect.DeepEqual(exp, got) {
+		exp := jsonMap
+		if !reflect.DeepEqual(exp, got.Interface()) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
@@ -32,10 +33,8 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicMultiDocument{
-			Values: jsonMapMulti,
-		}
-		if !reflect.DeepEqual(exp, got) {
+		exp := jsonMapMulti
+		if !reflect.DeepEqual(exp, got.Interface()) {
 			t.Errorf("expected %v, got %v", jsonMap, got)
 		}
 	})
@@ -45,10 +44,8 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicMultiDocument{
-			Values: jsonMapMultiMixed,
-		}
-		if !reflect.DeepEqual(exp, got) {
+		exp := jsonMapMultiMixed
+		if !reflect.DeepEqual(exp, got.Interface()) {
 			t.Errorf("expected %v, got %v", jsonMap, got)
 		}
 	})
@@ -58,7 +55,7 @@ func TestJSONParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(nil, got) {
+		if !reflect.DeepEqual(dasel.Value{}, got) {
 			t.Errorf("expected %v, got %v", nil, got)
 		}
 	})
@@ -74,7 +71,7 @@ func TestJSONParser_FromBytes_Error(t *testing.T) {
 
 func TestJSONParser_ToBytes(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(jsonMap)
+		got, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMap))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -85,7 +82,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidSingle", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap})
+		got, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMap).WithMetadata("isSingleDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -96,7 +93,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidSingleNoPrettyPrint", func(t *testing.T) {
-		res, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.PrettyPrintOption(false))
+		res, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMap).WithMetadata("isSingleDocument", true), storage.PrettyPrintOption(false))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -110,7 +107,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidSingleColourise", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.ColouriseOption(true))
+		got, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMap).WithMetadata("isSingleDocument", true), storage.ColouriseOption(true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -126,7 +123,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidSingleCustomIndent", func(t *testing.T) {
-		res, err := (&storage.JSONParser{}).ToBytes(&storage.BasicSingleDocument{Value: jsonMap}, storage.IndentOption("   "))
+		res, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMap).WithMetadata("isSingleDocument", true), storage.IndentOption("   "))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -142,7 +139,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidMulti", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicMultiDocument{Values: jsonMapMulti})
+		got, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMapMulti).WithMetadata("isMultiDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -153,7 +150,7 @@ func TestJSONParser_ToBytes(t *testing.T) {
 	})
 
 	t.Run("ValidMultiMixed", func(t *testing.T) {
-		got, err := (&storage.JSONParser{}).ToBytes(&storage.BasicMultiDocument{Values: jsonMapMultiMixed})
+		got, err := (&storage.JSONParser{}).ToBytes(dasel.ValueOf(jsonMapMultiMixed).WithMetadata("isMultiDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

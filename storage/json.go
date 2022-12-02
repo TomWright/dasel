@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/tomwright/dasel"
 	"io"
 )
 
@@ -17,7 +18,7 @@ type JSONParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *JSONParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *JSONParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	res := make([]interface{}, 0)
 
 	decoder := json.NewDecoder(bytes.NewBuffer(byteData))
@@ -29,22 +30,25 @@ docLoop:
 			if err == io.EOF {
 				break docLoop
 			}
-			return nil, fmt.Errorf("could not unmarshal data: %w", err)
+			return dasel.Value{}, fmt.Errorf("could not unmarshal data: %w", err)
 		}
 		res = append(res, docData)
 	}
+
 	switch len(res) {
 	case 0:
-		return nil, nil
+		return dasel.Value{}, nil
 	case 1:
-		return &BasicSingleDocument{Value: res[0]}, nil
+		return dasel.ValueOf(res[0]).
+			WithMetadata("isSingleDocument", true), nil
 	default:
-		return &BasicMultiDocument{Values: res}, nil
+		return dasel.ValueOf(res).
+			WithMetadata("isMultiDocument", true), nil
 	}
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
+func (p *JSONParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	encoder := json.NewEncoder(buffer)
 
@@ -78,19 +82,19 @@ func (p *JSONParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 	}
 	encoder.SetIndent("", indent)
 
-	switch v := value.(type) {
-	case SingleDocument:
-		if err := encoder.Encode(v.Document()); err != nil {
+	switch {
+	case value.Metadata("isSingleDocument") == true:
+		if err := encoder.Encode(value.Interface()); err != nil {
 			return nil, fmt.Errorf("could not encode single document: %w", err)
 		}
-	case MultiDocument:
-		for index, d := range v.Documents() {
-			if err := encoder.Encode(d); err != nil {
-				return nil, fmt.Errorf("could not encode multi document [%d]: %w", index, err)
+	case value.Metadata("isMultiDocument") == true:
+		for i := 0; i < value.Len(); i++ {
+			if err := encoder.Encode(value.Index(i).Interface()); err != nil {
+				return nil, fmt.Errorf("could not encode multi document [%d]: %w", i, err)
 			}
 		}
 	default:
-		if err := encoder.Encode(v); err != nil {
+		if err := encoder.Encode(value.Interface()); err != nil {
 			return nil, fmt.Errorf("could not encode default document type: %w", err)
 		}
 	}

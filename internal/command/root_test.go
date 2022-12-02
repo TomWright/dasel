@@ -1,142 +1,58 @@
-package command_test
+package command
 
 import (
 	"bytes"
-	"github.com/tomwright/dasel/internal/command"
-	"os"
+	"errors"
 	"reflect"
-	"strings"
 	"testing"
 )
 
-func TestChangeDefaultCommand(t *testing.T) {
-	cachedArgs := os.Args
-	defer func() {
-		os.Args = cachedArgs
-	}()
+// Runs the dasel root command.
+// Returns stdout, stderr and error.
+func runDasel(args []string, in []byte) ([]byte, []byte, error) {
+	stdOut := bytes.NewBuffer([]byte{})
+	stdErr := bytes.NewBuffer([]byte{})
 
-	testArgs := func(in []string, exp []string, blacklistedArgs ...string) func(t *testing.T) {
-		return func(t *testing.T) {
-			os.Args = in
+	cmd := NewRootCMD()
+	cmd.SetArgs(args)
+	cmd.SetOut(stdOut)
+	cmd.SetErr(stdErr)
 
-			cmd := command.NewRootCMD()
-			command.ChangeDefaultCommand(cmd, "select", blacklistedArgs...)
-
-			got := os.Args
-			if !reflect.DeepEqual(exp, got) {
-				t.Errorf("expected args %v, got %v", exp, got)
-			}
-		}
+	if in != nil {
+		cmd.SetIn(bytes.NewReader(in))
 	}
 
-	t.Run("ChangeToSelect", testArgs(
-		[]string{"dasel", "-p", "json", ".name"},
-		[]string{"dasel", "select", "-p", "json", ".name"},
-	))
-
-	t.Run("AlreadySelect", testArgs(
-		[]string{"dasel", "select", "-p", "json", ".name"},
-		[]string{"dasel", "select", "-p", "json", ".name"},
-	))
-
-	t.Run("AlreadyPut", testArgs(
-		[]string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"},
-		[]string{"dasel", "put", "-p", "json", "-t", "string", "name=Tom"},
-	))
-
-	t.Run("IgnoreBlacklisted", testArgs(
-		[]string{"dasel", "-v"},
-		[]string{"dasel", "-v"},
-		"-v",
-	))
-
-	t.Run("IgnoreBlacklisted", testArgs(
-		[]string{"dasel", "select", "-v"},
-		[]string{"dasel", "select", "-v"},
-		"-v",
-	))
+	err := cmd.Execute()
+	return stdOut.Bytes(), stdErr.Bytes(), err
 }
 
-func expectErr(args []string, expErr string) func(t *testing.T) {
+func runTest(args []string, in []byte, expStdOut []byte, expStdErr []byte, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
-		cmd := command.NewRootCMD()
-		outputBuffer := bytes.NewBuffer([]byte{})
-
-		cmd.SetOut(outputBuffer)
-		cmd.SetArgs(args)
-
-		err := cmd.Execute()
-
-		if err == nil || !strings.Contains(err.Error(), expErr) {
-			t.Errorf("unexpected error: %v", err)
-			return
+		if expStdOut == nil {
+			expStdOut = []byte{}
 		}
-	}
-}
-
-func expectErrFromInput(in string, args []string, expErr string) func(t *testing.T) {
-	return func(t *testing.T) {
-		cmd := command.NewRootCMD()
-		outputBuffer := bytes.NewBuffer([]byte{})
-
-		cmd.SetIn(bytes.NewReader([]byte(in)))
-		cmd.SetOut(outputBuffer)
-		cmd.SetArgs(args)
-
-		err := cmd.Execute()
-
-		if err == nil || !strings.Contains(err.Error(), expErr) {
-			t.Errorf("unexpected error: %v: %s", err, outputBuffer.String())
-			return
+		if expStdErr == nil {
+			expStdErr = []byte{}
 		}
-	}
-}
 
-func expectOutput(in string, args []string, exp string) func(t *testing.T) {
-	return func(t *testing.T) {
-		cmd := command.NewRootCMD()
-		outputBuffer := bytes.NewBuffer([]byte{})
-
-		cmd.SetIn(bytes.NewReader([]byte(in)))
-		cmd.SetOut(outputBuffer)
-		cmd.SetArgs(args)
-
-		err := cmd.Execute()
-
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
+		gotStdOut, gotStdErr, gotErr := runDasel(args, in)
+		if expErr != gotErr && !errors.Is(expErr, gotErr) {
+			t.Errorf("expected error %v, got %v", expErr, gotErr)
 			return
 		}
 
-		got := outputBuffer.String()
-		if exp != got {
-			t.Errorf("expected %s, got %s", exp, got)
+		if !reflect.DeepEqual(expStdErr, gotStdErr) {
+			t.Errorf("expected stderr %s, got %s", string(expStdErr), string(gotStdErr))
+		}
+
+		if !reflect.DeepEqual(expStdOut, gotStdOut) {
+			t.Errorf("expected stdout %s, got %s", string(expStdOut), string(gotStdOut))
 		}
 	}
 }
 
-func expectOutputAndErr(args []string, expErr string, expOutput string) func(t *testing.T) {
-	return func(t *testing.T) {
-		cmd := command.NewRootCMD()
-		outputBuffer := bytes.NewBuffer([]byte{})
+var newlineBytes = []byte("\n")
 
-		cmd.SetOut(outputBuffer)
-		cmd.SetArgs(args)
-
-		err := cmd.Execute()
-
-		gotErr := ""
-		if err != nil {
-			gotErr = err.Error()
-		}
-
-		if expErr != gotErr {
-			t.Errorf("expected err %s, got %s", expErr, gotErr)
-		}
-
-		gotOutput := outputBuffer.String()
-		if expOutput != gotOutput {
-			t.Errorf("expected:\n%s\ngot:\n%s", expOutput, gotOutput)
-		}
-	}
+func newline(input []byte) []byte {
+	return append(input, newlineBytes...)
 }

@@ -7,6 +7,7 @@ function run_file() {
 
   name=""
   key=""
+  daselV2Cmd=""
   daselCmd=""
   jqCmd=""
   yqCmd=""
@@ -19,7 +20,7 @@ function run_file() {
       imagePath="benchmark/diagrams/${key}.jpg"
       readmeImagePath="diagrams/${key}.jpg"
 
-      hyperfine --warmup 10 --runs 100 --export-json="${jsonFile}" --export-markdown="${mdOutputFile}" "${daselCmd}" "${jqCmd}" "${yqCmd}"
+      hyperfine --warmup 10 --runs 100 --export-json="${jsonFile}" --export-markdown="${mdOutputFile}" "${daselV2Cmd}" "${daselCmd}" "${jqCmd}" "${yqCmd}"
       python benchmark/plot_barchart.py "${jsonFile}" --title "${name}" --out "${imagePath}"
 
       echo "\n### ${name}\n" >> "${outputFile}"
@@ -38,11 +39,13 @@ function run_file() {
             ;;
         2)  key=$line
             ;;
-        3)  daselCmd=$line
+        3)  daselV2Cmd=$line
             ;;
-        4) jqCmd=$line
+        4)  daselCmd=$line
+            ;;
+        5) jqCmd=$line
            ;;
-        5) yqCmd=$line
+        6) yqCmd=$line
            ;;
       esac
     fi

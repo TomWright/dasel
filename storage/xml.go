@@ -3,6 +3,7 @@ package storage
 import (
 	"bytes"
 	"fmt"
+	"github.com/tomwright/dasel"
 	"strings"
 
 	"github.com/clbanning/mxj/v2"
@@ -25,24 +26,22 @@ type XMLParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *XMLParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *XMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	if byteData == nil {
-		return nil, fmt.Errorf("cannot parse nil xml data")
+		return dasel.Value{}, fmt.Errorf("cannot parse nil xml data")
 	}
 	if len(byteData) == 0 || strings.TrimSpace(string(byteData)) == "" {
-		return nil, nil
+		return dasel.Value{}, nil
 	}
 	data, err := mxj.NewMapXml(byteData)
 	if err != nil {
-		return data, fmt.Errorf("could not unmarshal data: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not unmarshal data: %w", err)
 	}
-	return &BasicSingleDocument{
-		Value: map[string]interface{}(data),
-	}, nil
+	return dasel.ValueOf(map[string]interface{}(data)).WithMetadata("isSingleDocument", true), nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
+func (p *XMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	prettyPrint := true
@@ -92,19 +91,19 @@ func (p *XMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]by
 		return nil
 	}
 
-	switch d := value.(type) {
-	case SingleDocument:
-		if err := writeMap(d.Document()); err != nil {
+	switch {
+	case value.Metadata("isSingleDocument") == true:
+		if err := writeMap(value.Interface()); err != nil {
 			return nil, err
 		}
-	case MultiDocument:
-		for _, dd := range d.Documents() {
-			if err := writeMap(dd); err != nil {
+	case value.Metadata("isMultiDocument") == true:
+		for i := 0; i < value.Len(); i++ {
+			if err := writeMap(value.Index(i).Interface()); err != nil {
 				return nil, err
 			}
 		}
 	default:
-		if err := writeMap(d); err != nil {
+		if err := writeMap(value.Interface()); err != nil {
 			return nil, err
 		}
 	}

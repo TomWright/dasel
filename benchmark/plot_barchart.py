@@ -13,7 +13,7 @@ args = parser.parse_args()
 with open(args.file) as f:
     results = json.load(f)["results"]
 
-x = ["dasel", "jq", "yq"]
+x = ["daselv2", "dasel", "jq", "yq"]
 x_pos = [i for i, _ in enumerate(x)]
 
 # mean is in seconds. convert to ms.

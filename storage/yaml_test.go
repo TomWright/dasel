@@ -1,6 +1,7 @@
 package storage_test
 
 import (
+	"github.com/tomwright/dasel"
 	"github.com/tomwright/dasel/storage"
 	"reflect"
 	"strings"
@@ -40,8 +41,8 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicSingleDocument{Value: yamlMap}
-		if !reflect.DeepEqual(exp, got) {
+		exp := yamlMap
+		if !reflect.DeepEqual(exp, got.Interface()) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
@@ -51,9 +52,9 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := &storage.BasicMultiDocument{Values: yamlMapMulti}
+		exp := yamlMapMulti
 
-		if !reflect.DeepEqual(exp, got) {
+		if !reflect.DeepEqual(exp, got.Interface()) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})
@@ -70,7 +71,7 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		if !reflect.DeepEqual(nil, got) {
+		if !reflect.DeepEqual(dasel.Value{}, got) {
 			t.Errorf("expected %v, got %v", nil, got)
 		}
 	})
@@ -78,7 +79,7 @@ func TestYAMLParser_FromBytes(t *testing.T) {
 
 func TestYAMLParser_ToBytes(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(yamlMap)
+		got, err := (&storage.YAMLParser{}).ToBytes(dasel.ValueOf(yamlMap))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -88,7 +89,7 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidSingle", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: yamlMap})
+		got, err := (&storage.YAMLParser{}).ToBytes(dasel.ValueOf(yamlMap).WithMetadata("isSingleDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -98,7 +99,7 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidSingleColourise", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicSingleDocument{Value: yamlMap}, storage.ColouriseOption(true))
+		got, err := (&storage.YAMLParser{}).ToBytes(dasel.ValueOf(yamlMap).WithMetadata("isSingleDocument", true), storage.ColouriseOption(true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
@@ -110,7 +111,7 @@ func TestYAMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("ValidMulti", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).ToBytes(&storage.BasicMultiDocument{Values: yamlMapMulti})
+		got, err := (&storage.YAMLParser{}).ToBytes(dasel.ValueOf(yamlMapMulti).WithMetadata("isMultiDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

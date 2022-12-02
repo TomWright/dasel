@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pelletier/go-toml"
-	"time"
+	"github.com/tomwright/dasel"
 )
 
 func init() {
@@ -17,18 +17,16 @@ type TOMLParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *TOMLParser) FromBytes(byteData []byte) (interface{}, error) {
+func (p *TOMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	var data interface{}
 	if err := toml.Unmarshal(byteData, &data); err != nil {
-		return data, fmt.Errorf("could not unmarshal data: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not unmarshal data: %w", err)
 	}
-	return &BasicSingleDocument{
-		Value: data,
-	}, nil
+	return dasel.ValueOf(data).WithMetadata("isSingleDocument", true), nil
 }
 
 // ToBytes returns a slice of bytes that represents the given value.
-func (p *TOMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error) {
+func (p *TOMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	enc := toml.NewEncoder(buf)
@@ -48,31 +46,30 @@ func (p *TOMLParser) ToBytes(value interface{}, options ...ReadWriteOption) ([]b
 		}
 	}
 
-	switch d := value.(type) {
-	case SingleDocument:
-		if err := enc.Encode(d.Document()); err != nil {
+	switch {
+	case value.Metadata("isSingleDocument") == true:
+		if err := enc.Encode(value.Interface()); err != nil {
 			if err.Error() == "Only a struct or map can be marshaled to TOML" {
-				buf.Write([]byte(fmt.Sprintf("%v\n", d.Document())))
+				buf.Write([]byte(fmt.Sprintf("%v\n", value.Interface())))
 			} else {
 				return nil, err
 			}
 		}
-	case MultiDocument:
-		for _, dd := range d.Documents() {
-			if err := enc.Encode(dd); err != nil {
+	case value.Metadata("isMultiDocument") == true:
+		for i := 0; i < value.Len(); i++ {
+			field := value.Index(i)
+			if err := enc.Encode(field.Interface()); err != nil {
 				if err.Error() == "Only a struct or map can be marshaled to TOML" {
-					buf.Write([]byte(fmt.Sprintf("%v\n", dd)))
+					buf.Write([]byte(fmt.Sprintf("%v\n", field.Interface())))
 				} else {
 					return nil, err
 				}
 			}
 		}
-	case time.Time:
-		buf.Write([]byte(fmt.Sprintf("%s\n", d.Format(time.RFC3339))))
 	default:
-		if err := enc.Encode(d); err != nil {
+		if err := enc.Encode(value.Interface()); err != nil {
 			if err.Error() == "Only a struct or map can be marshaled to TOML" {
-				buf.Write([]byte(fmt.Sprintf("%v\n", d)))
+				buf.Write([]byte(fmt.Sprintf("%v\n", value.Interface())))
 			} else {
 				return nil, err
 			}

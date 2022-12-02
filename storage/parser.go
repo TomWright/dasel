@@ -2,6 +2,7 @@ package storage
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel"
 	"io"
 	"os"
 	"path/filepath"
@@ -36,6 +37,11 @@ type UnknownParserErr struct {
 	Parser string
 }
 
+func (e UnknownParserErr) Is(other error) bool {
+	_, ok := other.(*UnknownParserErr)
+	return ok
+}
+
 // Error returns the error message.
 func (e UnknownParserErr) Error() string {
 	return fmt.Sprintf("unknown parser: %s", e.Parser)
@@ -44,13 +50,13 @@ func (e UnknownParserErr) Error() string {
 // ReadParser can be used to convert bytes to data.
 type ReadParser interface {
 	// FromBytes returns some data that is represented by the given bytes.
-	FromBytes(byteData []byte) (interface{}, error)
+	FromBytes(byteData []byte) (dasel.Value, error)
 }
 
 // WriteParser can be used to convert data to bytes.
 type WriteParser interface {
 	// ToBytes returns a slice of bytes that represents the given value.
-	ToBytes(value interface{}, options ...ReadWriteOption) ([]byte, error)
+	ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error)
 }
 
 // Parser can be used to load and save files from/to disk.
@@ -98,31 +104,25 @@ func NewWriteParserFromString(parser string) (WriteParser, error) {
 }
 
 // LoadFromFile loads data from the given file.
-func LoadFromFile(filename string, p ReadParser) (interface{}, error) {
+func LoadFromFile(filename string, p ReadParser) (dasel.Value, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		return nil, fmt.Errorf("could not open file: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not open file: %w", err)
 	}
 	return Load(p, f)
 }
 
 // Load loads data from the given io.Reader.
-func Load(p ReadParser, reader io.Reader) (interface{}, error) {
+func Load(p ReadParser, reader io.Reader) (dasel.Value, error) {
 	byteData, err := io.ReadAll(reader)
 	if err != nil {
-		return nil, fmt.Errorf("could not read data: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not read data: %w", err)
 	}
 	return p.FromBytes(byteData)
 }
 
 // Write writes the value to the given io.Writer.
-func Write(p WriteParser, value interface{}, originalValue interface{}, writer io.Writer, options ...ReadWriteOption) error {
-	switch typed := originalValue.(type) {
-	case OriginalRequired:
-		if typed.OriginalRequired() {
-			value = originalValue
-		}
-	}
+func Write(p WriteParser, value dasel.Value, writer io.Writer, options ...ReadWriteOption) error {
 	byteData, err := p.ToBytes(value, options...)
 	if err != nil {
 		return fmt.Errorf("could not get byte data for file: %w", err)
@@ -131,68 +131,4 @@ func Write(p WriteParser, value interface{}, originalValue interface{}, writer i
 		return fmt.Errorf("could not write data: %w", err)
 	}
 	return nil
-}
-
-// OriginalRequired can be used in conjunction with RealValue to allow parsers to be more intelligent
-// with the data they read/write.
-type OriginalRequired interface {
-	// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
-	OriginalRequired() bool
-}
-
-// RealValue can be used in conjunction with OriginalRequired to allow parsers to be more intelligent
-// with the data they read/write.
-type RealValue interface {
-	// RealValue returns the real value that dasel should use when processing data.
-	RealValue() interface{}
-}
-
-type originalRequired struct {
-}
-
-// OriginalRequired tells dasel if the parser requires the original value when converting to bytes.
-func (d originalRequired) OriginalRequired() bool {
-	return true
-}
-
-// SingleDocument is a parser result that contains a single document.
-type SingleDocument interface {
-	Document() interface{}
-}
-
-// MultiDocument is a parser result that contains multiple documents.
-type MultiDocument interface {
-	Documents() []interface{}
-}
-
-// BasicSingleDocument represents a single document file.
-type BasicSingleDocument struct {
-	originalRequired
-	Value interface{}
-}
-
-// RealValue returns the real value that dasel should use when processing data.
-func (d *BasicSingleDocument) RealValue() interface{} {
-	return d.Value
-}
-
-// Document returns the document that should be written to output.
-func (d *BasicSingleDocument) Document() interface{} {
-	return d.Value
-}
-
-// BasicMultiDocument represents a multi-document file.
-type BasicMultiDocument struct {
-	originalRequired
-	Values []interface{}
-}
-
-// RealValue returns the real value that dasel should use when processing data.
-func (d *BasicMultiDocument) RealValue() interface{} {
-	return d.Values
-}
-
-// Documents returns the documents that should be written to output.
-func (d *BasicMultiDocument) Documents() []interface{} {
-	return d.Values
 }
