@@ -14,6 +14,22 @@ func TestIndexFunc(t *testing.T) {
 		}),
 	)
 
+	t.Run("NotFound", selectTestErr(
+		"[0]",
+		[]interface{}{},
+		&ErrIndexNotFound{
+			Index: 0,
+		}),
+	)
+
+	t.Run("NotFoundOnInvalidType", selectTestErr(
+		"[0]",
+		map[string]interface{}{},
+		&ErrIndexNotFound{
+			Index: 0,
+		}),
+	)
+
 	original := map[string]interface{}{
 		"name": map[string]interface{}{
 			"first": "Tom",

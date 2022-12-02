@@ -25,7 +25,7 @@ var FirstFunc = BasicFunction{
 				value := val.Index(0)
 				res = append(res, value)
 			default:
-				return nil, fmt.Errorf("cannot use first selector on non slice/array types")
+				return nil, fmt.Errorf("cannot use first selector on non slice/array types: %w", &ErrIndexNotFound{Index: 0})
 			}
 		}
 

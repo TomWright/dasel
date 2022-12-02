@@ -16,8 +16,14 @@ func (e ErrIndexNotFound) Error() string {
 }
 
 func (e ErrIndexNotFound) Is(other error) bool {
-	_, ok := other.(*ErrIndexNotFound)
-	return ok
+	o, ok := other.(*ErrIndexNotFound)
+	if !ok {
+		return false
+	}
+	if o.Index >= 0 && o.Index != e.Index {
+		return false
+	}
+	return true
 }
 
 var IndexFunc = BasicFunction{
@@ -57,7 +63,7 @@ var IndexFunc = BasicFunction{
 					value := val.Index(index)
 					res = append(res, value)
 				default:
-					return nil, fmt.Errorf("cannot use index selector on non slice/array types")
+					return nil, fmt.Errorf("cannot use index selector on non slice/array types: %w", &ErrIndexNotFound{Index: index})
 				}
 			}
 		}

@@ -26,7 +26,7 @@ var LastFunc = BasicFunction{
 				value := val.Index(index)
 				res = append(res, value)
 			default:
-				return nil, fmt.Errorf("cannot use last selector on non slice/array types")
+				return nil, fmt.Errorf("cannot use last selector on non slice/array types: %w", &ErrIndexNotFound{Index: 0})
 			}
 		}
 

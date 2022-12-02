@@ -14,6 +14,22 @@ func TestPropertyFunc(t *testing.T) {
 		}),
 	)
 
+	t.Run("NotFound", selectTestErr(
+		"asd",
+		map[string]interface{}{"x": "y"},
+		&ErrPropertyNotFound{
+			Property: "asd",
+		}),
+	)
+
+	t.Run("NotFoundOnString", selectTestErr(
+		"x.asd",
+		map[string]interface{}{"x": "y"},
+		&ErrPropertyNotFound{
+			Property: "asd",
+		}),
+	)
+
 	original := map[string]interface{}{
 		"name": map[string]interface{}{
 			"first": "Tom",

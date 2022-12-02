@@ -15,8 +15,14 @@ func (e ErrPropertyNotFound) Error() string {
 }
 
 func (e ErrPropertyNotFound) Is(other error) bool {
-	_, ok := other.(*ErrPropertyNotFound)
-	return ok
+	o, ok := other.(*ErrPropertyNotFound)
+	if !ok {
+		return false
+	}
+	if o.Property != "" && o.Property != e.Property {
+		return false
+	}
+	return true
 }
 
 var PropertyFunc = BasicFunction{
@@ -64,7 +70,7 @@ var PropertyFunc = BasicFunction{
 					}
 					res = append(res, value)
 				default:
-					return nil, fmt.Errorf("cannot use property selector on non map/struct types: %s", val.Kind().String())
+					return nil, fmt.Errorf("cannot use property selector on non map/struct types: %s: %w", val.Kind().String(), &ErrPropertyNotFound{Property: property})
 				}
 			}
 		}
