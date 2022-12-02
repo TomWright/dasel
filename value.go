@@ -5,8 +5,6 @@ import (
 	"reflect"
 )
 
-var deletePlaceholder = reflect.ValueOf("__dasel.delete_placeholder__")
-
 // Value is a wrapper around reflect.Value that adds some handy helper funcs.
 type Value struct {
 	reflect.Value
@@ -82,11 +80,6 @@ func isEmptyReflectValue(v reflect.Value) bool {
 		return true
 	}
 	return v.Kind() == reflect.String && v.Interface() == UninitialisedPlaceholder
-}
-
-// IsDeletePlaceholder returns true is v represents a delete placeholder.
-func (v Value) IsDeletePlaceholder() bool {
-	return unpackReflectValue(v.Value) == deletePlaceholder
 }
 
 // Kind returns the underlying type of v.

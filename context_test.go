@@ -62,3 +62,45 @@ func selectTestErr(selector string, original interface{}, expErr error) func(t *
 		}
 	}
 }
+
+func TestContext_Step(t *testing.T) {
+	step1 := &Step{index: 0}
+	step2 := &Step{index: 1}
+	c := &Context{
+		steps: []*Step{
+			step1, step2,
+		},
+	}
+	expSteps := map[int]*Step{
+		-1: nil,
+		0:  step1,
+		1:  step2,
+		2:  nil,
+	}
+
+	for index, exp := range expSteps {
+		got := c.Step(index)
+		if exp != got {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	}
+}
+
+func TestContext_WithMetadata(t *testing.T) {
+	c := (&Context{}).
+		WithMetadata("x", 1).
+		WithMetadata("y", 2)
+
+	expMetadata := map[string]interface{}{
+		"x": 1,
+		"y": 2,
+		"z": nil,
+	}
+
+	for index, exp := range expMetadata {
+		got := c.Metadata(index)
+		if exp != got {
+			t.Errorf("expected %v, got %v", exp, got)
+		}
+	}
+}
