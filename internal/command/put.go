@@ -10,7 +10,7 @@ import (
 
 func putCommand() *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "put -t <string,int,bool,json,yaml,toml,xml,csv> -v <value> -f <file> -r <json,yaml,toml,xml,csv> <selector>",
+		Use:   "put -t <string,int,float,bool,json,yaml,toml,xml,csv> -v <value> -f <file> -r <json,yaml,toml,xml,csv> <selector>",
 		Short: "Write properties to the given file.",
 		RunE:  putRunE,
 		Args:  cobra.MaximumNArgs(1),
@@ -105,6 +105,12 @@ func runPutCommand(opts *putOptions, cmd *cobra.Command) error {
 			return fmt.Errorf("invalid int value: %w", err)
 		}
 		toSet = intValue
+	case "float":
+		floatValue, err := strconv.ParseFloat(opts.Value, 64)
+		if err != nil {
+			return fmt.Errorf("invalid float value: %w", err)
+		}
+		toSet = floatValue
 	case "bool":
 		toSet = dasel.ValueOf(dasel.IsTruthy(opts.Value))
 	default:

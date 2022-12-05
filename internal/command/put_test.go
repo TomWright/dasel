@@ -25,6 +25,24 @@ func TestPutCommand(t *testing.T) {
 				exp:   `123`,
 			},
 			{
+				name:  "float round number",
+				t:     "float",
+				value: "123",
+				exp:   `123`,
+			},
+			{
+				name:  "float 1 decimal place",
+				t:     "float",
+				value: "123.4",
+				exp:   `123.4`,
+			},
+			{
+				name:  "float 5 decimal place",
+				t:     "float",
+				value: "123.45678",
+				exp:   `123.45678`,
+			},
+			{
 				name:  "true bool",
 				t:     "bool",
 				value: "true",
