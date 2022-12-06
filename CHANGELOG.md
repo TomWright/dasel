@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - `float` type in `put` command.
 
+### Fixed
+
+- Output values are now correctly de-referenced. This fixed issues with encoded values not appearing correctly.
+
 ## [v2.0.0] - 2022-12-02
 
 See [documentation](https://daseldocs.tomwright.me) for all changes.

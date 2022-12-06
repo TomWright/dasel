@@ -97,10 +97,26 @@ func newDeleteContext(value interface{}, selector string) *Context {
 	return newContextWithFunctions(value, selector, standardFunctions())
 }
 
+func derefValue(v Value) Value {
+	return ValueOf(deref(v.Value))
+}
+
+func derefValues(values Values) Values {
+	results := make(Values, len(values))
+	for k, v := range values {
+		results[k] = derefValue(v)
+	}
+	return results
+}
+
 // Select resolves the given selector and returns the resulting values.
 func Select(root interface{}, selector string) (Values, error) {
 	c := newSelectContext(root, selector)
-	return c.Run()
+	values, err := c.Run()
+	if err != nil {
+		return nil, err
+	}
+	return derefValues(values), nil
 }
 
 // Put resolves the given selector and writes the given value in their place.
@@ -166,7 +182,7 @@ func (c *Context) CreateWhenMissing() bool {
 
 // Data returns the root element of the context.
 func (c *Context) Data() Value {
-	return c.data
+	return derefValue(c.data)
 }
 
 // Run calls Next repeatedly until no more steps are left.

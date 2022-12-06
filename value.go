@@ -338,6 +338,43 @@ func makeAddressable(value reflect.Value) reflect.Value {
 	}
 }
 
+func derefSlice(value reflect.Value) reflect.Value {
+	unpacked := unpackReflectValue(value)
+
+	res := reflect.MakeSlice(unpacked.Type(), unpacked.Len(), unpacked.Len())
+
+	for i := 0; i < unpacked.Len(); i++ {
+		res.Index(i).Set(deref(unpacked.Index(i)))
+	}
+
+	return res
+}
+
+func derefMap(value reflect.Value) reflect.Value {
+	unpacked := unpackReflectValue(value)
+
+	res := reflect.MakeMap(unpacked.Type())
+
+	for _, key := range unpacked.MapKeys() {
+		res.SetMapIndex(key, deref(unpacked.MapIndex(key)))
+	}
+
+	return res
+}
+
+func deref(value reflect.Value) reflect.Value {
+	unpacked := unpackReflectValue(value)
+
+	switch unpacked.Kind() {
+	case reflect.Slice:
+		return derefSlice(value)
+	case reflect.Map:
+		return derefMap(value)
+	default:
+		return unpackReflectValue(value)
+	}
+}
+
 // Values represents a list of Value's.
 type Values []Value
 
