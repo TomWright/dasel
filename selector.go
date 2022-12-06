@@ -81,8 +81,11 @@ func (r *standardSelectorResolver) nextPart() (string, bool) {
 		if escaped {
 			b.WriteRune(readRune)
 			escaped = false
+			continue
 		} else if readRune == r.escapeChar {
+			b.WriteRune(readRune)
 			escaped = true
+			continue
 		} else if readRune == r.openFunc {
 			bracketDepth++
 		} else if readRune == r.closeFunc {
@@ -124,6 +127,7 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 	funcName := ""
 	args := make([]string, 0)
 
+	escaped := false
 	for {
 		nextRune, _, err := nextPartReader.ReadRune()
 		if err == io.EOF {
@@ -137,7 +141,11 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 		}
 
 		switch {
-		case nextRune == r.openFunc:
+		case nextRune == r.escapeChar && !escaped:
+			escaped = true
+			continue
+
+		case nextRune == r.openFunc && !escaped:
 			if !hasOpenedFunc {
 				hasOpenedFunc = true
 				funcName = funcNameBuilder.String()
@@ -152,7 +160,7 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 			}
 			bracketDepth++
 
-		case nextRune == r.closeFunc:
+		case nextRune == r.closeFunc && !escaped:
 			if bracketDepth > 1 {
 				argBuilder.WriteRune(nextRune)
 			} else if bracketDepth == 1 {
@@ -169,7 +177,7 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 			}
 			bracketDepth--
 
-		case hasOpenedFunc && nextRune == r.argSeparator:
+		case hasOpenedFunc && nextRune == r.argSeparator && !escaped:
 			if bracketDepth > 1 {
 				argBuilder.WriteRune(nextRune)
 			} else if bracketDepth == 1 {
@@ -181,6 +189,9 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 			}
 
 		case hasOpenedFunc:
+			if escaped {
+				escaped = false
+			}
 			argBuilder.WriteRune(nextRune)
 
 		case hasClosedFunc:
@@ -191,6 +202,9 @@ func (r *standardSelectorResolver) Next() (*Selector, error) {
 			}
 
 		default:
+			if escaped {
+				escaped = false
+			}
 			funcNameBuilder.WriteRune(nextRune)
 		}
 	}

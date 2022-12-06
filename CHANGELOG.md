@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Output values are now correctly de-referenced. This fixed issues with encoded values not appearing correctly.
+- Escape characters in selector strings now work as expected.
 
 ## [v2.0.0] - 2022-12-02
 

@@ -96,3 +96,61 @@ func TestStandardSelectorResolver_Next_ExtraClosingBracket(t *testing.T) {
 		return
 	}
 }
+
+func TestStandardSelectorResolver_Next_EscapedDot(t *testing.T) {
+	r := NewSelectorResolver("plugins.io\\.containerd\\.grpc\\.v1\\.cri.registry", nil)
+
+	got, err := collectAll(r)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	exp := []Selector{
+		{
+			funcName: "property",
+			funcArgs: []string{"plugins"},
+		},
+		{
+			funcName: "property",
+			funcArgs: []string{"io.containerd.grpc.v1.cri"},
+		},
+		{
+			funcName: "property",
+			funcArgs: []string{"registry"},
+		},
+	}
+
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("exp: %v, got: %v", exp, got)
+	}
+}
+
+func TestStandardSelectorResolver_Next_EscapedEverything(t *testing.T) {
+	r := NewSelectorResolver("a.b\\(\\.asdw\\\\\\].c(\\))", nil)
+
+	got, err := collectAll(r)
+	if err != nil {
+		t.Errorf("unexpected error: %v", err)
+		return
+	}
+
+	exp := []Selector{
+		{
+			funcName: "property",
+			funcArgs: []string{"a"},
+		},
+		{
+			funcName: "property",
+			funcArgs: []string{"b(.asdw\\]"},
+		},
+		{
+			funcName: "c",
+			funcArgs: []string{")"},
+		},
+	}
+
+	if !reflect.DeepEqual(exp, got) {
+		t.Errorf("exp: %v, got: %v", exp, got)
+	}
+}
