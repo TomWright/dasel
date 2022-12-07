@@ -128,7 +128,7 @@ func (o *writeOptions) writeValues(cmd *cobra.Command, readOptions *readOptions,
 		if o.writeToStdout() {
 			writer = cmd.OutOrStdout()
 		} else {
-			f, err := os.Open(o.FilePath)
+			f, err := os.Create(o.FilePath)
 			if err != nil {
 				return fmt.Errorf("could not open file: %s: %w", o.FilePath, err)
 			}

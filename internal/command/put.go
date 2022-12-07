@@ -76,6 +76,10 @@ func putRunE(cmd *cobra.Command, args []string) error {
 		opts.Selector = "."
 	}
 
+	if opts.Write.FilePath == "" {
+		opts.Write.FilePath = opts.Read.FilePath
+	}
+
 	return runPutCommand(opts, cmd)
 }
 

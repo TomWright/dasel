@@ -67,6 +67,10 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 		opts.Selector = "."
 	}
 
+	if opts.Write.FilePath == "" {
+		opts.Write.FilePath = opts.Read.FilePath
+	}
+
 	return runDeleteCommand(opts, cmd)
 }
 
