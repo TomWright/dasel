@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v2.0.2] - 2022-12-07
+
+### Fixed
+
+- Argument parsing issue that caused files to be written to the wrong place. See [discussion 268](https://github.com/TomWright/dasel/discussions/268).
+
 ## [v2.0.1] - 2022-12-07
 
 ### Added
@@ -519,7 +525,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.0.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.0.2...HEAD
+[v2.0.2]: https://github.com/TomWright/dasel/compare/v2.0.1...v2.0.2
 [v2.0.1]: https://github.com/TomWright/dasel/compare/v2.0.0...v2.0.1
 [v2.0.0]: https://github.com/TomWright/dasel/compare/v1.27.3...v2.0.0
 [v1.27.3]: https://github.com/TomWright/dasel/compare/v1.27.2...v1.27.3
