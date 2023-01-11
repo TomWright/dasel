@@ -6,11 +6,11 @@ import (
 
 func TestParentFunc(t *testing.T) {
 	t.Run("Args", selectTestErr(
-		"parent(x)",
+		"parent(x,x)",
 		map[string]interface{}{},
 		&ErrUnexpectedFunctionArgs{
 			Function: "parent",
-			Args:     []string{"x"},
+			Args:     []string{"x", "x"},
 		}),
 	)
 
@@ -29,6 +29,25 @@ func TestParentFunc(t *testing.T) {
 					"first": "Tom",
 					"last":  "Wright",
 				},
+			},
+		),
+	)
+
+	t.Run(
+		"SimpleParent2Levels",
+		selectTest(
+			"user.name.first.parent(2).deleted",
+			map[string]interface{}{
+				"user": map[string]interface{}{
+					"name": map[string]interface{}{
+						"first": "Tom",
+						"last":  "Wright",
+					},
+					"deleted": false,
+				},
+			},
+			[]interface{}{
+				false,
 			},
 		),
 	)
