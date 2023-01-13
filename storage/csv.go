@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/csv"
 	"fmt"
-	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/v2"
 	"sort"
 )
 

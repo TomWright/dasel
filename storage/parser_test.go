@@ -3,8 +3,8 @@ package storage_test
 import (
 	"bytes"
 	"errors"
-	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/storage"
+	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
 	"testing"

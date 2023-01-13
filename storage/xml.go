@@ -3,7 +3,7 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/v2"
 	"strings"
 
 	"github.com/clbanning/mxj/v2"

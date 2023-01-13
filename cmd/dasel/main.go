@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/tomwright/dasel/internal/command"
+	"github.com/tomwright/dasel/v2/internal/command"
 	"os"
 )
 

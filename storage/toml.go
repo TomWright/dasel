@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/pelletier/go-toml"
-	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/v2"
 )
 
 func init() {
