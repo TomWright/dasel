@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v2.1.1] - 2023-01-19
+
 ### Fixed
 
 - Changed go module to `github.com/tomwright/dasel/v2` to ensure it works correctly with go modules.
@@ -533,7 +537,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.1.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.1.1...HEAD
+[v2.1.1]: https://github.com/TomWright/dasel/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/TomWright/dasel/compare/v2.0.2...v2.1.0
 [v2.0.2]: https://github.com/TomWright/dasel/compare/v2.0.1...v2.0.2
 [v2.0.1]: https://github.com/TomWright/dasel/compare/v2.0.0...v2.0.1
