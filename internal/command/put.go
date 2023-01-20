@@ -3,8 +3,8 @@ package command
 import (
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/storage"
+	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/storage"
 	"strconv"
 )
 

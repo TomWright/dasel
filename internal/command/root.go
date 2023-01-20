@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel/internal"
+	"github.com/tomwright/dasel/v2/internal"
 )
 
 // NewRootCMD returns the root command for use with cobra.

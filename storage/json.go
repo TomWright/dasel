@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/v2"
 	"io"
 )
 

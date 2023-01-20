@@ -182,6 +182,17 @@ func requireXOrMoreArgs(name string, args []string, x int) error {
 	return nil
 }
 
+func requireXOrLessArgs(name string, args []string, x int) error {
+	if len(args) > x {
+		return &ErrUnexpectedFunctionArgs{
+			Function: name,
+			Args:     args,
+			Message:  fmt.Sprintf("expected %d or less arguments", x),
+		}
+	}
+	return nil
+}
+
 func requireModulusXArgs(name string, args []string, x int) error {
 	if len(args)%x != 0 {
 		return &ErrUnexpectedFunctionArgs{

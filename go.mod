@@ -1,4 +1,4 @@
-module github.com/tomwright/dasel
+module github.com/tomwright/dasel/v2
 
 go 1.18
 

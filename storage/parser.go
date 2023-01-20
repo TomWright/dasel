@@ -2,7 +2,7 @@ package storage
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel"
+	"github.com/tomwright/dasel/v2"
 	"io"
 	"os"
 	"path/filepath"

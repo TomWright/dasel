@@ -55,7 +55,7 @@ brew install dasel
 You can also install a [development version](https://daseldocs.tomwright.me/installation#development-version) with:
 
 ```bash
-go install github.com/tomwright/dasel/cmd/dasel@master
+go install github.com/tomwright/dasel/v2/cmd/dasel@master
 ```
 
 For more information see the [installation documentation](https://daseldocs.tomwright.me/installation).

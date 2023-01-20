@@ -2,8 +2,8 @@ package storage_test
 
 import (
 	"errors"
-	"github.com/tomwright/dasel"
-	"github.com/tomwright/dasel/storage"
+	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/storage"
 	"testing"
 )
 
