@@ -35,7 +35,7 @@ var PropertyFunc = BasicFunction{
 		input := s.inputs()
 
 		if c.CreateWhenMissing() {
-			input = input.initEmptyMaps()
+			input = input.initEmptyOrderedMaps()
 		}
 
 		res := make(Values, 0)
@@ -70,7 +70,21 @@ var PropertyFunc = BasicFunction{
 					}
 					res = append(res, value)
 				default:
-					return nil, fmt.Errorf("cannot use property selector on non map/struct types: %s: %w", val.Kind().String(), &ErrPropertyNotFound{Property: property})
+					if val.IsOrderedMap() {
+						index := val.OrderedMapIndex(ValueOf(property))
+						if index.IsEmpty() {
+							if isOptional {
+								continue
+							}
+							if !c.CreateWhenMissing() {
+								return nil, fmt.Errorf("could not access map index: %w", &ErrPropertyNotFound{Property: property})
+							}
+							index = index.asUninitialised()
+						}
+						res = append(res, index)
+					} else {
+						return nil, fmt.Errorf("cannot use property selector on non map/struct types: %s: %w", val.Kind().String(), &ErrPropertyNotFound{Property: property})
+					}
 				}
 			}
 		}

@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/ordered"
 	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"testing"
@@ -11,9 +12,7 @@ var jsonBytes = []byte(`{
   "name": "Tom"
 }
 `)
-var jsonMap = map[string]interface{}{
-	"name": "Tom",
-}
+var jsonMap = ordered.NewMap().Set("name", "Tom")
 
 func TestJSONParser_FromBytes(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
@@ -169,9 +168,9 @@ var jsonBytesMulti = []byte(`{
 }
 `)
 
-var jsonMapMulti = []interface{}{
-	map[string]interface{}{"name": "Tom"},
-	map[string]interface{}{"name": "Ellis"},
+var jsonMapMulti = []any{
+	ordered.NewMap().Set("name", "Tom"),
+	ordered.NewMap().Set("name", "Ellis"),
 }
 
 var jsonBytesMultiMixed = []byte(`{
@@ -184,6 +183,6 @@ var jsonBytesMultiMixed = []byte(`{
 `)
 
 var jsonMapMultiMixed = []interface{}{
-	map[string]interface{}{"name": "Tom", "other": true},
-	map[string]interface{}{"name": "Ellis"},
+	ordered.NewMap().Set("name", "Tom").Set("other", true),
+	ordered.NewMap().Set("name", "Ellis"),
 }

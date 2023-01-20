@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/ordered"
 	"reflect"
 )
 
@@ -96,15 +97,26 @@ func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
 	return false
 }
 
+var orderedMapType = reflect.TypeOf(&ordered.Map{})
+
+func isOrderedMap(value reflect.Value) bool {
+	return value.Kind() == reflect.Ptr && value.Type() == orderedMapType
+}
+
 func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Value {
 	if len(kinds) == 0 {
 		kinds = append(kinds, reflect.Ptr, reflect.Interface)
 	}
 	res := value
-	for containsKind(kinds, res.Kind()) {
+	for {
+		if isOrderedMap(res) {
+			return res
+		}
+		if !containsKind(kinds, res.Kind()) {
+			return res
+		}
 		res = res.Elem()
 	}
-	return res
 }
 
 func (v Value) FirstAddressable() reflect.Value {
@@ -142,6 +154,42 @@ func (v Value) Delete() {
 		return
 	}
 	panic("unable to delete value with missing deleteFn")
+}
+
+func (v Value) IsOrderedMap() bool {
+	if v.Kind() != reflect.Ptr {
+		return false
+	}
+	_, ok := v.Interface().(*ordered.Map)
+	return ok
+}
+
+func (v Value) OrderedMapIndex(key Value) Value {
+	getValueByKey := func() reflect.Value {
+		if !v.IsOrderedMap() {
+			return reflect.Value{}
+		}
+		om := v.Interface().(*ordered.Map)
+		if v, ok := om.Get(key.Value.String()); !ok {
+			return reflect.Value{}
+		} else {
+			return reflect.ValueOf(v)
+		}
+	}
+	index := Value{
+		Value: getValueByKey(),
+		setFn: func(value Value) {
+			// Note that we do not use Interface() here as it will dereference the received value.
+			// Instead, we only dereference the interface type to receive the pointer.
+			v.Interface().(*ordered.Map).Set(key.Value.String(), value.Unpack(reflect.Interface).Interface())
+		},
+		deleteFn: func() {
+			v.Interface().(*ordered.Map).Delete(key.Value.String())
+		},
+	}
+	return index.
+		WithMetadata("key", key.Interface()).
+		WithMetadata("parent", v)
 }
 
 // MapIndex returns the value associated with key in the map v.
@@ -263,6 +311,14 @@ func (v Value) initEmptyMap() Value {
 	return v
 }
 
+func (v Value) initEmptyOrderedMap() Value {
+	om := ordered.NewMap()
+	rom := reflect.ValueOf(om)
+	v.Set(Value{Value: rom})
+	v.Value = rom
+	return v
+}
+
 func (v Value) initEmptySlice() Value {
 	emptySlice := reflect.MakeSlice(sliceInterfaceType, 0, 0)
 
@@ -328,6 +384,14 @@ func makeAddressableMap(value reflect.Value) reflect.Value {
 func makeAddressable(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
+	if isOrderedMap(unpacked) {
+		om := value.Interface().(*ordered.Map)
+		for _, kv := range om.KeyValues() {
+			om.Set(kv.Key, makeAddressable(reflect.ValueOf(kv.Value)).Interface())
+		}
+		return value
+	}
+
 	switch unpacked.Kind() {
 	case reflect.Slice:
 		return makeAddressableSlice(value)
@@ -365,6 +429,14 @@ func derefMap(value reflect.Value) reflect.Value {
 func deref(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
+	if isOrderedMap(unpacked) {
+		om := value.Interface().(*ordered.Map)
+		for _, kv := range om.KeyValues() {
+			om.Set(kv.Key, deref(reflect.ValueOf(kv.Value)).Interface())
+		}
+		return value
+	}
+
 	switch unpacked.Kind() {
 	case reflect.Slice:
 		return derefSlice(value)
@@ -387,11 +459,23 @@ func (v Values) Interfaces() []interface{} {
 	return res
 }
 
-func (v Values) initEmptyMaps() Values {
+//func (v Values) initEmptyMaps() Values {
+//	res := make(Values, len(v))
+//	for k, value := range v {
+//		if value.IsEmpty() {
+//			res[k] = value.initEmptyMap()
+//		} else {
+//			res[k] = value
+//		}
+//	}
+//	return res
+//}
+
+func (v Values) initEmptyOrderedMaps() Values {
 	res := make(Values, len(v))
 	for k, value := range v {
 		if value.IsEmpty() {
-			res[k] = value.initEmptyMap()
+			res[k] = value.initEmptyOrderedMap()
 		} else {
 			res[k] = value
 		}

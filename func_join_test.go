@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"github.com/tomwright/dasel/v2/ordered"
 	"testing"
 )
 
@@ -14,15 +15,13 @@ func TestJoinFunc(t *testing.T) {
 		}),
 	)
 
-	original := map[string]interface{}{
-		"name": map[string]interface{}{
-			"first": "Tom",
-			"last":  "Wright",
-		},
-		"colours": []interface{}{
+	original := ordered.NewMap().
+		Set("name", ordered.NewMap().
+			Set("first", "Tom").
+			Set("last", "Wright")).
+		Set("colours", []interface{}{
 			"red", "green", "blue",
-		},
-	}
+		})
 
 	t.Run(
 		"JoinCommaSeparator",
@@ -76,11 +75,10 @@ func TestJoinFunc(t *testing.T) {
 		"JoinManyLists",
 		selectTest(
 			"all().join(\\,,all())",
-			map[string]interface{}{
-				"x": []interface{}{1, 2, 3},
-				"y": []interface{}{4, 5, 6},
-				"z": []interface{}{7, 8, 9},
-			},
+			ordered.NewMap().
+				Set("x", []interface{}{1, 2, 3}).
+				Set("y", []interface{}{4, 5, 6}).
+				Set("z", []interface{}{7, 8, 9}),
 			[]interface{}{
 				"1,2,3,4,5,6,7,8,9",
 			},

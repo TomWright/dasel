@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/ordered"
 	"io"
 )
 
@@ -19,20 +20,20 @@ type JSONParser struct {
 
 // FromBytes returns some data that is represented by the given bytes.
 func (p *JSONParser) FromBytes(byteData []byte) (dasel.Value, error) {
-	res := make([]interface{}, 0)
+	res := make([]any, 0)
 
 	decoder := json.NewDecoder(bytes.NewBuffer(byteData))
 
 docLoop:
 	for {
-		var docData interface{}
-		if err := decoder.Decode(&docData); err != nil {
+		if docData, err := ordered.UnmarshalJSON(decoder); err != nil {
 			if err == io.EOF {
 				break docLoop
 			}
 			return dasel.Value{}, fmt.Errorf("could not unmarshal data: %w", err)
+		} else {
+			res = append(res, docData)
 		}
-		res = append(res, docData)
 	}
 
 	switch len(res) {
