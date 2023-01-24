@@ -15,19 +15,24 @@ var TypeFunc = BasicFunction{
 
 		for _, val := range input {
 			resStr := "unknown"
-			switch val.Kind() {
-			case reflect.Slice, reflect.Array:
-				resStr = "array"
-			case reflect.Map, reflect.Struct:
+
+			if val.IsDencodingMap() {
 				resStr = "object"
-			case reflect.String:
-				resStr = "string"
-			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
-				reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
-				reflect.Float32, reflect.Float64:
-				resStr = "number"
-			case reflect.Bool:
-				resStr = "bool"
+			} else {
+				switch val.Kind() {
+				case reflect.Slice, reflect.Array:
+					resStr = "array"
+				case reflect.Map, reflect.Struct:
+					resStr = "object"
+				case reflect.String:
+					resStr = "string"
+				case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64,
+					reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64,
+					reflect.Float32, reflect.Float64:
+					resStr = "number"
+				case reflect.Bool:
+					resStr = "bool"
+				}
 			}
 			res = append(res, ValueOf(resStr))
 		}

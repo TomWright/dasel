@@ -156,7 +156,7 @@ func (v Value) Delete() {
 	panic("unable to delete value with missing deleteFn")
 }
 
-func (v Value) IsdencodingMap() bool {
+func (v Value) IsDencodingMap() bool {
 	if v.Kind() != reflect.Ptr {
 		return false
 	}
@@ -166,7 +166,7 @@ func (v Value) IsdencodingMap() bool {
 
 func (v Value) dencodingMapIndex(key Value) Value {
 	getValueByKey := func() reflect.Value {
-		if !v.IsdencodingMap() {
+		if !v.IsDencodingMap() {
 			return reflect.Value{}
 		}
 		om := v.Interface().(*dencoding.Map)

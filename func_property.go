@@ -70,7 +70,7 @@ var PropertyFunc = BasicFunction{
 					}
 					res = append(res, value)
 				default:
-					if val.IsdencodingMap() {
+					if val.IsDencodingMap() {
 						index := val.dencodingMapIndex(ValueOf(property))
 						if index.IsEmpty() {
 							if isOptional {

@@ -28,7 +28,7 @@ var AllFunc = BasicFunction{
 					res = append(res, val.MapIndex(key))
 				}
 			default:
-				if val.IsdencodingMap() {
+				if val.IsDencodingMap() {
 					for _, k := range val.Interface().(*dencoding.Map).Keys() {
 						res = append(res, val.dencodingMapIndex(ValueOf(k)))
 					}
