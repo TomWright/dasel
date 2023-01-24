@@ -1,7 +1,5 @@
 package dencoding
 
-import "encoding/json"
-
 // NewMap returns a new *Map that has its values initialised.
 func NewMap() *Map {
 	keys := make([]string, 0)
@@ -29,10 +27,6 @@ type Map struct {
 	keys []string
 	// data contains the actual map data.
 	data map[string]any
-}
-
-func (m *Map) MarshalJSON() ([]byte, error) {
-	return json.Marshal(m.data)
 }
 
 // Get returns the value found under the given key.

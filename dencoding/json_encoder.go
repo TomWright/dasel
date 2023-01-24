@@ -1,6 +1,7 @@
 package dencoding
 
 import (
+	"bytes"
 	"encoding/json"
 	"io"
 )
@@ -24,6 +25,7 @@ func NewJSONEncoder(w io.Writer, options ...JSONEncoderOption) *JSONEncoder {
 
 // Encode encodes the given value and writes the encodes bytes to the stream.
 func (encoder *JSONEncoder) Encode(v any) error {
+	// We rely on Map.MarshalJSON to ensure ordering.
 	return encoder.encoder.Encode(v)
 }
 
@@ -52,4 +54,30 @@ type jsonEncodeIndent struct {
 
 func (option jsonEncodeIndent) ApplyEncoder(encoder *JSONEncoder) {
 	encoder.encoder.SetIndent(option.prefix, option.indent)
+}
+
+// MarshalJSON JSON encodes the map and returns the bytes.
+// This maintains ordering.
+func (m *Map) MarshalJSON() ([]byte, error) {
+	buf := new(bytes.Buffer)
+	buf.Write([]byte(`{`))
+	for i, key := range m.keys {
+		last := i == len(m.keys)-1
+		keyBytes, err := json.Marshal(key)
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(keyBytes)
+		buf.Write([]byte(`:`))
+		valBytes, err := json.Marshal(m.data[key])
+		if err != nil {
+			return nil, err
+		}
+		buf.Write(valBytes)
+		if !last {
+			buf.Write([]byte(`,`))
+		}
+	}
+	buf.Write([]byte(`}`))
+	return buf.Bytes(), nil
 }
