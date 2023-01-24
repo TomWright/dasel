@@ -66,18 +66,9 @@ func yamlValueToNode(value any) (*yaml.Node, error) {
 
 func yamlOrderedMapToNode(value *Map) (*yaml.Node, error) {
 	mapNode := &yaml.Node{
-		Kind:        yaml.MappingNode,
-		Style:       yaml.TaggedStyle & yaml.DoubleQuotedStyle & yaml.SingleQuotedStyle & yaml.LiteralStyle & yaml.FoldedStyle & yaml.FlowStyle,
-		Tag:         "",
-		Value:       "",
-		Anchor:      "",
-		Alias:       nil,
-		Content:     make([]*yaml.Node, 0),
-		HeadComment: "",
-		LineComment: "",
-		FootComment: "",
-		Line:        0,
-		Column:      0,
+		Kind:    yaml.MappingNode,
+		Style:   yaml.TaggedStyle & yaml.DoubleQuotedStyle & yaml.SingleQuotedStyle & yaml.LiteralStyle & yaml.FoldedStyle & yaml.FlowStyle,
+		Content: make([]*yaml.Node, 0),
 	}
 
 	for _, key := range value.keys {
@@ -97,18 +88,8 @@ func yamlOrderedMapToNode(value *Map) (*yaml.Node, error) {
 
 func yamlSliceToNode(value []any) (*yaml.Node, error) {
 	node := &yaml.Node{
-		Kind:        yaml.SequenceNode,
-		Style:       yaml.TaggedStyle & yaml.DoubleQuotedStyle & yaml.SingleQuotedStyle & yaml.LiteralStyle & yaml.FoldedStyle & yaml.FlowStyle,
-		Tag:         "",
-		Value:       "",
-		Anchor:      "",
-		Alias:       nil,
-		Content:     make([]*yaml.Node, len(value)),
-		HeadComment: "",
-		LineComment: "",
-		FootComment: "",
-		Line:        0,
-		Column:      0,
+		Kind:    yaml.SequenceNode,
+		Content: make([]*yaml.Node, len(value)),
 	}
 
 	for i, v := range value {
@@ -124,18 +105,7 @@ func yamlSliceToNode(value []any) (*yaml.Node, error) {
 
 func yamlScalarToNode(value any) (*yaml.Node, error) {
 	node := &yaml.Node{
-		Kind:        yaml.ScalarNode,
-		Style:       yaml.TaggedStyle & yaml.DoubleQuotedStyle & yaml.SingleQuotedStyle & yaml.LiteralStyle & yaml.FoldedStyle & yaml.FlowStyle,
-		Tag:         "",
-		Value:       "",
-		Anchor:      "",
-		Alias:       nil,
-		Content:     nil,
-		HeadComment: "",
-		LineComment: "",
-		FootComment: "",
-		Line:        0,
-		Column:      0,
+		Kind: yaml.ScalarNode,
 	}
 	switch v := value.(type) {
 	case nil:
