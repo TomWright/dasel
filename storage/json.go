@@ -103,6 +103,7 @@ func (p *JSONParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 
 	buffer := new(bytes.Buffer)
 	encoder := dencoding.NewJSONEncoder(buffer, encoderOptions...)
+	defer encoder.Close()
 
 	switch {
 	case value.Metadata("isSingleDocument") == true:

@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tomwright/dasel/v2"
-	"gopkg.in/yaml.v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"io"
 )
 
@@ -21,7 +21,7 @@ type YAMLParser struct {
 func (p *YAMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	res := make([]interface{}, 0)
 
-	decoder := yaml.NewDecoder(bytes.NewBuffer(byteData))
+	decoder := dencoding.NewYAMLDecoder(bytes.NewReader(byteData))
 
 docLoop:
 	for {
@@ -79,10 +79,10 @@ func cleanupYamlMapValue(v interface{}) interface{} {
 // ToBytes returns a slice of bytes that represents the given value.
 func (p *YAMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
-	encoder := yaml.NewEncoder(buffer)
-	defer encoder.Close()
 
 	colourise := false
+
+	encoderOptions := make([]dencoding.YAMLEncoderOption, 0)
 
 	for _, o := range options {
 		switch o.Key {
@@ -90,8 +90,15 @@ func (p *YAMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 			if value, ok := o.Value.(bool); ok {
 				colourise = value
 			}
+		case OptionIndent:
+			if value, ok := o.Value.(int); ok {
+				encoderOptions = append(encoderOptions, dencoding.YAMLEncodeIndent(value))
+			}
 		}
 	}
+
+	encoder := dencoding.NewYAMLEncoder(buffer)
+	defer encoder.Close()
 
 	switch {
 	case value.Metadata("isSingleDocument") == true:

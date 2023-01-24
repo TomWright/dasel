@@ -29,6 +29,11 @@ func (encoder *JSONEncoder) Encode(v any) error {
 	return encoder.encoder.Encode(v)
 }
 
+// Close cleans up the encoder.
+func (encoder *JSONEncoder) Close() error {
+	return nil
+}
+
 // JSONEscapeHTML enables or disables html escaping when encoding JSON.
 func JSONEscapeHTML(escape bool) JSONEncoderOption {
 	return jsonEncodeHTMLOption{escapeHTML: escape}
