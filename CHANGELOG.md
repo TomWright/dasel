@@ -7,7 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- Join function.
+- String function.
 
 ## [v2.1.1] - 2023-01-19
 

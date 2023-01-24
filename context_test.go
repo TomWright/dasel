@@ -50,6 +50,21 @@ func selectTest(selector string, original interface{}, exp []interface{}) func(t
 	}
 }
 
+func selectTestAssert(selector string, original interface{}, assertFn func(t *testing.T, got []any)) func(t *testing.T) {
+	return func(t *testing.T) {
+		c := newSelectContext(original, selector)
+
+		values, err := c.Run()
+		if err != nil {
+			t.Errorf("unexpected error: %v", err)
+			return
+		}
+
+		got := values.Interfaces()
+		assertFn(t, got)
+	}
+}
+
 func selectTestErr(selector string, original interface{}, expErr error) func(t *testing.T) {
 	return func(t *testing.T) {
 		c := newSelectContext(original, selector)

@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"github.com/tomwright/dasel/v2/ordered"
+	"strings"
 	"testing"
 )
 
@@ -25,22 +26,76 @@ func TestJoinFunc(t *testing.T) {
 
 	t.Run(
 		"JoinCommaSeparator",
-		selectTest(
+		selectTestAssert(
 			"name.all().join(\\,)",
 			original,
-			[]interface{}{
-				"Tom,Wright",
+			func(t *testing.T, got []any) {
+				required := []string{"Tom", "Wright"}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
+				str, ok := got[0].(string)
+				if !ok {
+					t.Errorf("expected 1st result to be a string, got %T", got[0])
+					return
+				}
+
+				gotStrs := strings.Split(str, ",")
+				for _, req := range required {
+					found := false
+					for _, got := range gotStrs {
+						if got == req {
+							found = true
+							continue
+						}
+					}
+					if !found {
+						t.Errorf("expected %v, got %v", required, got)
+					}
+				}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
 			},
 		),
 	)
 
 	t.Run(
 		"JoinSpaceSeparator",
-		selectTest(
+		selectTestAssert(
 			"name.all().join( )",
 			original,
-			[]interface{}{
-				"Tom Wright",
+			func(t *testing.T, got []any) {
+				required := []string{"Tom", "Wright"}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
+				str, ok := got[0].(string)
+				if !ok {
+					t.Errorf("expected 1st result to be a string, got %T", got[0])
+					return
+				}
+
+				gotStrs := strings.Split(str, " ")
+				for _, req := range required {
+					found := false
+					for _, got := range gotStrs {
+						if got == req {
+							found = true
+							continue
+						}
+					}
+					if !found {
+						t.Errorf("expected %v, got %v", required, got)
+					}
+				}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
 			},
 		),
 	)
@@ -73,14 +128,41 @@ func TestJoinFunc(t *testing.T) {
 
 	t.Run(
 		"JoinManyLists",
-		selectTest(
+		selectTestAssert(
 			"all().join(\\,,all())",
 			ordered.NewMap().
 				Set("x", []interface{}{1, 2, 3}).
 				Set("y", []interface{}{4, 5, 6}).
 				Set("z", []interface{}{7, 8, 9}),
-			[]interface{}{
-				"1,2,3,4,5,6,7,8,9",
+			func(t *testing.T, got []any) {
+				required := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
+				str, ok := got[0].(string)
+				if !ok {
+					t.Errorf("expected 1st result to be a string, got %T", got[0])
+					return
+				}
+
+				gotStrs := strings.Split(str, ",")
+				for _, req := range required {
+					found := false
+					for _, got := range gotStrs {
+						if got == req {
+							found = true
+							continue
+						}
+					}
+					if !found {
+						t.Errorf("expected %v, got %v", required, got)
+					}
+				}
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
 			},
 		),
 	)
