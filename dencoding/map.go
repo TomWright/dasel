@@ -1,10 +1,6 @@
-package ordered
+package dencoding
 
-// KeyValue is a single key value pair from a *Map.
-type KeyValue struct {
-	Key   string
-	Value any
-}
+import "encoding/json"
 
 // NewMap returns a new *Map that has its values initialised.
 func NewMap() *Map {
@@ -29,8 +25,14 @@ func FromMap(source map[string]any) *Map {
 
 // Map is a map implementation that maintains ordering of keys.
 type Map struct {
+	// keys contains the keys within the map in the order they were added.
 	keys []string
+	// data contains the actual map data.
 	data map[string]any
+}
+
+func (m *Map) MarshalJSON() ([]byte, error) {
+	return json.Marshal(m.data)
 }
 
 // Get returns the value found under the given key.

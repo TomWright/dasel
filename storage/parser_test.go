@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/ordered"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
@@ -172,20 +172,20 @@ func TestNewWriteParserFromFilename(t *testing.T) {
 	}
 }
 
-var jsonData = ordered.NewMap().
+var jsonData = dencoding.NewMap().
 	Set("name", "Tom").
-	Set("preferences", ordered.NewMap().
+	Set("preferences", dencoding.NewMap().
 		Set("favouriteColour", "red"),
 	).
 	Set("colours", []any{"red", "green", "blue"}).
 	Set("colourCodes", []any{
-		ordered.NewMap().
+		dencoding.NewMap().
 			Set("name", "red").
 			Set("rgb", "ff0000"),
-		ordered.NewMap().
+		dencoding.NewMap().
 			Set("name", "green").
 			Set("rgb", "00ff00"),
-		ordered.NewMap().
+		dencoding.NewMap().
 			Set("name", "blue").
 			Set("rgb", "0000ff"),
 	})
@@ -198,7 +198,7 @@ func TestLoadFromFile(t *testing.T) {
 			return
 		}
 		exp := jsonData.KeyValues()
-		got := data.Interface().(*ordered.Map).KeyValues()
+		got := data.Interface().(*dencoding.Map).KeyValues()
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("data does not match: exp %v, got %v", exp, got)
 		}

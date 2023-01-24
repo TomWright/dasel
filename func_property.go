@@ -35,7 +35,7 @@ var PropertyFunc = BasicFunction{
 		input := s.inputs()
 
 		if c.CreateWhenMissing() {
-			input = input.initEmptyOrderedMaps()
+			input = input.initEmptydencodingMaps()
 		}
 
 		res := make(Values, 0)
@@ -70,8 +70,8 @@ var PropertyFunc = BasicFunction{
 					}
 					res = append(res, value)
 				default:
-					if val.IsOrderedMap() {
-						index := val.OrderedMapIndex(ValueOf(property))
+					if val.IsdencodingMap() {
+						index := val.dencodingMapIndex(ValueOf(property))
 						if index.IsEmpty() {
 							if isOptional {
 								continue

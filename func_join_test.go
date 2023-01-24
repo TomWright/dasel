@@ -1,7 +1,7 @@
 package dasel
 
 import (
-	"github.com/tomwright/dasel/v2/ordered"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"strings"
 	"testing"
 )
@@ -16,8 +16,8 @@ func TestJoinFunc(t *testing.T) {
 		}),
 	)
 
-	original := ordered.NewMap().
-		Set("name", ordered.NewMap().
+	original := dencoding.NewMap().
+		Set("name", dencoding.NewMap().
 			Set("first", "Tom").
 			Set("last", "Wright")).
 		Set("colours", []interface{}{
@@ -130,7 +130,7 @@ func TestJoinFunc(t *testing.T) {
 		"JoinManyLists",
 		selectTestAssert(
 			"all().join(\\,,all())",
-			ordered.NewMap().
+			dencoding.NewMap().
 				Set("x", []interface{}{1, 2, 3}).
 				Set("y", []interface{}{4, 5, 6}).
 				Set("z", []interface{}{7, 8, 9}),

@@ -2,7 +2,7 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/ordered"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"reflect"
 )
 
@@ -97,10 +97,10 @@ func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
 	return false
 }
 
-var orderedMapType = reflect.TypeOf(&ordered.Map{})
+var dencodingMapType = reflect.TypeOf(&dencoding.Map{})
 
-func isOrderedMap(value reflect.Value) bool {
-	return value.Kind() == reflect.Ptr && value.Type() == orderedMapType
+func isdencodingMap(value reflect.Value) bool {
+	return value.Kind() == reflect.Ptr && value.Type() == dencodingMapType
 }
 
 func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Value {
@@ -109,7 +109,7 @@ func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Valu
 	}
 	res := value
 	for {
-		if isOrderedMap(res) {
+		if isdencodingMap(res) {
 			return res
 		}
 		if !containsKind(kinds, res.Kind()) {
@@ -156,20 +156,20 @@ func (v Value) Delete() {
 	panic("unable to delete value with missing deleteFn")
 }
 
-func (v Value) IsOrderedMap() bool {
+func (v Value) IsdencodingMap() bool {
 	if v.Kind() != reflect.Ptr {
 		return false
 	}
-	_, ok := v.Interface().(*ordered.Map)
+	_, ok := v.Interface().(*dencoding.Map)
 	return ok
 }
 
-func (v Value) OrderedMapIndex(key Value) Value {
+func (v Value) dencodingMapIndex(key Value) Value {
 	getValueByKey := func() reflect.Value {
-		if !v.IsOrderedMap() {
+		if !v.IsdencodingMap() {
 			return reflect.Value{}
 		}
-		om := v.Interface().(*ordered.Map)
+		om := v.Interface().(*dencoding.Map)
 		if v, ok := om.Get(key.Value.String()); !ok {
 			return reflect.Value{}
 		} else {
@@ -181,10 +181,10 @@ func (v Value) OrderedMapIndex(key Value) Value {
 		setFn: func(value Value) {
 			// Note that we do not use Interface() here as it will dereference the received value.
 			// Instead, we only dereference the interface type to receive the pointer.
-			v.Interface().(*ordered.Map).Set(key.Value.String(), value.Unpack(reflect.Interface).Interface())
+			v.Interface().(*dencoding.Map).Set(key.Value.String(), value.Unpack(reflect.Interface).Interface())
 		},
 		deleteFn: func() {
-			v.Interface().(*ordered.Map).Delete(key.Value.String())
+			v.Interface().(*dencoding.Map).Delete(key.Value.String())
 		},
 	}
 	return index.
@@ -311,8 +311,8 @@ func (v Value) initEmptyMap() Value {
 	return v
 }
 
-func (v Value) initEmptyOrderedMap() Value {
-	om := ordered.NewMap()
+func (v Value) initEmptydencodingMap() Value {
+	om := dencoding.NewMap()
 	rom := reflect.ValueOf(om)
 	v.Set(Value{Value: rom})
 	v.Value = rom
@@ -384,8 +384,8 @@ func makeAddressableMap(value reflect.Value) reflect.Value {
 func makeAddressable(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
-	if isOrderedMap(unpacked) {
-		om := value.Interface().(*ordered.Map)
+	if isdencodingMap(unpacked) {
+		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
 			om.Set(kv.Key, makeAddressable(reflect.ValueOf(kv.Value)).Interface())
 		}
@@ -429,8 +429,8 @@ func derefMap(value reflect.Value) reflect.Value {
 func deref(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
-	if isOrderedMap(unpacked) {
-		om := value.Interface().(*ordered.Map)
+	if isdencodingMap(unpacked) {
+		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
 			om.Set(kv.Key, deref(reflect.ValueOf(kv.Value)).Interface())
 		}
@@ -471,11 +471,11 @@ func (v Values) Interfaces() []interface{} {
 //	return res
 //}
 
-func (v Values) initEmptyOrderedMaps() Values {
+func (v Values) initEmptydencodingMaps() Values {
 	res := make(Values, len(v))
 	for k, value := range v {
 		if value.IsEmpty() {
-			res[k] = value.initEmptyOrderedMap()
+			res[k] = value.initEmptydencodingMap()
 		} else {
 			res[k] = value
 		}

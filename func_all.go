@@ -2,7 +2,7 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/ordered"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"reflect"
 )
 
@@ -28,9 +28,9 @@ var AllFunc = BasicFunction{
 					res = append(res, val.MapIndex(key))
 				}
 			default:
-				if val.IsOrderedMap() {
-					for _, k := range val.Interface().(*ordered.Map).Keys() {
-						res = append(res, val.OrderedMapIndex(ValueOf(k)))
+				if val.IsdencodingMap() {
+					for _, k := range val.Interface().(*dencoding.Map).Keys() {
+						res = append(res, val.dencodingMapIndex(ValueOf(k)))
 					}
 				} else {
 					return nil, fmt.Errorf("cannot use all selector on non slice/array/map types")

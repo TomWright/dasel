@@ -2,10 +2,9 @@ package storage
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/ordered"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"io"
 )
 
@@ -22,11 +21,12 @@ type JSONParser struct {
 func (p *JSONParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	res := make([]any, 0)
 
-	decoder := json.NewDecoder(bytes.NewBuffer(byteData))
+	decoder := dencoding.NewJSONDecoder(bytes.NewReader(byteData))
 
 docLoop:
 	for {
-		if docData, err := ordered.UnmarshalJSON(decoder); err != nil {
+		var docData any
+		if err := decoder.Decode(&docData); err != nil {
 			if err == io.EOF {
 				break docLoop
 			}
@@ -48,40 +48,61 @@ docLoop:
 	}
 }
 
-// ToBytes returns a slice of bytes that represents the given value.
-func (p *JSONParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
-	buffer := new(bytes.Buffer)
-	encoder := json.NewEncoder(buffer)
+type toBytesOptions struct {
+	indent      string
+	prefix      string
+	prettyPrint bool
+	colourise   bool
+	escapeHTML  bool
+}
 
-	indent := "  "
-	prettyPrint := true
-	colourise := false
+func getToBytesOptions(options ...ReadWriteOption) toBytesOptions {
+	res := toBytesOptions{
+		indent:      "  ",
+		prefix:      "",
+		prettyPrint: true,
+		colourise:   false,
+		escapeHTML:  false,
+	}
 
 	for _, o := range options {
 		switch o.Key {
 		case OptionIndent:
 			if value, ok := o.Value.(string); ok {
-				indent = value
+				res.indent = value
 			}
 		case OptionPrettyPrint:
 			if value, ok := o.Value.(bool); ok {
-				prettyPrint = value
+				res.prettyPrint = value
 			}
 		case OptionColourise:
 			if value, ok := o.Value.(bool); ok {
-				colourise = value
+				res.colourise = value
 			}
 		case OptionEscapeHTML:
 			if value, ok := o.Value.(bool); ok {
-				encoder.SetEscapeHTML(value)
+				res.escapeHTML = value
 			}
 		}
 	}
 
-	if !prettyPrint {
-		indent = ""
+	if !res.prettyPrint {
+		res.indent = ""
 	}
-	encoder.SetIndent("", indent)
+
+	return res
+}
+
+// ToBytes returns a slice of bytes that represents the given value.
+func (p *JSONParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
+	encoderOptions := make([]dencoding.JSONEncoderOption, 0)
+
+	baseOptions := getToBytesOptions(options...)
+	encoderOptions = append(encoderOptions, dencoding.JSONEscapeHTML(baseOptions.escapeHTML))
+	encoderOptions = append(encoderOptions, dencoding.JSONEncodeIndent(baseOptions.prefix, baseOptions.indent))
+
+	buffer := new(bytes.Buffer)
+	encoder := dencoding.NewJSONEncoder(buffer, encoderOptions...)
 
 	switch {
 	case value.Metadata("isSingleDocument") == true:
@@ -100,7 +121,7 @@ func (p *JSONParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 		}
 	}
 
-	if colourise {
+	if baseOptions.colourise {
 		if err := ColouriseBuffer(buffer, "json"); err != nil {
 			return nil, fmt.Errorf("could not colourise output: %w", err)
 		}
