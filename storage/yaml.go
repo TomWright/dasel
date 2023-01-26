@@ -97,7 +97,7 @@ func (p *YAMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 		}
 	}
 
-	encoder := dencoding.NewYAMLEncoder(buffer)
+	encoder := dencoding.NewYAMLEncoder(buffer, encoderOptions...)
 	defer encoder.Close()
 
 	switch {
