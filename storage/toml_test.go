@@ -81,10 +81,10 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			return
 		}
 		got := string(res)
-		exp := `names = ["John", "Frank"]
+		exp := `names = ['John', 'Frank']
 
 [person]
-   name = "Tom"
+   name = 'Tom'
 `
 		if exp != got {
 			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
@@ -127,7 +127,7 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	t.Run("MultiDocumentValue", func(t *testing.T) {
-		got, err := (&storage.TOMLParser{}).ToBytes(dasel.ValueOf([]interface{}{"asd", "123"}).WithMetadata("isMultiDocument", true))
+		got, err := (&storage.TOMLParser{}).ToBytes(dasel.ValueOf([]interface{}{"asd", 123}).WithMetadata("isMultiDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return

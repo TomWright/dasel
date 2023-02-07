@@ -1,6 +1,7 @@
 package dencoding
 
 import (
+	"bytes"
 	"github.com/pelletier/go-toml/v2"
 	"io"
 )
@@ -9,14 +10,18 @@ import (
 type TOMLEncoder struct {
 	encoder *toml.Encoder
 	writer  io.Writer
+	buffer  *bytes.Buffer
 }
 
 // NewTOMLEncoder returns a new dencoding TOMLEncoder.
 func NewTOMLEncoder(w io.Writer, options ...TOMLEncoderOption) *TOMLEncoder {
-	tomlEncoder := toml.NewEncoder(w)
+	buffer := new(bytes.Buffer)
+	tomlEncoder := toml.NewEncoder(buffer)
+	tomlEncoder.SetIndentTables(false)
 	encoder := &TOMLEncoder{
 		writer:  w,
 		encoder: tomlEncoder,
+		buffer:  buffer,
 	}
 	for _, o := range options {
 		o.ApplyEncoder(encoder)
@@ -28,7 +33,23 @@ func NewTOMLEncoder(w io.Writer, options ...TOMLEncoderOption) *TOMLEncoder {
 func (encoder *TOMLEncoder) Encode(v any) error {
 	// No ordering is done here.
 	adjusted := removeDencodingMap(v)
-	return encoder.encoder.Encode(adjusted)
+	if err := encoder.encoder.Encode(adjusted); err != nil {
+		return err
+	}
+	data, err := io.ReadAll(encoder.buffer)
+	if err != nil {
+		return err
+	}
+	if _, err := encoder.writer.Write(data); err != nil {
+		return err
+	}
+	newline := []byte("\n")
+	if !bytes.HasSuffix(data, newline) {
+		if _, err := encoder.writer.Write(newline); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // Close cleans up the encoder.
@@ -74,4 +95,5 @@ type tomlEncodeSymbol struct {
 
 func (option tomlEncodeSymbol) ApplyEncoder(encoder *TOMLEncoder) {
 	encoder.encoder.SetIndentSymbol(option.symbol)
+	encoder.encoder.SetIndentTables(option.symbol != "")
 }
