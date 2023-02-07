@@ -1,7 +1,7 @@
 package dencoding
 
 import (
-	"fmt"
+	"github.com/tomwright/dasel/v2/util"
 	"gopkg.in/yaml.v3"
 	"io"
 )
@@ -104,32 +104,8 @@ func yamlSliceToNode(value []any) (*yaml.Node, error) {
 }
 
 func yamlScalarToNode(value any) (*yaml.Node, error) {
-	node := &yaml.Node{
-		Kind: yaml.ScalarNode,
-	}
-	switch v := value.(type) {
-	case nil:
-		node.Value = "null"
-		//node.Tag = yamlTagNull
-	case string:
-		node.Value = v
-		//node.Tag = yamlTagString
-	case []byte:
-		node.Value = string(v)
-		//node.Tag = yamlTagString
-	case int, int8, int16, int32, int64,
-		uint, uint8, uint16, uint32, uint64:
-		node.Value = fmt.Sprintf("%d", v)
-		//node.Tag = yamlTagInt
-	case float32, float64:
-		node.Value = fmt.Sprintf("%f", v)
-		//node.Tag = yamlTagFloat
-	case bool:
-		node.Value = fmt.Sprintf("%v", v)
-		//node.Tag = yamlTagBool
-	default:
-		node.Value = fmt.Sprint(v)
-	}
-
-	return node, nil
+	return &yaml.Node{
+		Kind:  yaml.ScalarNode,
+		Value: util.ToString(value),
+	}, nil
 }

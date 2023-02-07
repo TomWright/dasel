@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/tomwright/dasel/v2"
 	"github.com/tomwright/dasel/v2/dencoding"
+	"github.com/tomwright/dasel/v2/util"
 	"io"
 )
 
@@ -58,7 +59,7 @@ func cleanupYamlInterfaceArray(in []interface{}) []interface{} {
 func cleanupYamlInterfaceMap(in map[interface{}]interface{}) map[string]interface{} {
 	res := make(map[string]interface{})
 	for k, v := range in {
-		res[fmt.Sprint(k)] = cleanupYamlMapValue(v)
+		res[util.ToString(k)] = cleanupYamlMapValue(v)
 	}
 	return res
 }

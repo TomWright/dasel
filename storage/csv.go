@@ -5,6 +5,8 @@ import (
 	"encoding/csv"
 	"fmt"
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
+	"github.com/tomwright/dasel/v2/util"
 	"sort"
 )
 
@@ -75,14 +77,34 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 			Headers: headers,
 		}, nil
 
+	case *dencoding.Map:
+		return &CSVDocument{
+			Value:   []map[string]any{v.UnorderedData()},
+			Headers: v.Keys(),
+		}, nil
+
 	case []interface{}:
 		mapVals := make([]map[string]interface{}, 0)
 		headers := make([]string, 0)
 		for _, val := range v {
-			if x, ok := val.(map[string]interface{}); ok {
+			switch x := val.(type) {
+			case map[string]any:
 				mapVals = append(mapVals, x)
-
 				for objectKey := range x {
+					found := false
+					for _, existingHeader := range headers {
+						if existingHeader == objectKey {
+							found = true
+							break
+						}
+					}
+					if !found {
+						headers = append(headers, objectKey)
+					}
+				}
+			case *dencoding.Map:
+				mapVals = append(mapVals, x.UnorderedData())
+				for _, objectKey := range x.Keys() {
 					found := false
 					for _, existingHeader := range headers {
 						if existingHeader == objectKey {
@@ -183,12 +205,7 @@ func (p *CSVParser) toBytesHandleDoc(writer *csv.Writer, doc *CSVDocument) error
 			if !ok {
 				val = ""
 			}
-			switch val.(type) {
-			case float32, float64:
-				values = append(values, fmt.Sprintf("%f", val))
-			default:
-				values = append(values, fmt.Sprint(val))
-			}
+			values = append(values, util.ToString(val))
 		}
 
 		if err := writer.Write(values); err != nil {

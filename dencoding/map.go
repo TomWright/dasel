@@ -83,3 +83,8 @@ func (m *Map) KeyValues() []KeyValue {
 func (m *Map) Keys() []string {
 	return m.keys
 }
+
+// UnorderedData returns all the data from the map.
+func (m *Map) UnorderedData() map[string]any {
+	return m.data
+}

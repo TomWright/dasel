@@ -2,6 +2,7 @@ package dencoding
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/util"
 	"gopkg.in/yaml.v3"
 	"io"
 	"reflect"
@@ -83,15 +84,7 @@ func (decoder *YAMLDecoder) getMappingNodeValue(node *yaml.Node) (any, error) {
 			return nil, err
 		}
 
-		var key string
-		switch k := keyValue.(type) {
-		case string:
-			key = k
-		case []byte:
-			key = string(k)
-		default:
-			key = fmt.Sprint(k)
-		}
+		key := util.ToString(keyValue)
 
 		res.Set(key, value)
 	}

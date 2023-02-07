@@ -1,8 +1,8 @@
 package dasel
 
 import (
-	"fmt"
 	"github.com/tomwright/dasel/v2/dencoding"
+	"github.com/tomwright/dasel/v2/util"
 	"reflect"
 )
 
@@ -67,7 +67,7 @@ func (v Value) Len() int {
 			return 0
 		}
 	default:
-		return len(fmt.Sprint(v.Interface()))
+		return len(util.ToString(v.Interface()))
 	}
 }
 

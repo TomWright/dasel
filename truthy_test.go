@@ -88,7 +88,7 @@ func TestIsTruthy(t *testing.T) {
 
 	for _, test := range testData {
 		tc := test
-		t.Run(fmt.Sprint(tc.name), func(t *testing.T) {
+		t.Run(tc.name, func(t *testing.T) {
 			if exp, got := tc.out, IsTruthy(tc.in); exp != got {
 				t.Errorf("expected %v, got %v", exp, got)
 			}
