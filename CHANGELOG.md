@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Join function.
 - String function.
 
+### Fixed
+
+- Null error caused by null values in arrays. See [PR 307](https://github.com/TomWright/dasel/pull/307).
+
 ## [v2.1.1] - 2023-01-19
 
 ### Fixed
