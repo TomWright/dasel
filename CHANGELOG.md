@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v2.1.2] - 2023-03-27
+
 ### Added
 
 - Join function.
 - String function.
+
+### Fixed
+
+- Null error caused by null values in arrays. See [PR 307](https://github.com/TomWright/dasel/pull/307).
 
 ## [v2.1.1] - 2023-01-19
 
@@ -540,7 +548,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.1.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.1.2...HEAD
+[v2.1.2]: https://github.com/TomWright/dasel/compare/v2.1.1...v2.1.2
 [v2.1.1]: https://github.com/TomWright/dasel/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/TomWright/dasel/compare/v2.0.2...v2.1.0
 [v2.0.2]: https://github.com/TomWright/dasel/compare/v2.0.1...v2.0.2

@@ -408,7 +408,9 @@ func derefSlice(value reflect.Value) reflect.Value {
 	res := reflect.MakeSlice(unpacked.Type(), unpacked.Len(), unpacked.Len())
 
 	for i := 0; i < unpacked.Len(); i++ {
-		res.Index(i).Set(deref(unpacked.Index(i)))
+		if v := deref(unpacked.Index(i)); v.IsValid() {
+			res.Index(i).Set(v)
+		}
 	}
 
 	return res
