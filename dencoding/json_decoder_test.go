@@ -27,16 +27,16 @@ func TestJSONDecoder_Decode(t *testing.T) {
 
 	exp := [][]dencoding.KeyValue{
 		{
-			{Key: "x", Value: float64(1)},
+			{Key: "x", Value: int64(1)},
 			{Key: "a", Value: "hello"},
 		},
 		{
-			{Key: "x", Value: float64(2)},
+			{Key: "x", Value: int64(2)},
 			{Key: "a", Value: "there"},
 		},
 		{
 			{Key: "a", Value: "Tom"},
-			{Key: "x", Value: float64(3)},
+			{Key: "x", Value: int64(3)},
 		},
 	}
 
