@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"strings"
 )
 
 // JSONDecoder wraps a standard json encoder to implement custom ordering logic.
@@ -15,6 +16,7 @@ type JSONDecoder struct {
 // NewJSONDecoder returns a new dencoding JSONDecoder.
 func NewJSONDecoder(r io.Reader, options ...JSONDecoderOption) *JSONDecoder {
 	jsonDecoder := json.NewDecoder(r)
+	jsonDecoder.UseNumber()
 	decoder := &JSONDecoder{
 		decoder: jsonDecoder,
 	}
@@ -52,7 +54,11 @@ func (decoder *JSONDecoder) Decode(v any) error {
 		}
 		rve.Set(reflect.ValueOf(arr))
 	default:
-		rve.Set(reflect.ValueOf(t))
+		value, err := decoder.decodeValue(t)
+		if err != nil {
+			return err
+		}
+		rve.Set(reflect.ValueOf(value))
 	}
 
 	return nil
@@ -99,11 +105,36 @@ func (decoder *JSONDecoder) decodeObject() (*Map, error) {
 			if key == nil {
 				key = t
 			} else {
-				res.Set(key.(string), t)
+				value, err := decoder.decodeValue(t)
+				if err != nil {
+					return nil, err
+				}
+				res.Set(key.(string), value)
 				key = nil
 			}
 		}
 	}
+}
+
+func (decoder *JSONDecoder) decodeValue(t json.Token) (any, error) {
+	switch tv := t.(type) {
+	case json.Number:
+		strNum := tv.String()
+		if strings.Contains(strNum, ".") {
+			floatNum, err := tv.Float64()
+			if err == nil {
+				return floatNum, nil
+			}
+			return nil, err
+		}
+		intNum, err := tv.Int64()
+		if err == nil {
+			return intNum, nil
+		}
+
+		return nil, err
+	}
+	return t, nil
 }
 
 func (decoder *JSONDecoder) decodeArray() ([]any, error) {
@@ -133,7 +164,11 @@ func (decoder *JSONDecoder) decodeArray() ([]any, error) {
 			}
 			res = append(res, value)
 		default:
-			res = append(res, t)
+			value, err := decoder.decodeValue(t)
+			if err != nil {
+				return nil, err
+			}
+			res = append(res, value)
 		}
 	}
 }
