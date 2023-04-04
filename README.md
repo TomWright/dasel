@@ -158,7 +158,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Available to [import and use in your own projects](https://pkg.go.dev/github.com/tomwright/dasel/v2).
 - [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
-- [Pre-commit hooks](#docker).
+- [Pre-commit hooks](#pre-commit).
 
 ## Documentation
 
