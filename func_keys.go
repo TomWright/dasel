@@ -57,7 +57,7 @@ var KeysFunc = BasicFunction{
 
 				res[i] = ValueOf(list)
 			case reflect.Map:
-				keys := val.Unpack().MapKeys()
+				keys := val.MapKeys()
 
 				// we expect map keys to be string first so that we can sort them
 				list, ok := getStringList(keys)
@@ -78,7 +78,7 @@ var KeysFunc = BasicFunction{
 	},
 }
 
-func getStringList(values []reflect.Value) ([]any, bool) {
+func getStringList(values []Value) ([]any, bool) {
 	stringList := make([]string, len(values))
 	for i, v := range values {
 		if v.Kind() != reflect.String {
@@ -97,7 +97,7 @@ func getStringList(values []reflect.Value) ([]any, bool) {
 	return anyList, true
 }
 
-func getAnyList(values []reflect.Value) []any {
+func getAnyList(values []Value) []any {
 	anyList := make([]any, len(values))
 	for i, v := range values {
 		anyList[i] = v.Interface()
