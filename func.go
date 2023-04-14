@@ -53,6 +53,7 @@ func standardFunctions() *FunctionCollection {
 		ThisFunc,
 		LenFunc,
 		KeyFunc,
+		KeysFunc,
 		MergeFunc,
 		CountFunc,
 		MapOfFunc,
