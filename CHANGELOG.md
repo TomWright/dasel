@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v2.2.0] - 2023-04-17
+
+### Added
+
+- `keys()` function.
+
 ## [v2.1.2] - 2023-03-27
 
 ### Added
@@ -548,7 +554,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.1.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.2.0...HEAD
+[v2.1.2]: https://github.com/TomWright/dasel/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/TomWright/dasel/compare/v2.1.1...v2.1.2
 [v2.1.1]: https://github.com/TomWright/dasel/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/TomWright/dasel/compare/v2.0.2...v2.1.0
