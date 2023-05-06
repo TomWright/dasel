@@ -422,7 +422,11 @@ func derefMap(value reflect.Value) reflect.Value {
 	res := reflect.MakeMap(unpacked.Type())
 
 	for _, key := range unpacked.MapKeys() {
-		res.SetMapIndex(key, deref(unpacked.MapIndex(key)))
+		if v := deref(unpacked.MapIndex(key)); v.IsValid() {
+			res.SetMapIndex(key, v)
+		} else {
+			res.SetMapIndex(key, reflect.ValueOf(new(any)))
+		}
 	}
 
 	return res
