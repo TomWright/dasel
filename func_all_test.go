@@ -13,7 +13,7 @@ func TestAllFunc(t *testing.T) {
 	)
 
 	t.Run(
-		"RootAll",
+		"RootAllSlice",
 		selectTest(
 			"all()",
 			[]interface{}{"red", "green", "blue"},
@@ -21,13 +21,21 @@ func TestAllFunc(t *testing.T) {
 		),
 	)
 	t.Run(
-		"NestedAll",
+		"NestedAllSlice",
 		selectTest(
 			"colours.all()",
 			map[string]interface{}{
 				"colours": []interface{}{"red", "green", "blue"},
 			},
 			[]interface{}{"red", "green", "blue"},
+		),
+	)
+	t.Run(
+		"AllString",
+		selectTest(
+			"all()",
+			"asd",
+			[]interface{}{"a", "s", "d"},
 		),
 	)
 }

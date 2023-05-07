@@ -19,6 +19,10 @@ var AllFunc = BasicFunction{
 
 		for _, val := range input {
 			switch val.Kind() {
+			case reflect.String:
+				for _, r := range val.String() {
+					res = append(res, ValueOf(string(r)))
+				}
 			case reflect.Slice, reflect.Array:
 				for i := 0; i < val.Len(); i++ {
 					res = append(res, val.Index(i))
