@@ -7,7 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Changed
+
+- Maps are now ordered internally.
+- JSON and YAML maps maintain ordering on read/write.
+
+### Fixed
+
+- Multi-document output should now be displayed correctly.
 
 ## [v2.2.0] - 2023-04-17
 
