@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Multi-document output should now be displayed correctly.
+- Index shorthand selector now works with multiple indexes.
 
 ## [v2.2.0] - 2023-04-17
 

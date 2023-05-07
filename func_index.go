@@ -72,11 +72,10 @@ var IndexFunc = BasicFunction{
 	},
 	alternativeSelectorFn: func(part string) *Selector {
 		if part != "[]" && strings.HasPrefix(part, "[") && strings.HasSuffix(part, "]") {
+			strings.Split(strings.TrimPrefix(strings.TrimSuffix(part, "]"), "["), ",")
 			return &Selector{
 				funcName: "index",
-				funcArgs: []string{
-					strings.TrimPrefix(strings.TrimSuffix(part, "]"), "["),
-				},
+				funcArgs: strings.Split(strings.TrimPrefix(strings.TrimSuffix(part, "]"), "["), ","),
 			}
 		}
 		return nil

@@ -52,12 +52,38 @@ func TestIndexFunc(t *testing.T) {
 	)
 
 	t.Run(
+		"IndexMulti",
+		selectTest(
+			"colours.index(0,1,2)",
+			original,
+			[]interface{}{
+				"red",
+				"green",
+				"blue",
+			},
+		),
+	)
+
+	t.Run(
 		"IndexShorthand",
 		selectTest(
 			"colours.[1]",
 			original,
 			[]interface{}{
 				"green",
+			},
+		),
+	)
+
+	t.Run(
+		"IndexShorthandMulti",
+		selectTest(
+			"colours.[0,1,2]",
+			original,
+			[]interface{}{
+				"red",
+				"green",
+				"blue",
 			},
 		),
 	)
