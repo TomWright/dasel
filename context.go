@@ -98,7 +98,9 @@ func newDeleteContext(value interface{}, selector string) *Context {
 }
 
 func derefValue(v Value) Value {
-	return ValueOf(deref(v.Value))
+	res := ValueOf(deref(v.Value))
+	res.metadata = v.metadata
+	return res
 }
 
 func derefValues(values Values) Values {

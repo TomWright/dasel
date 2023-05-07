@@ -158,4 +158,21 @@ Tom,Wright,Apple,iPhone 12`)),
 	// 		nil,
 	// 		nil,
 	// 	))
+
+	t.Run("YamlMultiDoc/Issue314", runTest(
+		[]string{"-r", "yaml", ""},
+		[]byte(`a: x
+b: foo
+---
+a: y
+c: bar
+`),
+		newline([]byte(`a: x
+b: foo
+---
+a: y
+c: bar`)),
+		nil,
+		nil,
+	))
 }
