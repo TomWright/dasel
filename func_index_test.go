@@ -52,6 +52,17 @@ func TestIndexFunc(t *testing.T) {
 	)
 
 	t.Run(
+		"IndexString",
+		selectTest(
+			"colours.index(1).index(1)",
+			original,
+			[]interface{}{
+				"r",
+			},
+		),
+	)
+
+	t.Run(
 		"IndexMulti",
 		selectTest(
 			"colours.index(0,1,2)",

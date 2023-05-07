@@ -71,6 +71,11 @@ func (v Value) Len() int {
 	}
 }
 
+// String returns the string v's underlying value, as a string.
+func (v Value) String() string {
+	return v.Unpack().String()
+}
+
 // IsEmpty returns true is v represents an empty reflect.Value.
 func (v Value) IsEmpty() bool {
 	return isEmptyReflectValue(unpackReflectValue(v.Value))

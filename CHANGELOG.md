@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Maps are now ordered internally.
 - JSON and YAML maps maintain ordering on read/write.
 - `all()` func now works with strings.
+- `index()` func now works with strings.
 
 ### Fixed
 

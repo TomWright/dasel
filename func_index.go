@@ -53,6 +53,15 @@ var IndexFunc = BasicFunction{
 				}
 
 				switch val.Kind() {
+				case reflect.String:
+					runes := []rune(val.String())
+					if index < 0 || index > len(runes)-1 {
+						if isOptional {
+							continue
+						}
+						return nil, fmt.Errorf("index out of range: %w", &ErrIndexNotFound{Index: index})
+					}
+					res = append(res, ValueOf(string(runes[index])))
 				case reflect.Slice, reflect.Array:
 					if index < 0 || index > val.Len()-1 {
 						if isOptional {
