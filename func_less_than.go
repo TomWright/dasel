@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/util"
 	"reflect"
 	"sort"
 )
@@ -49,7 +50,7 @@ var LessThanFunc = BasicFunction{
 				return false, nil
 			}
 
-			gotValue := fmt.Sprint(gotValues[0].Interface())
+			gotValue := util.ToString(gotValues[0].Interface())
 
 			// The values are equal
 			if gotValue == cmp.value {

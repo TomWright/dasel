@@ -1,7 +1,7 @@
 package dasel
 
 import (
-	"fmt"
+	"github.com/tomwright/dasel/v2/util"
 	"strings"
 )
 
@@ -22,7 +22,7 @@ var JoinFunc = BasicFunction{
 
 			res := make([]string, len(gotValues))
 			for k, v := range gotValues {
-				res[k] = fmt.Sprint(v.Interface())
+				res[k] = util.ToString(v.Interface())
 			}
 			return res, nil
 		}
@@ -36,7 +36,7 @@ var JoinFunc = BasicFunction{
 		if len(args) == 0 {
 			values := make([]string, len(input))
 			for k, v := range input {
-				values[k] = fmt.Sprint(v.Interface())
+				values[k] = util.ToString(v.Interface())
 			}
 			res = append(res, ValueOf(strings.Join(values, separator)))
 			return res, nil

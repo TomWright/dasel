@@ -1,6 +1,7 @@
 package dasel
 
 import (
+	"github.com/tomwright/dasel/v2/dencoding"
 	"strings"
 	"testing"
 )
@@ -15,15 +16,13 @@ func TestJoinFunc(t *testing.T) {
 		}),
 	)
 
-	original := map[string]interface{}{
-		"name": map[string]interface{}{
-			"first": "Tom",
-			"last":  "Wright",
-		},
-		"colours": []interface{}{
+	original := dencoding.NewMap().
+		Set("name", dencoding.NewMap().
+			Set("first", "Tom").
+			Set("last", "Wright")).
+		Set("colours", []interface{}{
 			"red", "green", "blue",
-		},
-	}
+		})
 
 	t.Run(
 		"JoinCommaSeparator",
@@ -131,11 +130,10 @@ func TestJoinFunc(t *testing.T) {
 		"JoinManyLists",
 		selectTestAssert(
 			"all().join(\\,,all())",
-			map[string]interface{}{
-				"x": []interface{}{1, 2, 3},
-				"y": []interface{}{4, 5, 6},
-				"z": []interface{}{7, 8, 9},
-			},
+			dencoding.NewMap().
+				Set("x", []interface{}{1, 2, 3}).
+				Set("y", []interface{}{4, 5, 6}).
+				Set("z", []interface{}{7, 8, 9}),
 			func(t *testing.T, got []any) {
 				required := []string{"1", "2", "3", "4", "5", "6", "7", "8", "9"}
 				if len(got) != 1 {

@@ -8,10 +8,10 @@ import (
 	"testing"
 )
 
-var tomlBytes = []byte(`names = ["John", "Frank"]
+var tomlBytes = []byte(`names = ['John', 'Frank']
 
 [person]
-  name = "Tom"
+name = 'Tom'
 `)
 var tomlMap = map[string]interface{}{
 	"person": map[string]interface{}{
@@ -48,7 +48,7 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			return
 		}
 		if string(tomlBytes) != string(got) {
-			t.Errorf("expected:\n%s\ngot:\n%s", tomlBytes, got)
+			t.Errorf("expected:\n---\n%s\n---\ngot:\n---\n%s\n---", tomlBytes, got)
 		}
 	})
 	t.Run("SingleDocument", func(t *testing.T) {
@@ -71,7 +71,7 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 		expBuf, _ := storage.Colourise(string(tomlBytes), "toml")
 		exp := expBuf.Bytes()
 		if !reflect.DeepEqual(exp, got) {
-			t.Errorf("expected %v, got %v", exp, got)
+			t.Errorf("expected %v, got %v", string(exp), string(got))
 		}
 	})
 	t.Run("SingleDocumentCustomIndent", func(t *testing.T) {
@@ -81,10 +81,10 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			return
 		}
 		got := string(res)
-		exp := `names = ["John", "Frank"]
+		exp := `names = ['John', 'Frank']
 
 [person]
-   name = "Tom"
+   name = 'Tom'
 `
 		if exp != got {
 			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
@@ -108,10 +108,10 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := `asd
+		exp := `'asd'
 `
 		if exp != string(got) {
-			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
+			t.Errorf("expected:\n---\n%s\n---\ngot:\n---\n%s\n---", exp, got)
 		}
 	})
 	t.Run("DefaultValue", func(t *testing.T) {
@@ -120,19 +120,19 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := `asd
+		exp := `'asd'
 `
 		if exp != string(got) {
 			t.Errorf("expected:\n%s\ngot:\n%s", exp, got)
 		}
 	})
 	t.Run("MultiDocumentValue", func(t *testing.T) {
-		got, err := (&storage.TOMLParser{}).ToBytes(dasel.ValueOf([]interface{}{"asd", "123"}).WithMetadata("isMultiDocument", true))
+		got, err := (&storage.TOMLParser{}).ToBytes(dasel.ValueOf([]interface{}{"asd", 123}).WithMetadata("isMultiDocument", true))
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := `asd
+		exp := `'asd'
 123
 `
 		if exp != string(got) {

@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/util"
 	"reflect"
 )
 
@@ -51,7 +52,7 @@ var EqualFunc = BasicFunction{
 				return false, nil
 			}
 
-			gotValue := fmt.Sprint(gotValues[0].Interface())
+			gotValue := util.ToString(gotValues[0].Interface())
 			return gotValue == cmp.value, nil
 		}
 

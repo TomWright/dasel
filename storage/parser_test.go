@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
@@ -171,27 +172,23 @@ func TestNewWriteParserFromFilename(t *testing.T) {
 	}
 }
 
-var jsonData = map[string]interface{}{
-	"name": "Tom",
-	"preferences": map[string]interface{}{
-		"favouriteColour": "red",
-	},
-	"colours": []interface{}{"red", "green", "blue"},
-	"colourCodes": []interface{}{
-		map[string]interface{}{
-			"name": "red",
-			"rgb":  "ff0000",
-		},
-		map[string]interface{}{
-			"name": "green",
-			"rgb":  "00ff00",
-		},
-		map[string]interface{}{
-			"name": "blue",
-			"rgb":  "0000ff",
-		},
-	},
-}
+var jsonData = dencoding.NewMap().
+	Set("name", "Tom").
+	Set("preferences", dencoding.NewMap().
+		Set("favouriteColour", "red"),
+	).
+	Set("colours", []any{"red", "green", "blue"}).
+	Set("colourCodes", []any{
+		dencoding.NewMap().
+			Set("name", "red").
+			Set("rgb", "ff0000"),
+		dencoding.NewMap().
+			Set("name", "green").
+			Set("rgb", "00ff00"),
+		dencoding.NewMap().
+			Set("name", "blue").
+			Set("rgb", "0000ff"),
+	})
 
 func TestLoadFromFile(t *testing.T) {
 	t.Run("ValidJSON", func(t *testing.T) {
@@ -200,9 +197,10 @@ func TestLoadFromFile(t *testing.T) {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := jsonData
-		if !reflect.DeepEqual(exp, data.Interface()) {
-			t.Errorf("data does not match: exp %v, got %v", exp, data)
+		exp := jsonData.KeyValues()
+		got := data.Interface().(*dencoding.Map).KeyValues()
+		if !reflect.DeepEqual(exp, got) {
+			t.Errorf("data does not match: exp %v, got %v", exp, got)
 		}
 	})
 	t.Run("BaseFilePath", func(t *testing.T) {

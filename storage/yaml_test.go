@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
@@ -10,39 +11,35 @@ import (
 
 var yamlBytes = []byte(`name: Tom
 numbers:
-- 1
-- 2
+    - 1
+    - 2
 `)
-var yamlMap = map[string]interface{}{
-	"name": "Tom",
-	"numbers": []interface{}{
-		1,
-		2,
-	},
-}
+var yamlMap = dencoding.NewMap().
+	Set("name", "Tom").
+	Set("numbers", []interface{}{
+		int64(1),
+		int64(2),
+	})
 
 var yamlBytesMulti = []byte(`name: Tom
 ---
 name: Jim
 `)
 var yamlMapMulti = []interface{}{
-	map[string]interface{}{
-		"name": "Tom",
-	},
-	map[string]interface{}{
-		"name": "Jim",
-	},
+	dencoding.NewMap().Set("name", "Tom"),
+	dencoding.NewMap().Set("name", "Jim"),
 }
 
 func TestYAMLParser_FromBytes(t *testing.T) {
 	t.Run("Valid", func(t *testing.T) {
-		got, err := (&storage.YAMLParser{}).FromBytes(yamlBytes)
+		gotFromBytes, err := (&storage.YAMLParser{}).FromBytes(yamlBytes)
 		if err != nil {
 			t.Errorf("unexpected error: %s", err)
 			return
 		}
-		exp := yamlMap
-		if !reflect.DeepEqual(exp, got.Interface()) {
+		exp := yamlMap.KeyValues()
+		got := gotFromBytes.Interface().(*dencoding.Map).KeyValues()
+		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
 		}
 	})

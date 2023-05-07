@@ -1,8 +1,6 @@
 package dasel
 
-import (
-	"fmt"
-)
+import "github.com/tomwright/dasel/v2/util"
 
 var StringFunc = BasicFunction{
 	name: "string",
@@ -16,7 +14,7 @@ var StringFunc = BasicFunction{
 		res := make(Values, len(input))
 
 		for k, v := range args {
-			res[k] = ValueOf(fmt.Sprint(v))
+			res[k] = ValueOf(util.ToString(v))
 		}
 
 		return res, nil
