@@ -387,7 +387,13 @@ func makeAddressable(value reflect.Value) reflect.Value {
 	if isdencodingMap(unpacked) {
 		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
-			om.Set(kv.Key, makeAddressable(reflect.ValueOf(kv.Value)).Interface())
+			var val any
+			if v := deref(reflect.ValueOf(kv.Value)); v.IsValid() {
+				val = makeAddressable(v).Interface()
+			} else {
+				val = nil
+			}
+			om.Set(kv.Key, val)
 		}
 		return value
 	}
@@ -438,7 +444,11 @@ func deref(value reflect.Value) reflect.Value {
 	if isdencodingMap(unpacked) {
 		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
-			om.Set(kv.Key, deref(reflect.ValueOf(kv.Value)).Interface())
+			if v := deref(reflect.ValueOf(kv.Value)); v.IsValid() {
+				om.Set(kv.Key, v.Interface())
+			} else {
+				om.Set(kv.Key, nil)
+			}
 		}
 		return value
 	}
