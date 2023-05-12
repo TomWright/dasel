@@ -175,4 +175,33 @@ c: bar`)),
 		nil,
 		nil,
 	))
+
+	t.Run("Issue316", runTest(
+		[]string{"-r", "json"},
+		[]byte(`{
+  "a": "alice",
+  "b": null,
+  "c": [
+    {
+      "d": 9,
+      "e": null
+    },
+    null
+  ]
+}`),
+		newline([]byte(`{
+  "a": "alice",
+  "b": null,
+  "c": [
+    {
+      "d": 9,
+      "e": null
+    },
+    null
+  ]
+}`)),
+		nil,
+		nil,
+	))
+
 }
