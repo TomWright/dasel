@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v2.3.0] - 2023-05-29
+
 ### Changed
 
 - Maps are now ordered internally.
@@ -565,8 +569,9 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.2.0...HEAD
-[v2.1.2]: https://github.com/TomWright/dasel/compare/v2.1.2...v2.2.0
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.0...HEAD
+[v2.3.0]: https://github.com/TomWright/dasel/compare/v2.2.0...v2.3.0
+[v2.2.0]: https://github.com/TomWright/dasel/compare/v2.1.2...v2.2.0
 [v2.1.2]: https://github.com/TomWright/dasel/compare/v2.1.1...v2.1.2
 [v2.1.1]: https://github.com/TomWright/dasel/compare/v2.1.0...v2.1.1
 [v2.1.0]: https://github.com/TomWright/dasel/compare/v2.0.2...v2.1.0
