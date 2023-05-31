@@ -204,4 +204,18 @@ c: bar`)),
 		nil,
 	))
 
+	// Hex, binary and octal values in YAML
+	t.Run("Issue326", runTest(
+		[]string{"-r", "yaml"},
+		[]byte(`hex: 0x1234
+binary: 0b1001
+octal: 0o10
+`),
+		newline([]byte(`hex: 4660
+binary: 9
+octal: 8`)),
+		nil,
+		nil,
+	))
+
 }

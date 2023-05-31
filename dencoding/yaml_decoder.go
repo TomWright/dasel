@@ -113,7 +113,7 @@ func (decoder *YAMLDecoder) getScalarNodeValue(node *yaml.Node) (any, error) {
 	case yamlTagFloat:
 		return strconv.ParseFloat(node.Value, 64)
 	case yamlTagInt:
-		return strconv.ParseInt(node.Value, 10, 64)
+		return strconv.ParseInt(node.Value, 0, 64)
 	case yamlTagString:
 		return node.Value, nil
 	default:

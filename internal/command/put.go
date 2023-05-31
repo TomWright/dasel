@@ -104,7 +104,7 @@ func runPutCommand(opts *putOptions, cmd *cobra.Command) error {
 	case "string":
 		toSet = opts.Value
 	case "int":
-		intValue, err := strconv.Atoi(opts.Value)
+		intValue, err := strconv.ParseInt(opts.Value, 0, 64)
 		if err != nil {
 			return fmt.Errorf("invalid int value: %w", err)
 		}

@@ -63,6 +63,49 @@ func TestJoinFunc(t *testing.T) {
 	)
 
 	t.Run(
+		"JoinNewlineSeparator",
+		selectTestAssert(
+			"name.all().join(\\\n)",
+			original,
+			func(t *testing.T, got []any) {
+				if len(got) != 1 {
+					t.Errorf("expected 1 result, got %v", got)
+					return
+				}
+				str, ok := got[0].(string)
+				if !ok {
+					t.Errorf("expected 1st result to be a string, got %T", got[0])
+					return
+				}
+
+				exp := "Tom\nWright"
+				if exp != str {
+					t.Errorf("expected %v, got %v", exp, str)
+					return
+				}
+
+				//gotStrs := strings.Split(str, ",")
+				//for _, req := range required {
+				//	found := false
+				//	for _, got := range gotStrs {
+				//		if got == req {
+				//			found = true
+				//			continue
+				//		}
+				//	}
+				//	if !found {
+				//		t.Errorf("expected %v, got %v", required, got)
+				//	}
+				//}
+				//if len(got) != 1 {
+				//	t.Errorf("expected 1 result, got %v", got)
+				//	return
+				//}
+			},
+		),
+	)
+
+	t.Run(
 		"JoinSpaceSeparator",
 		selectTestAssert(
 			"name.all().join( )",
