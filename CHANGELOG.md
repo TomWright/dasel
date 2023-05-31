@@ -9,6 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v2.3.3] - 2023-05-31
+
+### Fixed
+
+- Errors when selecting data are now correctly handled.
+
 ## [v2.3.2] - 2023-05-31
 
 ### Fixed
@@ -581,7 +587,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.3...HEAD
+[v2.3.3]: https://github.com/TomWright/dasel/compare/v2.3.2...v2.3.3
 [v2.3.2]: https://github.com/TomWright/dasel/compare/v2.3.1...v2.3.2
 [v2.3.1]: https://github.com/TomWright/dasel/compare/v2.3.0...v2.3.1
 [v2.3.0]: https://github.com/TomWright/dasel/compare/v2.2.0...v2.3.0
