@@ -57,6 +57,9 @@ func (v Value) Interface() interface{} {
 
 // Len returns v's length.
 func (v Value) Len() int {
+	if v.IsDencodingMap() {
+		return len(v.Interface().(*dencoding.Map).Keys())
+	}
 	switch v.Kind() {
 	case reflect.Array, reflect.Chan, reflect.Map, reflect.Slice, reflect.String:
 		return v.Unpack().Len()
@@ -104,7 +107,7 @@ func containsKind(kinds []reflect.Kind, kind reflect.Kind) bool {
 
 var dencodingMapType = reflect.TypeOf(&dencoding.Map{})
 
-func isdencodingMap(value reflect.Value) bool {
+func isDencodingMap(value reflect.Value) bool {
 	return value.Kind() == reflect.Ptr && value.Type() == dencodingMapType
 }
 
@@ -114,7 +117,7 @@ func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Valu
 	}
 	res := value
 	for {
-		if isdencodingMap(res) {
+		if isDencodingMap(res) {
 			return res
 		}
 		if !containsKind(kinds, res.Kind()) {
@@ -389,7 +392,7 @@ func makeAddressableMap(value reflect.Value) reflect.Value {
 func makeAddressable(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
-	if isdencodingMap(unpacked) {
+	if isDencodingMap(unpacked) {
 		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
 			var val any
@@ -446,7 +449,7 @@ func derefMap(value reflect.Value) reflect.Value {
 func deref(value reflect.Value) reflect.Value {
 	unpacked := unpackReflectValue(value)
 
-	if isdencodingMap(unpacked) {
+	if isDencodingMap(unpacked) {
 		om := value.Interface().(*dencoding.Map)
 		for _, kv := range om.KeyValues() {
 			if v := deref(reflect.ValueOf(kv.Value)); v.IsValid() {

@@ -2,6 +2,7 @@ package dasel
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"reflect"
 	"sort"
 	"strings"
@@ -67,9 +68,19 @@ var KeysFunc = BasicFunction{
 
 				res[i] = ValueOf(list)
 			default:
-				return nil, &ErrInvalidType{
-					ExpectedTypes: []string{"slice", "array", "map"},
-					CurrentType:   val.Kind().String(),
+				if val.IsDencodingMap() {
+					dencodingMap := val.Interface().(*dencoding.Map)
+					mapKeys := dencodingMap.Keys()
+					list := make([]any, 0, len(mapKeys))
+					for _, k := range mapKeys {
+						list = append(list, k)
+					}
+					res[i] = ValueOf(list)
+				} else {
+					return nil, &ErrInvalidType{
+						ExpectedTypes: []string{"slice", "array", "map"},
+						CurrentType:   val.Kind().String(),
+					}
 				}
 			}
 		}

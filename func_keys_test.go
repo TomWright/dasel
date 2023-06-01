@@ -1,6 +1,9 @@
 package dasel
 
-import "testing"
+import (
+	"github.com/tomwright/dasel/v2/dencoding"
+	"testing"
+)
 
 func TestKeysFunc(t *testing.T) {
 	testdata := map[string]any{
@@ -9,6 +12,10 @@ func TestKeysFunc(t *testing.T) {
 		},
 		"list":   []any{111, 222, 333},
 		"string": "something",
+		"dencodingMap": dencoding.NewMap().
+			Set("a", 1).
+			Set("b", 2).
+			Set("c", 3),
 	}
 
 	t.Run(
@@ -16,7 +23,7 @@ func TestKeysFunc(t *testing.T) {
 		selectTest(
 			"keys()",
 			testdata,
-			[]any{[]any{"list", "object", "string"}},
+			[]any{[]any{"list", "object", "string", "dencodingMap"}},
 		),
 	)
 
@@ -33,6 +40,15 @@ func TestKeysFunc(t *testing.T) {
 		"Object",
 		selectTest(
 			"object.keys()",
+			testdata,
+			[]any{[]any{"a", "b", "c"}}, // sorted
+		),
+	)
+
+	t.Run(
+		"Dencoding Map",
+		selectTest(
+			"dencodingMap.keys()",
 			testdata,
 			[]any{[]any{"a", "b", "c"}}, // sorted
 		),

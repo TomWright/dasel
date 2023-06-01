@@ -9,6 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v2.3.4] - 2023-06-01
+
+### Fixed
+
+- `len` function now works with new map type.
+- `keys` function now works with new map type.
+
 ## [v2.3.3] - 2023-05-31
 
 ### Fixed
@@ -587,7 +594,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.3...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.4...HEAD
+[v2.3.4]: https://github.com/TomWright/dasel/compare/v2.3.3...v2.3.4
 [v2.3.3]: https://github.com/TomWright/dasel/compare/v2.3.2...v2.3.3
 [v2.3.2]: https://github.com/TomWright/dasel/compare/v2.3.1...v2.3.2
 [v2.3.1]: https://github.com/TomWright/dasel/compare/v2.3.0...v2.3.1
