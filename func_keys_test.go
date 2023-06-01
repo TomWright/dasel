@@ -23,7 +23,7 @@ func TestKeysFunc(t *testing.T) {
 		selectTest(
 			"keys()",
 			testdata,
-			[]any{[]any{"list", "object", "string", "dencodingMap"}},
+			[]any{[]any{"dencodingMap", "list", "object", "string"}},
 		),
 	)
 
