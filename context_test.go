@@ -17,9 +17,7 @@ func sameSlice(x, y []interface{}) bool {
 
 	// Test for equality ignoring ordering
 	diff := make([]interface{}, len(y))
-	for k, v := range y {
-		diff[k] = v
-	}
+	copy(diff, y)
 	for _, xv := range x {
 		for di, dv := range diff {
 			if reflect.DeepEqual(xv, dv) {
