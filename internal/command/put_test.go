@@ -163,4 +163,13 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	// https://github.com/TomWright/dasel/issues/327
+	t.Run("Yaml0xStringQuoted", runTest(
+		[]string{"put", "-r", "yaml", "-t", "string", "--pretty=false", "-v", "0x12_11", "t"},
+		[]byte(`t:`),
+		newline([]byte(`t: "0x12_11"`)),
+		nil,
+		nil,
+	))
 }

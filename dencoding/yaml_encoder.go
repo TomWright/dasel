@@ -4,6 +4,7 @@ import (
 	"github.com/tomwright/dasel/v2/util"
 	"gopkg.in/yaml.v3"
 	"io"
+	"strconv"
 )
 
 // YAMLEncoder wraps a standard yaml encoder to implement custom ordering logic.
@@ -104,8 +105,17 @@ func yamlSliceToNode(value []any) (*yaml.Node, error) {
 }
 
 func yamlScalarToNode(value any) (*yaml.Node, error) {
-	return &yaml.Node{
+	res := &yaml.Node{
 		Kind:  yaml.ScalarNode,
 		Value: util.ToString(value),
-	}, nil
+	}
+	switch v := value.(type) {
+	case string:
+		// If the string can be evaluated as a number, quote it.
+		if _, err := strconv.ParseInt(v, 0, 64); err == nil {
+			res.Style = yaml.DoubleQuotedStyle
+			return res, nil
+		}
+	}
+	return res, nil
 }
