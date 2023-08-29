@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Small internal optimisation (https://github.com/TomWright/dasel/pull/341)
 - Update to go 1.21
+- Upgrade dependencies
 
 ## [v2.3.4] - 2023-06-01
 

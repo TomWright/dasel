@@ -2,7 +2,7 @@ package storage
 
 import (
 	"bytes"
-	"github.com/alecthomas/chroma/quick"
+	"github.com/alecthomas/chroma/v2/quick"
 )
 
 // ColouriseStyle is the style used when colourising output.
