@@ -1,6 +1,6 @@
 module github.com/tomwright/dasel/v2
 
-go 1.18
+go 1.21
 
 require (
 	github.com/alecthomas/chroma v0.10.0
