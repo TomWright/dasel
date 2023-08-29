@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Resolved an issue with YAML parser that was causing strings to be read as numbers.
+- Timestamps can now be resolved as expected in YAML.
 
 ## [v2.3.4] - 2023-06-01
 

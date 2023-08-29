@@ -1,14 +1,15 @@
 package dencoding
 
 const (
-	yamlTagString = "!!str"
-	yamlTagMap    = "!!map"
-	yamlTagArray  = "!!seq"
-	yamlTagNull   = "!!null"
-	yamlTagBinary = "!!binary"
-	yamlTagBool   = "!!bool"
-	yamlTagInt    = "!!int"
-	yamlTagFloat  = "!!float"
+	yamlTagString    = "!!str"
+	yamlTagMap       = "!!map"
+	yamlTagArray     = "!!seq"
+	yamlTagNull      = "!!null"
+	yamlTagBinary    = "!!binary"
+	yamlTagBool      = "!!bool"
+	yamlTagInt       = "!!int"
+	yamlTagFloat     = "!!float"
+	yamlTagTimestamp = "!!timestamp"
 )
 
 // YAMLEncoderOption is identifies an option that can be applied to a YAML encoder.

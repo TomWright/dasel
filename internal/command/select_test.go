@@ -218,4 +218,14 @@ octal: 8`)),
 		nil,
 	))
 
+	t.Run("Issue331 - YAML to JSON", runTest(
+		[]string{"-r", "yaml", "-w", "json"},
+		[]byte(`createdAt: 2023-06-13T20:19:48.531620935Z`),
+		newline([]byte(`{
+  "createdAt": "2023-06-13T20:19:48.531620935Z"
+}`)),
+		nil,
+		nil,
+	))
+
 }

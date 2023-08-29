@@ -7,6 +7,7 @@ import (
 	"io"
 	"reflect"
 	"strconv"
+	"time"
 )
 
 // YAMLDecoder wraps a standard yaml encoder to implement custom ordering logic.
@@ -116,6 +117,12 @@ func (decoder *YAMLDecoder) getScalarNodeValue(node *yaml.Node) (any, error) {
 		return strconv.ParseInt(node.Value, 0, 64)
 	case yamlTagString:
 		return node.Value, nil
+	case yamlTagTimestamp:
+		value, ok := parseTimestamp(node.Value)
+		if !ok {
+			return value, fmt.Errorf("could not parse timestamp: %v", node.Value)
+		}
+		return value, nil
 	default:
 		return nil, fmt.Errorf("unhandled scalar node tag: %v", node.ShortTag())
 	}
@@ -127,4 +134,41 @@ func (decoder *YAMLDecoder) nextNode() (*yaml.Node, error) {
 		return nil, err
 	}
 	return &node, nil
+}
+
+// This is a subset of the formats allowed by the regular expression
+// defined at http://yaml.org/type/timestamp.html.
+var allowedTimestampFormats = []string{
+	"2006-1-2T15:4:5.999999999Z07:00", // RCF3339Nano with short date fields.
+	"2006-1-2t15:4:5.999999999Z07:00", // RFC3339Nano with short date fields and lower-case "t".
+	"2006-1-2 15:4:5.999999999",       // space separated with no time zone
+	"2006-1-2",                        // date only
+	// Notable exception: time.Parse cannot handle: "2001-12-14 21:59:43.10 -5"
+	// from the set of examples.
+}
+
+// parseTimestamp parses s as a timestamp string and
+// returns the timestamp and reports whether it succeeded.
+// Timestamp formats are defined at http://yaml.org/type/timestamp.html
+// Copied from yaml.v3.
+func parseTimestamp(s string) (time.Time, bool) {
+	// TODO write code to check all the formats supported by
+	// http://yaml.org/type/timestamp.html instead of using time.Parse.
+
+	// Quick check: all date formats start with YYYY-.
+	i := 0
+	for ; i < len(s); i++ {
+		if c := s[i]; c < '0' || c > '9' {
+			break
+		}
+	}
+	if i != 4 || i == len(s) || s[i] != '-' {
+		return time.Time{}, false
+	}
+	for _, format := range allowedTimestampFormats {
+		if t, err := time.Parse(format, s); err == nil {
+			return t, true
+		}
+	}
+	return time.Time{}, false
 }
