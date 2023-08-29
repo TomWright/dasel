@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Update to go 1.21
 - Upgrade dependencies
 
+### Fixed
+
+- Resolved an issue with YAML parser that was causing strings to be read as numbers.
+
 ## [v2.3.4] - 2023-06-01
 
 ### Fixed
