@@ -9,7 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
-## [v2.3.5] - 20230-08-29
+## [v2.3.6] - 2023-08-30
+
+### Fixed
+
+- XML is now formatted correctly. (https://github.com/TomWright/dasel/issues/354)
+
+## [v2.3.5] - 2023-08-29
 
 ### Changed
 
@@ -607,7 +613,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.5...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.3.6...HEAD
+[v2.3.6]: https://github.com/TomWright/dasel/compare/v2.3.5...v2.3.6
 [v2.3.5]: https://github.com/TomWright/dasel/compare/v2.3.4...v2.3.5
 [v2.3.4]: https://github.com/TomWright/dasel/compare/v2.3.3...v2.3.4
 [v2.3.3]: https://github.com/TomWright/dasel/compare/v2.3.2...v2.3.3

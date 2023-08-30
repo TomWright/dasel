@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"fmt"
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"strings"
 
 	"github.com/clbanning/mxj/v2"
@@ -66,28 +67,36 @@ func (p *XMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]by
 	}
 
 	writeMap := func(val interface{}) error {
-		if m, ok := val.(map[string]interface{}); ok {
-			mv := mxj.New()
-			for k, v := range m {
-				mv[k] = v
-			}
+		var m map[string]interface{}
 
-			var byteData []byte
-			var err error
-			if prettyPrint {
-				byteData, err = mv.XmlIndent("", indent)
-			} else {
-				byteData, err = mv.Xml()
-			}
-
-			if err != nil {
-				return err
-			}
-			buf.Write(byteData)
-			buf.Write([]byte("\n"))
-			return nil
+		switch v := val.(type) {
+		case *dencoding.Map:
+			m = v.UnorderedData()
+		case map[string]any:
+			m = v
+		default:
+			_, err := buf.Write([]byte(fmt.Sprintf("%v\n", val)))
+			return err
 		}
-		buf.Write([]byte(fmt.Sprintf("%v\n", val)))
+
+		mv := mxj.New()
+		for k, v := range m {
+			mv[k] = v
+		}
+
+		var byteData []byte
+		var err error
+		if prettyPrint {
+			byteData, err = mv.XmlIndent("", indent)
+		} else {
+			byteData, err = mv.Xml()
+		}
+
+		if err != nil {
+			return err
+		}
+		buf.Write(byteData)
+		buf.Write([]byte("\n"))
 		return nil
 	}
 
@@ -101,6 +110,11 @@ func (p *XMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]by
 			if err := writeMap(value.Index(i).Interface()); err != nil {
 				return nil, err
 			}
+		}
+	case value.IsDencodingMap():
+		dm := value.Interface().(*dencoding.Map)
+		if err := writeMap(dm.UnorderedData()); err != nil {
+			return nil, err
 		}
 	default:
 		if err := writeMap(value.Interface()); err != nil {
