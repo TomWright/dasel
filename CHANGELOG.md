@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Fixed
+
+- Resolved an issue with YAML parser that was causing strings to be read as booleans.
 
 ## [v2.3.6] - 2023-08-30
 
