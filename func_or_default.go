@@ -27,7 +27,7 @@ var OrDefaultFunc = BasicFunction{
 				notFound := false
 				if errors.Is(err, &ErrPropertyNotFound{}) {
 					notFound = true
-				} else if errors.Is(err, &ErrIndexNotFound{}) {
+				} else if errors.Is(err, &ErrIndexNotFound{Index: -1}) {
 					notFound = true
 				}
 				if notFound {
@@ -36,10 +36,13 @@ var OrDefaultFunc = BasicFunction{
 					return Value{}, err
 				}
 			}
-			if len(gotValues) != 1 {
-				return Value{}, fmt.Errorf("orDefault expects selector to return exactly 1 value")
+			if len(gotValues) == 1 && err == nil {
+				return gotValues[0], nil
 			}
-			return gotValues[0], err
+			if err != nil {
+				return Value{}, err
+			}
+			return Value{}, fmt.Errorf("orDefault expects selector to return exactly 1 value")
 		}
 
 		res := make(Values, 0)
