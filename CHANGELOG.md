@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `orDefault()` function.
+
 ### Fixed
 
 - Resolved an issue with YAML parser that was causing strings to be read as booleans.
