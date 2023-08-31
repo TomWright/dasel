@@ -172,4 +172,20 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("YamlBoolLikeStringTrue", runTest(
+		[]string{"put", "-r", "yaml", "-t", "string", "--pretty=false", "-v", "true", "t"},
+		[]byte(`t:`),
+		newline([]byte(`t: "true"`)),
+		nil,
+		nil,
+	))
+
+	t.Run("YamlBoolLikeStringFalse", runTest(
+		[]string{"put", "-r", "yaml", "-t", "string", "--pretty=false", "-v", "false", "t"},
+		[]byte(`t:`),
+		newline([]byte(`t: "false"`)),
+		nil,
+		nil,
+	))
 }

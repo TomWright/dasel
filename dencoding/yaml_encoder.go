@@ -111,10 +111,12 @@ func yamlScalarToNode(value any) (*yaml.Node, error) {
 	}
 	switch v := value.(type) {
 	case string:
-		// If the string can be evaluated as a number, quote it.
-		if _, err := strconv.ParseInt(v, 0, 64); err == nil {
+		if v == "true" || v == "false" {
+			// If the string can be evaluated as a bool, quote it.
 			res.Style = yaml.DoubleQuotedStyle
-			return res, nil
+		} else if _, err := strconv.ParseInt(v, 0, 64); err == nil {
+			// If the string can be evaluated as a number, quote it.
+			res.Style = yaml.DoubleQuotedStyle
 		}
 	}
 	return res, nil
