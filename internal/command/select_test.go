@@ -228,4 +228,28 @@ octal: 8`)),
 		nil,
 	))
 
+	t.Run("OrDefault", runTest(
+		[]string{"-r", "json", "all().orDefault(locale,string(nope))"},
+		[]byte(`{
+  "-LCr5pXw_fN32IqNDr4E": {
+    "bookCategory": "poetry",
+    "locale": "en-us",
+    "mediaType": "book",
+    "publisher": "Pomelo Books",
+    "title": "Sound Waves",
+    "type": "poetry"
+  },
+  "-LDDHjkdY0306fZdvhEQ": {
+    "ISBN13": "978-1534402966",
+    "bookCategory": "fiction",
+    "title": "What Can You Do with a Toolbox?",
+    "type": "picturebook"
+  }
+}`),
+		newline([]byte(`"en-us"
+"nope"`)),
+		nil,
+		nil,
+	))
+
 }
