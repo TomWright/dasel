@@ -9,7 +9,7 @@ func TestOrDefaultFunc(t *testing.T) {
 		"orDefault()",
 		map[string]interface{}{},
 		&ErrUnexpectedFunctionArgs{
-			Function: "property",
+			Function: "orDefault",
 			Args:     []string{},
 		}),
 	)
