@@ -5,9 +5,6 @@ import (
 	"fmt"
 )
 
-// ErrPropertyNotFound
-// ErrIndexNotFound
-
 var OrDefaultFunc = BasicFunction{
 	name: "orDefault",
 	runFn: func(c *Context, s *Step, args []string) (Values, error) {
