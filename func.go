@@ -68,6 +68,7 @@ func standardFunctions() *FunctionCollection {
 		LastFunc,
 		PropertyFunc,
 		AppendFunc,
+		OrDefaultFunc,
 
 		// Filters
 		FilterFunc,
