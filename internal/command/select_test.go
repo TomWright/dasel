@@ -228,7 +228,7 @@ octal: 8`)),
 		nil,
 	))
 
-	t.Run("OrDefault", runTest(
+	t.Run("OrDefaultString", runTest(
 		[]string{"-r", "json", "all().orDefault(locale,string(nope))"},
 		[]byte(`{
   "-LCr5pXw_fN32IqNDr4E": {
@@ -248,6 +248,30 @@ octal: 8`)),
 }`),
 		newline([]byte(`"en-us"
 "nope"`)),
+		nil,
+		nil,
+	))
+
+	t.Run("Issue364 - CSV root element part 1", runTest(
+		[]string{"-r", "csv", "-w", "csv", "all().merge()"},
+		[]byte(`A,B,C
+a,b,c
+d,e,f`),
+		newline([]byte(`A,B,C
+a,b,c
+d,e,f`)),
+		nil,
+		nil,
+	))
+
+	t.Run("Issue364 - CSV root element part 2", runTest(
+		[]string{"-r", "csv", "-w", "csv"},
+		[]byte(`A,B,C
+a,b,c
+d,e,f`),
+		newline([]byte(`A,B,C
+a,b,c
+d,e,f`)),
 		nil,
 		nil,
 	))

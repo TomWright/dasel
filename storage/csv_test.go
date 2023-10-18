@@ -2,6 +2,7 @@ package storage_test
 
 import (
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"testing"
@@ -11,15 +12,13 @@ var csvBytes = []byte(`id,name
 1,Tom
 2,Jim
 `)
-var csvMap = []map[string]interface{}{
-	{
-		"id":   "1",
-		"name": "Tom",
-	},
-	{
-		"id":   "2",
-		"name": "Jim",
-	},
+var csvMap = []*dencoding.Map{
+	dencoding.NewMap().
+		Set("id", "1").
+		Set("name", "Tom"),
+	dencoding.NewMap().
+		Set("id", "2").
+		Set("name", "Jim"),
 }
 
 func TestCSVParser_FromBytes(t *testing.T) {

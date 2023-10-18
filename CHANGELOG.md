@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Resolved an issue with YAML parser that was causing strings to be read as booleans.
+- Fix a parsing issue with CSV types that forced you to expand and merge in order for it selects to work [Issue 364](https://github.com/TomWright/dasel/issues/364). 
 
 ## [v2.3.6] - 2023-08-30
 
