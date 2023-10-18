@@ -18,7 +18,7 @@ type PlainParser struct {
 var ErrPlainParserNotImplemented = fmt.Errorf("PlainParser.FromBytes not implemented")
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *PlainParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *PlainParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	return dasel.Value{}, ErrPlainParserNotImplemented
 }
 

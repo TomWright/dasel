@@ -19,7 +19,7 @@ type YAMLParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *YAMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *YAMLParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	res := make([]interface{}, 0)
 
 	decoder := dencoding.NewYAMLDecoder(bytes.NewReader(byteData))

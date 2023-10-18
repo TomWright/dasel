@@ -27,12 +27,26 @@ type CSVDocument struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *CSVParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *CSVParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	if byteData == nil {
 		return dasel.Value{}, fmt.Errorf("could not read csv file: no data")
 	}
 
 	reader := csv.NewReader(bytes.NewBuffer(byteData))
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionCSVComma:
+			if value, ok := o.Value.(rune); ok {
+				reader.Comma = value
+			}
+		case OptionCSVComment:
+			if value, ok := o.Value.(rune); ok {
+				reader.Comment = value
+			}
+		}
+	}
+
 	res := make([]*dencoding.Map, 0)
 	records, err := reader.ReadAll()
 	if err != nil {
@@ -157,6 +171,19 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 func (p *CSVParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]byte, error) {
 	buffer := new(bytes.Buffer)
 	writer := csv.NewWriter(buffer)
+
+	for _, o := range options {
+		switch o.Key {
+		case OptionCSVComma:
+			if value, ok := o.Value.(rune); ok {
+				writer.Comma = value
+			}
+		case OptionCSVComment:
+			if value, ok := o.Value.(bool); ok {
+				writer.UseCRLF = value
+			}
+		}
+	}
 
 	// Allow for multi document output by just appending documents on the end of each other.
 	// This is really only supported so as we have nicer output when converting to CSV from

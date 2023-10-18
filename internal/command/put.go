@@ -32,6 +32,10 @@ func putFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("pretty", true, "Pretty print the output.")
 	cmd.Flags().Bool("colour", false, "Print colourised output.")
 	cmd.Flags().Bool("escape-html", false, "Escape HTML tags when writing output.")
+	cmd.Flags().String("csv-comma", ",", "Comma separator to use when working with csv files.")
+	cmd.Flags().String("csv-write-comma", "", "Comma separator used when writing csv files. Overrides csv-comma when writing.")
+	cmd.Flags().String("csv-comment", "", "Comma separator used when reading csv files.")
+	cmd.Flags().Bool("csv-crlf", false, "True to use CRLF when writing CSV files.")
 
 	_ = cmd.MarkFlagFilename("file")
 }
@@ -47,12 +51,18 @@ func putRunE(cmd *cobra.Command, args []string) error {
 	colourFlag, _ := cmd.Flags().GetBool("colour")
 	escapeHTMLFlag, _ := cmd.Flags().GetBool("escape-html")
 	outFlag, _ := cmd.Flags().GetString("out")
+	csvComma, _ := cmd.Flags().GetString("csv-comma")
+	csvWriteComma, _ := cmd.Flags().GetString("csv-write-comma")
+	csvComment, _ := cmd.Flags().GetString("csv-comment")
+	csvCRLF, _ := cmd.Flags().GetBool("csv-crlf")
 
 	opts := &putOptions{
 		Read: &readOptions{
-			Reader:   nil,
-			Parser:   readParserFlag,
-			FilePath: fileFlag,
+			Reader:     nil,
+			Parser:     readParserFlag,
+			FilePath:   fileFlag,
+			CsvComma:   csvComma,
+			CsvComment: csvComment,
 		},
 		Write: &writeOptions{
 			Writer:      nil,
@@ -61,6 +71,8 @@ func putRunE(cmd *cobra.Command, args []string) error {
 			PrettyPrint: prettyPrintFlag,
 			Colourise:   colourFlag,
 			EscapeHTML:  escapeHTMLFlag,
+			CsvComma:    csvWriteComma,
+			CsvUseCRLF:  csvCRLF,
 		},
 		Selector:  selectorFlag,
 		ValueType: typeFlag,

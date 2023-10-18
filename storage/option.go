@@ -32,6 +32,30 @@ func EscapeHTMLOption(enabled bool) ReadWriteOption {
 	}
 }
 
+// CsvCommaOption returns an option that modifies the separator character for CSV files.
+func CsvCommaOption(comma rune) ReadWriteOption {
+	return ReadWriteOption{
+		Key:   OptionCSVComma,
+		Value: comma,
+	}
+}
+
+// CsvCommentOption returns an option that modifies the comment character for CSV files.
+func CsvCommentOption(comma rune) ReadWriteOption {
+	return ReadWriteOption{
+		Key:   OptionCSVComment,
+		Value: comma,
+	}
+}
+
+// CsvUseCRLFOption returns an option that modifies the comment character for CSV files.
+func CsvUseCRLFOption(enabled bool) ReadWriteOption {
+	return ReadWriteOption{
+		Key:   OptionCSVUseCRLF,
+		Value: enabled,
+	}
+}
+
 // OptionKey is a defined type for keys within a ReadWriteOption.
 type OptionKey string
 
@@ -44,6 +68,12 @@ const (
 	OptionColourise OptionKey = "colourise"
 	// OptionEscapeHTML is the key used with EscapeHTMLOption.
 	OptionEscapeHTML OptionKey = "escapeHtml"
+	// OptionCSVComma is the key used with CsvCommaOption.
+	OptionCSVComma OptionKey = "csvComma"
+	// OptionCSVComment is the key used with CsvCommentOption.
+	OptionCSVComment OptionKey = "csvComment"
+	// OptionCSVUseCRLF is the key used with CsvUseCRLFOption.
+	OptionCSVUseCRLF OptionKey = "csvUseCRLF"
 )
 
 // ReadWriteOption is an option to be used when writing.

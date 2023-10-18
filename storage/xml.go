@@ -27,7 +27,7 @@ type XMLParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *XMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *XMLParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	if byteData == nil {
 		return dasel.Value{}, fmt.Errorf("cannot parse nil xml data")
 	}

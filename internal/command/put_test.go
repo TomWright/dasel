@@ -188,4 +188,16 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("CsvChangeSeparator", runTest(
+		[]string{"put", "-r", "csv", "-t", "int", "-v", "5", "--csv-write-comma", ".", "[0].a"},
+		[]byte(`a,b
+1,2
+3,4`),
+		newline([]byte(`a.b
+5.2
+3.4`)),
+		nil,
+		nil,
+	))
 }

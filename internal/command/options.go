@@ -16,6 +16,10 @@ type readOptions struct {
 	Parser string
 	// FilePath is the path to the source file.
 	FilePath string
+	// CsvComma is the comma character used when reading CSV files.
+	CsvComma string
+	// CsvComment is the comment character used when reading CSV files.
+	CsvComment string
 }
 
 func (o *readOptions) readFromStdin() bool {
@@ -49,6 +53,14 @@ func (o *readOptions) rootValue(cmd *cobra.Command) (dasel.Value, error) {
 		return dasel.Value{}, fmt.Errorf("could not get read parser: %w", err)
 	}
 
+	options := make([]storage.ReadWriteOption, 0)
+	if o.CsvComma != "" {
+		options = append(options, storage.CsvCommaOption([]rune(o.CsvComma)[0]))
+	}
+	if o.CsvComment != "" {
+		options = append(options, storage.CsvCommentOption([]rune(o.CsvComment)[0]))
+	}
+
 	reader := o.Reader
 	if reader == nil {
 		if o.readFromStdin() {
@@ -63,7 +75,7 @@ func (o *readOptions) rootValue(cmd *cobra.Command) (dasel.Value, error) {
 		}
 	}
 
-	return storage.Load(parser, reader)
+	return storage.Load(parser, reader, options...)
 }
 
 type writeOptions struct {
@@ -77,6 +89,11 @@ type writeOptions struct {
 	PrettyPrint bool
 	Colourise   bool
 	EscapeHTML  bool
+
+	// CsvComma is the comma character used when writing CSV files.
+	CsvComma string
+	// CsvUseCRLF determines whether CRLF is used when writing CSV files.
+	CsvUseCRLF bool
 }
 
 func (o *writeOptions) writeToStdout() bool {
@@ -121,6 +138,15 @@ func (o *writeOptions) writeValues(cmd *cobra.Command, readOptions *readOptions,
 		storage.ColouriseOption(o.Colourise),
 		storage.EscapeHTMLOption(o.EscapeHTML),
 		storage.PrettyPrintOption(o.PrettyPrint),
+		storage.CsvUseCRLFOption(o.CsvUseCRLF),
+	}
+
+	if o.CsvComma == "" && readOptions.CsvComma != "" {
+		o.CsvComma = readOptions.CsvComma
+	}
+
+	if o.CsvComma != "" {
+		options = append(options, storage.CsvCommaOption([]rune(o.CsvComma)[0]))
 	}
 
 	writer := o.Writer

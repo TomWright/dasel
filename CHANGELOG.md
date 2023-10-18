@@ -10,6 +10,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - `orDefault()` function. [See docs](https://daseldocs.tomwright.me/functions/ordefault)
+- `--csv-comma` flag to change the csv separator.
+- `--csv-write-comma` flag to change the csv separator specifically for writes.
+- `--csv-comment` flag to change the csv comment character.
+- `--csv-crlf` flag to enable or disable CRLF output when working with csv files.
 
 ### Fixed
 
