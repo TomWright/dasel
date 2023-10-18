@@ -228,4 +228,28 @@ octal: 8`)),
 		nil,
 	))
 
+	t.Run("Issue364 - CSV root element part 1", runTest(
+		[]string{"-r", "csv", "-w", "csv", "all().merge()"},
+		[]byte(`A,B,C
+a,b,c
+d,e,f`),
+		newline([]byte(`A,B,C
+a,b,c
+d,e,f`)),
+		nil,
+		nil,
+	))
+
+	t.Run("Issue364 - CSV root element part 2", runTest(
+		[]string{"-r", "csv", "-w", "csv"},
+		[]byte(`A,B,C
+a,b,c
+d,e,f`),
+		newline([]byte(`A,B,C
+a,b,c
+d,e,f`)),
+		nil,
+		nil,
+	))
+
 }
