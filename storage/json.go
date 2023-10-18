@@ -18,7 +18,7 @@ type JSONParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *JSONParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *JSONParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	res := make([]any, 0)
 
 	decoder := dencoding.NewJSONDecoder(bytes.NewReader(byteData))

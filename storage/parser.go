@@ -50,7 +50,7 @@ func (e UnknownParserErr) Error() string {
 // ReadParser can be used to convert bytes to data.
 type ReadParser interface {
 	// FromBytes returns some data that is represented by the given bytes.
-	FromBytes(byteData []byte) (dasel.Value, error)
+	FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error)
 }
 
 // WriteParser can be used to convert data to bytes.
@@ -104,21 +104,21 @@ func NewWriteParserFromString(parser string) (WriteParser, error) {
 }
 
 // LoadFromFile loads data from the given file.
-func LoadFromFile(filename string, p ReadParser) (dasel.Value, error) {
+func LoadFromFile(filename string, p ReadParser, options ...ReadWriteOption) (dasel.Value, error) {
 	f, err := os.Open(filename)
 	if err != nil {
 		return dasel.Value{}, fmt.Errorf("could not open file: %w", err)
 	}
-	return Load(p, f)
+	return Load(p, f, options...)
 }
 
 // Load loads data from the given io.Reader.
-func Load(p ReadParser, reader io.Reader) (dasel.Value, error) {
+func Load(p ReadParser, reader io.Reader, options ...ReadWriteOption) (dasel.Value, error) {
 	byteData, err := io.ReadAll(reader)
 	if err != nil {
 		return dasel.Value{}, fmt.Errorf("could not read data: %w", err)
 	}
-	return p.FromBytes(byteData)
+	return p.FromBytes(byteData, options...)
 }
 
 // Write writes the value to the given io.Writer.

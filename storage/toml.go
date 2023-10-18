@@ -18,7 +18,7 @@ type TOMLParser struct {
 }
 
 // FromBytes returns some data that is represented by the given bytes.
-func (p *TOMLParser) FromBytes(byteData []byte) (dasel.Value, error) {
+func (p *TOMLParser) FromBytes(byteData []byte, options ...ReadWriteOption) (dasel.Value, error) {
 	res := make([]interface{}, 0)
 
 	decoder := dencoding.NewTOMLDecoder(bytes.NewReader(byteData))

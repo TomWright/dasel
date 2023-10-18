@@ -300,4 +300,40 @@ d,e,f`)),
 		nil,
 	))
 
+	t.Run("CSV custom separator", runTest(
+		[]string{"-r", "csv", "-w", "csv", "--csv-comma", "."},
+		[]byte(`A.B.C
+a.b.c
+d.e.f`),
+		newline([]byte(`A.B.C
+a.b.c
+d.e.f`)),
+		nil,
+		nil,
+	))
+
+	t.Run("CSV change separator", runTest(
+		[]string{"-r", "csv", "-w", "csv", "--csv-comma", ".", "--csv-write-comma", ","},
+		[]byte(`A.B.C
+a.b.c
+d.e.f`),
+		newline([]byte(`A,B,C
+a,b,c
+d,e,f`)),
+		nil,
+		nil,
+	))
+
+	t.Run("CSV change from default separator", runTest(
+		[]string{"-r", "csv", "-w", "csv", "--csv-write-comma", "."},
+		[]byte(`A,B,C
+a,b,c
+d,e,f`),
+		newline([]byte(`A.B.C
+a.b.c
+d.e.f`)),
+		nil,
+		nil,
+	))
+
 }
