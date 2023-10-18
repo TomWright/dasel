@@ -33,7 +33,7 @@ func (p *CSVParser) FromBytes(byteData []byte) (dasel.Value, error) {
 	}
 
 	reader := csv.NewReader(bytes.NewBuffer(byteData))
-	res := make([]map[string]interface{}, 0)
+	res := make([]*dencoding.Map, 0)
 	records, err := reader.ReadAll()
 	if err != nil {
 		return dasel.Value{}, fmt.Errorf("could not read csv file: %w", err)
@@ -47,13 +47,13 @@ func (p *CSVParser) FromBytes(byteData []byte) (dasel.Value, error) {
 			headers = row
 			continue
 		}
-		rowRes := make(map[string]interface{})
+		rowRes := dencoding.NewMap()
 		allEmpty := true
 		for index, val := range row {
 			if val != "" {
 				allEmpty = false
 			}
-			rowRes[headers[index]] = val
+			rowRes.Set(headers[index], val)
 		}
 		if !allEmpty {
 			res = append(res, rowRes)
@@ -115,6 +115,30 @@ func interfaceToCSVDocument(val interface{}) (*CSVDocument, error) {
 					if !found {
 						headers = append(headers, objectKey)
 					}
+				}
+			}
+		}
+		sort.Strings(headers)
+		return &CSVDocument{
+			Value:   mapVals,
+			Headers: headers,
+		}, nil
+
+	case []*dencoding.Map:
+		mapVals := make([]map[string]interface{}, 0)
+		headers := make([]string, 0)
+		for _, val := range v {
+			mapVals = append(mapVals, val.UnorderedData())
+			for _, objectKey := range val.Keys() {
+				found := false
+				for _, existingHeader := range headers {
+					if existingHeader == objectKey {
+						found = true
+						break
+					}
+				}
+				if !found {
+					headers = append(headers, objectKey)
 				}
 			}
 		}
