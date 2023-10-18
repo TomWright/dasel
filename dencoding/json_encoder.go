@@ -6,6 +6,10 @@ import (
 	"io"
 )
 
+// lastOptions contains the options that the last JSONEncoder was created with.
+// Find a better way of passing this information into nested MarshalJSON calls.
+var lastOptions []JSONEncoderOption
+
 // JSONEncoder wraps a standard json encoder to implement custom ordering logic.
 type JSONEncoder struct {
 	encoder *json.Encoder
@@ -20,6 +24,7 @@ func NewJSONEncoder(w io.Writer, options ...JSONEncoderOption) *JSONEncoder {
 	for _, o := range options {
 		o.ApplyEncoder(encoder)
 	}
+	lastOptions = options
 	return encoder
 }
 
@@ -64,21 +69,20 @@ func (option jsonEncodeIndent) ApplyEncoder(encoder *JSONEncoder) {
 // MarshalJSON JSON encodes the map and returns the bytes.
 // This maintains ordering.
 func (m *Map) MarshalJSON() ([]byte, error) {
+
 	buf := new(bytes.Buffer)
 	buf.Write([]byte(`{`))
+	encoder := NewJSONEncoder(buf, lastOptions...)
 	for i, key := range m.keys {
 		last := i == len(m.keys)-1
-		keyBytes, err := json.Marshal(key)
-		if err != nil {
+
+		if err := encoder.Encode(key); err != nil {
 			return nil, err
 		}
-		buf.Write(keyBytes)
 		buf.Write([]byte(`:`))
-		valBytes, err := json.Marshal(m.data[key])
-		if err != nil {
+		if err := encoder.Encode(m.data[key]); err != nil {
 			return nil, err
 		}
-		buf.Write(valBytes)
 		if !last {
 			buf.Write([]byte(`,`))
 		}

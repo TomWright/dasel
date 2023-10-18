@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v2.4.1] - 2023-10-18
+
+### Fixed
+
+- JSON output now acts as expected regarding the EscapeHTML flag.
+
 ## [v2.4.0] - 2023-10-18
 
 ### Added
@@ -626,7 +634,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.4.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.4.1...HEAD
+[v2.4.1]: https://github.com/TomWright/dasel/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/TomWright/dasel/compare/v2.3.6...v2.4.0
 [v2.3.6]: https://github.com/TomWright/dasel/compare/v2.3.5...v2.3.6
 [v2.3.5]: https://github.com/TomWright/dasel/compare/v2.3.4...v2.3.5

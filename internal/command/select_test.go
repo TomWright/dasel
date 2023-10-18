@@ -336,4 +336,46 @@ d.e.f`)),
 		nil,
 	))
 
+	t.Run("Issue351 incorrectly escaped html, default false", runTest(
+		[]string{"-r", "json"},
+		[]byte(`{
+  "field1": "A",
+  "field2": "A > B && B > C"
+}`),
+		newline([]byte(`{
+  "field1": "A",
+  "field2": "A > B && B > C"
+}`)),
+		nil,
+		nil,
+	))
+
+	t.Run("Issue351 incorrectly escaped html, specific false", runTest(
+		[]string{"-r", "json", "--escape-html=false"},
+		[]byte(`{
+  "field1": "A",
+  "field2": "A > B && B > C"
+}`),
+		newline([]byte(`{
+  "field1": "A",
+  "field2": "A > B && B > C"
+}`)),
+		nil,
+		nil,
+	))
+
+	t.Run("Issue351 correctly escaped html", runTest(
+		[]string{"-r", "json", "--escape-html=true"},
+		[]byte(`{
+  "field1": "A",
+  "field2": "A > B && B > C"
+}`),
+		newline([]byte(`{
+  "field1": "A",
+  "field2": "A \u003e B \u0026\u0026 B \u003e C"
+}`)),
+		nil,
+		nil,
+	))
+
 }
