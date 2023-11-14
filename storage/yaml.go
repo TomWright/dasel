@@ -7,6 +7,7 @@ import (
 	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/util"
 	"io"
+	"strconv"
 )
 
 func init() {
@@ -92,8 +93,10 @@ func (p *YAMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 				colourise = value
 			}
 		case OptionIndent:
-			if value, ok := o.Value.(int); ok {
-				encoderOptions = append(encoderOptions, dencoding.YAMLEncodeIndent(value))
+			if value, ok := o.Value.(string); ok {
+				if indent, err := strconv.Atoi(value); err == nil {
+					encoderOptions = append(encoderOptions, dencoding.YAMLEncodeIndent(indent))
+				}
 			}
 		}
 	}

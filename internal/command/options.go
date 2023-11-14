@@ -7,6 +7,7 @@ import (
 	"github.com/tomwright/dasel/v2/storage"
 	"io"
 	"os"
+	"strconv"
 )
 
 type readOptions struct {
@@ -94,6 +95,8 @@ type writeOptions struct {
 	CsvComma string
 	// CsvUseCRLF determines whether CRLF is used when writing CSV files.
 	CsvUseCRLF bool
+
+	Indent int
 }
 
 func (o *writeOptions) writeToStdout() bool {
@@ -147,6 +150,10 @@ func (o *writeOptions) writeValues(cmd *cobra.Command, readOptions *readOptions,
 
 	if o.CsvComma != "" {
 		options = append(options, storage.CsvCommaOption([]rune(o.CsvComma)[0]))
+	}
+
+	if o.Indent != 0 {
+		options = append(options, storage.IndentOption(strconv.Itoa(o.Indent)))
 	}
 
 	writer := o.Writer
