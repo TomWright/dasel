@@ -3,7 +3,7 @@ module github.com/tomwright/dasel/v2
 go 1.21
 
 require (
-	github.com/alecthomas/chroma/v2 v2.10.0
+	github.com/alecthomas/chroma/v2 v2.11.1
 	github.com/clbanning/mxj/v2 v2.7.0
 	github.com/pelletier/go-toml/v2 v2.1.0
 	github.com/spf13/cobra v1.8.0
