@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+- Add `man` that generates manpages for all dasel subcommands.
 
 ## [v2.4.1] - 2023-10-18
 
