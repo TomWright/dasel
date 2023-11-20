@@ -7,7 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
 - Add `man` that generates manpages for all dasel subcommands.
+
+### Fixed
+
+- Fixed an issue when [parsing empty input documents](https://github.com/TomWright/dasel/issues/374).
 
 ## [v2.4.1] - 2023-10-18
 

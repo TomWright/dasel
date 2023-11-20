@@ -103,11 +103,4 @@ func runSelectCommand(opts *selectOptions, cmd *cobra.Command) error {
 	}
 
 	return nil
-
-	// todo : check if this is still needed.
-	// if !rootNode.Value.IsValid() {
-	// 	rootNode = dasel.New(&storage.BasicSingleDocument{
-	// 		Value: map[string]interface{}{},
-	// 	})
-	// }
 }
