@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
 	"io"
 	"os"
@@ -76,7 +77,20 @@ func (o *readOptions) rootValue(cmd *cobra.Command) (dasel.Value, error) {
 		}
 	}
 
-	return storage.Load(parser, reader, options...)
+	rootNode, err := storage.Load(parser, reader, options...)
+	if err != nil {
+		return rootNode, err
+	}
+
+	if !rootNode.Value.IsValid() {
+		var defaultValue any = dencoding.NewMap()
+		if _, ok := parser.(*storage.CSVParser); ok {
+			defaultValue = []any{}
+		}
+		rootNode = dasel.ValueOf(defaultValue)
+	}
+
+	return rootNode, nil
 }
 
 type writeOptions struct {

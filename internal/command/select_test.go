@@ -378,4 +378,43 @@ d.e.f`)),
 		nil,
 	))
 
+	t.Run("Issue 374 empty input", func(t *testing.T) {
+		tests := []struct {
+			format string
+			exp    []byte
+		}{
+			{
+				format: "json",
+				exp:    []byte("{}\n"),
+			},
+			{
+				format: "toml",
+				exp:    []byte("\n"),
+			},
+			{
+				format: "yaml",
+				exp:    []byte("{}\n"),
+			},
+			{
+				format: "xml",
+				exp:    []byte("<doc/>\n"),
+			},
+			{
+				format: "csv",
+				exp:    []byte(""),
+			},
+		}
+
+		for _, test := range tests {
+			tc := test
+			t.Run(tc.format, runTest(
+				[]string{"-r", tc.format},
+				[]byte(``),
+				tc.exp,
+				nil,
+				nil,
+			))
+		}
+	})
+
 }

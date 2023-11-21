@@ -18,5 +18,8 @@ func NewRootCMD() *cobra.Command {
 		validateCommand(),
 	)
 
+	manCmd := manCommand(selectCmd)
+	selectCmd.AddCommand(manCmd)
+
 	return selectCmd
 }
