@@ -32,7 +32,7 @@ func putFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("pretty", true, "Pretty print the output.")
 	cmd.Flags().Bool("colour", false, "Print colourised output.")
 	cmd.Flags().Bool("escape-html", false, "Escape HTML tags when writing output.")
-	cmd.Flags().Int("indent", 0, "The indention level when writing files.")
+	cmd.Flags().Int("indent", 2, "The indention level when writing files.")
 	cmd.Flags().String("csv-comma", ",", "Comma separator to use when working with csv files.")
 	cmd.Flags().String("csv-write-comma", "", "Comma separator used when writing csv files. Overrides csv-comma when writing.")
 	cmd.Flags().String("csv-comment", "", "Comma separator used when reading csv files.")

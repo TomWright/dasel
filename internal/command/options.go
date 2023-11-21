@@ -8,7 +8,7 @@ import (
 	"github.com/tomwright/dasel/v2/storage"
 	"io"
 	"os"
-	"strconv"
+	"strings"
 )
 
 type readOptions struct {
@@ -167,7 +167,7 @@ func (o *writeOptions) writeValues(cmd *cobra.Command, readOptions *readOptions,
 	}
 
 	if o.Indent != 0 {
-		options = append(options, storage.IndentOption(strconv.Itoa(o.Indent)))
+		options = append(options, storage.IndentOption(strings.Repeat(" ", o.Indent)))
 	}
 
 	writer := o.Writer

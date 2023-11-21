@@ -27,6 +27,7 @@ func deleteFlags(cmd *cobra.Command) {
 	cmd.Flags().Bool("pretty", true, "Pretty print the output.")
 	cmd.Flags().Bool("colour", false, "Print colourised output.")
 	cmd.Flags().Bool("escape-html", false, "Escape HTML tags when writing output.")
+	cmd.Flags().Int("indent", 2, "The indention level when writing files.")
 	cmd.Flags().String("csv-comma", ",", "Comma separator to use when working with csv files.")
 	cmd.Flags().String("csv-write-comma", "", "Comma separator used when writing csv files. Overrides csv-comma when writing.")
 	cmd.Flags().String("csv-comment", "", "Comma separator used when reading csv files.")
@@ -44,6 +45,7 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 	colourFlag, _ := cmd.Flags().GetBool("colour")
 	escapeHTMLFlag, _ := cmd.Flags().GetBool("escape-html")
 	outFlag, _ := cmd.Flags().GetString("out")
+	indent, _ := cmd.Flags().GetInt("indent")
 	csvComma, _ := cmd.Flags().GetString("csv-comma")
 	csvWriteComma, _ := cmd.Flags().GetString("csv-write-comma")
 	csvComment, _ := cmd.Flags().GetString("csv-comment")
@@ -64,6 +66,7 @@ func deleteRunE(cmd *cobra.Command, args []string) error {
 			PrettyPrint: prettyPrintFlag,
 			Colourise:   colourFlag,
 			EscapeHTML:  escapeHTMLFlag,
+			Indent:      indent,
 			CsvComma:    csvWriteComma,
 			CsvUseCRLF:  csvCRLF,
 		},
