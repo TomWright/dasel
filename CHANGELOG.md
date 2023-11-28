@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v2.5.0] - 2023-11-28
+
 ### Added
 
 - Add `man` that generates manpages for all dasel subcommands.
@@ -640,7 +644,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.4.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.5.0...HEAD
+[v2.5.0]: https://github.com/TomWright/dasel/compare/v2.4.1...v2.5.0
 [v2.4.1]: https://github.com/TomWright/dasel/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/TomWright/dasel/compare/v2.3.6...v2.4.0
 [v2.3.6]: https://github.com/TomWright/dasel/compare/v2.3.5...v2.3.6
