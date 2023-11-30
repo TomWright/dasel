@@ -92,8 +92,8 @@ func (p *YAMLParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]b
 				colourise = value
 			}
 		case OptionIndent:
-			if value, ok := o.Value.(int); ok {
-				encoderOptions = append(encoderOptions, dencoding.YAMLEncodeIndent(value))
+			if value, ok := o.Value.(string); ok {
+				encoderOptions = append(encoderOptions, dencoding.YAMLEncodeIndent(len(value)))
 			}
 		}
 	}

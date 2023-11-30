@@ -200,4 +200,28 @@ func TestPutCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("VerifyCorrectIndentionForJSON", runTest(
+		[]string{"put", "-r", "json", "--indent", "6", "-t", "string", "--pretty=true", "-v", "Tom", "user"},
+		[]byte(`{}`),
+		newline([]byte("{\n      \"user\": \"Tom\"\n}")),
+		nil,
+		nil,
+	))
+
+	t.Run("VerifyCorrectIndentionForYAML", runTest(
+		[]string{"put", "-r", "yaml", "--indent", "6", "-t", "string", "-v", "Tom", "user.name"},
+		[]byte(``),
+		newline([]byte("user:\n      name: Tom")),
+		nil,
+		nil,
+	))
+
+	t.Run("VerifyCorrectIndentionForTOML", runTest(
+		[]string{"put", "-r", "toml", "--indent", "6", "-t", "string", "-v", "Tom", "user.name"},
+		[]byte(``),
+		newline([]byte("[user]\n      name = 'Tom'")),
+		nil,
+		nil,
+	))
 }
