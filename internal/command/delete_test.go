@@ -37,4 +37,28 @@ func TestDeleteCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("CheckIndentionForJSON", runTest(
+		[]string{"delete", "-r", "json", "--indent", "6", "--pretty=true", "x.y"},
+		[]byte(`{"x":{"x":1,"y":2}}`),
+		newline([]byte("{\n      \"x\": {\n            \"x\": 1\n      }\n}")),
+		nil,
+		nil,
+	))
+
+	t.Run("CheckIndentionForYAML", runTest(
+		[]string{"delete", "-r", "json", "-w", "yaml", "--indent", "6", "--pretty=true", "x.y"},
+		[]byte(`{"x":{"x":1,"y":2}}`),
+		newline([]byte("x:\n      x: 1")),
+		nil,
+		nil,
+	))
+
+	t.Run("CheckIndentionForTOML", runTest(
+		[]string{"delete", "-r", "json", "-w", "toml", "--indent", "6", "--pretty=true", "x.y"},
+		[]byte(`{"x":{"x":1,"y":2}}`),
+		newline([]byte("[x]\n      x = 1")),
+		nil,
+		nil,
+	))
 }

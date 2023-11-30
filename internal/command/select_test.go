@@ -89,6 +89,30 @@ func TestSelectCommand(t *testing.T) {
 		nil,
 	))
 
+	t.Run("VerifyCorrectIndentionForJSON", runTest(
+		[]string{"-r", "json", "--indent", "6", "--pretty=true", "users.all().filter(equal(flags.isBanned,true)).name"},
+		standardJsonSelectTestData(),
+		newline([]byte("{\n      \"first\": \"Jim\",\n      \"last\": \"Wright\"\n}")),
+		nil,
+		nil,
+	))
+
+	t.Run("VerifyCorrectIndentionForYAML", runTest(
+		[]string{"-r", "json", "-w", "yaml", "--indent", "6", "--pretty=true", "users.all().filter(equal(flags.isBanned,true))"},
+		standardJsonSelectTestData(),
+		newline([]byte("name:\n      first: Jim\n      last: Wright\nflags:\n      isBanned: true")),
+		nil,
+		nil,
+	))
+
+	t.Run("VerifyCorrectIndentionForTOML", runTest(
+		[]string{"-r", "json", "-w", "toml", "--indent", "6", "--pretty=true", "users.all().filter(equal(flags.isBanned,true))"},
+		standardJsonSelectTestData(),
+		newline([]byte("[flags]\n      isBanned = true\n\n[name]\n      first = 'Jim'\n      last = 'Wright'")),
+		nil,
+		nil,
+	))
+
 	t.Run("Issue258", runTest(
 		[]string{"-r", "json", "--pretty=false", "-w", "csv", "phones.all().mapOf(make,make,model,model,first,parent().parent().user.name.first,last,parent().parent().user.name.last).merge()"},
 		[]byte(`{
