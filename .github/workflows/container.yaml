@@ -16,12 +16,12 @@ jobs:
           - target-base-image: alpine
             tags: |
               ghcr.io/tomwright/dasel:alpine
-              ghcr.io/tomwright/dasel:${{ github.ref.name }}-alpine
+              ghcr.io/tomwright/dasel:${{ github.ref_name }}-alpine
           - target-base-image: debian:slim
             tags: |
               ghcr.io/tomwright/dasel:latest
-              ghcr.io/tomwright/dasel:${{ github.ref.name }}
-              ghcr.io/tomwright/dasel:${{ github.ref.name }}-slim
+              ghcr.io/tomwright/dasel:${{ github.ref_name }}
+              ghcr.io/tomwright/dasel:${{ github.ref_name }}-slim
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
@@ -37,7 +37,7 @@ jobs:
             load: true
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ github.ref.name }}
+              RELEASE_VERSION=${{ github.ref_name }}
               TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
             tags: ${{ matrix.tags }}
         - name: Test
@@ -55,6 +55,6 @@ jobs:
             push: true
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ github.ref.name }}
+              RELEASE_VERSION=${{ github.ref_name }}
               TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
             tags: ${{ matrix.tags }}
