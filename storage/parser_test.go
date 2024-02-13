@@ -3,12 +3,13 @@ package storage_test
 import (
 	"bytes"
 	"errors"
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/dencoding"
-	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/dencoding"
+	"github.com/tomwright/dasel/v2/storage"
 )
 
 func TestUnknownParserErr_Error(t *testing.T) {
@@ -205,7 +206,7 @@ func TestLoadFromFile(t *testing.T) {
 	})
 	t.Run("BaseFilePath", func(t *testing.T) {
 		_, err := storage.LoadFromFile("x.json", &storage.JSONParser{})
-		if err == nil || !strings.Contains(err.Error(), "could not open file") {
+		if err == nil || !strings.Contains(err.Error(), "could not open file for reading") {
 			t.Errorf("unexpected error: %v", err)
 			return
 		}

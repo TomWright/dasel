@@ -2,13 +2,14 @@ package command
 
 import (
 	"fmt"
+	"io"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/tomwright/dasel/v2"
 	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/storage"
-	"io"
-	"os"
-	"strings"
 )
 
 type readOptions struct {
@@ -70,7 +71,7 @@ func (o *readOptions) rootValue(cmd *cobra.Command) (dasel.Value, error) {
 		} else {
 			f, err := os.Open(o.FilePath)
 			if err != nil {
-				return dasel.Value{}, fmt.Errorf("could not open file: %s: %w", o.FilePath, err)
+				return dasel.Value{}, fmt.Errorf("could not open file for reading: %s: %w", o.FilePath, err)
 			}
 			defer f.Close()
 			reader = f
@@ -177,7 +178,7 @@ func (o *writeOptions) writeValues(cmd *cobra.Command, readOptions *readOptions,
 		} else {
 			f, err := os.Create(o.FilePath)
 			if err != nil {
-				return fmt.Errorf("could not open file: %s: %w", o.FilePath, err)
+				return fmt.Errorf("could not open file for writing: %s: %w", o.FilePath, err)
 			}
 			defer f.Close()
 			writer = f
