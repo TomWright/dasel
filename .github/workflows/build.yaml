@@ -2,8 +2,79 @@ on:
   push:
     tags:
       - 'v*.*.*'
+
+env:
+  GOLANG_VERSION: 1 # The Go version to download (if necessary) and use.
+
 name: Build
 jobs:
+  container:
+    strategy:
+      fail-fast: true
+      matrix:
+        tag:
+          - alpine
+          - latest
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+        - name: Docker login
+          run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
+        - name: Build and Export ${{ matrix.tag }}
+          if: matrix.tag == alpine
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            load: true
+            dockerfile: docker/${{ matrix.tag }}.Dockerfile
+            build-args: &build-args | 
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
+            tags: dasel:alpine-test
+        - name: Build and Export ${{ matrix.tag }}
+          if: matrix.tag == latest
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            load: true
+            dockerfile: docker/Dockerfile
+            build-args: *build-args
+            tags: dasel:debian-test
+        - name: Test ${{ matrix.tag }}
+          run: |
+            echo '{"hello": "World"}' | docker run -i --rm ghcr.io/tomwright/dasel:${{ matrix.tag }} -r json 'hello'
+        - name: Build and Push ${{ matrix.tag }}
+          if: matrix.tag == alpine
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            dockerfile: docker/${{ matrix.tag }}.Dockerfile
+            platforms: linux/amd64,linux/arm64
+            push: true
+            build-args: *build-args
+            tags: |
+              ghcr.io/tomwright/dasel:${{ matrix.tag }}
+              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-${{ matrix.tag }}
+        - name: Build and Push ${{ matrix.tag }}
+          if: matrix.tag == latest
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            dockerfile: docker/Dockerfile
+            platforms: linux/amd64,linux/arm64
+            push: true
+            build-args: *build-args
+            tags: |
+              ghcr.io/tomwright/dasel:${{ matrix.tag }}
+              ghcr.io/tomwright/dasel:buster-slim
+              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-${{ matrix.tag }}
+              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
+
   publish:
     strategy:
       matrix:
@@ -21,49 +92,41 @@ jobs:
             arch: amd64
             artifact_name: dasel_linux_amd64
             asset_name: dasel_linux_amd64
-            build_docker: true
             test_version: true
           - os: linux
             arch: 386
             artifact_name: dasel_linux_386
             asset_name: dasel_linux_386
-            build_docker: false
             test_version: false
           - os: darwin
             arch: amd64
             artifact_name: dasel_darwin_amd64
             asset_name: dasel_darwin_amd64
-            build_docker: false
             test_version: false
           - os: darwin
             arch: arm64
             artifact_name: dasel_darwin_arm64
             asset_name: dasel_darwin_arm64
-            build_docker: false
             test_version: false
           - os: windows
             arch: amd64
             artifact_name: dasel_windows_amd64.exe
             asset_name: dasel_windows_amd64.exe
-            build_docker: false
             test_version: false
           - os: windows
             arch: 386
             artifact_name: dasel_windows_386.exe
             asset_name: dasel_windows_386.exe
-            build_docker: false
             test_version: false
           - os: linux
             arch: arm64
             artifact_name: dasel_linux_arm64
             asset_name: dasel_linux_arm64
-            build_docker: false
             test_version: false
           - os: linux
             arch: arm
             artifact_name: dasel_linux_arm32
             asset_name: dasel_linux_arm32
-            build_docker: false
             test_version: false
         exclude:
             - os: darwin
@@ -80,7 +143,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: '^1.21.0' # The Go version to download (if necessary) and use.
+          go-version: '^${{ env.GOLANG_VERSION }}'
       - name: Set env
         run: echo RELEASE_VERSION=${GITHUB_REF:10} >> $GITHUB_ENV
       - name: Build
@@ -104,40 +167,3 @@ jobs:
           file: target/release/${{ matrix.artifact_name }}.gz
           asset_name: ${{ matrix.asset_name }}.gz
           tag: ${{ github.ref }}
-      - name: Build docker image
-        if: matrix.build_docker == true
-        run: |
-          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
-          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/alpine.Dockerfile -t tomwright/dasel:alpine .
-      - name: Test docker image
-        if: matrix.build_docker == true
-        run: |
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:latest -r json 'hello'
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:alpine -r json 'hello'
-      - name: Docker login
-        if: matrix.build_docker == true
-        run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
-      - name: Docker tag latest
-        if: matrix.build_docker == true
-        run: |
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:latest
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:buster-slim
-          docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:alpine
-      - name: Docker tag release
-        if: matrix.build_docker == true
-        run: |
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
-          docker tag tomwright/dasel:latest ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
-          docker tag tomwright/dasel:alpine ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
-      - name: Docker push latest
-        if: matrix.build_docker == true
-        run: |
-          docker push ghcr.io/tomwright/dasel:latest
-          docker push ghcr.io/tomwright/dasel:buster-slim
-          docker push ghcr.io/tomwright/dasel:alpine
-      - name: Docker push release
-        if: matrix.build_docker == true
-        run: |
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
-          docker push ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-alpine
