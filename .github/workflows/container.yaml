@@ -7,7 +7,7 @@ name: Container build, test and publish
 jobs:
   container:
     strategy:
-      fail-fast: true
+      fail-fast: false # true
       matrix:
         target-base-image:
           - alpine
@@ -39,10 +39,10 @@ jobs:
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref.name }}
               TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
-            tags: ${{ matrix.tags }}  # TODO: dasel:test
+            tags: ${{ matrix.tags }}
         - name: Test
           run: |
-            echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
+            echo '{"hello": "World"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -r json 'hello'
         - name: Docker login
           if: ${{ startsWith(github.ref, 'refs/tags/v') }}
           run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
