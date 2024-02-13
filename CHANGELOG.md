@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Support for `--indent` flag.
+- More descriptive errors when dasel fails to open a file.
 
 ## [v2.5.0] - 2023-11-28
 
