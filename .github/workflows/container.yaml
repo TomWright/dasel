@@ -9,9 +9,19 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        tag:
+        target-base-image:
           - alpine
-          - latest
+          - debian:slim
+        include:
+          - target-base-image: alpine
+            tags: |
+              ghcr.io/tomwright/dasel:alpine
+              ghcr.io/tomwright/dasel:${{ github.ref.name }}-alpine
+          - target-base-image: debian:slim
+            tags: |
+              ghcr.io/tomwright/dasel:latest
+              ghcr.io/tomwright/dasel:${{ github.ref.name }}
+              ghcr.io/tomwright/dasel:${{ github.ref.name }}-slim
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
@@ -20,61 +30,31 @@ jobs:
           uses: docker/setup-qemu-action@v3
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
-        - name: Build and Export ${{ matrix.tag }}
-          if: matrix.tag == 'alpine'
+        - name: Build and Export
           uses: docker/build-push-action@v5
           with:
             context: .
             load: true
-            file: docker/alpine.Dockerfile
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
-            tags: dasel:${{ matrix.tag }}-test
-        - name: Build and Export ${{ matrix.tag }}
-          if: matrix.tag == 'latest'
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            load: true
-            file: docker/Dockerfile
-            build-args: | 
-              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
-            tags: dasel:${{ matrix.tag }}-test
-        - name: Test ${{ matrix.tag }}
+              RELEASE_VERSION=${{ github.ref.name }}
+              TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
+            tags: ${{ matrix.tags }}  # TODO: dasel:test
+        - name: Test
           run: |
-            echo '{"hello": "World"}' | docker run -i --rm dasel:${{ matrix.tag }}-test -r json 'hello'
+            echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
         - name: Docker login
           if: ${{ startsWith(github.ref, 'refs/tags/v') }}
           run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
-        - name: Build and Push ${{ matrix.tag }}
-          if: ${{ startsWith(github.ref, 'refs/tags/v') && matrix.tag == 'alpine' }}
+        - name: Build and Push
+          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
           uses: docker/build-push-action@v5
           with:
             context: .
-            file: docker/alpine.Dockerfile
             platforms: linux/amd64,linux/arm64
             push: true
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
-            tags: |
-              ghcr.io/tomwright/dasel:${{ matrix.tag }}
-              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-${{ matrix.tag }}
-        - name: Build and Push ${{ matrix.tag }}
-          if: ${{ startsWith(github.ref, 'refs/tags/v') && matrix.tag == 'latest' }}
-          uses: docker/build-push-action@v5
-          with:
-            context: .
-            file: docker/Dockerfile
-            platforms: linux/amd64,linux/arm64
-            push: true
-            build-args: | 
-              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
-              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
-            tags: |
-              ghcr.io/tomwright/dasel:${{ matrix.tag }}
-              ghcr.io/tomwright/dasel:buster-slim
-              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-${{ matrix.tag }}
-              ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-buster-slim
+              RELEASE_VERSION=${{ github.ref.name }}
+              TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
+            tags: ${{ matrix.tags }}
