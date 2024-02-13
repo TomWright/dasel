@@ -29,7 +29,7 @@ jobs:
             context: .
             load: true
             dockerfile: docker/alpine.Dockerfile
-            build-args: &build-args | 
+            build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ env.RELEASE_VERSION }}
             tags: dasel:${{ matrix.tag }}-test
@@ -40,7 +40,9 @@ jobs:
             context: .
             load: true
             dockerfile: docker/Dockerfile
-            build-args: *build-args
+            build-args: | 
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
             tags: dasel:${{ matrix.tag }}-test
         - name: Test ${{ matrix.tag }}
           run: |
@@ -53,7 +55,9 @@ jobs:
             dockerfile: docker/alpine.Dockerfile
             platforms: linux/amd64,linux/arm64
             push: true
-            build-args: *build-args
+            build-args: | 
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
             tags: |
               ghcr.io/tomwright/dasel:${{ matrix.tag }}
               ghcr.io/tomwright/dasel:${{ env.RELEASE_VERSION }}-${{ matrix.tag }}
@@ -65,7 +69,9 @@ jobs:
             dockerfile: docker/Dockerfile
             platforms: linux/amd64,linux/arm64
             push: true
-            build-args: *build-args
+            build-args: | 
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ env.RELEASE_VERSION }}
             tags: |
               ghcr.io/tomwright/dasel:${{ matrix.tag }}
               ghcr.io/tomwright/dasel:buster-slim
