@@ -2,11 +2,12 @@ package storage
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2"
 	"io"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/tomwright/dasel/v2"
 )
 
 var readParsersByExtension = map[string]ReadParser{}
@@ -107,7 +108,7 @@ func NewWriteParserFromString(parser string) (WriteParser, error) {
 func LoadFromFile(filename string, p ReadParser, options ...ReadWriteOption) (dasel.Value, error) {
 	f, err := os.Open(filename)
 	if err != nil {
-		return dasel.Value{}, fmt.Errorf("could not open file: %w", err)
+		return dasel.Value{}, fmt.Errorf("could not open file for reading: %w", err)
 	}
 	return Load(p, f, options...)
 }
