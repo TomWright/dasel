@@ -9,9 +9,9 @@ jobs:
     strategy:
       fail-fast: false # true
       matrix:
-        target-base-image:
-          - alpine
-          - debian:slim
+        # target-base-image:
+        #   - alpine
+        #   - debian:slim
         include:
           - target-base-image: alpine
             tags: |
