@@ -20,8 +20,6 @@ jobs:
           uses: docker/setup-qemu-action@v3
         - name: Set up Docker Buildx
           uses: docker/setup-buildx-action@v3
-        - name: Docker login
-          run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
         - name: Build and Export ${{ matrix.tag }}
           if: matrix.tag == 'alpine'
           uses: docker/build-push-action@v5
@@ -47,6 +45,9 @@ jobs:
         - name: Test ${{ matrix.tag }}
           run: |
             echo '{"hello": "World"}' | docker run -i --rm dasel:${{ matrix.tag }}-test -r json 'hello'
+        - name: Docker login
+          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
         - name: Build and Push ${{ matrix.tag }}
           if: ${{ startsWith(github.ref, 'refs/tags/v') && matrix.tag == 'alpine' }}
           uses: docker/build-push-action@v5
