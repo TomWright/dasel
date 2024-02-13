@@ -17,11 +17,11 @@ jobs:
             tags: |
               ghcr.io/tomwright/dasel:alpine
               ghcr.io/tomwright/dasel:${{ github.ref_name }}-alpine
-          - target-base-image: debian:slim
+          - target-base-image: debian:bookworm-slim
             tags: |
               ghcr.io/tomwright/dasel:latest
               ghcr.io/tomwright/dasel:${{ github.ref_name }}
-              ghcr.io/tomwright/dasel:${{ github.ref_name }}-slim
+              ghcr.io/tomwright/dasel:${{ github.ref_name }}-bookworm-slim
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
