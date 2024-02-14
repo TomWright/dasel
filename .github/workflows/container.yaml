@@ -42,7 +42,6 @@ jobs:
         - name: Test
           run: |
             echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
-            - name: Login to GitHub Container Registry
         - if: ${{ ! startsWith(github.ref, 'refs/tags/v') }}
           name: Exit workflow if we're not releasing
           run: exit 0
