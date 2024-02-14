@@ -1,17 +1,14 @@
 on: [push, pull_request]
 
 env:
-  GOLANG_VERSION: 1 # The Go version to download (if necessary) and use.
+  GOLANG_VERSION: 1
 
 name: Container build, test and publish
 jobs:
   container:
     strategy:
-      fail-fast: false # true
+      fail-fast: true
       matrix:
-        # target-base-image:
-        #   - alpine
-        #   - debian:slim
         include:
           - target-base-image: alpine
             tags: |
@@ -39,13 +36,17 @@ jobs:
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
               TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
-            tags: ${{ matrix.tags }}
+            tags: dasel:test
         - name: Test
           run: |
-            echo '{"hello": "World"}' | docker run -i --rm ghcr.io/tomwright/dasel:latest -r json 'hello'
-        - name: Docker login
+            echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
+        - name: Login to GitHub Container Registry
           if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          run: echo "${{ secrets.GHCR_PAT }}" | docker login ghcr.io -u TomWright --password-stdin
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: TomWright
+            password: ${{ secrets.GHCR_PAT }}
         - name: Build and Push
           if: ${{ startsWith(github.ref, 'refs/tags/v') }}
           uses: docker/build-push-action@v5
