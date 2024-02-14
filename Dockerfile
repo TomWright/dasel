@@ -15,4 +15,4 @@ FROM ${TARGET_BASE_IMAGE}
 COPY --from=builder --chmod=755 /dasel /usr/local/bin/dasel
 
 ENTRYPOINT ["/usr/local/bin/dasel"]
-CMD []
+CMD ["--help"]
