@@ -43,34 +43,35 @@ jobs:
           run: |
             echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
         - name: Process version tag
-          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          uses: nowsprinting/check-version-format-action@v3
           id: version
-          uses: ncipollo/semantic-version-action@v1
+          with:
+            prefix: 'v'
         - name: Set version tag variables
-          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          if: ${{ steps.version.outputs.is_valid == 'true' }}
           run: |
-            if [ "$" ${{ matrix.platform }}" = "alpine" ]; then
+            if [ "${{ matrix.platform }}" = "alpine" ]; then
               {
                 echo 'VERSIONED_TAGS<<EOF'
-                ghcr.io/tomwright/dasel:v${{ steps.version.outputs.major }}-alpine
-                ghcr.io/tomwright/dasel:v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-alpine
+                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-alpine
+                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-alpine
                 echo EOF
               } >> "$GITHUB_ENV"
             else
               {
                 echo 'VERSIONED_TAGS<<EOF'
-                ghcr.io/tomwright/dasel:v${{ steps.version.outputs.major }}
-                ghcr.io/tomwright/dasel:v${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
+                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}
+                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
                 echo EOF
               } >> "$GITHUB_ENV"
             fi
-        - name: Login to GitHub Container Registry
-          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
-          uses: docker/login-action@v3
-          with:
-            registry: ghcr.io
-            username: TomWright
-            password: ${{ secrets.GHCR_PAT }}
+        # - name: Login to GitHub Container Registry
+        #   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        #   uses: docker/login-action@v3
+        #   with:
+        #     registry: ghcr.io
+        #     username: TomWright
+        #     password: ${{ secrets.GHCR_PAT }}
         - name: Build and Push
           if: ${{ startsWith(github.ref, 'refs/tags/v') }}
           uses: docker/build-push-action@v5
@@ -84,4 +85,4 @@ jobs:
               TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
             tags: |
               ${{ matrix.tags }}
-              ${{ matrix.tags }}
+              ${{ env.VERSIONED_TAGS }}
