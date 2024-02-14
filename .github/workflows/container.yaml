@@ -11,16 +11,15 @@ jobs:
       matrix:
         include:
           - platform: alpine
-            target-base-image: alpine:latest
+            platform-tag: latest
             tags: |
               ghcr.io/tomwright/dasel:alpine
               ghcr.io/tomwright/dasel:${{ github.ref_name }}-alpine
           - platform: debian
-            target-base-image: debian:bookworm-slim
+            platform-tag: bookworm-slim
             tags: |
               ghcr.io/tomwright/dasel:latest
               ghcr.io/tomwright/dasel:${{ github.ref_name }}
-              ghcr.io/tomwright/dasel:${{ github.ref_name }}-bookworm-slim
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
@@ -37,7 +36,8 @@ jobs:
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
-              TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
+              MAJOR_VERSION=${{ steps.version.outputs.major }}
+              TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
             tags: dasel:test
         - name: Test
           run: |
@@ -57,6 +57,11 @@ jobs:
               echo "EOF" >> $GITHUB_ENV
             else
               echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ github.ref_name }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}" >> $GITHUB_ENV
               echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}" >> $GITHUB_ENV
               echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
@@ -78,7 +83,8 @@ jobs:
             build-args: | 
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
-              TARGET_BASE_IMAGE=${{ matrix.target-base-image }}
+              MAJOR_VERSION=${{ steps.version.outputs.major }}
+              TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
             tags: |
               ${{ matrix.tags }}
               ${{ env.VERSIONED_TAGS }}
