@@ -2,6 +2,7 @@ on: [push, pull_request]
 
 env:
   GOLANG_VERSION: 1
+  IMAGE_NAME: ghcr.io/tomwright/dasel
 
 name: Container build, test and publish
 jobs:
@@ -12,14 +13,8 @@ jobs:
         include:
           - platform: alpine
             platform-tag: latest
-            tags: |
-              ghcr.io/tomwright/dasel:alpine
-              ghcr.io/tomwright/dasel:${{ github.ref_name }}-alpine
           - platform: debian
             platform-tag: bookworm-slim
-            tags: |
-              ghcr.io/tomwright/dasel:latest
-              ghcr.io/tomwright/dasel:${{ github.ref_name }}
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
@@ -42,7 +37,7 @@ jobs:
             build-args: |
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
-              MAJOR_VERSION=${{ steps.version.outputs.major }}
+              MAJOR_VERSION=${{ steps.version.outputs.major || 'v2' }}
               TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
             tags: dasel:test
         - name: Test
@@ -51,20 +46,26 @@ jobs:
         - name: Set version tag variables
           if: ${{ steps.version.outputs.is_valid == 'true' }}
           run: |
+            IMAGE=${{ env.IMAGE_NAME }}
+            MAJOR=${{ steps.version.outputs.major }}
+            MINOR=${{ steps.version.outputs.minor }}
+
             if [ "${{ matrix.platform }}" = "alpine" ]; then
               echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-alpine" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}-alpine" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             else
               echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ github.ref_name }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}" >> $GITHUB_ENV
-              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}" >> $GITHUB_ENV
+              echo "${IMAGE}:latest" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
         - name: Login to GitHub Container Registry
@@ -86,6 +87,4 @@ jobs:
               RELEASE_VERSION=${{ github.ref_name }}
               MAJOR_VERSION=${{ steps.version.outputs.major }}
               TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
-            tags: |
-              ${{ matrix.tags }}
-              ${{ env.VERSIONED_TAGS }}
+            tags: ${{ env.VERSIONED_TAGS }}
