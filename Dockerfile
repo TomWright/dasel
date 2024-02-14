@@ -12,7 +12,7 @@ RUN go build -o /dasel -ldflags="-X 'github.com/tomwright/dasel/${MAJOR_VERSION}
 
 FROM ${TARGET_BASE_IMAGE}
 
-COPY --from=builder --chmod=777 /dasel /usr/local/bin/dasel
+COPY --from=builder --chmod=755 /dasel /usr/local/bin/dasel
 
 ENTRYPOINT ["/usr/local/bin/dasel"]
 CMD []
