@@ -43,7 +43,7 @@ jobs:
           run: |
             echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
         - name: Process version tag
-          uses: nowsprinting/check-version-format-action@v3
+          uses: nowsprinting/check-version-format-action@v4
           id: version
           with:
             prefix: 'v'
@@ -51,19 +51,15 @@ jobs:
           if: ${{ steps.version.outputs.is_valid == 'true' }}
           run: |
             if [ "${{ matrix.platform }}" = "alpine" ]; then
-              {
-                echo 'VERSIONED_TAGS<<EOF'
-                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-alpine
-                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-alpine
-                echo EOF
-              } >> "$GITHUB_ENV"
+              echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}-alpine" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}-alpine" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
             else
-              {
-                echo 'VERSIONED_TAGS<<EOF'
-                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}
-                ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}
-                echo EOF
-              } >> "$GITHUB_ENV"
+              echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}" >> $GITHUB_ENV
+              echo "ghcr.io/tomwright/dasel:${{ steps.version.outputs.major }}.${{ steps.version.outputs.minor }}" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
             fi
         # - name: Login to GitHub Container Registry
         #   if: ${{ startsWith(github.ref, 'refs/tags/v') }}
