@@ -7,10 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v2.6.0] - 2024-02-15
+
 ### Added
 
 - Support for `--indent` flag.
 - More descriptive errors when dasel fails to open a file.
+
+### Changed
+
+- Docker build improvements in workflows.
 
 ## [v2.5.0] - 2023-11-28
 
@@ -647,7 +655,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.5.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v2.6.0...HEAD
+[v2.6.0]: https://github.com/TomWright/dasel/compare/v2.5.0...v2.6.0
 [v2.5.0]: https://github.com/TomWright/dasel/compare/v2.4.1...v2.5.0
 [v2.4.1]: https://github.com/TomWright/dasel/compare/v2.4.0...v2.4.1
 [v2.4.0]: https://github.com/TomWright/dasel/compare/v2.3.6...v2.4.0
