@@ -11,10 +11,10 @@ jobs:
       fail-fast: true
       matrix:
         include:
-          - platform: alpine
-            platform-tag: latest
-          - platform: debian
-            platform-tag: bookworm-slim
+          - distro: alpine
+            distro-tag: latest
+          - distro: debian
+            distro-tag: bookworm-slim
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
@@ -38,7 +38,7 @@ jobs:
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
               MAJOR_VERSION=${{ steps.version.outputs.major || 'v2' }}
-              TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
+              TARGET_BASE_IMAGE=${{ matrix.distro }}:${{ matrix.distro-tag }}
             tags: dasel:test
         - name: Test
           run: |
@@ -47,25 +47,29 @@ jobs:
           if: ${{ steps.version.outputs.is_valid == 'true' }}
           run: |
             IMAGE=${{ env.IMAGE_NAME }}
-            MAJOR=${{ steps.version.outputs.major }}
+            MAJOR=${{ steps.version.outputs.major_without_prefix }}
             MINOR=${{ steps.version.outputs.minor }}
+            PATCH=${{ steps.version.outputs.patch }}
 
-            if [ "${{ matrix.platform }}" = "alpine" ]; then
+            if [ "${{ matrix.distro }}" = "alpine" ]; then
               echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
-              echo "${IMAGE}:${MAJOR}-alpine" >> $GITHUB_ENV
-              echo "${IMAGE}:${MAJOR}.${MINOR}-alpine" >> $GITHUB_ENV
               echo "${IMAGE}:alpine" >> $GITHUB_ENV
               echo "${IMAGE}:${{ github.ref_name }}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}-alpine" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             else
               echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
               echo "${IMAGE}:latest" >> $GITHUB_ENV
               echo "${IMAGE}:${{ github.ref_name }}" >> $GITHUB_ENV
-              echo "${IMAGE}:${{ github.ref_name }}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
-              echo "${IMAGE}:${MAJOR}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
-              echo "${IMAGE}:${MAJOR}.${MINOR}-${{ matrix.platform-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
               echo "${IMAGE}:${MAJOR}" >> $GITHUB_ENV
               echo "${IMAGE}:${MAJOR}.${MINOR}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
               echo "EOF" >> $GITHUB_ENV
             fi
         - name: Login to GitHub Container Registry
@@ -86,5 +90,5 @@ jobs:
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
               MAJOR_VERSION=${{ steps.version.outputs.major }}
-              TARGET_BASE_IMAGE=${{ matrix.platform }}:${{ matrix.platform-tag }}
+              TARGET_BASE_IMAGE=${{ matrix.distro }}:${{ matrix.distro-tag }}
             tags: ${{ env.VERSIONED_TAGS }}
