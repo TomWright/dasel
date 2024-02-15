@@ -25,49 +25,41 @@ jobs:
           - os: linux
             arch: amd64
             artifact_name: dasel_linux_amd64
-            build_docker: true
             test_version: true
             test_execution: true
           - os: linux
             arch: 386
             artifact_name: dasel_linux_386
-            build_docker: false
             test_version: false
             test_execution: false
           - os: darwin
             arch: amd64
             artifact_name: dasel_darwin_amd64
-            build_docker: false
             test_version: false
             test_execution: false
           - os: darwin
             arch: arm64
             artifact_name: dasel_darwin_arm64
-            build_docker: false
             test_version: false
             test_execution: false
           - os: windows
             arch: amd64
             artifact_name: dasel_windows_amd64.exe
-            build_docker: false
             test_version: false
             test_execution: false
           - os: windows
             arch: 386
             artifact_name: dasel_windows_386.exe
-            build_docker: false
             test_version: false
             test_execution: false
           - os: linux
             arch: arm64
             artifact_name: dasel_linux_arm64
-            build_docker: false
             test_version: false
             test_execution: false
           - os: linux
             arch: arm
             artifact_name: dasel_linux_arm32
-            build_docker: false
             test_version: false
             test_execution: false
         exclude:
@@ -97,13 +89,3 @@ jobs:
         if: matrix.test_execution == true
         run: |
           echo '{"hello": "World"}' | ./target/release/${{ matrix.artifact_name }} -r json 'hello'
-      - name: Build docker image
-        if: matrix.build_docker == true
-        run: |
-          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/Dockerfile -t tomwright/dasel:latest .
-          docker build --build-arg daselpath=target/release/${{ matrix.artifact_name }} -f docker/alpine.Dockerfile -t tomwright/dasel:alpine .
-      - name: Test docker image
-        if: matrix.build_docker == true
-        run: |
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:latest -r json 'hello'
-          echo '{"hello": "World"}' | docker run -i --rm tomwright/dasel:alpine -r json 'hello'

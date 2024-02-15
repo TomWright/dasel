@@ -1,0 +1,94 @@
+on: [push, pull_request]
+
+env:
+  GOLANG_VERSION: 1
+  IMAGE_NAME: ghcr.io/tomwright/dasel
+
+name: Container build, test and publish
+jobs:
+  container:
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - distro: alpine
+            distro-tag: latest
+          - distro: debian
+            distro-tag: bookworm-slim
+    runs-on: ubuntu-latest
+    steps:
+        - name: Checkout
+          uses: actions/checkout@v4
+        - name: Set up QEMU
+          uses: docker/setup-qemu-action@v3
+        - name: Set up Docker Buildx
+          uses: docker/setup-buildx-action@v3
+        - name: Process version tag
+          if: ${{ startsWith(github.ref, 'refs/tags/v') }}
+          uses: nowsprinting/check-version-format-action@v4
+          id: version
+          with:
+            prefix: 'v'
+        - name: Build and Export
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            load: true
+            build-args: |
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ github.ref_name }}
+              MAJOR_VERSION=${{ steps.version.outputs.major || 'v2' }}
+              TARGET_BASE_IMAGE=${{ matrix.distro }}:${{ matrix.distro-tag }}
+            tags: dasel:test
+        - name: Test
+          run: |
+            echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
+        - name: Set version tag variables
+          if: ${{ steps.version.outputs.is_valid == 'true' }}
+          run: |
+            IMAGE=${{ env.IMAGE_NAME }}
+            MAJOR=${{ steps.version.outputs.major_without_prefix }}
+            MINOR=${{ steps.version.outputs.minor }}
+            PATCH=${{ steps.version.outputs.patch }}
+
+            if [ "${{ matrix.distro }}" = "alpine" ]; then
+              echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
+              echo "${IMAGE}:alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-alpine" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}-alpine" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            else
+              echo "VERSIONED_TAGS<<EOF" >> $GITHUB_ENV
+              echo "${IMAGE}:latest" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${{ github.ref_name }}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}-${{ matrix.distro-tag }}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}" >> $GITHUB_ENV
+              echo "${IMAGE}:${MAJOR}.${MINOR}.${PATCH}" >> $GITHUB_ENV
+              echo "EOF" >> $GITHUB_ENV
+            fi
+        - name: Login to GitHub Container Registry
+          if: ${{ steps.version.outputs.is_valid == 'true' }}
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: TomWright
+            password: ${{ secrets.GHCR_PAT }}
+        - name: Build and Push
+          if: ${{ steps.version.outputs.is_valid == 'true' }}
+          uses: docker/build-push-action@v5
+          with:
+            context: .
+            platforms: linux/amd64,linux/arm64
+            push: true
+            build-args: | 
+              GOLANG_VERSION=${{ env.GOLANG_VERSION }}
+              RELEASE_VERSION=${{ github.ref_name }}
+              MAJOR_VERSION=${{ steps.version.outputs.major }}
+              TARGET_BASE_IMAGE=${{ matrix.distro }}:${{ matrix.distro-tag }}
+            tags: ${{ env.VERSIONED_TAGS }}
