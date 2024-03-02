@@ -441,4 +441,13 @@ d.e.f`)),
 		}
 	})
 
+	t.Run("Issue 392 panic", runTest(
+		[]string{"-r", "csv", "--csv-comma", ";", "-w", "json", "equal([], )"},
+		[]byte(`Hello;There;
+1;2;`),
+		[]byte("false\n"),
+		nil,
+		nil,
+	))
+
 }

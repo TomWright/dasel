@@ -1,9 +1,10 @@
 package dasel
 
 import (
+	"reflect"
+
 	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/util"
-	"reflect"
 )
 
 // Value is a wrapper around reflect.Value that adds some handy helper funcs.
@@ -283,7 +284,8 @@ func (v Value) Index(i int) Value {
 func (v Value) Append() Value {
 	currentLen := v.Len()
 	newLen := currentLen + 1
-	updatedSlice := reflect.MakeSlice(sliceInterfaceType, newLen, newLen)
+
+	updatedSlice := reflect.MakeSlice(reflect.TypeOf(v.Interface()), newLen, newLen)
 	// copy all existing elements into updatedSlice.
 	// this leaves the last element empty.
 	for i := 0; i < currentLen; i++ {
@@ -292,18 +294,21 @@ func (v Value) Append() Value {
 		)
 	}
 
-	v.FirstAddressable().Set(updatedSlice)
+	firstAddressable := v.FirstAddressable()
+	firstAddressable.Set(updatedSlice)
 
+	// This code was causing a panic...
+	// I'm not sure if it's necessary - all tests continue to pass.
 	// Set the last element to uninitialised.
-	updatedSlice.Index(currentLen).Set(
-		v.Index(currentLen).asUninitialised().Value,
-	)
+	//updatedSlice.Index(currentLen).Set(
+	//	v.Index(currentLen).asUninitialised().Value,
+	//)
 
 	return v
 }
 
-var sliceInterfaceType = reflect.TypeOf([]interface{}{})
-var mapStringInterfaceType = reflect.TypeOf(map[string]interface{}{})
+var sliceInterfaceType = reflect.TypeFor[[]any]()
+var mapStringInterfaceType = reflect.TypeFor[map[string]interface{}]()
 
 var UninitialisedPlaceholder interface{} = "__dasel_not_found__"
 
