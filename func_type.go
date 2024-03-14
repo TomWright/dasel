@@ -16,7 +16,9 @@ var TypeFunc = BasicFunction{
 		for _, val := range input {
 			resStr := "unknown"
 
-			if val.IsDencodingMap() {
+			if val.IsNil() {
+				resStr = "null"
+			} else if val.IsDencodingMap() {
 				resStr = "object"
 			} else {
 				switch val.Kind() {

@@ -25,6 +25,7 @@ func TestTypeFunc(t *testing.T) {
 		"int":   int(1),
 		"float": float32(1),
 		"bool":  true,
+		"null":  nil,
 	}
 
 	t.Run(
@@ -84,6 +85,16 @@ func TestTypeFunc(t *testing.T) {
 			data,
 			[]interface{}{
 				"bool",
+			},
+		),
+	)
+	t.Run(
+		"null",
+		selectTest(
+			"null.type()",
+			data,
+			[]interface{}{
+				"null",
 			},
 		),
 	)
