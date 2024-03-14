@@ -61,4 +61,14 @@ func TestDeleteCommand(t *testing.T) {
 		nil,
 		nil,
 	))
+
+	t.Run("Issue346", func(t *testing.T) {
+		t.Run("DeleteNullValue", runTest(
+			[]string{"delete", "-r", "json", "foo"},
+			[]byte(`{"foo":null}`),
+			newline([]byte("{}")),
+			nil,
+			nil,
+		))
+	})
 }
