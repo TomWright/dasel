@@ -316,7 +316,8 @@ func (v Value) Append() Value {
 	firstAddressable.Set(updatedSlice)
 
 	// This code was causing a panic...
-	// I'm not sure if it's necessary - all tests continue to pass.
+	// It doesn't seem necessary. Leaving here for reference in-case it was needed.
+	// See https://github.com/TomWright/dasel/issues/392
 	// Set the last element to uninitialised.
 	//updatedSlice.Index(currentLen).Set(
 	//	v.Index(currentLen).asUninitialised().Value,
