@@ -449,5 +449,37 @@ d.e.f`)),
 		nil,
 		nil,
 	))
+  
+	t.Run("Issue346", func(t *testing.T) {
+		t.Run("Select null or default string", runTest(
+			[]string{"-r", "json", "orDefault(foo,string(nope))"},
+			[]byte(`{
+  "foo": null
+}`),
+			newline([]byte(`"nope"`)),
+			nil,
+			nil,
+		))
+
+		t.Run("Select null or default null", runTest(
+			[]string{"-r", "json", "orDefault(foo,null())"},
+			[]byte(`{
+  "foo": null
+}`),
+			newline([]byte(`null`)),
+			nil,
+			nil,
+		))
+
+		t.Run("Select null value", runTest(
+			[]string{"-r", "json", "foo"},
+			[]byte(`{
+  "foo": null
+}`),
+			newline([]byte(`null`)),
+			nil,
+			nil,
+		))
+	})
 
 }

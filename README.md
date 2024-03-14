@@ -1,8 +1,8 @@
 # dasel
 
 [![Gitbook](https://badges.aleen42.com/src/gitbook_1.svg)](https://daseldocs.tomwright.me)
-[![Go Report Card](https://goreportcard.com/badge/github.com/TomWright/dasel)](https://goreportcard.com/report/github.com/TomWright/dasel)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel)
+[![Go Report Card](https://goreportcard.com/badge/github.com/TomWright/dasel/v2)](https://goreportcard.com/report/github.com/TomWright/dasel/v2)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel/v2)
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
 ![Build](https://github.com/TomWright/dasel/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/TomWright/dasel/branch/master/graph/badge.svg)](https://codecov.io/gh/TomWright/dasel)
