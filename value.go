@@ -1,9 +1,10 @@
 package dasel
 
 import (
+	"reflect"
+
 	"github.com/tomwright/dasel/v2/dencoding"
 	"github.com/tomwright/dasel/v2/util"
-	"reflect"
 )
 
 // Value is a wrapper around reflect.Value that adds some handy helper funcs.
@@ -84,6 +85,15 @@ func (v Value) IsEmpty() bool {
 	return isEmptyReflectValue(unpackReflectValue(v.Value))
 }
 
+func (v Value) IsNil() bool {
+	switch v.Kind() {
+	case reflect.Chan, reflect.Func, reflect.Interface, reflect.Map, reflect.Ptr, reflect.Slice:
+		return v.Value.IsNil()
+	default:
+		return false
+	}
+}
+
 func isEmptyReflectValue(v reflect.Value) bool {
 	if (v == reflect.Value{}) {
 		return true
@@ -123,6 +133,9 @@ func unpackReflectValue(value reflect.Value, kinds ...reflect.Kind) reflect.Valu
 		if !containsKind(kinds, res.Kind()) {
 			return res
 		}
+		if res.IsNil() {
+			return res
+		}
 		res = res.Elem()
 	}
 }
@@ -137,6 +150,9 @@ func (v Value) FirstAddressable() reflect.Value {
 
 // Unpack returns the underlying reflect.Value after resolving any pointers or interface types.
 func (v Value) Unpack(kinds ...reflect.Kind) reflect.Value {
+	if !v.Value.IsValid() {
+		return reflect.ValueOf(new(any)).Elem()
+	}
 	return unpackReflectValue(v.Value, kinds...)
 }
 
@@ -181,6 +197,9 @@ func (v Value) dencodingMapIndex(key Value) Value {
 		if v, ok := om.Get(key.Value.String()); !ok {
 			return reflect.Value{}
 		} else {
+			if v == nil {
+				return reflect.ValueOf(new(any)).Elem()
+			}
 			return reflect.ValueOf(v)
 		}
 	}
@@ -498,7 +517,7 @@ func (v Values) Interfaces() []interface{} {
 func (v Values) initEmptydencodingMaps() Values {
 	res := make(Values, len(v))
 	for k, value := range v {
-		if value.IsEmpty() {
+		if value.IsEmpty() || value.IsNil() {
 			res[k] = value.initEmptydencodingMap()
 		} else {
 			res[k] = value
@@ -510,7 +529,7 @@ func (v Values) initEmptydencodingMaps() Values {
 func (v Values) initEmptySlices() Values {
 	res := make(Values, len(v))
 	for k, value := range v {
-		if value.IsEmpty() {
+		if value.IsEmpty() || value.IsNil() {
 			res[k] = value.initEmptySlice()
 		} else {
 			res[k] = value

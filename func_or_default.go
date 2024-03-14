@@ -20,26 +20,40 @@ var OrDefaultFunc = BasicFunction{
 
 		runSubselect := func(value Value, selector string, defaultSelector string) (Value, error) {
 			gotValues, err := c.subSelect(value, selector)
+			notFound := false
 			if err != nil {
-				notFound := false
 				if errors.Is(err, &ErrPropertyNotFound{}) {
 					notFound = true
 				} else if errors.Is(err, &ErrIndexNotFound{Index: -1}) {
 					notFound = true
-				}
-				if notFound {
-					gotValues, err = c.subSelect(value, defaultSelector)
 				} else {
 					return Value{}, err
 				}
 			}
-			if len(gotValues) == 1 && err == nil {
-				return gotValues[0], nil
+
+			if !notFound {
+				// Check result of first query
+				if len(gotValues) != 1 {
+					return Value{}, fmt.Errorf("orDefault expects selector to return exactly 1 value")
+				}
+
+				// Consider nil values as not found
+				if gotValues[0].IsNil() {
+					notFound = true
+				}
 			}
-			if err != nil {
-				return Value{}, err
+
+			if notFound {
+				gotValues, err = c.subSelect(value, defaultSelector)
+				if err != nil {
+					return Value{}, err
+				}
+				if len(gotValues) != 1 {
+					return Value{}, fmt.Errorf("orDefault expects selector to return exactly 1 value")
+				}
 			}
-			return Value{}, fmt.Errorf("orDefault expects selector to return exactly 1 value")
+
+			return gotValues[0], nil
 		}
 
 		res := make(Values, 0)
