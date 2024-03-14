@@ -60,6 +60,7 @@ func standardFunctions() *FunctionCollection {
 		TypeFunc,
 		JoinFunc,
 		StringFunc,
+		NullFunc,
 
 		// Selectors
 		IndexFunc,
