@@ -6,6 +6,10 @@ import (
 )
 
 func manCommand(root *cobra.Command) *cobra.Command {
+	// Do not include timestamp in generated man pages.
+	// See https://github.com/spf13/cobra/issues/142
+	root.DisableAutoGenTag = true
+
 	cmd := &cobra.Command{
 		Use:   "man -o <dir>",
 		Short: "Generate manual pages for all dasel subcommands",
