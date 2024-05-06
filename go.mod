@@ -5,7 +5,7 @@ go 1.21
 require (
 	github.com/alecthomas/chroma/v2 v2.13.0
 	github.com/clbanning/mxj/v2 v2.7.0
-	github.com/pelletier/go-toml/v2 v2.2.1
+	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/spf13/cobra v1.8.0
 	golang.org/x/net v0.24.0
 	golang.org/x/text v0.14.0
