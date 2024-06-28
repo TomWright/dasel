@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Fixed a bug that could cause a panic. 
 - `type()` now returns `null` instead of `unknown` for null values.
+- Added YAML support for merge tag/aliases. Thanks to [pmeier](https://github.com/pmeier). [Issue 285](https://github.com/TomWright/dasel/issues/285).
 
 ## [v2.7.0] - 2024-03-14
 
