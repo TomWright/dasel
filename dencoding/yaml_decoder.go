@@ -2,12 +2,13 @@ package dencoding
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/util"
-	"gopkg.in/yaml.v3"
 	"io"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/tomwright/dasel/v2/util"
+	"gopkg.in/yaml.v3"
 )
 
 // YAMLDecoder wraps a standard yaml encoder to implement custom ordering logic.
@@ -64,6 +65,8 @@ func (decoder *YAMLDecoder) getNodeValue(node *yaml.Node) (any, error) {
 		return decoder.getSequenceNodeValue(node)
 	case yaml.ScalarNode:
 		return decoder.getScalarNodeValue(node)
+	case yaml.AliasNode:
+		return decoder.getNodeValue(node.Alias)
 	default:
 		return nil, fmt.Errorf("unhandled node kind: %v", node.Kind)
 	}
