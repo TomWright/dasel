@@ -10,6 +10,7 @@ const (
 	yamlTagInt       = "!!int"
 	yamlTagFloat     = "!!float"
 	yamlTagTimestamp = "!!timestamp"
+	yamlTagMerge     = "!!merge"
 )
 
 // YAMLEncoderOption is identifies an option that can be applied to a YAML encoder.
