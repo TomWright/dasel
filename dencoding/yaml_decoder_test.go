@@ -2,10 +2,11 @@ package dencoding_test
 
 import (
 	"bytes"
-	"github.com/tomwright/dasel/v2/dencoding"
 	"io"
 	"reflect"
 	"testing"
+
+	"github.com/tomwright/dasel/v2/dencoding"
 )
 
 func TestYAMLDecoder_Decode(t *testing.T) {
@@ -93,6 +94,57 @@ key2: value6
 
 		if !reflect.DeepEqual(exp, got) {
 			t.Errorf("expected %v, got %v", exp, got)
+		}
+	})
+
+	t.Run("YamlAliases", func(t *testing.T) {
+		b := []byte(`foo: &foo
+  bar: 1
+  baz: "baz"
+spam:
+  ham: "eggs"
+  <<: *foo
+`)
+
+		dec := dencoding.NewYAMLDecoder(bytes.NewReader(b))
+
+		got := make([]any, 0)
+		for {
+			var v any
+			if err := dec.Decode(&v); err != nil {
+				if err == io.EOF {
+					break
+				}
+				t.Errorf("unexpected error: %v", err)
+				return
+			}
+			got = append(got, v)
+		}
+
+		fooMap := dencoding.NewMap().
+			Set("bar", int64(1)).
+			Set("baz", "baz")
+		spamMap := dencoding.NewMap().
+			Set("ham", "eggs").
+			Set("foo", fooMap)
+
+		exp := dencoding.NewMap().
+			Set("foo", fooMap).
+			Set("spam", spamMap)
+
+		if len(got) != 1 {
+			t.Errorf("expected result len of %d, got %d", 1, len(got))
+			return
+		}
+
+		gotMap, ok := got[0].(*dencoding.Map)
+		if !ok {
+			t.Errorf("expected result to be of type %T, got %T", exp, got[0])
+			return
+		}
+
+		if !reflect.DeepEqual(exp, gotMap) {
+			t.Errorf("expected %v, got %v", exp, gotMap)
 		}
 	})
 

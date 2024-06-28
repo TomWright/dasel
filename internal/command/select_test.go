@@ -252,6 +252,28 @@ octal: 8`)),
 		nil,
 	))
 
+	t.Run("Issue285 - YAML alias on read", runTest(
+		[]string{"-r", "yaml", "-w", "yaml"},
+		[]byte(`foo: &foo
+  bar: 1
+  baz: baz
+spam:
+  ham: eggs
+  <<: *foo
+`),
+		[]byte(`foo:
+  bar: 1
+  baz: baz
+spam:
+  ham: eggs
+  foo:
+    bar: 1
+    baz: baz
+`),
+		nil,
+		nil,
+	))
+
 	t.Run("OrDefaultString", runTest(
 		[]string{"-r", "json", "all().orDefault(locale,string(nope))"},
 		[]byte(`{
@@ -449,7 +471,7 @@ d.e.f`)),
 		nil,
 		nil,
 	))
-  
+
 	t.Run("Issue346", func(t *testing.T) {
 		t.Run("Select null or default string", runTest(
 			[]string{"-r", "json", "orDefault(foo,string(nope))"},
