@@ -98,12 +98,16 @@ key2: value6
 	})
 
 	t.Run("YamlAliases", func(t *testing.T) {
-		b := []byte(`foo: &foo
+		b := []byte(`foo: &foofoo
   bar: 1
-  baz: "baz"
+  baz: &baz "baz"
 spam:
   ham: "eggs"
-  <<: *foo
+  bar: 0
+  <<: *foofoo
+  baz: "bazbaz"
+
+baz: *baz
 `)
 
 		dec := dencoding.NewYAMLDecoder(bytes.NewReader(b))
@@ -121,16 +125,15 @@ spam:
 			got = append(got, v)
 		}
 
-		fooMap := dencoding.NewMap().
-			Set("bar", int64(1)).
-			Set("baz", "baz")
-		spamMap := dencoding.NewMap().
-			Set("ham", "eggs").
-			Set("foo", fooMap)
-
 		exp := dencoding.NewMap().
-			Set("foo", fooMap).
-			Set("spam", spamMap)
+			Set("foo", dencoding.NewMap().
+				Set("bar", int64(1)).
+				Set("baz", "baz")).
+			Set("spam", dencoding.NewMap().
+				Set("ham", "eggs").
+				Set("bar", int64(1)).
+				Set("baz", "bazbaz")).
+			Set("baz", "baz")
 
 		if len(got) != 1 {
 			t.Errorf("expected result len of %d, got %d", 1, len(got))

@@ -75,20 +75,26 @@ func (decoder *YAMLDecoder) getNodeValue(node *yaml.Node) (any, error) {
 func (decoder *YAMLDecoder) getMappingNodeValue(node *yaml.Node) (any, error) {
 	res := NewMap()
 
-	for i := 0; i < len(node.Content); i += 2 {
-		keyNode := node.Content[i]
-		valueNode := node.Content[i+1]
+	content := make([]*yaml.Node, 0)
+	content = append(content, node.Content...)
 
-		var keyValue any
+	var keyNode *yaml.Node
+	var valueNode *yaml.Node
+	for {
+		if len(content) == 0 {
+			break
+		}
+
+		keyNode, valueNode, content = content[0], content[1], content[2:]
+
 		if keyNode.ShortTag() == yamlTagMerge {
-			keyValue = valueNode.Value
-			valueNode = valueNode.Alias
-		} else {
-			var err error
-			keyValue, err = decoder.getNodeValue(keyNode)
-			if err != nil {
-				return nil, err
-			}
+			content = append(valueNode.Alias.Content, content...)
+			continue
+		}
+
+		keyValue, err := decoder.getNodeValue(keyNode)
+		if err != nil {
+			return nil, err
 		}
 
 		value, err := decoder.getNodeValue(valueNode)
