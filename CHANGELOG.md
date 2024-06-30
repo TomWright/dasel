@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v2.8.1] - 2024-06-30
+
+### Fixed
+- Fixed a bug related to yaml aliases.
+
+## [v2.8.0] - 2024-06-28
+
 ### Fixed
 
 - Fixed a bug that could cause a panic. 
