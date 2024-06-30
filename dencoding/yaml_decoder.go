@@ -2,13 +2,12 @@ package dencoding
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v2/util"
+	"gopkg.in/yaml.v3"
 	"io"
 	"reflect"
 	"strconv"
 	"time"
-
-	"github.com/tomwright/dasel/v2/util"
-	"gopkg.in/yaml.v3"
 )
 
 // YAMLDecoder wraps a standard yaml encoder to implement custom ordering logic.
