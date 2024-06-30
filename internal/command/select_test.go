@@ -254,21 +254,25 @@ octal: 8`)),
 
 	t.Run("Issue285 - YAML alias on read", runTest(
 		[]string{"-r", "yaml", "-w", "yaml"},
-		[]byte(`foo: &foo
+		[]byte(`foo: &foofoo
   bar: 1
-  baz: baz
+  baz: &baz "baz"
 spam:
-  ham: eggs
-  <<: *foo
+  ham: "eggs"
+  bar: 0
+  <<: *foofoo
+  baz: "bazbaz"
+
+baz: *baz
 `),
 		[]byte(`foo:
   bar: 1
   baz: baz
 spam:
   ham: eggs
-  foo:
-    bar: 1
-    baz: baz
+  bar: 1
+  baz: bazbaz
+baz: baz
 `),
 		nil,
 		nil,
