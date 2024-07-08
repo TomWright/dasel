@@ -7,8 +7,8 @@ require (
 	github.com/clbanning/mxj/v2 v2.7.0
 	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/spf13/cobra v1.8.0
-	golang.org/x/net v0.25.0
-	golang.org/x/text v0.15.0
+	golang.org/x/net v0.27.0
+	golang.org/x/text v0.16.0
 	gopkg.in/yaml.v3 v3.0.1
 )
 
