@@ -22,7 +22,33 @@ Say good bye to learning new tools just to work with a different data format.
 
 Dasel uses a standard selector syntax no matter the data format. This means that once you learn how to use dasel you immediately have the ability to query/modify any of the supported data types without any additional tools or effort.
 
-![Update Kubernetes Manifest](update_kubernetes.gif)
+![Update Kubernetes Manifest](demo.gif)
+<details>
+<summary>Commands executed in the demo</summary>
+
+```bash
+# Piping data into dasel
+echo '{"demo": "Integrating with github releases..."}' | dasel -r json 'demo'
+
+# Fetch dasel releases from github api
+curl -L \
+    -H "Accept: application/vnd.github+json" \
+    -H "X-GitHub-Api-Version: 2022-11-28" \
+    https://api.github.com/repos/TomWright/dasel/releases > releases.json
+less releases.json
+
+# Extract and structure release data by version with download URL's by asset name
+dasel -f releases.json -w yaml 'all().mapOf(version,tag_name,download,assets.all().mapOf(name,name,url,browser_download_url).merge()).merge()' > releases_download.yaml
+less releases_download.yaml
+
+# Restructure the above data into CSV format, destructuring into rows.
+dasel -f releases_download.yaml -w csv 'all().download.all().mapOf(version,parent(2).version,name,name,url,url).merge()' > releases_download.csv
+less releases_download.csv
+
+# Fetch the first CSV row and output as JSON
+dasel -f releases_download.csv -w json 'first()'
+```
+</details>
 
 ## Table of contents
 
