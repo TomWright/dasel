@@ -1,11 +1,12 @@
 package storage_test
 
 import (
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v2/storage"
 )
 
 var tomlBytes = []byte(`names = ['John', 'Frank']
@@ -140,7 +141,7 @@ func TestTOMLParser_ToBytes(t *testing.T) {
 		}
 	})
 	// t.Run("time.Time", func(t *testing.T) {
-	// 	v, _ := time.Parse(time.RFC3339, "2022-01-02T12:34:56Z")
+	// 	v, _ := time.Tokenize(time.RFC3339, "2022-01-02T12:34:56Z")
 	// 	got, err := (&storage.TOMLParser{}).ToBytes(dasel.ValueOf(v))
 	// 	if err != nil {
 	// 		t.Errorf("unexpected error: %s", err)

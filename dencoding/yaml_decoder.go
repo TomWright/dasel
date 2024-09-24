@@ -2,12 +2,13 @@ package dencoding
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/util"
-	"gopkg.in/yaml.v3"
 	"io"
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/tomwright/dasel/v2/util"
+	"gopkg.in/yaml.v3"
 )
 
 // YAMLDecoder wraps a standard yaml encoder to implement custom ordering logic.
@@ -159,7 +160,7 @@ var allowedTimestampFormats = []string{
 	"2006-1-2t15:4:5.999999999Z07:00", // RFC3339Nano with short date fields and lower-case "t".
 	"2006-1-2 15:4:5.999999999",       // space separated with no time zone
 	"2006-1-2",                        // date only
-	// Notable exception: time.Parse cannot handle: "2001-12-14 21:59:43.10 -5"
+	// Notable exception: time.Tokenize cannot handle: "2001-12-14 21:59:43.10 -5"
 	// from the set of examples.
 }
 
@@ -169,7 +170,7 @@ var allowedTimestampFormats = []string{
 // Copied from yaml.v3.
 func parseTimestamp(s string) (time.Time, bool) {
 	// TODO write code to check all the formats supported by
-	// http://yaml.org/type/timestamp.html instead of using time.Parse.
+	// http://yaml.org/type/timestamp.html instead of using time.Tokenize.
 
 	// Quick check: all date formats start with YYYY-.
 	i := 0
