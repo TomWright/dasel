@@ -5,16 +5,91 @@ import (
 	"github.com/tomwright/dasel/v2/selector/lexer"
 )
 
-func parseArray(p *Parser) (ast.Expr, error) {
+// parseSquareBrackets parses square bracket array access.
+// E.g. [0], [0:1], [0:], [:2]. [...]
+func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 	// Handle index (from bracket)
 	p.advance()
 
-	// todo : handle spread operator
-
-	if !p.current().IsKind(lexer.Number) {
-		return nil, &UnexpectedTokenError{
-			Token: p.current(),
+	// Spread [...]
+	if p.current().IsKind(lexer.Dot) && p.peekN(1).IsKind(lexer.Dot) && p.peekN(2).IsKind(lexer.Dot) {
+		p.advanceN(3)
+		if err := p.expect(p.current(), lexer.CloseBracket); err != nil {
+			return nil, err
 		}
+		p.advance()
+		return &ast.CallExpr{
+			Function: "all",
+			Args:     ast.Expressions{},
+		}, nil
+	}
+
+	// Range [1:2]
+	if p.current().IsKind(lexer.Number) && p.peekN(1).IsKind(lexer.Colon) && p.peekN(2).IsKind(lexer.Number) {
+		from, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		p.advance()
+		to, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		if err := p.expect(p.current(), lexer.CloseBracket); err != nil {
+			return nil, err
+		}
+		p.advance()
+		return &ast.CallExpr{
+			Function: "range",
+			Args: ast.Expressions{
+				from, to,
+			},
+		}, nil
+	}
+
+	// Range [:2]
+	if p.current().IsKind(lexer.Colon) && p.peekN(1).IsKind(lexer.Number) {
+		from := &ast.NumberIntExpr{Value: -1}
+		p.advanceN(1)
+		to, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		if err := p.expect(p.current(), lexer.CloseBracket); err != nil {
+			return nil, err
+		}
+		p.advance()
+		return &ast.CallExpr{
+			Function: "range",
+			Args: ast.Expressions{
+				from, to,
+			},
+		}, nil
+	}
+
+	// Range [1:]
+	if p.current().IsKind(lexer.Number) && p.peekN(1).IsKind(lexer.Colon) {
+		from, err := p.parseExpression()
+		if err != nil {
+			return nil, err
+		}
+		p.advanceN(1)
+		to := &ast.NumberIntExpr{Value: -1}
+		if err := p.expect(p.current(), lexer.CloseBracket); err != nil {
+			return nil, err
+		}
+		p.advance()
+		return &ast.CallExpr{
+			Function: "range",
+			Args: ast.Expressions{
+				from, to,
+			},
+		}, nil
+	}
+
+	// Array index [1]
+	if err := p.expect(p.current(), lexer.Number); err != nil {
+		return nil, err
 	}
 	index, err := p.parseExpression()
 	if err != nil {

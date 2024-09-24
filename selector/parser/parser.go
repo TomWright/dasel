@@ -49,13 +49,12 @@ func (p *Parser) parseExpression() (ast.Expr, error) {
 	case lexer.Symbol:
 		return parseSymbol(p)
 	case lexer.OpenBracket:
-		return parseArray(p)
+		return parseSquareBrackets(p)
 	case lexer.Bool:
 		return parseBoolLiteral(p)
 	default:
-		return nil, &PositionalError{
-			Position: p.current().Pos,
-			Err:      fmt.Errorf("unhandled token: %v", p.current().Kind),
+		return nil, &UnexpectedTokenError{
+			Token: p.current(),
 		}
 	}
 }

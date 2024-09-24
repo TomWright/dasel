@@ -57,6 +57,10 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		return NewToken(OpenParen, "(", p.i, 1), nil
 	case ')':
 		return NewToken(CloseParen, ")", p.i, 1), nil
+	case '{':
+		return NewToken(OpenCurly, "{", p.i, 1), nil
+	case '}':
+		return NewToken(CloseCurly, "}", p.i, 1), nil
 	case '=':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(Equal, "==", p.i, 2), nil

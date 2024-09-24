@@ -49,7 +49,7 @@ func TestParser_Parse(t *testing.T) {
 		},
 		{
 			name:  "single function with various args",
-			input: "all(\"foo\", 'bar', false, TRUE, 123, 12.3, hello, funcOne(), funcTwo(1, 2, 3), asd[5])",
+			input: "all(\"foo\", 'bar', false, TRUE, 123, 12.3, hello, funcOne(), funcTwo(1, 2, 3), asd[5], asd[...], asd[0:1], asd[2:], asd[:2])",
 			expected: &ast.CallExpr{
 				Function: "all",
 				Args: ast.Expressions{
@@ -83,6 +83,47 @@ func TestParser_Parse(t *testing.T) {
 						Function: "index",
 						Args: ast.Expressions{
 							&ast.NumberIntExpr{Value: 5},
+						},
+					},
+					&ast.CallExpr{
+						Function: "property",
+						Args:     ast.Expressions{&ast.StringExpr{Value: "asd"}},
+					},
+					&ast.CallExpr{
+						Function: "all",
+						Args:     ast.Expressions{},
+					},
+					&ast.CallExpr{
+						Function: "property",
+						Args:     ast.Expressions{&ast.StringExpr{Value: "asd"}},
+					},
+					&ast.CallExpr{
+						Function: "range",
+						Args: ast.Expressions{
+							&ast.NumberIntExpr{Value: 0},
+							&ast.NumberIntExpr{Value: 1},
+						},
+					},
+					&ast.CallExpr{
+						Function: "property",
+						Args:     ast.Expressions{&ast.StringExpr{Value: "asd"}},
+					},
+					&ast.CallExpr{
+						Function: "range",
+						Args: ast.Expressions{
+							&ast.NumberIntExpr{Value: 2},
+							&ast.NumberIntExpr{Value: -1},
+						},
+					},
+					&ast.CallExpr{
+						Function: "property",
+						Args:     ast.Expressions{&ast.StringExpr{Value: "asd"}},
+					},
+					&ast.CallExpr{
+						Function: "range",
+						Args: ast.Expressions{
+							&ast.NumberIntExpr{Value: -1},
+							&ast.NumberIntExpr{Value: 2},
 						},
 					},
 				},

@@ -14,6 +14,8 @@ const (
 	Colon
 	OpenBracket
 	CloseBracket
+	OpenCurly
+	CloseCurly
 	OpenParen
 	CloseParen
 	Equal
