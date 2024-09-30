@@ -1,6 +1,6 @@
 package dasel
 
-import "github.com/tomwright/dasel/v2/util"
+import "github.com/tomwright/dasel/v3/util"
 
 var StringFunc = BasicFunction{
 	name: "string",

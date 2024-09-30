@@ -5,8 +5,8 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/storage"
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/storage"
 )
 
 var tomlBytes = []byte(`names = ['John', 'Frank']

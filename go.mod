@@ -1,4 +1,4 @@
-module github.com/tomwright/dasel/v2
+module github.com/tomwright/dasel/v3
 
 go 1.21
 

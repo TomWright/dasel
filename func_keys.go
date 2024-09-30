@@ -2,10 +2,11 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/dencoding"
 	"reflect"
 	"sort"
 	"strings"
+
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 type ErrInvalidType struct {

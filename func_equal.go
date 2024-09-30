@@ -2,8 +2,9 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/util"
 	"reflect"
+
+	"github.com/tomwright/dasel/v3/util"
 )
 
 var EqualFunc = BasicFunction{

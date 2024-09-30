@@ -2,9 +2,10 @@ package dasel
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v2/util"
 	"reflect"
 	"sort"
+
+	"github.com/tomwright/dasel/v3/util"
 )
 
 var MoreThanFunc = BasicFunction{

@@ -23,9 +23,3 @@ type BoolExpr struct {
 }
 
 func (BoolExpr) expr() {}
-
-type SymbolExpr struct {
-	Value string
-}
-
-func (SymbolExpr) expr() {}

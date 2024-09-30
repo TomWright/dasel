@@ -1,9 +1,9 @@
 package selector
 
 import (
-	"github.com/tomwright/dasel/v2/selector/ast"
-	"github.com/tomwright/dasel/v2/selector/lexer"
-	"github.com/tomwright/dasel/v2/selector/parser"
+	"github.com/tomwright/dasel/v3/selector/ast"
+	"github.com/tomwright/dasel/v3/selector/lexer"
+	"github.com/tomwright/dasel/v3/selector/parser"
 )
 
 func Parse(selector string) (ast.Expr, error) {

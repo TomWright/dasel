@@ -2,10 +2,11 @@ package dencoding_test
 
 import (
 	"bytes"
-	"github.com/tomwright/dasel/v2/dencoding"
 	"io"
 	"reflect"
 	"testing"
+
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 func TestJSONDecoder_Decode(t *testing.T) {

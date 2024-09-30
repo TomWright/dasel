@@ -19,6 +19,7 @@ const (
 	OpenParen
 	CloseParen
 	Equal
+	Equals
 	NotEqual
 	Not
 	And
@@ -31,13 +32,14 @@ const (
 	Add
 	Increment
 	IncrementBy
-	Subtract
+	Dash
 	Decrement
 	DecrementBy
-	Multiply
-	Divide
-	Modulus
+	Star
+	Slash
+	Percent
 	Dot
+	Spread
 )
 
 type Tokens []Token

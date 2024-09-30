@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v3"
 )
 
 func TestErrorMessages(t *testing.T) {

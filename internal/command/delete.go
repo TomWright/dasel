@@ -2,7 +2,7 @@ package command
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v3"
 )
 
 func deleteCommand() *cobra.Command {

@@ -1,11 +1,12 @@
 package storage_test
 
 import (
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/dencoding"
-	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"testing"
+
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/dencoding"
+	"github.com/tomwright/dasel/v3/storage"
 )
 
 var csvBytes = []byte(`id,name

@@ -6,7 +6,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/tomwright/dasel/v2/dencoding"
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 func TestYAMLDecoder_Decode(t *testing.T) {

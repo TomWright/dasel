@@ -3,7 +3,7 @@ package parser
 import (
 	"fmt"
 
-	"github.com/tomwright/dasel/v2/selector/lexer"
+	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
 type PositionalError struct {

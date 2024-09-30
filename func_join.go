@@ -1,8 +1,9 @@
 package dasel
 
 import (
-	"github.com/tomwright/dasel/v2/util"
 	"strings"
+
+	"github.com/tomwright/dasel/v3/util"
 )
 
 var JoinFunc = BasicFunction{

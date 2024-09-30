@@ -3,7 +3,8 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/tomwright/dasel/v2"
+
+	"github.com/tomwright/dasel/v3"
 )
 
 func init() {

@@ -4,13 +4,14 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/tomwright/dasel/v2/selector/ast"
+	"github.com/tomwright/dasel/v3/selector/ast"
+	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
 func parseStringLiteral(p *Parser) (ast.Expr, error) {
 	token := p.current()
 	p.advance()
-	return &ast.StringExpr{
+	return ast.StringExpr{
 		Value: token.Value,
 	}, nil
 }
@@ -18,28 +19,46 @@ func parseStringLiteral(p *Parser) (ast.Expr, error) {
 func parseBoolLiteral(p *Parser) (ast.Expr, error) {
 	token := p.current()
 	p.advance()
-	return &ast.BoolExpr{
+	return ast.BoolExpr{
 		Value: strings.EqualFold(token.Value, "true"),
 	}, nil
 }
 
+func parseSpread(p *Parser) (ast.Expr, error) {
+	p.advance()
+	return ast.SpreadExpr{}, nil
+}
+
 func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 	token := p.current()
-	p.advance()
-	if strings.Contains(token.Value, ".") {
+	next := p.advance()
+	switch {
+	case next.IsKind(lexer.Symbol) && strings.EqualFold(next.Value, "f"):
 		value, err := strconv.ParseFloat(token.Value, 64)
 		if err != nil {
 			return nil, err
 		}
-		return &ast.NumberFloatExpr{
+		p.advance()
+		return ast.NumberFloatExpr{
+			Value: value,
+		}, nil
+
+	case strings.Contains(token.Value, "."):
+		value, err := strconv.ParseFloat(token.Value, 64)
+		if err != nil {
+			return nil, err
+		}
+		return ast.NumberFloatExpr{
+			Value: value,
+		}, nil
+
+	default:
+		value, err := strconv.ParseInt(token.Value, 10, 64)
+		if err != nil {
+			return nil, err
+		}
+		return ast.NumberIntExpr{
 			Value: value,
 		}, nil
 	}
-	value, err := strconv.ParseInt(token.Value, 10, 64)
-	if err != nil {
-		return nil, err
-	}
-	return &ast.NumberIntExpr{
-		Value: value,
-	}, nil
 }

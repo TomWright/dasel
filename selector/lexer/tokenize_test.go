@@ -3,7 +3,7 @@ package lexer
 import "testing"
 
 func TestTokenizer_Parse(t *testing.T) {
-	tok := NewTokenizer("foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false")
+	tok := NewTokenizer("foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false . .... asd...")
 	tokens, err := tok.Tokenize()
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
@@ -15,6 +15,8 @@ func TestTokenizer_Parse(t *testing.T) {
 		And,
 		Symbol, Equal, String,
 		Add, Bool,
+		Dot, Spread, Dot,
+		Symbol, Spread,
 	}
 	if len(tokens) != len(exp) {
 		t.Fatalf("unexpected number of tokens: %d", len(tokens))

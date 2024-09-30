@@ -3,8 +3,8 @@ package dasel
 import (
 	"reflect"
 
-	"github.com/tomwright/dasel/v2/dencoding"
-	"github.com/tomwright/dasel/v2/util"
+	"github.com/tomwright/dasel/v3/dencoding"
+	"github.com/tomwright/dasel/v3/util"
 )
 
 // Value is a wrapper around reflect.Value that adds some handy helper funcs.

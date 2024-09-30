@@ -1,8 +1,9 @@
 package dasel
 
 import (
-	"github.com/tomwright/dasel/v2/dencoding"
 	"testing"
+
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 func TestKeysFunc(t *testing.T) {

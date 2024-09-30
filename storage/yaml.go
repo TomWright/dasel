@@ -3,10 +3,11 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/dencoding"
-	"github.com/tomwright/dasel/v2/util"
 	"io"
+
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/dencoding"
+	"github.com/tomwright/dasel/v3/util"
 )
 
 func init() {

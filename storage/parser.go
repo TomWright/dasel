@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/tomwright/dasel/v2"
+	"github.com/tomwright/dasel/v3"
 )
 
 var readParsersByExtension = map[string]ReadParser{}

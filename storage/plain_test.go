@@ -2,9 +2,10 @@ package storage_test
 
 import (
 	"errors"
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/storage"
 	"testing"
+
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/storage"
 )
 
 func TestPlainParser_FromBytes(t *testing.T) {

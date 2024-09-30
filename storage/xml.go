@@ -3,9 +3,10 @@ package storage
 import (
 	"bytes"
 	"fmt"
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/dencoding"
 	"strings"
+
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/dencoding"
 
 	"github.com/clbanning/mxj/v2"
 	"golang.org/x/net/html/charset"

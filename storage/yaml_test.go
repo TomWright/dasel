@@ -1,12 +1,13 @@
 package storage_test
 
 import (
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/dencoding"
-	"github.com/tomwright/dasel/v2/storage"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/dencoding"
+	"github.com/tomwright/dasel/v3/storage"
 )
 
 var yamlBytes = []byte(`name: Tom

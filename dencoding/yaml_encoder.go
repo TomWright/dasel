@@ -1,10 +1,11 @@
 package dencoding
 
 import (
-	"github.com/tomwright/dasel/v2/util"
-	"gopkg.in/yaml.v3"
 	"io"
 	"strconv"
+
+	"github.com/tomwright/dasel/v3/util"
+	"gopkg.in/yaml.v3"
 )
 
 // YAMLEncoder wraps a standard yaml encoder to implement custom ordering logic.

@@ -44,6 +44,9 @@ func (p *Tokenizer) peekRuneEqual(i int, to rune) bool {
 func (p *Tokenizer) parseCurRune() (Token, error) {
 	switch p.src[p.i] {
 	case '.':
+		if p.peekRuneEqual(p.i+1, '.') && p.peekRuneEqual(p.i+2, '.') {
+			return NewToken(Spread, "...", p.i, 3), nil
+		}
 		return NewToken(Dot, ".", p.i, 1), nil
 	case ',':
 		return NewToken(Comma, ",", p.i, 1), nil
@@ -61,6 +64,12 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		return NewToken(OpenCurly, "{", p.i, 1), nil
 	case '}':
 		return NewToken(CloseCurly, "}", p.i, 1), nil
+	case '*':
+		return NewToken(Star, "*", p.i, 1), nil
+	case '/':
+		return NewToken(Slash, "/", p.i, 1), nil
+	case '%':
+		return NewToken(Percent, "%", p.i, 1), nil
 	case '=':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(Equal, "==", p.i, 2), nil
@@ -68,7 +77,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if p.peekRuneEqual(p.i+1, '~') {
 			return NewToken(Like, "=~", p.i, 2), nil
 		}
-		return NewToken(Equal, "=", p.i, 1), nil
+		return NewToken(Equals, "=", p.i, 1), nil
 	case '+':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(IncrementBy, "+=", p.i, 2), nil
@@ -84,7 +93,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if p.peekRuneEqual(p.i+1, '-') {
 			return NewToken(Decrement, "--", p.i, 2), nil
 		}
-		return NewToken(Subtract, "-", p.i, 1), nil
+		return NewToken(Dash, "-", p.i, 1), nil
 	case '!':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(NotEqual, "!=", p.i, 2), nil

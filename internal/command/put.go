@@ -2,10 +2,11 @@ package command
 
 import (
 	"fmt"
-	"github.com/spf13/cobra"
-	"github.com/tomwright/dasel/v2"
-	"github.com/tomwright/dasel/v2/storage"
 	"strconv"
+
+	"github.com/spf13/cobra"
+	"github.com/tomwright/dasel/v3"
+	"github.com/tomwright/dasel/v3/storage"
 )
 
 func putCommand() *cobra.Command {

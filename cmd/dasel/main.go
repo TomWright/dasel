@@ -1,8 +1,9 @@
 package main
 
 import (
-	"github.com/tomwright/dasel/v2/internal/command"
 	"os"
+
+	"github.com/tomwright/dasel/v3/internal/command"
 )
 
 func main() {

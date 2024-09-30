@@ -1,9 +1,10 @@
 package dasel
 
 import (
-	"github.com/tomwright/dasel/v2/dencoding"
 	"strings"
 	"testing"
+
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 func TestJoinFunc(t *testing.T) {

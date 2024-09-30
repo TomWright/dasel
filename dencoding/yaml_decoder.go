@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/tomwright/dasel/v2/util"
+	"github.com/tomwright/dasel/v3/util"
 	"gopkg.in/yaml.v3"
 )
 
