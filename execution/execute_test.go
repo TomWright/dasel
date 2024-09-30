@@ -9,6 +9,7 @@ import (
 	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/ptr"
 )
 
 func TestExecuteSelector_HappyPath(t *testing.T) {
@@ -184,28 +185,34 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 	t.Run("map", func(t *testing.T) {
 		t.Run("property from slice of maps", runTest(testCase{
 			inFn: func() *model.Value {
-				r := model.NewSliceValue()
-
-				m1 := model.NewMapValue()
-				_ = m1.SetMapKey("number", model.NewIntValue(1))
-				m2 := model.NewMapValue()
-				_ = m2.SetMapKey("number", model.NewIntValue(2))
-				m3 := model.NewMapValue()
-				_ = m3.SetMapKey("number", model.NewIntValue(3))
-
-				_ = r.Append(m1)
-				_ = r.Append(m2)
-				_ = r.Append(m3)
-
-				return r
+				return model.NewValue([]any{
+					dencoding.NewMap().Set("number", 1),
+					dencoding.NewMap().Set("number", 2),
+					dencoding.NewMap().Set("number", 3),
+				})
 			},
 			s: `map(number)`,
 			outFn: func() *model.Value {
-				r := model.NewSliceValue()
-				_ = r.Append(model.NewIntValue(1))
-				_ = r.Append(model.NewIntValue(2))
-				_ = r.Append(model.NewIntValue(3))
-				return r
+				return model.NewValue([]any{1, 2, 3})
+			},
+		}))
+		t.Run("with chain of selectors", runTest(testCase{
+			inFn: func() *model.Value {
+				return model.NewValue([]any{
+					dencoding.NewMap().Set("foo", 1).Set("bar", 4),
+					dencoding.NewMap().Set("foo", 2).Set("bar", 5),
+					dencoding.NewMap().Set("foo", 3).Set("bar", 6),
+				})
+			},
+			s: `
+				.map (
+					{
+						total = add( foo, bar, 1 )
+					}
+				)
+				.map ( total )`,
+			outFn: func() *model.Value {
+				return model.NewValue([]any{ptr.To(int64(6)), ptr.To(int64(8)), ptr.To(int64(10))})
 			},
 		}))
 	})

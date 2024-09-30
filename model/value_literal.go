@@ -3,6 +3,7 @@ package model
 import (
 	"fmt"
 	"reflect"
+	"slices"
 )
 
 func NewStringValue(x string) *Value {
@@ -38,7 +39,7 @@ func (v *Value) IsInt() bool {
 }
 
 func (v *Value) isInt() bool {
-	return v.Value.Kind() == reflect.Int64
+	return slices.Contains([]reflect.Kind{reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64}, v.Value.Kind())
 }
 
 func (v *Value) IntValue() (int64, error) {
@@ -60,7 +61,7 @@ func (v *Value) IsFloat() bool {
 }
 
 func (v *Value) isFloat() bool {
-	return v.Value.Kind() == reflect.Float64
+	return slices.Contains([]reflect.Kind{reflect.Float32, reflect.Float64}, v.Value.Kind())
 }
 
 func (v *Value) FloatValue() (float64, error) {
