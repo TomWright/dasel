@@ -223,7 +223,7 @@ func (p *CSVParser) ToBytes(value dasel.Value, options ...ReadWriteOption) ([]by
 		}
 	}
 
-	return append(buffer.Bytes()), nil
+	return buffer.Bytes(), nil
 }
 
 func (p *CSVParser) toBytesHandleDoc(writer *csv.Writer, doc *CSVDocument) error {
