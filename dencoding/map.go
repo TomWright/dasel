@@ -1,5 +1,7 @@
 package dencoding
 
+import "reflect"
+
 // NewMap returns a new *Map that has its values initialised.
 func NewMap() *Map {
 	keys := make([]string, 0)
@@ -27,6 +29,28 @@ type Map struct {
 	keys []string
 	// data contains the actual map data.
 	data map[string]any
+}
+
+func (m *Map) Len() int {
+	return len(m.keys)
+}
+
+func (m *Map) Equal(other *Map) bool {
+	if m.Len() != other.Len() {
+		return false
+	}
+
+	for i, k := range m.keys {
+		if k != other.keys[i] {
+			return false
+		}
+
+		if !reflect.DeepEqual(m.data[k], other.data[k]) {
+			return false
+		}
+	}
+
+	return true
 }
 
 // Get returns the value found under the given key.

@@ -27,6 +27,9 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			if tc.inFn != nil {
 				in = tc.inFn()
 			}
+			if in == nil {
+				in = model.NewValue(nil)
+			}
 			exp := tc.out
 			if tc.outFn != nil {
 				exp = tc.outFn()
@@ -48,7 +51,9 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			}
 			expV, gotV := toInterface(exp), toInterface(res)
 
-			if !cmp.Equal(expV, gotV, cmpopts.IgnoreUnexported(dencoding.Map{})) {
+			if !cmp.Equal(expV, gotV,
+				cmpopts.IgnoreUnexported(dencoding.Map{}),
+			) {
 				t.Errorf("unexpected result: %v", cmp.Diff(expV, gotV))
 			}
 		}
@@ -58,37 +63,30 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		t.Run("math", func(t *testing.T) {
 			t.Run("literals", func(t *testing.T) {
 				t.Run("addition", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `1 + 2`,
 					out: model.NewIntValue(3),
 				}))
 				t.Run("subtraction", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `5 - 2`,
 					out: model.NewIntValue(3),
 				}))
 				t.Run("multiplication", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `5 * 2`,
 					out: model.NewIntValue(10),
 				}))
 				t.Run("division", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `10 / 2`,
 					out: model.NewIntValue(5),
 				}))
 				t.Run("modulus", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `10 % 3`,
 					out: model.NewIntValue(1),
 				}))
 				t.Run("ordering", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `45.2 + 5 * 4 - 2 / 2`, // 45.2 + (5 * 4) - (2 / 2) = 45.2 + 20 - 1 = 64.2
 					out: model.NewFloatValue(64.2),
 				}))
 				t.Run("ordering with groups", runTest(testCase{
-					in:  model.NewValue(nil),
 					s:   `(45.2 + 5) * ((4 - 2) / 2)`, // (45.2 + 5) * ((4 - 2) / 2) = (50.2) * ((2) / 2) = (50.2) * (1) = 50.2
 					out: model.NewFloatValue(50.2),
 				}))
@@ -96,32 +94,26 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		})
 		t.Run("comparison", func(t *testing.T) {
 			t.Run("equal", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `1 == 1`,
 				out: model.NewBoolValue(true),
 			}))
 			t.Run("not equal", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `1 != 1`,
 				out: model.NewBoolValue(false),
 			}))
 			t.Run("greater than", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `2 > 1`,
 				out: model.NewBoolValue(true),
 			}))
 			t.Run("greater than or equal", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `2 >= 2`,
 				out: model.NewBoolValue(true),
 			}))
 			t.Run("less than", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `1 < 2`,
 				out: model.NewBoolValue(true),
 			}))
 			t.Run("less than or equal", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `2 <= 2`,
 				out: model.NewBoolValue(true),
 			}))
@@ -130,27 +122,22 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 
 	t.Run("literal", func(t *testing.T) {
 		t.Run("string", runTest(testCase{
-			in:  model.NewValue(nil),
 			s:   `"hello"`,
 			out: model.NewStringValue("hello"),
 		}))
 		t.Run("int", runTest(testCase{
-			in:  model.NewValue(nil),
 			s:   `123`,
 			out: model.NewIntValue(123),
 		}))
 		t.Run("float", runTest(testCase{
-			in:  model.NewValue(nil),
 			s:   `123.4`,
 			out: model.NewFloatValue(123.4),
 		}))
 		t.Run("true", runTest(testCase{
-			in:  model.NewValue(nil),
 			s:   `true`,
 			out: model.NewBoolValue(true),
 		}))
 		t.Run("false", runTest(testCase{
-			in:  model.NewValue(nil),
 			s:   `false`,
 			out: model.NewBoolValue(false),
 		}))
@@ -159,17 +146,14 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 	t.Run("function", func(t *testing.T) {
 		t.Run("add", func(t *testing.T) {
 			t.Run("int", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `add(1, 2, 3)`,
 				out: model.NewIntValue(6),
 			}))
 			t.Run("float", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `add(1f, 2.5, 3.5)`,
 				out: model.NewFloatValue(7),
 			}))
 			t.Run("mixed", runTest(testCase{
-				in:  model.NewValue(nil),
 				s:   `add(1, 2f)`,
 				out: model.NewFloatValue(3),
 			}))
@@ -181,6 +165,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			return model.NewValue(
 				dencoding.NewMap().
 					Set("title", "Mr").
+					Set("age", int64(31)).
 					Set("name", dencoding.NewMap().
 						Set("first", "Tom").
 						Set("last", "Wright")),
@@ -200,6 +185,21 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			in:  inputMap(),
 			s:   `title + " " + (name.first) + " " + (name.last)`,
 			out: model.NewStringValue("Mr Tom Wright"),
+		}))
+		t.Run("add evaluated fields", runTest(testCase{
+			in: inputMap(),
+			s:  `{..., over30 = age > 30}`,
+			outFn: func() *model.Value {
+				return model.NewValue(
+					dencoding.NewMap().
+						Set("title", "Mr").
+						Set("age", int64(31)).
+						Set("name", dencoding.NewMap().
+							Set("first", "Tom").
+							Set("last", "Wright")).
+						Set("over30", true),
+				)
+			},
 		}))
 	})
 
