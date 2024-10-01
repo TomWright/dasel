@@ -53,7 +53,7 @@ func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
 	case scopeObject:
 		return []lexer.TokenKind{lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma}
 	case scopeGroup:
-		return []lexer.TokenKind{lexer.CloseParen}
+		return append([]lexer.TokenKind{lexer.CloseParen, lexer.Dot}, leftDenotationTokens...)
 	default:
 		return nil
 	}

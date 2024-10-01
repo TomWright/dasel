@@ -196,6 +196,11 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			s:   `name.first`,
 			out: model.NewStringValue("Tom"),
 		}))
+		t.Run("concat", runTest(testCase{
+			in:  inputMap(),
+			s:   `title + " " + (name.first) + " " + (name.last)`,
+			out: model.NewStringValue("Mr Tom Wright"),
+		}))
 	})
 
 	t.Run("object", func(t *testing.T) {

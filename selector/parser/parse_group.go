@@ -21,6 +21,11 @@ func parseGroup(p *Parser) (ast.Expr, error) {
 			break
 		}
 
+		if p.current().IsKind(lexer.Dot) {
+			p.advance()
+			continue
+		}
+
 		expr, err := p.parseExpression(bpDefault)
 		if err != nil {
 			return nil, err
