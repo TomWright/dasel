@@ -87,12 +87,11 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 					s:   `45.2 + 5 * 4 - 2 / 2`, // 45.2 + (5 * 4) - (2 / 2) = 45.2 + 20 - 1 = 64.2
 					out: model.NewFloatValue(64.2),
 				}))
-				// todo : implement grouping
-				//t.Run("ordering with groups", runTest(testCase{
-				//	in:  model.NewValue(nil),
-				//	s:   `(45.2 + 5) * ((4 - 2) / 2)`, // (45.2 + 5) * ((4 - 2) / 2) = (50.2) * ((2) / 2) = (50.2) * (1) = 50.2
-				//	out: model.NewFloatValue(50.2),
-				//}))
+				t.Run("ordering with groups", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `(45.2 + 5) * ((4 - 2) / 2)`, // (45.2 + 5) * ((4 - 2) / 2) = (50.2) * ((2) / 2) = (50.2) * (1) = 50.2
+					out: model.NewFloatValue(50.2),
+				}))
 			})
 		})
 		t.Run("comparison", func(t *testing.T) {

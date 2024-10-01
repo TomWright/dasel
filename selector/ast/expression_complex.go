@@ -89,3 +89,9 @@ type VariableExpr struct {
 }
 
 func (VariableExpr) expr() {}
+
+type GroupExpr struct {
+	Expr Expr
+}
+
+func (GroupExpr) expr() {}

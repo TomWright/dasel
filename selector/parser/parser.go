@@ -16,6 +16,7 @@ const (
 	scopeArray    scope = "array"
 	scopeObject   scope = "object"
 	scopeMap      scope = "map"
+	scopeGroup    scope = "group"
 )
 
 type Parser struct {
@@ -51,6 +52,8 @@ func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
 		return []lexer.TokenKind{lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol}
 	case scopeObject:
 		return []lexer.TokenKind{lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma}
+	case scopeGroup:
+		return []lexer.TokenKind{lexer.CloseParen}
 	default:
 		return nil
 	}
@@ -120,6 +123,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseSpread(p)
 	case lexer.Variable:
 		left, err = parseVariable(p)
+	case lexer.OpenParen:
+		left, err = parseGroup(p)
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),

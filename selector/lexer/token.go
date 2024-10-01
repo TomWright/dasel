@@ -12,8 +12,8 @@ const (
 	Symbol
 	Comma
 	Colon
-	OpenBracket
-	CloseBracket
+	OpenBracket  // [
+	CloseBracket // ]
 	OpenCurly
 	CloseCurly
 	OpenParen
