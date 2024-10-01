@@ -2,29 +2,19 @@ package parser
 
 import "github.com/tomwright/dasel/v3/selector/ast"
 
-func parseBinary(p *Parser, left ast.Expr) (ast.Expr, bool, error) {
+func parseBinary(p *Parser, left ast.Expr) (ast.Expr, error) {
 	if err := p.expect(leftDenotationTokens...); err != nil {
-		return nil, false, err
+		return nil, err
 	}
-	for {
-		if !p.current().IsKind(leftDenotationTokens...) {
-			break
-		}
-
-		token := p.current()
-		p.advance()
-
-		right, _, err := p.parseExpression(left)
-		if err != nil {
-			return nil, false, err
-		}
-
-		left = ast.BinaryExpr{
-			Left:     left,
-			Operator: token,
-			Right:    right,
-		}
+	operator := p.current()
+	p.advance()
+	right, err := p.parseExpression(getTokenBindingPower(operator.Kind))
+	if err != nil {
+		return nil, err
 	}
-
-	return left, true, nil
+	return ast.BinaryExpr{
+		Left:     left,
+		Operator: operator,
+		Right:    right,
+	}, nil
 }

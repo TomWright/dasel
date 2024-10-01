@@ -37,7 +37,7 @@ func parseArgs(p *Parser) ([]ast.Expr, error) {
 			break
 		}
 
-		arg, _, err := p.parseExpression(nil)
+		arg, err := p.parseExpression(bpCall)
 		if err != nil {
 			return nil, err
 		}

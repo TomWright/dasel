@@ -72,9 +72,6 @@ func NewParser(tokens lexer.Tokens) *Parser {
 
 func (p *Parser) Parse() (ast.Expr, error) {
 	var expressions ast.Expressions
-	var expr ast.Expr
-	var err error
-	var replaceLast bool
 	for p.hasToken() {
 		if p.current().IsKind(lexer.EOF) {
 			break
@@ -83,13 +80,9 @@ func (p *Parser) Parse() (ast.Expr, error) {
 			p.advance()
 			continue
 		}
-		expr, replaceLast, err = p.parseExpression(expr)
+		expr, err := p.parseExpression(bpDefault)
 		if err != nil {
 			return nil, err
-		}
-		if replaceLast {
-			expressions[len(expressions)-1] = expr
-			continue
 		}
 		expressions = append(expressions, expr)
 	}
@@ -103,40 +96,47 @@ func (p *Parser) Parse() (ast.Expr, error) {
 	}
 }
 
-func (p *Parser) parseExpression(last ast.Expr) (res ast.Expr, replaceLast bool, err error) {
+func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 	defer func() {
 		if err == nil {
 			err = p.expectEndOfExpression()
 		}
 	}()
 
-	if last != nil && slices.Contains(leftDenotationTokens, p.current().Kind) {
-		res, replaceLast, err = parseBinary(p, last)
-		return
-	}
-
 	switch p.current().Kind {
 	case lexer.String:
-		res, err = parseStringLiteral(p)
+		left, err = parseStringLiteral(p)
 	case lexer.Number:
-		res, err = parseNumberLiteral(p)
+		left, err = parseNumberLiteral(p)
 	case lexer.Symbol:
-		res, err = parseSymbol(p)
+		left, err = parseSymbol(p)
 	case lexer.OpenBracket:
-		res, err = parseSquareBrackets(p)
+		left, err = parseSquareBrackets(p)
 	case lexer.OpenCurly:
-		res, err = parseObject(p)
+		left, err = parseObject(p)
 	case lexer.Bool:
-		res, err = parseBoolLiteral(p)
+		left, err = parseBoolLiteral(p)
 	case lexer.Spread:
-		res, err = parseSpread(p)
+		left, err = parseSpread(p)
 	case lexer.Variable:
-		res, err = parseVariable(p)
+		left, err = parseVariable(p)
 	default:
-		return nil, false, &UnexpectedTokenError{
+		return nil, &UnexpectedTokenError{
 			Token: p.current(),
 		}
 	}
+
+	if err != nil {
+		return
+	}
+
+	for p.hasToken() && slices.Contains(leftDenotationTokens, p.current().Kind) && getTokenBindingPower(p.current().Kind) > bp {
+		left, err = parseBinary(p, left)
+		if err != nil {
+			return
+		}
+	}
+
 	return
 }
 

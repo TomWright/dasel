@@ -75,7 +75,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 	if p.current().IsKind(lexer.Colon) {
 		p.advance()
 		// We have no start index
-		end, _, err = p.parseExpression(nil)
+		end, err = p.parseExpression(bpDefault)
 		if err != nil {
 			return nil, err
 		}
@@ -85,7 +85,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 		}, nil
 	}
 
-	start, _, err = p.parseExpression(nil)
+	start, err = p.parseExpression(bpDefault)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +112,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 		}, nil
 	}
 
-	end, _, err = p.parseExpression(nil)
+	end, err = p.parseExpression(bpDefault)
 	if err != nil {
 		return nil, err
 	}
