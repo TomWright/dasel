@@ -291,4 +291,15 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			}},
 		}))
 	})
+
+	t.Run("variables", func(t *testing.T) {
+		t.Run("single variable", run(t, testCase{
+			input:    `$foo`,
+			expected: ast.VariableExpr{Name: "foo"},
+		}))
+		t.Run("variable passed to func", run(t, testCase{
+			input:    `len($foo)`,
+			expected: ast.CallExpr{Function: "len", Args: ast.Expressions{ast.VariableExpr{Name: "foo"}}},
+		}))
+	})
 }

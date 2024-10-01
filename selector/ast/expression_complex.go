@@ -10,6 +10,13 @@ type BinaryExpr struct {
 
 func (BinaryExpr) expr() {}
 
+type UnaryExpr struct {
+	Operator lexer.Token
+	Right    Expr
+}
+
+func (UnaryExpr) expr() {}
+
 type CallExpr struct {
 	Function string
 	Args     Expressions
@@ -76,3 +83,9 @@ type MapExpr struct {
 }
 
 func (MapExpr) expr() {}
+
+type VariableExpr struct {
+	Name string
+}
+
+func (VariableExpr) expr() {}

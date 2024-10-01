@@ -54,6 +54,75 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}
 	}
 
+	t.Run("binary expressions", func(t *testing.T) {
+		t.Run("math", func(t *testing.T) {
+			t.Run("literals", func(t *testing.T) {
+				t.Run("addition", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `1 + 2`,
+					out: model.NewIntValue(3),
+				}))
+				t.Run("subtraction", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `5 - 2`,
+					out: model.NewIntValue(3),
+				}))
+				t.Run("multiplication", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `5 * 2`,
+					out: model.NewIntValue(10),
+				}))
+				t.Run("division", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `10 / 2`,
+					out: model.NewIntValue(5),
+				}))
+				t.Run("modulus", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `10 % 3`,
+					out: model.NewIntValue(1),
+				}))
+				t.Run("ordering", runTest(testCase{
+					in:  model.NewValue(nil),
+					s:   `45.2 + 5 * 4 - 2 / 2`, // 45.2 + (5 * 4) - (2 / 2) = 45.2 + 20 - 1
+					out: model.NewFloatValue(64.2),
+				}))
+			})
+		})
+		t.Run("comparison", func(t *testing.T) {
+			t.Run("equal", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `1 == 1`,
+				out: model.NewBoolValue(true),
+			}))
+			t.Run("not equal", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `1 != 1`,
+				out: model.NewBoolValue(false),
+			}))
+			t.Run("greater than", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `2 > 1`,
+				out: model.NewBoolValue(true),
+			}))
+			t.Run("greater than or equal", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `2 >= 2`,
+				out: model.NewBoolValue(true),
+			}))
+			t.Run("less than", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `1 < 2`,
+				out: model.NewBoolValue(true),
+			}))
+			t.Run("less than or equal", runTest(testCase{
+				in:  model.NewValue(nil),
+				s:   `2 <= 2`,
+				out: model.NewBoolValue(true),
+			}))
+		})
+	})
+
 	t.Run("literal", func(t *testing.T) {
 		t.Run("string", runTest(testCase{
 			in:  model.NewValue(nil),

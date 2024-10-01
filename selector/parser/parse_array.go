@@ -6,7 +6,7 @@ import (
 )
 
 func parseArray(p *Parser) (ast.Expr, error) {
-	if err := p.expect(lexer.Symbol); err != nil {
+	if err := p.expect(lexer.Symbol, lexer.Variable); err != nil {
 		return nil, err
 	}
 	if err := p.expectN(1, lexer.OpenBracket); err != nil {
@@ -19,10 +19,24 @@ func parseArray(p *Parser) (ast.Expr, error) {
 	if err != nil {
 		return nil, err
 	}
-	return ast.ChainExprs(
-		ast.PropertyExpr{
+
+	var e ast.Expr
+
+	switch {
+	case token.IsKind(lexer.Variable):
+		e = ast.VariableExpr{
+			Name: token.Value,
+		}
+	case token.IsKind(lexer.Symbol):
+		e = ast.PropertyExpr{
 			Property: ast.StringExpr{Value: token.Value},
-		},
+		}
+	default:
+		panic("unexpected token kind")
+	}
+
+	return ast.ChainExprs(
+		e,
 		idx,
 	), nil
 }
@@ -61,7 +75,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 	if p.current().IsKind(lexer.Colon) {
 		p.advance()
 		// We have no start index
-		end, err = p.parseExpression()
+		end, _, err = p.parseExpression(nil)
 		if err != nil {
 			return nil, err
 		}
@@ -71,7 +85,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 		}, nil
 	}
 
-	start, err = p.parseExpression()
+	start, _, err = p.parseExpression(nil)
 	if err != nil {
 		return nil, err
 	}
@@ -98,7 +112,7 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 		}, nil
 	}
 
-	end, err = p.parseExpression()
+	end, _, err = p.parseExpression(nil)
 	if err != nil {
 		return nil, err
 	}

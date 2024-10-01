@@ -51,7 +51,7 @@ func parseObject(p *Parser) (ast.Expr, error) {
 			continue
 		}
 
-		key, err := p.parseExpression()
+		key, _, err := p.parseExpression(nil)
 		if err != nil {
 			return nil, err
 		}
@@ -66,7 +66,7 @@ func parseObject(p *Parser) (ast.Expr, error) {
 		}
 		p.advance()
 
-		val, err := p.parseExpression()
+		val, _, err := p.parseExpression(nil)
 		if err != nil {
 			return nil, err
 		}

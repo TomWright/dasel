@@ -26,6 +26,9 @@ func parseMap(p *Parser) (ast.Expr, error) {
 
 	expressions := make([]ast.Expr, 0)
 
+	var expr ast.Expr
+	var err error
+	var replaceLast bool
 	for {
 		if p.current().IsKind(lexer.CloseParen) {
 			if len(expressions) == 0 {
@@ -40,9 +43,13 @@ func parseMap(p *Parser) (ast.Expr, error) {
 			continue
 		}
 
-		expr, err := p.parseExpression()
+		expr, replaceLast, err = p.parseExpression(expr)
 		if err != nil {
 			return nil, err
+		}
+		if replaceLast {
+			expressions[len(expressions)-1] = expr
+			continue
 		}
 		expressions = append(expressions, expr)
 	}

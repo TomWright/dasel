@@ -59,6 +59,8 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return indexExprExecutor(e)
 	case ast.PropertyExpr:
 		return propertyExprExecutor(e)
+	case ast.VariableExpr:
+		return variableExprExecutor(e)
 	case ast.NumberIntExpr:
 		return numberIntExprExecutor(e)
 	case ast.NumberFloatExpr:
@@ -78,7 +80,41 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 
 func binaryExprExecutor(e ast.BinaryExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
-		panic("not implemented")
+		left, err := ExecuteAST(e.Left, data)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating left expression: %w", err)
+		}
+		right, err := ExecuteAST(e.Right, data)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating right expression: %w", err)
+		}
+
+		switch e.Operator.Kind {
+		case lexer.Plus:
+			return left.Add(right)
+		case lexer.Dash:
+			return left.Subtract(right)
+		case lexer.Star:
+			return left.Multiply(right)
+		case lexer.Slash:
+			return left.Divide(right)
+		case lexer.Percent:
+			return left.Modulo(right)
+		case lexer.GreaterThan:
+			return left.GreaterThan(right)
+		case lexer.GreaterThanOrEqual:
+			return left.GreaterThanOrEqual(right)
+		case lexer.LessThan:
+			return left.LessThan(right)
+		case lexer.LessThanOrEqual:
+			return left.LessThanOrEqual(right)
+		case lexer.Equal:
+			return left.Equal(right)
+		case lexer.NotEqual:
+			return left.NotEqual(right)
+		default:
+			return nil, fmt.Errorf("unhandled operator: %s", e.Operator.Value)
+		}
 	}, nil
 }
 
@@ -153,5 +189,15 @@ func propertyExprExecutor(e ast.PropertyExpr) (expressionExecutor, error) {
 			return nil, fmt.Errorf("error getting string value: %w", err)
 		}
 		return data.GetMapKey(keyStr)
+	}, nil
+}
+
+func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
+	return func(data *model.Value) (*model.Value, error) {
+		varName := e.Name
+		if varName == "this" {
+			return data, nil
+		}
+		return nil, fmt.Errorf("variable %s not found", varName)
 	}, nil
 }

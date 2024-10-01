@@ -2,6 +2,7 @@ package parser
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
@@ -41,7 +42,7 @@ func (p *Parser) currentScope() scope {
 func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
 	switch p.currentScope() {
 	case scopeRoot:
-		return []lexer.TokenKind{lexer.EOF, lexer.Dot}
+		return append([]lexer.TokenKind{lexer.EOF, lexer.Dot}, leftDenotationTokens...)
 	case scopeFuncArgs:
 		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen}
 	case scopeMap:
@@ -71,6 +72,9 @@ func NewParser(tokens lexer.Tokens) *Parser {
 
 func (p *Parser) Parse() (ast.Expr, error) {
 	var expressions ast.Expressions
+	var expr ast.Expr
+	var err error
+	var replaceLast bool
 	for p.hasToken() {
 		if p.current().IsKind(lexer.EOF) {
 			break
@@ -79,9 +83,13 @@ func (p *Parser) Parse() (ast.Expr, error) {
 			p.advance()
 			continue
 		}
-		expr, err := p.parseExpression()
+		expr, replaceLast, err = p.parseExpression(expr)
 		if err != nil {
 			return nil, err
+		}
+		if replaceLast {
+			expressions[len(expressions)-1] = expr
+			continue
 		}
 		expressions = append(expressions, expr)
 	}
@@ -95,32 +103,41 @@ func (p *Parser) Parse() (ast.Expr, error) {
 	}
 }
 
-func (p *Parser) parseExpression() (res ast.Expr, err error) {
+func (p *Parser) parseExpression(last ast.Expr) (res ast.Expr, replaceLast bool, err error) {
 	defer func() {
 		if err == nil {
 			err = p.expectEndOfExpression()
 		}
 	}()
+
+	if last != nil && slices.Contains(leftDenotationTokens, p.current().Kind) {
+		res, replaceLast, err = parseBinary(p, last)
+		return
+	}
+
 	switch p.current().Kind {
 	case lexer.String:
-		return parseStringLiteral(p)
+		res, err = parseStringLiteral(p)
 	case lexer.Number:
-		return parseNumberLiteral(p)
+		res, err = parseNumberLiteral(p)
 	case lexer.Symbol:
-		return parseSymbol(p)
+		res, err = parseSymbol(p)
 	case lexer.OpenBracket:
-		return parseSquareBrackets(p)
+		res, err = parseSquareBrackets(p)
 	case lexer.OpenCurly:
-		return parseObject(p)
+		res, err = parseObject(p)
 	case lexer.Bool:
-		return parseBoolLiteral(p)
+		res, err = parseBoolLiteral(p)
 	case lexer.Spread:
-		return parseSpread(p)
+		res, err = parseSpread(p)
+	case lexer.Variable:
+		res, err = parseVariable(p)
 	default:
-		return nil, &UnexpectedTokenError{
+		return nil, false, &UnexpectedTokenError{
 			Token: p.current(),
 		}
 	}
+	return
 }
 
 func (p *Parser) hasToken() bool {
@@ -134,6 +151,14 @@ func (p *Parser) hasTokenN(n int) bool {
 func (p *Parser) current() lexer.Token {
 	if p.hasToken() {
 		return p.tokens[p.i]
+	}
+	return lexer.Token{Kind: lexer.EOF}
+}
+
+func (p *Parser) previous() lexer.Token {
+	i := p.i - 1
+	if i > 0 && i < len(p.tokens) {
+		return p.tokens[i]
 	}
 	return lexer.Token{Kind: lexer.EOF}
 }

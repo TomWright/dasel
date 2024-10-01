@@ -41,6 +41,13 @@ func (p *Tokenizer) peekRuneEqual(i int, to rune) bool {
 	return rune(p.src[i]) == to
 }
 
+func (p *Tokenizer) peekRuneMatches(i int, fn func(rune) bool) bool {
+	if i >= p.srcLen {
+		return false
+	}
+	return fn(rune(p.src[i]))
+}
+
 func (p *Tokenizer) parseCurRune() (Token, error) {
 	switch p.src[p.i] {
 	case '.':
@@ -70,6 +77,15 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		return NewToken(Slash, "/", p.i, 1), nil
 	case '%':
 		return NewToken(Percent, "%", p.i, 1), nil
+	case '$':
+		if p.peekRuneMatches(p.i+1, unicode.IsLetter) {
+			pos := p.i + 1
+			for pos < p.srcLen && (unicode.IsLetter(rune(p.src[pos])) || unicode.IsDigit(rune(p.src[pos]))) {
+				pos++
+			}
+			return NewToken(Variable, p.src[p.i+1:pos], p.i, pos-p.i), nil
+		}
+		return NewToken(Dollar, "$", p.i, 1), nil
 	case '=':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(Equal, "==", p.i, 2), nil
@@ -85,7 +101,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if p.peekRuneEqual(p.i+1, '+') {
 			return NewToken(Increment, "++", p.i, 2), nil
 		}
-		return NewToken(Add, "+", p.i, 1), nil
+		return NewToken(Plus, "+", p.i, 1), nil
 	case '-':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(DecrementBy, "-=", p.i, 2), nil
@@ -94,6 +110,16 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 			return NewToken(Decrement, "--", p.i, 2), nil
 		}
 		return NewToken(Dash, "-", p.i, 1), nil
+	case '>':
+		if p.peekRuneEqual(p.i+1, '=') {
+			return NewToken(GreaterThanOrEqual, ">=", p.i, 2), nil
+		}
+		return NewToken(GreaterThan, ">", p.i, 1), nil
+	case '<':
+		if p.peekRuneEqual(p.i+1, '=') {
+			return NewToken(LessThanOrEqual, "<>>=", p.i, 2), nil
+		}
+		return NewToken(LessThan, "<", p.i, 1), nil
 	case '!':
 		if p.peekRuneEqual(p.i+1, '=') {
 			return NewToken(NotEqual, "!=", p.i, 2), nil
@@ -101,7 +127,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if p.peekRuneEqual(p.i+1, '~') {
 			return NewToken(NotLike, "!~", p.i, 2), nil
 		}
-		return NewToken(Not, "!", p.i, 1), nil
+		return NewToken(Exclamation, "!", p.i, 1), nil
 	case '&':
 		if p.peekRuneEqual(p.i+1, '&') {
 			return NewToken(And, "&&", p.i, 2), nil

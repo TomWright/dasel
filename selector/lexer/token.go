@@ -18,10 +18,9 @@ const (
 	CloseCurly
 	OpenParen
 	CloseParen
-	Equal
-	Equals
-	NotEqual
-	Not
+	Equal    // ==
+	Equals   // =
+	NotEqual // !=
 	And
 	Or
 	Like
@@ -29,7 +28,7 @@ const (
 	String
 	Number
 	Bool
-	Add
+	Plus
 	Increment
 	IncrementBy
 	Dash
@@ -40,6 +39,13 @@ const (
 	Percent
 	Dot
 	Spread
+	Dollar
+	Variable
+	GreaterThan
+	GreaterThanOrEqual
+	LessThan
+	LessThanOrEqual
+	Exclamation
 )
 
 type Tokens []Token
