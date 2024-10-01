@@ -172,6 +172,9 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 	default:
 		pos := p.i
 
+		if pos+3 < p.srcLen && strings.EqualFold(p.src[pos:pos+4], "null") {
+			return NewToken(Null, p.src[pos:pos+4], p.i, 4), nil
+		}
 		if pos+3 < p.srcLen && strings.EqualFold(p.src[pos:pos+4], "true") {
 			return NewToken(Bool, p.src[pos:pos+4], p.i, 4), nil
 		}

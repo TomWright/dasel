@@ -38,44 +38,17 @@ func TestTokenizer_Parse(t *testing.T) {
 	}))
 
 	t.Run("everything", runTest(testCase{
-		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false . .... asd... $name",
+		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []TokenKind{
 			Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, Number, CloseBracket, NotEqual, Number,
 			Or,
 			Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, String, CloseBracket, Equal, Number,
 			And,
 			Symbol, Equal, String,
-			Plus, Bool,
+			Plus, Bool, Bool,
 			Dot, Spread, Dot,
 			Symbol, Spread,
-			Variable,
+			Variable, Null,
 		},
 	}))
-
-	tok := NewTokenizer("foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false . .... asd... $name")
-	tokens, err := tok.Tokenize()
-	if err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-	exp := []TokenKind{
-		Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, Number, CloseBracket, NotEqual, Number,
-		Or,
-		Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, String, CloseBracket, Equal, Number,
-		And,
-		Symbol, Equal, String,
-		Plus, Bool,
-		Dot, Spread, Dot,
-		Symbol, Spread,
-		Variable,
-	}
-	if len(tokens) != len(exp) {
-		t.Fatalf("unexpected number of tokens: %d", len(tokens))
-	}
-
-	for i := range tokens {
-		if tokens[i].Kind != exp[i] {
-			t.Errorf("unexpected token kind at position %d: exp %v, got %v", i, exp[i], tokens[i].Kind)
-			return
-		}
-	}
 }

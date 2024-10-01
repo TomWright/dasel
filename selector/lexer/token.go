@@ -46,6 +46,7 @@ const (
 	LessThan
 	LessThanOrEqual
 	Exclamation
+	Null
 )
 
 type Tokens []Token

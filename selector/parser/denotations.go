@@ -44,7 +44,7 @@ var tokenBindingPowers = map[lexer.TokenKind]bindingPower{
 	lexer.String: bpLiteral,
 	lexer.Number: bpLiteral,
 	lexer.Bool:   bpLiteral,
-	//lexer.Null:             bpLiteral,
+	lexer.Null:   bpLiteral,
 
 	lexer.Variable:    bpProperty,
 	lexer.Dot:         bpProperty,
