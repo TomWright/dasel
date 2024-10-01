@@ -123,7 +123,6 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 						},
 						End: ast.CallExpr{
 							Function: "calcEnd",
-							Args:     ast.Expressions{},
 						},
 					},
 				}))
@@ -173,7 +172,6 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 							},
 							End: ast.CallExpr{
 								Function: "calcEnd",
-								Args:     ast.Expressions{},
 							},
 						},
 					),
@@ -237,8 +235,10 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 				ast.MapExpr{
 					Exprs: ast.Expressions{
-						ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
-						ast.PropertyExpr{Property: ast.StringExpr{Value: "y"}},
+						ast.ChainExprs(
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "y"}},
+						),
 					},
 				},
 			),
@@ -286,7 +286,7 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				{Key: ast.SpreadExpr{}, Value: ast.SpreadExpr{}},
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}},
 				{Key: ast.StringExpr{Value: "bar"}, Value: ast.NumberIntExpr{Value: 2}},
-				{Key: ast.StringExpr{Value: "baz"}, Value: ast.CallExpr{Function: "evalSomething", Args: ast.Expressions{}}},
+				{Key: ast.StringExpr{Value: "baz"}, Value: ast.CallExpr{Function: "evalSomething"}},
 				{Key: ast.StringExpr{Value: "Name"}, Value: ast.StringExpr{Value: "Tom"}},
 			}},
 		}))
@@ -300,6 +300,25 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 		t.Run("variable passed to func", run(t, testCase{
 			input:    `len($foo)`,
 			expected: ast.CallExpr{Function: "len", Args: ast.Expressions{ast.VariableExpr{Name: "foo"}}},
+		}))
+	})
+
+	t.Run("combinations and grouping", func(t *testing.T) {
+		t.Run("string concat with grouping", run(t, testCase{
+			input: `(foo.a) + (foo.b)`,
+			expected: ast.BinaryExpr{
+				Left:     ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "a"}}),
+				Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 8, Len: 1},
+				Right:    ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "b"}}),
+			},
+		}))
+		t.Run("string concat with nested properties", run(t, testCase{
+			input: `foo.a + foo.b`,
+			expected: ast.BinaryExpr{
+				Left:     ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "a"}}),
+				Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 6, Len: 1},
+				Right:    ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "b"}}),
+			},
 		}))
 	})
 }

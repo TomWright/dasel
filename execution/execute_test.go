@@ -91,32 +91,136 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 					out: model.NewFloatValue(50.2),
 				}))
 			})
+			t.Run("variables", func(t *testing.T) {
+				in := func() *model.Value {
+					return model.NewValue(dencoding.NewMap().
+						Set("one", 1).
+						Set("two", 2).
+						Set("three", 3).
+						Set("four", 4).
+						Set("five", 5).
+						Set("six", 6).
+						Set("seven", 7).
+						Set("eight", 8).
+						Set("nine", 9).
+						Set("ten", 10).
+						Set("fortyfivepoint2", 45.2))
+				}
+				t.Run("addition", runTest(testCase{
+					inFn: in,
+					s:    `one + two`,
+					out:  model.NewIntValue(3),
+				}))
+				t.Run("subtraction", runTest(testCase{
+					inFn: in,
+					s:    `five - two`,
+					out:  model.NewIntValue(3),
+				}))
+				t.Run("multiplication", runTest(testCase{
+					inFn: in,
+					s:    `five * two`,
+					out:  model.NewIntValue(10),
+				}))
+				t.Run("division", runTest(testCase{
+					inFn: in,
+					s:    `ten / two`,
+					out:  model.NewIntValue(5),
+				}))
+				t.Run("modulus", runTest(testCase{
+					inFn: in,
+					s:    `ten % three`,
+					out:  model.NewIntValue(1),
+				}))
+				t.Run("ordering", runTest(testCase{
+					inFn: in,
+					s:    `fortyfivepoint2 + five * four - two / two`, // 45.2 + (5 * 4) - (2 / 2) = 45.2 + 20 - 1 = 64.2
+					out:  model.NewFloatValue(64.2),
+				}))
+				t.Run("ordering with groups", runTest(testCase{
+					inFn: in,
+					s:    `(fortyfivepoint2 + five) * ((four - two) / two)`, // (45.2 + 5) * ((4 - 2) / 2) = (50.2) * ((2) / 2) = (50.2) * (1) = 50.2
+					out:  model.NewFloatValue(50.2),
+				}))
+			})
 		})
 		t.Run("comparison", func(t *testing.T) {
-			t.Run("equal", runTest(testCase{
-				s:   `1 == 1`,
-				out: model.NewBoolValue(true),
-			}))
-			t.Run("not equal", runTest(testCase{
-				s:   `1 != 1`,
-				out: model.NewBoolValue(false),
-			}))
-			t.Run("greater than", runTest(testCase{
-				s:   `2 > 1`,
-				out: model.NewBoolValue(true),
-			}))
-			t.Run("greater than or equal", runTest(testCase{
-				s:   `2 >= 2`,
-				out: model.NewBoolValue(true),
-			}))
-			t.Run("less than", runTest(testCase{
-				s:   `1 < 2`,
-				out: model.NewBoolValue(true),
-			}))
-			t.Run("less than or equal", runTest(testCase{
-				s:   `2 <= 2`,
-				out: model.NewBoolValue(true),
-			}))
+			t.Run("literals", func(t *testing.T) {
+				t.Run("equal", runTest(testCase{
+					s:   `1 == 1`,
+					out: model.NewBoolValue(true),
+				}))
+				t.Run("not equal", runTest(testCase{
+					s:   `1 != 1`,
+					out: model.NewBoolValue(false),
+				}))
+				t.Run("greater than", runTest(testCase{
+					s:   `2 > 1`,
+					out: model.NewBoolValue(true),
+				}))
+				t.Run("greater than or equal", runTest(testCase{
+					s:   `2 >= 2`,
+					out: model.NewBoolValue(true),
+				}))
+				t.Run("less than", runTest(testCase{
+					s:   `1 < 2`,
+					out: model.NewBoolValue(true),
+				}))
+				t.Run("less than or equal", runTest(testCase{
+					s:   `2 <= 2`,
+					out: model.NewBoolValue(true),
+				}))
+			})
+
+			t.Run("variables", func(t *testing.T) {
+				in := func() *model.Value {
+					return model.NewValue(dencoding.NewMap().
+						Set("one", 1).
+						Set("two", 2).
+						Set("nested", dencoding.NewMap().
+							Set("three", 3).
+							Set("four", 4)))
+				}
+				t.Run("equal", runTest(testCase{
+					inFn: in,
+					s:    `one == one`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("not equal", runTest(testCase{
+					inFn: in,
+					s:    `one != one`,
+					out:  model.NewBoolValue(false),
+				}))
+				t.Run("greater than", runTest(testCase{
+					inFn: in,
+					s:    `two > one`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("greater than or equal", runTest(testCase{
+					inFn: in,
+					s:    `two >= two`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("less than", runTest(testCase{
+					inFn: in,
+					s:    `one < two`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("less than or equal", runTest(testCase{
+					inFn: in,
+					s:    `two <= two`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("nested with math more than", runTest(testCase{
+					inFn: in,
+					s:    `nested.three + nested.four * 0 > one * 1`,
+					out:  model.NewBoolValue(true),
+				}))
+				t.Run("nested with grouped math more than", runTest(testCase{
+					inFn: in,
+					s:    `(nested.three + nested.four) * 0 > one * 1`,
+					out:  model.NewBoolValue(false),
+				}))
+			})
 		})
 	})
 
@@ -157,6 +261,31 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				s:   `add(1, 2f)`,
 				out: model.NewFloatValue(3),
 			}))
+			t.Run("properties", func(t *testing.T) {
+				in := func() *model.Value {
+					return model.NewValue(dencoding.NewMap().
+						Set("numbers", dencoding.NewMap().
+							Set("one", 1).
+							Set("two", 2).
+							Set("three", 3)).
+						Set("nums", []any{1, 2, 3}))
+				}
+				t.Run("nested props", runTest(testCase{
+					inFn: in,
+					s:    `numbers.one + add(numbers.two, numbers.three)`,
+					out:  model.NewIntValue(6),
+				}))
+				t.Run("add on end of chain", runTest(testCase{
+					inFn: in,
+					s:    `numbers.one + numbers.add(two, three)`,
+					out:  model.NewIntValue(6),
+				}))
+				t.Run("add with map and spread on slice with $this addition", runTest(testCase{
+					inFn: in,
+					s:    `add(nums.map(($this + 1))...)`,
+					out:  model.NewIntValue(9),
+				}))
+			})
 		})
 	})
 
@@ -181,9 +310,14 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			s:   `name.first`,
 			out: model.NewStringValue("Tom"),
 		}))
-		t.Run("concat", runTest(testCase{
+		t.Run("concat with grouping", runTest(testCase{
 			in:  inputMap(),
 			s:   `title + " " + (name.first) + " " + (name.last)`,
+			out: model.NewStringValue("Mr Tom Wright"),
+		}))
+		t.Run("concat", runTest(testCase{
+			in:  inputMap(),
+			s:   `title + " " + name.first + " " + name.last`,
 			out: model.NewStringValue("Mr Tom Wright"),
 		}))
 		t.Run("add evaluated fields", runTest(testCase{
@@ -284,7 +418,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				})
 			},
 			s: `
-				.map (
+				map (
 					{
 						total = add( foo, bar, 1 )
 					}

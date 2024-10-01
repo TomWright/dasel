@@ -4,18 +4,13 @@ import (
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/selector"
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
-	"github.com/tomwright/dasel/v3/selector/parser"
 )
 
-func ExecuteSelector(selector string, value *model.Value) (*model.Value, error) {
-	tokens, err := lexer.NewTokenizer(selector).Tokenize()
-	if err != nil {
-		return nil, fmt.Errorf("error tokenizing selector: %w", err)
-	}
-
-	expr, err := parser.NewParser(tokens).Parse()
+func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, error) {
+	expr, err := selector.Parse(selectorStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing selector: %w", err)
 	}
@@ -128,35 +123,6 @@ func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
 			data = res
 		}
 		return data, nil
-	}, nil
-}
-
-func spreadExprExecutor() (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		s := model.NewSliceValue()
-
-		switch {
-		case data.IsSlice():
-			v, err := data.SliceValue()
-			if err != nil {
-				return nil, fmt.Errorf("error getting slice value: %w", err)
-			}
-			for _, sv := range v {
-				s.Append(model.NewValue(sv))
-			}
-		case data.IsMap():
-			v, err := data.MapValue()
-			if err != nil {
-				return nil, fmt.Errorf("error getting map value: %w", err)
-			}
-			for _, kv := range v.KeyValues() {
-				s.Append(model.NewValue(kv.Value))
-			}
-		default:
-			return nil, fmt.Errorf("cannot spread on type %s", data.Type())
-		}
-
-		return s, nil
 	}, nil
 }
 

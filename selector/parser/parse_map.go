@@ -24,27 +24,14 @@ func parseMap(p *Parser) (ast.Expr, error) {
 	}
 	p.advance()
 
-	expressions := make([]ast.Expr, 0)
-
-	for {
-		if p.current().IsKind(lexer.CloseParen) {
-			if len(expressions) == 0 {
-				return nil, fmt.Errorf("expected at least one expression in map")
-			}
-			p.advance()
-			break
-		}
-
-		if p.current().IsKind(lexer.Dot) {
-			p.advance()
-			continue
-		}
-
-		expr, err := p.parseExpression(bpDefault)
-		if err != nil {
-			return nil, err
-		}
-		expressions = append(expressions, expr)
+	expressions, err := p.parseExpressionsAsSlice(
+		[]lexer.TokenKind{lexer.CloseParen},
+		[]lexer.TokenKind{},
+		true,
+		bpCall,
+	)
+	if err != nil {
+		return nil, err
 	}
 
 	return ast.MapExpr{

@@ -14,7 +14,13 @@ func prepareArgs(data *model.Value, argsE ast.Expressions) (model.Values, error)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
 		}
-		args = append(args, res)
+
+		argVals, err := prepareSpreadValues(res)
+		if err != nil {
+			return nil, fmt.Errorf("error handling spread values: %w", err)
+		}
+
+		args = append(args, argVals...)
 	}
 	return args, nil
 }

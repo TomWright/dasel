@@ -29,23 +29,11 @@ func parseFunc(p *Parser) (ast.Expr, error) {
 	}, nil
 }
 
-func parseArgs(p *Parser) ([]ast.Expr, error) {
-	args := make([]ast.Expr, 0)
-	for p.hasToken() {
-		if p.current().IsKind(lexer.CloseParen) {
-			p.advance()
-			break
-		}
-
-		arg, err := p.parseExpression(bpCall)
-		if err != nil {
-			return nil, err
-		}
-		args = append(args, arg)
-
-		if p.current().IsKind(lexer.Comma) {
-			p.advance()
-		}
-	}
-	return args, nil
+func parseArgs(p *Parser) (ast.Expressions, error) {
+	return p.parseExpressionsAsSlice(
+		[]lexer.TokenKind{lexer.CloseParen},
+		[]lexer.TokenKind{lexer.Comma},
+		false,
+		bpCall,
+	)
 }

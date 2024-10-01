@@ -47,9 +47,9 @@ func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
 	case scopeFuncArgs:
 		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen}
 	case scopeMap:
-		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen, lexer.Dot}
+		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen, lexer.Dot, lexer.Spread}
 	case scopeArray:
-		return []lexer.TokenKind{lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol}
+		return []lexer.TokenKind{lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol, lexer.Spread}
 	case scopeObject:
 		return []lexer.TokenKind{lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma}
 	case scopeGroup:
@@ -73,30 +73,66 @@ func NewParser(tokens lexer.Tokens) *Parser {
 	}
 }
 
-func (p *Parser) Parse() (ast.Expr, error) {
-	var expressions ast.Expressions
+func (p *Parser) parseExpressionsAsSlice(
+	breakOn []lexer.TokenKind,
+	splitOn []lexer.TokenKind,
+	requireExpressions bool,
+	bp bindingPower,
+) (ast.Expressions, error) {
+	var finalExpr ast.Expressions
+	var current ast.Expressions
 	for p.hasToken() {
-		if p.current().IsKind(lexer.EOF) {
+		if p.current().IsKind(breakOn...) {
+			p.advance()
 			break
 		}
-		if p.current().IsKind(lexer.Dot) {
+		if p.current().IsKind(splitOn...) {
+			if requireExpressions && len(current) == 0 {
+				return nil, &UnexpectedTokenError{Token: p.current()}
+			}
+			finalExpr = append(finalExpr, ast.ChainExprs(current...))
+			current = nil
 			p.advance()
 			continue
 		}
-		expr, err := p.parseExpression(bpDefault)
+		expr, err := p.parseExpression(bp)
 		if err != nil {
 			return nil, err
 		}
-		expressions = append(expressions, expr)
+		current = append(current, expr)
+	}
+
+	if len(current) > 0 {
+		finalExpr = append(finalExpr, ast.ChainExprs(current...))
+	}
+
+	if len(finalExpr) == 0 {
+		return nil, nil
+	}
+
+	return finalExpr, nil
+}
+
+func (p *Parser) parseExpressions(
+	breakOn []lexer.TokenKind,
+	splitOn []lexer.TokenKind,
+	requireExpressions bool,
+	bp bindingPower,
+) (ast.Expr, error) {
+	expressions, err := p.parseExpressionsAsSlice(breakOn, splitOn, requireExpressions, bp)
+	if err != nil {
+		return nil, err
 	}
 	switch len(expressions) {
 	case 0:
 		return nil, nil
-	case 1:
-		return expressions[0], nil
 	default:
 		return ast.ChainExprs(expressions...), nil
 	}
+}
+
+func (p *Parser) Parse() (ast.Expr, error) {
+	return p.parseExpressions([]lexer.TokenKind{lexer.EOF}, nil, true, bpDefault)
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
@@ -135,6 +171,33 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		return
 	}
 
+	toChain := ast.Expressions{left}
+	// Ensure dot separated chains are parsed as a sequence of expressions
+	if p.hasToken() && p.current().IsKind(lexer.Dot) {
+		for p.hasToken() && p.current().IsKind(lexer.Dot) {
+			p.advance()
+			expr, err := p.parseExpression(bpUnary)
+			if err != nil {
+				return nil, err
+			}
+			toChain = append(toChain, expr)
+		}
+	}
+
+	// Handle spread
+	if p.hasToken() && p.current().IsKind(lexer.Spread) {
+		expr, err := p.parseExpression(bpLiteral)
+		if err != nil {
+			return nil, err
+		}
+		toChain = append(toChain, expr)
+	}
+
+	if len(toChain) > 1 {
+		left = ast.ChainExprs(toChain...)
+	}
+
+	// Handle binding powers
 	for p.hasToken() && slices.Contains(leftDenotationTokens, p.current().Kind) && getTokenBindingPower(p.current().Kind) > bp {
 		left, err = parseBinary(p, left)
 		if err != nil {

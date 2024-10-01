@@ -29,6 +29,9 @@ type ChainedExpr struct {
 }
 
 func ChainExprs(exprs ...Expr) Expr {
+	if len(exprs) == 0 {
+		return nil
+	}
 	if len(exprs) == 1 {
 		return exprs[0]
 	}

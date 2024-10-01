@@ -22,7 +22,8 @@ const (
 )
 
 type Value struct {
-	Value reflect.Value
+	Value    reflect.Value
+	Metadata map[string]any
 }
 
 func NewValue(v any) *Value {
