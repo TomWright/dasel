@@ -12,17 +12,13 @@ func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
 		obj := model.NewMapValue()
 		for _, p := range e.Pairs {
 			if ast.IsSpreadExpr(p.Key) && ast.IsSpreadExpr(p.Value) {
-				if !data.IsMap() {
-					return nil, fmt.Errorf("cannot spread non-object into object")
-				}
-				m, err := data.MapValue()
-				if err != nil {
-					return nil, fmt.Errorf("error getting map value: %w", err)
-				}
-				for _, kv := range m.KeyValues() {
-					if err := obj.SetMapKey(kv.Key, model.NewValue(kv.Value)); err != nil {
-						return nil, fmt.Errorf("error setting map key: %w", err)
+				if err := data.RangeMap(func(key string, value *model.Value) error {
+					if err := obj.SetMapKey(key, value); err != nil {
+						return fmt.Errorf("error setting map key: %w", err)
 					}
+					return nil
+				}); err != nil {
+					return nil, fmt.Errorf("error ranging map: %w", err)
 				}
 				continue
 			}

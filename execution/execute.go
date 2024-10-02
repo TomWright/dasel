@@ -10,6 +10,10 @@ import (
 )
 
 func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, error) {
+	if selectorStr == "" {
+		return value, nil
+	}
+
 	expr, err := selector.Parse(selectorStr)
 	if err != nil {
 		return nil, fmt.Errorf("error parsing selector: %w", err)
@@ -26,6 +30,10 @@ func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, erro
 type expressionExecutor func(data *model.Value) (*model.Value, error)
 
 func ExecuteAST(expr ast.Expr, value *model.Value) (*model.Value, error) {
+	if expr == nil {
+		return value, nil
+	}
+
 	executor, err := exprExecutor(expr)
 	if err != nil {
 		return nil, fmt.Errorf("error evaluating expression: %w", err)

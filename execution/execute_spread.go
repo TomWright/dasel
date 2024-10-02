@@ -24,14 +24,13 @@ func spreadExprExecutor() (expressionExecutor, error) {
 				}
 			}
 		case data.IsMap():
-			v, err := data.MapValue()
-			if err != nil {
-				return nil, fmt.Errorf("error getting map value: %w", err)
-			}
-			for _, kv := range v.KeyValues() {
-				if err := s.Append(model.NewValue(kv.Value)); err != nil {
-					return nil, fmt.Errorf("error appending value to slice: %w", err)
+			if err := data.RangeMap(func(key string, value *model.Value) error {
+				if err := s.Append(value); err != nil {
+					return fmt.Errorf("error appending value to slice: %w", err)
 				}
+				return nil
+			}); err != nil {
+				return nil, fmt.Errorf("error ranging map: %w", err)
 			}
 		default:
 			return nil, fmt.Errorf("cannot spread on type %s", data.Type())

@@ -1,11 +1,9 @@
 package execution_test
 
 import (
-	"reflect"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
@@ -39,22 +37,8 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			toInterface := func(v *model.Value) interface{} {
-				if v == nil {
-					return nil
-				}
-				if v.IsMap() {
-					m, _ := v.MapValue()
-					return m.KeyValues()
-				}
-				return v.UnpackKinds(reflect.Ptr).Interface()
-			}
-			expV, gotV := toInterface(exp), toInterface(res)
-
-			if !cmp.Equal(expV, gotV,
-				cmpopts.IgnoreUnexported(dencoding.Map{}),
-			) {
-				t.Errorf("unexpected result: %v", cmp.Diff(expV, gotV))
+			if !res.EqualTypeValue(exp) {
+				t.Errorf("unexpected type: %v", cmp.Diff(exp, res))
 			}
 		}
 	}

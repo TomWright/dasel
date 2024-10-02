@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"reflect"
 	"slices"
 )
@@ -21,12 +22,20 @@ const (
 	TypeUnknown Type = "unknown"
 )
 
+type KeyValue struct {
+	Key   string
+	Value *Value
+}
+
 type Value struct {
 	Value    reflect.Value
 	Metadata map[string]any
 }
 
 func NewValue(v any) *Value {
+	if v, ok := v.(*Value); ok {
+		return v
+	}
 	if rv, ok := v.(reflect.Value); ok {
 		return &Value{
 			Value: rv,
@@ -41,6 +50,10 @@ func (v *Value) Interface() interface{} {
 	return v.Value.Interface()
 }
 
+func (v *Value) Kind() reflect.Kind {
+	return v.Value.Kind()
+}
+
 func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 	res := v.Value
 	for {
@@ -48,6 +61,34 @@ func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 			return NewValue(res)
 		}
 		res = res.Elem()
+	}
+}
+
+func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
+	res := v.Value
+	for {
+		if res.Type() == t {
+			return NewValue(res), nil
+		}
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr {
+			res = res.Elem()
+			continue
+		}
+		return nil, fmt.Errorf("could not unpack to type: %s", t)
+	}
+}
+
+func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
+	res := v.Value
+	for {
+		if res.Kind() == k {
+			return NewValue(res), nil
+		}
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr {
+			res = res.Elem()
+			continue
+		}
+		return nil, fmt.Errorf("could not unpack to kind: %s", k)
 	}
 }
 

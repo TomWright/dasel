@@ -151,3 +151,58 @@ func (v *Value) GreaterThanOrEqual(other *Value) (*Value, error) {
 	}
 	return NewValue(!boolValue), nil
 }
+
+func (v *Value) EqualTypeValue(other *Value) bool {
+	if v.Type() != other.Type() {
+		return false
+	}
+
+	switch v.Type() {
+	case TypeString:
+		a, _ := v.StringValue()
+		b, _ := other.StringValue()
+		return a == b
+	case TypeInt:
+		a, _ := v.IntValue()
+		b, _ := other.IntValue()
+		return a == b
+	case TypeFloat:
+		a, _ := v.FloatValue()
+		b, _ := other.FloatValue()
+		return a == b
+	case TypeBool:
+		a, _ := v.BoolValue()
+		b, _ := other.BoolValue()
+		return a == b
+	case TypeMap:
+		a, _ := v.MapKeys()
+		b, _ := other.MapKeys()
+		if len(a) != len(b) {
+			return false
+		}
+		for _, key := range a {
+			valA, _ := v.GetMapKey(key)
+			valB, _ := other.GetMapKey(key)
+			if !valA.EqualTypeValue(valB) {
+				return false
+			}
+		}
+		return true
+	case TypeSlice:
+		a, _ := v.SliceLen()
+		b, _ := other.SliceLen()
+		if a != b {
+			return false
+		}
+		for i := 0; i < a; i++ {
+			valA, _ := v.GetSliceIndex(i)
+			valB, _ := other.GetSliceIndex(i)
+			if !valA.EqualTypeValue(valB) {
+				return false
+			}
+		}
+		return true
+	default:
+		return false
+	}
+}

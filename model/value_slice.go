@@ -32,6 +32,7 @@ func (v *Value) isSlice() bool {
 	return v.Value.Kind() == reflect.Slice
 }
 
+// Append appends a value to the slice.
 func (v *Value) Append(val *Value) error {
 	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
 	if !unpacked.isSlice() {
@@ -42,6 +43,7 @@ func (v *Value) Append(val *Value) error {
 	return nil
 }
 
+// SliceLen returns the length of the slice.
 func (v *Value) SliceLen() (int, error) {
 	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
 	if !unpacked.isSlice() {
@@ -50,6 +52,7 @@ func (v *Value) SliceLen() (int, error) {
 	return unpacked.Value.Len(), nil
 }
 
+// GetSliceIndex returns the value at the specified index in the slice.
 func (v *Value) GetSliceIndex(i int) (*Value, error) {
 	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
 	if !unpacked.isSlice() {
@@ -59,4 +62,37 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 		return nil, fmt.Errorf("index out of range: %d", i)
 	}
 	return NewValue(unpacked.Value.Index(i)), nil
+}
+
+// SetSliceIndex sets the value at the specified index in the slice.
+func (v *Value) SetSliceIndex(i int, val *Value) error {
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	if !unpacked.isSlice() {
+		return fmt.Errorf("expected slice, got %s", v.Type())
+	}
+	if i < 0 || i >= unpacked.Value.Len() {
+		return fmt.Errorf("index out of range: %d", i)
+	}
+	unpacked.Value.Index(i).Set(val.Value)
+	return nil
+}
+
+// RangeSlice iterates over each item in the slice and calls the provided function.
+func (v *Value) RangeSlice(f func(int, *Value) error) error {
+	length, err := v.SliceLen()
+	if err != nil {
+		return fmt.Errorf("error getting slice length: %w", err)
+	}
+
+	for i := 0; i < length; i++ {
+		va, err := v.GetSliceIndex(i)
+		if err != nil {
+			return fmt.Errorf("error getting slice index %d: %w", i, err)
+		}
+		if err := f(i, va); err != nil {
+			return err
+		}
+	}
+
+	return nil
 }
