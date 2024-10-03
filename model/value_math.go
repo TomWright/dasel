@@ -1,18 +1,8 @@
 package model
 
 import (
-	"fmt"
 	"math"
 )
-
-type ErrIncompatibleTypes struct {
-	A *Value
-	B *Value
-}
-
-func (e *ErrIncompatibleTypes) Error() string {
-	return fmt.Sprintf("incompatible types: %s and %s", e.A.Type(), e.B.Type())
-}
 
 func (v *Value) Add(other *Value) (*Value, error) {
 	if v.IsInt() && other.IsInt() {

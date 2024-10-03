@@ -46,3 +46,20 @@ func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
 		return obj, nil
 	}, nil
 }
+
+func propertyExprExecutor(e ast.PropertyExpr) (expressionExecutor, error) {
+	return func(data *model.Value) (*model.Value, error) {
+		key, err := ExecuteAST(e.Property, data)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating property: %w", err)
+		}
+		if !key.IsString() {
+			return nil, fmt.Errorf("expected property to resolve to string, got %s", key.Type())
+		}
+		keyStr, err := key.StringValue()
+		if err != nil {
+			return nil, fmt.Errorf("error getting string value: %w", err)
+		}
+		return data.GetMapKey(keyStr)
+	}, nil
+}

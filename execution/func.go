@@ -6,23 +6,16 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 )
 
-type singleResponseFunc func(data *model.Value, args model.Values) (*model.Value, error)
+type FuncFn func(data *model.Value, args model.Values) (*model.Value, error)
 
-type multiResponseFunc func(data *model.Value, args model.Values) (model.Values, error)
+var singleResponseFuncLookup = map[string]FuncFn{}
 
-var singleResponseFuncLookup = map[string]singleResponseFunc{}
-var multiResponseFuncLookup = map[string]multiResponseFunc{}
-
-func registerFunc(name string, fn singleResponseFunc) {
+func RegisterFunc(name string, fn FuncFn) {
 	singleResponseFuncLookup[name] = fn
 }
 
-func registerMultiResponseFunc(name string, fn multiResponseFunc) {
-	multiResponseFuncLookup[name] = fn
-}
-
 func init() {
-	registerFunc("add", func(_ *model.Value, args model.Values) (*model.Value, error) {
+	RegisterFunc("add", func(_ *model.Value, args model.Values) (*model.Value, error) {
 		var foundInts, foundFloats int
 		var intRes int64
 		var floatRes float64

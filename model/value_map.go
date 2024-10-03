@@ -7,10 +7,12 @@ import (
 	"github.com/tomwright/dasel/v3/dencoding"
 )
 
+// NewMapValue creates a new map value.
 func NewMapValue() *Value {
 	return NewValue(dencoding.NewMap())
 }
 
+// IsMap returns true if the value is a map.
 func (v *Value) IsMap() bool {
 	return v.isStandardMap() || v.isDencodingMap()
 }

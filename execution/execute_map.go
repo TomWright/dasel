@@ -12,24 +12,22 @@ func mapExprExecutor(e ast.MapExpr) (expressionExecutor, error) {
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot map over non-array")
 		}
-		sliceLen, err := data.SliceLen()
-		if err != nil {
-			return nil, fmt.Errorf("error getting slice length: %w", err)
-		}
 		res := model.NewSliceValue()
 
-		for i := 0; i < sliceLen; i++ {
-			item, err := data.GetSliceIndex(i)
-			if err != nil {
-				return nil, fmt.Errorf("error getting slice index: %w", err)
-			}
+		if err := data.RangeSlice(func(i int, item *model.Value) error {
+			var err error
 			for _, expr := range e.Exprs {
 				item, err = ExecuteAST(expr, item)
 				if err != nil {
-					return nil, err
+					return err
 				}
 			}
-			res.Append(item)
+			if err := res.Append(item); err != nil {
+				return fmt.Errorf("error appending item to result: %w", err)
+			}
+			return nil
+		}); err != nil {
+			return nil, fmt.Errorf("error ranging over slice: %w", err)
 		}
 
 		return res, nil

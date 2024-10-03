@@ -25,7 +25,7 @@ func prepareArgs(data *model.Value, argsE ast.Expressions) (model.Values, error)
 	return args, nil
 }
 
-func callSingleExecutor(f singleResponseFunc, argsE ast.Expressions) (expressionExecutor, error) {
+func callFnExecutor(f FuncFn, argsE ast.Expressions) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		args, err := prepareArgs(data, argsE)
 		if err != nil {
@@ -41,29 +41,13 @@ func callSingleExecutor(f singleResponseFunc, argsE ast.Expressions) (expression
 	}, nil
 }
 
-func callMultiExecutor(f multiResponseFunc, argsE ast.Expressions) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		panic("multi response functions are not supported")
-		//args, err := prepareArgs(data, argsE)
-		//if err != nil {
-		//	return nil, fmt.Errorf("error preparing arguments: %w", err)
-		//}
-
-		//res, err := f(data, args)
-		//if err != nil {
-		//	return nil, fmt.Errorf("error executing function: %w", err)
-		//}
-
-		//return res, nil
-	}, nil
-}
-
 func callExprExecutor(e ast.CallExpr) (expressionExecutor, error) {
 	if f, ok := singleResponseFuncLookup[e.Function]; ok {
-		return callSingleExecutor(f, e.Args)
-	}
-	if f, ok := multiResponseFuncLookup[e.Function]; ok {
-		return callMultiExecutor(f, e.Args)
+		res, err := callFnExecutor(f, e.Args)
+		if err != nil {
+			return nil, fmt.Errorf("error executing function %q: %w", e.Function, err)
+		}
+		return res, nil
 	}
 
 	return nil, fmt.Errorf("unknown function: %q", e.Function)

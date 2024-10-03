@@ -1,5 +1,6 @@
 package model
 
+// MetadataValue returns a metadata value.
 func (v *Value) MetadataValue(key string) (any, bool) {
 	if v.Metadata == nil {
 		return nil, false
@@ -8,6 +9,7 @@ func (v *Value) MetadataValue(key string) (any, bool) {
 	return val, ok
 }
 
+// SetMetadataValue sets a metadata value.
 func (v *Value) SetMetadataValue(key string, val any) {
 	if v.Metadata == nil {
 		v.Metadata = map[string]any{}
@@ -15,6 +17,8 @@ func (v *Value) SetMetadataValue(key string, val any) {
 	v.Metadata[key] = val
 }
 
+// IsSpread returns true if the value is a spread value.
+// Spread values are used to represent the spread operator.
 func (v *Value) IsSpread() bool {
 	val, ok := v.Metadata["spread"]
 	if !ok {
@@ -27,6 +31,8 @@ func (v *Value) IsSpread() bool {
 	return spread
 }
 
+// MarkAsSpread marks the value as a spread value.
+// Spread values are used to represent the spread operator.
 func (v *Value) MarkAsSpread() {
 	v.SetMetadataValue("spread", true)
 }

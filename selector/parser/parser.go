@@ -41,22 +41,30 @@ func (p *Parser) currentScope() scope {
 }
 
 func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
+	allowLeftDonation := true
+	var tokens []lexer.TokenKind
 	switch p.currentScope() {
 	case scopeRoot:
-		return append([]lexer.TokenKind{lexer.EOF, lexer.Dot}, leftDenotationTokens...)
+		tokens = append(tokens, lexer.EOF, lexer.Dot)
 	case scopeFuncArgs:
-		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen}
+		tokens = append(tokens, lexer.Comma, lexer.CloseParen)
 	case scopeMap:
-		return []lexer.TokenKind{lexer.Comma, lexer.CloseParen, lexer.Dot, lexer.Spread}
+		tokens = append(tokens, lexer.Comma, lexer.CloseParen, lexer.Dot, lexer.Spread)
 	case scopeArray:
-		return []lexer.TokenKind{lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol, lexer.Spread}
+		tokens = append(tokens, lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol, lexer.Spread)
 	case scopeObject:
-		return []lexer.TokenKind{lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma}
+		tokens = append(tokens, lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma)
 	case scopeGroup:
-		return append([]lexer.TokenKind{lexer.CloseParen, lexer.Dot}, leftDenotationTokens...)
+		tokens = append(tokens, lexer.CloseParen, lexer.Dot)
 	default:
-		return nil
+		allowLeftDonation = false
 	}
+
+	if allowLeftDonation {
+		tokens = append(tokens, leftDenotationTokens...)
+	}
+
+	return tokens
 }
 
 func (p *Parser) expectEndOfExpression() error {

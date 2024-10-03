@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+// NewSliceValue returns a new slice value.
 func NewSliceValue() *Value {
 	s := reflect.MakeSlice(reflect.SliceOf(reflect.TypeFor[any]()), 0, 0)
 	ptr := reflect.New(reflect.SliceOf(reflect.TypeFor[any]()))
@@ -12,18 +13,7 @@ func NewSliceValue() *Value {
 	return NewValue(ptr)
 }
 
-func (v *Value) SliceValue() ([]any, error) {
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
-	if !unpacked.IsSlice() {
-		return nil, fmt.Errorf("expected slice, got %s", v.Type())
-	}
-	res, ok := unpacked.Interface().([]any)
-	if !ok {
-		return nil, fmt.Errorf("could not convert slice to []interface{}")
-	}
-	return res, nil
-}
-
+// IsSlice returns true if the value is a slice.
 func (v *Value) IsSlice() bool {
 	return v.UnpackKinds(reflect.Interface, reflect.Ptr).isSlice()
 }
@@ -95,4 +85,34 @@ func (v *Value) RangeSlice(f func(int, *Value) error) error {
 	}
 
 	return nil
+}
+
+// SliceIndexRange returns a new slice containing the values between the start and end indexes.
+// Comparable to go's slice[start:end].
+// If start is -1, it will be treated as 0. e.g. slice[:end] becomes slice[-1:end].
+// If end is -1, it will be treated as the length of the slice. e.g. slice[start:] becomes slice[start:-1].
+func (v *Value) SliceIndexRange(start, end int) (*Value, error) {
+	var err error
+	if start == -1 {
+		start = 0
+	}
+	if end == -1 {
+		end, err = v.SliceLen()
+		if err != nil {
+			return nil, fmt.Errorf("error getting slice length: %w", err)
+		}
+	}
+
+	res := NewSliceValue()
+	for i := start; i < end; i++ {
+		item, err := v.GetSliceIndex(i)
+		if err != nil {
+			return nil, fmt.Errorf("error getting slice index: %w", err)
+		}
+		if err := res.Append(item); err != nil {
+			return nil, fmt.Errorf("error appending value to slice: %w", err)
+		}
+	}
+
+	return res, nil
 }

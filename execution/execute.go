@@ -134,38 +134,6 @@ func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
 	}, nil
 }
 
-func rangeExprExecutor(e ast.RangeExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		panic("not implemented")
-	}, nil
-}
-
-func indexExprExecutor(e ast.IndexExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		panic("not implemented")
-	}, nil
-}
-
-func propertyExprExecutor(e ast.PropertyExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		if !data.IsMap() {
-			return nil, fmt.Errorf("expected map, got %s", data.Type())
-		}
-		key, err := ExecuteAST(e.Property, data)
-		if err != nil {
-			return nil, fmt.Errorf("error evaluating property: %w", err)
-		}
-		if !key.IsString() {
-			return nil, fmt.Errorf("expected property to resolve to string, got %s", key.Type())
-		}
-		keyStr, err := key.StringValue()
-		if err != nil {
-			return nil, fmt.Errorf("error getting string value: %w", err)
-		}
-		return data.GetMapKey(keyStr)
-	}, nil
-}
-
 func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		varName := e.Name

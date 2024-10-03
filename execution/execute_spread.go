@@ -14,14 +14,13 @@ func spreadExprExecutor() (expressionExecutor, error) {
 
 		switch {
 		case data.IsSlice():
-			v, err := data.SliceValue()
-			if err != nil {
-				return nil, fmt.Errorf("error getting slice value: %w", err)
-			}
-			for _, sv := range v {
-				if err := s.Append(model.NewValue(sv)); err != nil {
-					return nil, fmt.Errorf("error appending value to slice: %w", err)
+			if err := data.RangeSlice(func(key int, value *model.Value) error {
+				if err := s.Append(value); err != nil {
+					return fmt.Errorf("error appending value to slice: %w", err)
 				}
+				return nil
+			}); err != nil {
+				return nil, fmt.Errorf("error ranging slice: %w", err)
 			}
 		case data.IsMap():
 			if err := data.RangeMap(func(key string, value *model.Value) error {

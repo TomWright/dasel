@@ -6,8 +6,8 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/execution"
+	"github.com/tomwright/dasel/v3/internal/ptr"
 	"github.com/tomwright/dasel/v3/model"
-	"github.com/tomwright/dasel/v3/ptr"
 )
 
 func TestExecuteSelector_HappyPath(t *testing.T) {
@@ -37,7 +37,11 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			if !res.EqualTypeValue(exp) {
+			equal, err := res.EqualTypeValue(exp)
+			if err != nil {
+				t.Fatal(err)
+			}
+			if !equal {
 				t.Errorf("unexpected type: %v", cmp.Diff(exp, res))
 			}
 		}
@@ -264,10 +268,15 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 					s:    `numbers.one + numbers.add(two, three)`,
 					out:  model.NewIntValue(6),
 				}))
-				t.Run("add with map and spread on slice with $this addition", runTest(testCase{
+				t.Run("add with map and spread on slice with $this addition and grouping", runTest(testCase{
 					inFn: in,
 					s:    `add(nums.map(($this + 1))...)`,
 					out:  model.NewIntValue(9),
+				}))
+				t.Run("add with map and spread on slice with $this addition", runTest(testCase{
+					inFn: in,
+					s:    `add(nums.map($this + 1 - 2)...)`,
+					out:  model.NewIntValue(3),
 				}))
 			})
 		})

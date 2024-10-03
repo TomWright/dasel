@@ -28,7 +28,7 @@ func parseMap(p *Parser) (ast.Expr, error) {
 		[]lexer.TokenKind{lexer.CloseParen},
 		[]lexer.TokenKind{},
 		true,
-		bpCall,
+		bpDefault,
 	)
 	if err != nil {
 		return nil, err
