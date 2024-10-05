@@ -3,6 +3,8 @@ package lexer
 import (
 	"strings"
 	"unicode"
+
+	"github.com/tomwright/dasel/v3/internal/ptr"
 )
 
 type Tokenizer struct {
@@ -172,14 +174,35 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 	default:
 		pos := p.i
 
-		if pos+3 < p.srcLen && strings.EqualFold(p.src[pos:pos+4], "null") {
-			return NewToken(Null, p.src[pos:pos+4], p.i, 4), nil
+		matchStr := func(pos int, m string, caseInsensitive bool, kind TokenKind) *Token {
+			l := len(m)
+			if pos+(l-1) >= p.srcLen {
+				return nil
+			}
+			other := p.src[pos : pos+l]
+			if m == other || caseInsensitive && strings.EqualFold(m, other) {
+				return ptr.To(NewToken(kind, other, pos, l))
+			}
+			return nil
 		}
-		if pos+3 < p.srcLen && strings.EqualFold(p.src[pos:pos+4], "true") {
-			return NewToken(Bool, p.src[pos:pos+4], p.i, 4), nil
+
+		if t := matchStr(pos, "null", true, Null); t != nil {
+			return *t, nil
 		}
-		if pos+4 < p.srcLen && strings.EqualFold(p.src[pos:pos+5], "false") {
-			return NewToken(Bool, p.src[pos:pos+5], p.i, 5), nil
+		if t := matchStr(pos, "true", true, Bool); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "false", true, Bool); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "elseif", false, ElseIf); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "if", false, If); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "else", false, Else); t != nil {
+			return *t, nil
 		}
 
 		if unicode.IsDigit(rune(p.src[pos])) {

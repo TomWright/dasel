@@ -6,6 +6,18 @@ import (
 	"slices"
 )
 
+func NewNullValue() *Value {
+	return NewValue(reflect.New(reflect.TypeFor[any]()))
+}
+
+func (v *Value) IsNull() bool {
+	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isNull()
+}
+
+func (v *Value) isNull() bool {
+	return v.Value.IsNil()
+}
+
 func NewStringValue(x string) *Value {
 	res := reflect.New(reflect.TypeFor[string]())
 	res.Elem().Set(reflect.ValueOf(x))

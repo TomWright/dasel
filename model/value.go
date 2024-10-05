@@ -57,7 +57,7 @@ func (v *Value) Kind() reflect.Kind {
 func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 	res := v.Value
 	for {
-		if !slices.Contains(kinds, res.Kind()) {
+		if !slices.Contains(kinds, res.Kind()) || res.IsNil() {
 			return NewValue(res)
 		}
 		res = res.Elem()
@@ -70,7 +70,7 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 		if res.Type() == t {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -84,7 +84,7 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 		if res.Kind() == k {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}

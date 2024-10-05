@@ -76,6 +76,8 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return objectExprExecutor(e)
 	case ast.MapExpr:
 		return mapExprExecutor(e)
+	case ast.ConditionalExpr:
+		return conditionalExprExecutor(e)
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

@@ -31,7 +31,7 @@ func deleteFlags(cmd *cobra.Command) {
 	cmd.Flags().String("csv-comma", ",", "Comma separator to use when working with csv files.")
 	cmd.Flags().String("csv-write-comma", "", "Comma separator used when writing csv files. Overrides csv-comma when writing.")
 	cmd.Flags().String("csv-comment", "", "Comma separator used when reading csv files.")
-	cmd.Flags().Bool("csv-crlf", false, "True to use CRLF when writing CSV files.")
+	cmd.Flags().Bool("csv-crlf", false, "Then to use CRLF when writing CSV files.")
 
 	_ = cmd.MarkFlagFilename("file")
 }

@@ -37,6 +37,15 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 	}))
 
+	t.Run("if", runTest(testCase{
+		in: `if elseif else`,
+		out: []TokenKind{
+			If,
+			ElseIf,
+			Else,
+		},
+	}))
+
 	t.Run("everything", runTest(testCase{
 		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []TokenKind{

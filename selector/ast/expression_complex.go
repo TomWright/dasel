@@ -98,3 +98,11 @@ type GroupExpr struct {
 }
 
 func (GroupExpr) expr() {}
+
+type ConditionalExpr struct {
+	Cond Expr
+	Then Expr
+	Else Expr
+}
+
+func (ConditionalExpr) expr() {}

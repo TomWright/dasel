@@ -422,4 +422,35 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			},
 		}))
 	})
+
+	t.Run("conditional", func(t *testing.T) {
+		t.Run("true", runTest(testCase{
+			s:   `if (true) { "yes" } else { "no" }`,
+			out: model.NewStringValue("yes"),
+		}))
+		t.Run("false", runTest(testCase{
+			s:   `if (false) { "yes" } else { "no" }`,
+			out: model.NewStringValue("no"),
+		}))
+		t.Run("nested", runTest(testCase{
+			s:   `if (true) { if (true) { "yes" } else { "no" } } else { "no" }`,
+			out: model.NewStringValue("yes"),
+		}))
+		t.Run("nested false", runTest(testCase{
+			s:   `if (true) { if (false) { "yes" } else { "no" } } else { "no" }`,
+			out: model.NewStringValue("no"),
+		}))
+		t.Run("else if", runTest(testCase{
+			s:   `if (false) { "yes" } elseif (true) { "no" } else { "maybe" }`,
+			out: model.NewStringValue("no"),
+		}))
+		t.Run("else if else", runTest(testCase{
+			s:   `if (false) { "yes" } elseif (false) { "no" } else { "maybe" }`,
+			out: model.NewStringValue("maybe"),
+		}))
+		t.Run("if elseif elseif else", runTest(testCase{
+			s:   `if (false) { "yes" } elseif (false) { "no" } elseif (true) { "maybe" } else { "nope" }`,
+			out: model.NewStringValue("maybe"),
+		}))
+	})
 }

@@ -321,4 +321,67 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			},
 		}))
 	})
+
+	t.Run("conditional", func(t *testing.T) {
+		t.Run("if", run(t, testCase{
+			input: `if (foo == 1) { "yes" } else { "no" }`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 8, Len: 2},
+					Right:    ast.NumberIntExpr{Value: 1},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}))
+		t.Run("if elseif else", run(t, testCase{
+			input: `if (foo == 1) { "yes" } elseif (foo == 2) { "maybe" } else { "no" }`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 8, Len: 2},
+					Right:    ast.NumberIntExpr{Value: 1},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.ConditionalExpr{
+					Cond: ast.BinaryExpr{
+						Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+						Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 36, Len: 2},
+						Right:    ast.NumberIntExpr{Value: 2},
+					},
+					Then: ast.StringExpr{Value: "maybe"},
+					Else: ast.StringExpr{Value: "no"},
+				},
+			},
+		}))
+		t.Run("if elseif elseif else", run(t, testCase{
+			input: `if (foo == 1) { "yes" } elseif (foo == 2) { "maybe" } elseif (foo == 3) { "probably" } else { "no" }`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 8, Len: 2},
+					Right:    ast.NumberIntExpr{Value: 1},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.ConditionalExpr{
+					Cond: ast.BinaryExpr{
+						Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+						Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 36, Len: 2},
+						Right:    ast.NumberIntExpr{Value: 2},
+					},
+					Then: ast.StringExpr{Value: "maybe"},
+					Else: ast.ConditionalExpr{
+						Cond: ast.BinaryExpr{
+							Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+							Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 66, Len: 2},
+							Right:    ast.NumberIntExpr{Value: 3},
+						},
+						Then: ast.StringExpr{Value: "probably"},
+						Else: ast.StringExpr{Value: "no"},
+					},
+				},
+			},
+		}))
+	})
 }

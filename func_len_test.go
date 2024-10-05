@@ -40,7 +40,7 @@ func TestLenFunc(t *testing.T) {
 		),
 	)
 	t.Run(
-		"False Bool",
+		"Else Bool",
 		selectTest(
 			"falseBool.len()",
 			data,
@@ -48,7 +48,7 @@ func TestLenFunc(t *testing.T) {
 		),
 	)
 	t.Run(
-		"True Bool",
+		"Then Bool",
 		selectTest(
 			"trueBool.len()",
 			data,

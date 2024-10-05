@@ -17,6 +17,7 @@ const (
 	scopeObject   scope = "object"
 	scopeMap      scope = "map"
 	scopeGroup    scope = "group"
+	scopeIf       scope = "if"
 )
 
 type Parser struct {
@@ -144,11 +145,11 @@ func (p *Parser) Parse() (ast.Expr, error) {
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
-	defer func() {
-		if err == nil {
-			err = p.expectEndOfExpression()
-		}
-	}()
+	//defer func() {
+	//	if err == nil {
+	//		err = p.expectEndOfExpression()
+	//	}
+	//}()
 
 	switch p.current().Kind {
 	case lexer.String:
@@ -169,6 +170,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseVariable(p)
 	case lexer.OpenParen:
 		left, err = parseGroup(p)
+	case lexer.If:
+		left, err = parseIf(p)
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),
