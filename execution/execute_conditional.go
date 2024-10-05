@@ -20,11 +20,19 @@ func conditionalExprExecutor(e ast.ConditionalExpr) (expressionExecutor, error) 
 		}
 
 		if condBool {
-			return ExecuteAST(e.Then, data)
+			res, err := ExecuteAST(e.Then, data)
+			if err != nil {
+				return nil, fmt.Errorf("error executing then block: %w", err)
+			}
+			return res, nil
 		}
 
 		if e.Else != nil {
-			return ExecuteAST(e.Else, data)
+			res, err := ExecuteAST(e.Else, data)
+			if err != nil {
+				return nil, fmt.Errorf("error executing else block: %w", err)
+			}
+			return res, nil
 		}
 
 		return model.NewNullValue(), nil

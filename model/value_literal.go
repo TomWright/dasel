@@ -6,12 +6,16 @@ import (
 	"slices"
 )
 
+func newPtr() reflect.Value {
+	return reflect.New(reflect.TypeFor[any]())
+}
+
 func NewNullValue() *Value {
-	return NewValue(reflect.New(reflect.TypeFor[any]()))
+	return NewValue(newPtr())
 }
 
 func (v *Value) IsNull() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isNull()
+	return v.isNull()
 }
 
 func (v *Value) isNull() bool {
@@ -19,7 +23,7 @@ func (v *Value) isNull() bool {
 }
 
 func NewStringValue(x string) *Value {
-	res := reflect.New(reflect.TypeFor[string]())
+	res := newPtr()
 	res.Elem().Set(reflect.ValueOf(x))
 	return NewValue(res)
 }
@@ -41,7 +45,7 @@ func (v *Value) StringValue() (string, error) {
 }
 
 func NewIntValue(x int64) *Value {
-	res := reflect.New(reflect.TypeFor[int64]())
+	res := newPtr()
 	res.Elem().Set(reflect.ValueOf(x))
 	return NewValue(res)
 }
@@ -63,7 +67,7 @@ func (v *Value) IntValue() (int64, error) {
 }
 
 func NewFloatValue(x float64) *Value {
-	res := reflect.New(reflect.TypeFor[float64]())
+	res := newPtr()
 	res.Elem().Set(reflect.ValueOf(x))
 	return NewValue(res)
 }
@@ -85,7 +89,7 @@ func (v *Value) FloatValue() (float64, error) {
 }
 
 func NewBoolValue(x bool) *Value {
-	res := reflect.New(reflect.TypeFor[bool]())
+	res := newPtr()
 	res.Elem().Set(reflect.ValueOf(x))
 	return NewValue(res)
 }

@@ -33,16 +33,23 @@ type Value struct {
 }
 
 func NewValue(v any) *Value {
-	if v, ok := v.(*Value); ok {
-		return v
-	}
-	if rv, ok := v.(reflect.Value); ok {
+	switch val := v.(type) {
+	case *Value:
+		return val
+	case reflect.Value:
 		return &Value{
-			Value: rv,
+			Value: val,
 		}
-	}
-	return &Value{
-		Value: reflect.ValueOf(v),
+	case nil:
+		return NewNullValue()
+	default:
+		res := newPtr()
+		if v != nil {
+			res.Elem().Set(reflect.ValueOf(v))
+		}
+		return &Value{
+			Value: res,
+		}
 	}
 }
 

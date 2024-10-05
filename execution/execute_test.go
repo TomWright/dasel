@@ -42,7 +42,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				t.Fatal(err)
 			}
 			if !equal {
-				t.Errorf("unexpected type: %v", cmp.Diff(exp, res))
+				t.Errorf("unexpected output: %v", cmp.Diff(exp.Interface(), res.Interface()))
 			}
 		}
 	}
@@ -433,24 +433,42 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			out: model.NewStringValue("no"),
 		}))
 		t.Run("nested", runTest(testCase{
-			s:   `if (true) { if (true) { "yes" } else { "no" } } else { "no" }`,
+			s: `
+				if (true) {
+					if (true) { "yes" }
+					else { "no" }
+				} else { "no" }`,
 			out: model.NewStringValue("yes"),
 		}))
 		t.Run("nested false", runTest(testCase{
-			s:   `if (true) { if (false) { "yes" } else { "no" } } else { "no" }`,
+			s: `
+				if (true) {
+					if (false) { "yes" }
+					else { "no" }
+				} else { "no" }`,
 			out: model.NewStringValue("no"),
 		}))
 		t.Run("else if", runTest(testCase{
-			s:   `if (false) { "yes" } elseif (true) { "no" } else { "maybe" }`,
+			s: `
+				if (false) { "yes" }
+				elseif (true) { "no" }
+				else { "maybe" }`,
 			out: model.NewStringValue("no"),
 		}))
 		t.Run("else if else", runTest(testCase{
-			s:   `if (false) { "yes" } elseif (false) { "no" } else { "maybe" }`,
+			s: `
+				if (false) { "yes" }
+				elseif (false) { "no" }
+				else { "maybe" }`,
 			out: model.NewStringValue("maybe"),
 		}))
 		t.Run("if elseif elseif else", runTest(testCase{
-			s:   `if (false) { "yes" } elseif (false) { "no" } elseif (true) { "maybe" } else { "nope" }`,
-			out: model.NewStringValue("maybe"),
+			s: `
+				if (false) { "yes" }
+				elseif (false) { "no" }
+				elseif (false) { "maybe" }
+				else { "nope" }`,
+			out: model.NewStringValue("nope"),
 		}))
 	})
 }
