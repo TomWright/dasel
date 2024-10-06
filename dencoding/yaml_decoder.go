@@ -2,12 +2,12 @@ package dencoding
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v3/internal/util"
 	"io"
 	"reflect"
 	"strconv"
 	"time"
 
-	"github.com/tomwright/dasel/v3/util"
 	"gopkg.in/yaml.v3"
 )
 

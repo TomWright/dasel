@@ -1,10 +1,10 @@
 package dencoding
 
 import (
+	"github.com/tomwright/dasel/v3/internal/util"
 	"io"
 	"strconv"
 
-	"github.com/tomwright/dasel/v3/util"
 	"gopkg.in/yaml.v3"
 )
 
