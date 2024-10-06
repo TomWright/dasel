@@ -61,8 +61,8 @@ func RootCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringP("input", "i", "json", "The format of the input data. Can be one of: json, yaml, toml, xml, csv")
-	cmd.Flags().StringP("output", "o", "json", "The format of the output data. Can be one of: json, yaml, toml, xml, csv")
+	cmd.Flags().StringP("input", "i", "", "The format of the input data. Can be one of: json, yaml, toml, xml, csv")
+	cmd.Flags().StringP("output", "o", "", "The format of the output data. Can be one of: json, yaml, toml, xml, csv")
 
 	cmd.AddCommand(manCommand(cmd))
 

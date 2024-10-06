@@ -31,5 +31,9 @@ type jsonWriter struct{}
 
 // Write writes a value to a byte slice.
 func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
-	return json.Marshal(value.Interface())
+	res, err := json.Marshal(value.Interface())
+	if err != nil {
+		return nil, err
+	}
+	return append(res, []byte("\n")...), nil
 }
