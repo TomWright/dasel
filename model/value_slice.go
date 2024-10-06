@@ -101,16 +101,33 @@ func (v *Value) SliceIndexRange(start, end int) (*Value, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error getting slice length: %w", err)
 		}
+		end = end - 1
+		if end < 0 {
+			end = 0
+		}
 	}
 
 	res := NewSliceValue()
-	for i := start; i < end; i++ {
-		item, err := v.GetSliceIndex(i)
-		if err != nil {
-			return nil, fmt.Errorf("error getting slice index: %w", err)
+
+	if start > end {
+		for i := start; i >= end; i-- {
+			item, err := v.GetSliceIndex(i)
+			if err != nil {
+				return nil, fmt.Errorf("error getting slice index: %w", err)
+			}
+			if err := res.Append(item); err != nil {
+				return nil, fmt.Errorf("error appending value to slice: %w", err)
+			}
 		}
-		if err := res.Append(item); err != nil {
-			return nil, fmt.Errorf("error appending value to slice: %w", err)
+	} else {
+		for i := start; i <= end; i++ {
+			item, err := v.GetSliceIndex(i)
+			if err != nil {
+				return nil, fmt.Errorf("error getting slice index: %w", err)
+			}
+			if err := res.Append(item); err != nil {
+				return nil, fmt.Errorf("error appending value to slice: %w", err)
+			}
 		}
 	}
 

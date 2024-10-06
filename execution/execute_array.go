@@ -9,22 +9,29 @@ import (
 
 func rangeExprExecutor(e ast.RangeExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
-		startE, err := ExecuteAST(e.Start, data)
-		if err != nil {
-			return nil, fmt.Errorf("error evaluating start expression: %w", err)
-		}
-		endE, err := ExecuteAST(e.End, data)
-		if err != nil {
-			return nil, fmt.Errorf("error evaluating end expression: %w", err)
+		var start, end int64 = -1, -1
+		if e.Start != nil {
+			startE, err := ExecuteAST(e.Start, data)
+			if err != nil {
+				return nil, fmt.Errorf("error evaluating start expression: %w", err)
+			}
+
+			start, err = startE.IntValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting start int value: %w", err)
+			}
 		}
 
-		start, err := startE.IntValue()
-		if err != nil {
-			return nil, fmt.Errorf("error getting start int value: %w", err)
-		}
-		end, err := endE.IntValue()
-		if err != nil {
-			return nil, fmt.Errorf("error getting end int value: %w", err)
+		if e.End != nil {
+			endE, err := ExecuteAST(e.End, data)
+			if err != nil {
+				return nil, fmt.Errorf("error evaluating end expression: %w", err)
+			}
+
+			end, err = endE.IntValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting end int value: %w", err)
+			}
 		}
 
 		res, err := data.SliceIndexRange(int(start), int(end))

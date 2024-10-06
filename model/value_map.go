@@ -179,3 +179,17 @@ func (v *Value) MapKeyValues() ([]KeyValue, error) {
 
 	return kvs, nil
 }
+
+// MapLen returns the length of the slice.
+func (v *Value) MapLen() (int, error) {
+	if !v.IsMap() {
+		return 0, fmt.Errorf("expected map, got %s", v.Type())
+	}
+	// There will be more efficient ways of doing this, but this
+	// accounts for maps, dencoding maps and structs.
+	keys, err := v.MapKeys()
+	if err != nil {
+		return 0, err
+	}
+	return len(keys), nil
+}

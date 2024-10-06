@@ -128,9 +128,9 @@ func TestSlice(t *testing.T) {
 			//	}
 			//})
 			t.Run("SliceIndexRange", func(t *testing.T) {
-				t.Run("end 1", func(t *testing.T) {
+				t.Run("end 0", func(t *testing.T) {
 					v := v()
-					s, err := v.SliceIndexRange(-1, 1)
+					s, err := v.SliceIndexRange(-1, 0)
 					if err != nil {
 						t.Errorf("unexpected error: %s", err)
 						return

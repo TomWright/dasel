@@ -15,6 +15,21 @@ func RegisterFunc(name string, fn FuncFn) {
 }
 
 func init() {
+	RegisterFunc("len", func(data *model.Value, args model.Values) (*model.Value, error) {
+		if len(args) != 1 {
+			return nil, fmt.Errorf("len expects a single argument")
+		}
+
+		arg := args[0]
+
+		l, err := arg.Len()
+		if err != nil {
+			return nil, err
+		}
+
+		return model.NewIntValue(int64(l)), nil
+	})
+
 	RegisterFunc("add", func(_ *model.Value, args model.Values) (*model.Value, error) {
 		var foundInts, foundFloats int
 		var intRes int64

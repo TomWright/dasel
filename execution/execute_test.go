@@ -423,6 +423,110 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}))
 	})
 
+	t.Run("array", func(t *testing.T) {
+		inSlice := func() *model.Value {
+			s := model.NewSliceValue()
+			if err := s.Append(model.NewIntValue(1)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if err := s.Append(model.NewIntValue(2)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if err := s.Append(model.NewIntValue(3)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			return s
+		}
+		inMap := func() *model.Value {
+			m := model.NewMapValue()
+			if err := m.SetMapKey("numbers", inSlice()); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			return m
+		}
+
+		runArrayTests := func(in func() *model.Value, prefix string) func(t *testing.T) {
+			return func(t *testing.T) {
+				t.Run("1:2", runTest(testCase{
+					s:    prefix + `[1:2]`,
+					inFn: in,
+					outFn: func() *model.Value {
+						res := model.NewSliceValue()
+						if err := res.Append(model.NewIntValue(2)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(3)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						return res
+					},
+				}))
+				t.Run("1:0", runTest(testCase{
+					s:    prefix + `[1:0]`,
+					inFn: in,
+					outFn: func() *model.Value {
+						res := model.NewSliceValue()
+						if err := res.Append(model.NewIntValue(2)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(1)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						return res
+					},
+				}))
+				t.Run("1:", runTest(testCase{
+					s:    prefix + `[1:]`,
+					inFn: in,
+					outFn: func() *model.Value {
+						res := model.NewSliceValue()
+						if err := res.Append(model.NewIntValue(2)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(3)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						return res
+					},
+				}))
+				t.Run(":1", runTest(testCase{
+					s:    prefix + `[:1]`,
+					inFn: in,
+					outFn: func() *model.Value {
+						res := model.NewSliceValue()
+						if err := res.Append(model.NewIntValue(1)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(2)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						return res
+					},
+				}))
+				t.Run("reverse", runTest(testCase{
+					s:    prefix + `[len($this)-1:0]`,
+					inFn: in,
+					outFn: func() *model.Value {
+						res := model.NewSliceValue()
+						if err := res.Append(model.NewIntValue(3)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(2)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						if err := res.Append(model.NewIntValue(1)); err != nil {
+							t.Fatalf("unexpected error: %s", err)
+						}
+						return res
+					},
+				}))
+			}
+		}
+
+		t.Run("direct to slice", runArrayTests(inSlice, ""))
+		t.Run("property to slice", runArrayTests(inMap, "numbers"))
+	})
+
 	t.Run("conditional", func(t *testing.T) {
 		t.Run("true", runTest(testCase{
 			s:   `if (true) { "yes" } else { "no" }`,

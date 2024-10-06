@@ -117,3 +117,23 @@ func (v *Value) Type() Type {
 		return TypeUnknown
 	}
 }
+
+func (v *Value) Len() (int, error) {
+	var l int
+	var err error
+
+	switch {
+	case v.IsSlice():
+		l, err = v.SliceLen()
+	case v.IsMap():
+		l, err = v.MapLen()
+	default:
+		err = fmt.Errorf("len expects slice or map")
+	}
+
+	if err != nil {
+		return l, err
+	}
+
+	return l, nil
+}
