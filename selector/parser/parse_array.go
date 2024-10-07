@@ -6,6 +6,27 @@ import (
 )
 
 func parseArray(p *Parser) (ast.Expr, error) {
+	if err := p.expect(lexer.OpenBracket); err != nil {
+		return nil, err
+	}
+	p.advance()
+
+	elements, err := p.parseExpressionsAsSlice(
+		lexer.TokenKinds(lexer.CloseBracket),
+		lexer.TokenKinds(lexer.Comma),
+		false,
+		bpLiteral,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return ast.ArrayExpr{
+		Exprs: elements,
+	}, nil
+}
+
+func parseIndex(p *Parser) (ast.Expr, error) {
 	if err := p.expect(lexer.Symbol, lexer.Variable); err != nil {
 		return nil, err
 	}
@@ -15,7 +36,7 @@ func parseArray(p *Parser) (ast.Expr, error) {
 	token := p.current()
 	p.advance()
 
-	idx, err := parseSquareBrackets(p)
+	idx, err := parseIndexSquareBrackets(p)
 	if err != nil {
 		return nil, err
 	}
@@ -41,9 +62,9 @@ func parseArray(p *Parser) (ast.Expr, error) {
 	), nil
 }
 
-// parseSquareBrackets parses square bracket array access.
+// parseIndexSquareBrackets parses square bracket array access.
 // E.g. [0], [0:1], [0:], [:2]
-func parseSquareBrackets(p *Parser) (ast.Expr, error) {
+func parseIndexSquareBrackets(p *Parser) (ast.Expr, error) {
 	// Handle index (from bracket)
 	if err := p.expect(lexer.OpenBracket); err != nil {
 		return nil, err

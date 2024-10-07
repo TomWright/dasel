@@ -7,6 +7,24 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
+func arrayExprExecutor(e ast.ArrayExpr) (expressionExecutor, error) {
+	return func(data *model.Value) (*model.Value, error) {
+		res := model.NewSliceValue()
+
+		for _, expr := range e.Exprs {
+			el, err := ExecuteAST(expr, data)
+			if err != nil {
+				return nil, err
+			}
+			if err := res.Append(el); err != nil {
+				return nil, err
+			}
+		}
+
+		return res, nil
+	}, nil
+}
+
 func rangeExprExecutor(e ast.RangeExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		var start, end int64 = -1, -1

@@ -11,7 +11,7 @@ func parseVariable(p *Parser) (ast.Expr, error) {
 	next := p.peek()
 
 	if next.IsKind(lexer.OpenBracket) {
-		return parseArray(p)
+		return parseIndex(p)
 	}
 
 	prop := ast.VariableExpr{

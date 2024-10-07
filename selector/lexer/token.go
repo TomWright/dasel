@@ -7,6 +7,10 @@ import (
 
 type TokenKind int
 
+func TokenKinds(tk ...TokenKind) []TokenKind {
+	return tk
+}
+
 const (
 	EOF TokenKind = iota
 	Symbol

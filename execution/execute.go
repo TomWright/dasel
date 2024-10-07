@@ -97,6 +97,8 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return conditionalExprExecutor(e)
 	case ast.BranchExpr:
 		return branchExprExecutor(e)
+	case ast.ArrayExpr:
+		return arrayExprExecutor(e)
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

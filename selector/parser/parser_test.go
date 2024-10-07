@@ -131,45 +131,66 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 	t.Run("array access", func(t *testing.T) {
 		t.Run("root array", func(t *testing.T) {
 			t.Run("index", run(t, testCase{
-				input:    "[1]",
-				expected: ast.IndexExpr{Index: ast.NumberIntExpr{Value: 1}},
+				input: "$this[1]",
+				expected: ast.ChainExprs(
+					ast.VariableExpr{Name: "this"},
+					ast.IndexExpr{Index: ast.NumberIntExpr{Value: 1}},
+				),
 			}))
 			t.Run("range", func(t *testing.T) {
 				t.Run("start and end funcs", run(t, testCase{
-					input: "[calcStart(1):calcEnd()]",
-					expected: ast.RangeExpr{
-						Start: ast.CallExpr{
-							Function: "calcStart",
-							Args: ast.Expressions{
-								ast.NumberIntExpr{Value: 1},
+					input: "$this[calcStart(1):calcEnd()]",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.RangeExpr{
+							Start: ast.CallExpr{
+								Function: "calcStart",
+								Args: ast.Expressions{
+									ast.NumberIntExpr{Value: 1},
+								},
+							},
+							End: ast.CallExpr{
+								Function: "calcEnd",
 							},
 						},
-						End: ast.CallExpr{
-							Function: "calcEnd",
-						},
-					},
+					),
 				}))
 				t.Run("start and end", run(t, testCase{
-					input:    "[5:10]",
-					expected: ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}, End: ast.NumberIntExpr{Value: 10}},
+					input: "$this[5:10]",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}, End: ast.NumberIntExpr{Value: 10}},
+					),
 				}))
 				t.Run("start", run(t, testCase{
-					input:    "[5:]",
-					expected: ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}},
+					input: "$this[5:]",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}},
+					),
 				}))
 				t.Run("end", run(t, testCase{
-					input:    "[:10]",
-					expected: ast.RangeExpr{End: ast.NumberIntExpr{Value: 10}},
+					input: "$this[:10]",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.RangeExpr{End: ast.NumberIntExpr{Value: 10}},
+					),
 				}))
 			})
 			t.Run("spread", func(t *testing.T) {
 				t.Run("standard", run(t, testCase{
-					input:    "...",
-					expected: ast.SpreadExpr{},
+					input: "$this...",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.SpreadExpr{},
+					),
 				}))
 				t.Run("brackets", run(t, testCase{
-					input:    "[...]",
-					expected: ast.SpreadExpr{},
+					input: "$this[...]",
+					expected: ast.ChainExprs(
+						ast.VariableExpr{Name: "this"},
+						ast.SpreadExpr{},
+					),
 				}))
 			})
 		})
@@ -284,13 +305,13 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			}},
 		}))
 		t.Run("set single property", run(t, testCase{
-			input: "{foo=1}",
+			input: `{"foo":1}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.NumberIntExpr{Value: 1}},
 			}},
 		}))
 		t.Run("set multiple properties", run(t, testCase{
-			input: "{foo=1, bar=2, baz=3}",
+			input: `{foo: 1, bar: 2, baz: 3}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.NumberIntExpr{Value: 1}},
 				{Key: ast.StringExpr{Value: "bar"}, Value: ast.NumberIntExpr{Value: 2}},
@@ -301,9 +322,9 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			input: `{
 				...,
 				foo,
-				bar=2,
-				baz=evalSomething(),
-				"Name"="Tom",
+				bar: 2,
+				"baz": evalSomething(),
+				"Name": "Tom",
 			}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.SpreadExpr{}, Value: ast.SpreadExpr{}},

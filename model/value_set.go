@@ -13,9 +13,16 @@ func (v *Value) Set(newValue *Value) error {
 		return nil
 	}
 
+	// todo : figure this out
 	x := newPtr()
 	x.Elem().Set(b.Value)
-	v.Value.Set(x)
+
+	target, err := v.UnpackUntilAddressable()
+	if err != nil {
+		return err
+	}
+
+	target.Value.Set(x)
 
 	return nil
 }

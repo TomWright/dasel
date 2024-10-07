@@ -85,6 +85,20 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 	}
 }
 
+func (v *Value) UnpackUntilAddressable() (*Value, error) {
+	res := v.Value
+	for {
+		if res.CanAddr() {
+			return NewValue(res), nil
+		}
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+			res = res.Elem()
+			continue
+		}
+		return nil, fmt.Errorf("could not unpack addressable value")
+	}
+}
+
 func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 	res := v.Value
 	for {

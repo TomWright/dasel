@@ -58,7 +58,7 @@ func parseObject(p *Parser) (ast.Expr, error) {
 			key = prop.Property
 		}
 
-		if err := p.expect(lexer.Equals); err != nil {
+		if err := p.expect(lexer.Colon); err != nil {
 			return nil, err
 		}
 		p.advance()

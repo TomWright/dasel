@@ -16,7 +16,7 @@ func parseSymbol(p *Parser) (ast.Expr, error) {
 	}
 
 	if next.IsKind(lexer.OpenBracket) {
-		return parseArray(p)
+		return parseIndex(p)
 	}
 
 	prop := ast.PropertyExpr{

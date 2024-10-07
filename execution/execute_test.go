@@ -239,6 +239,56 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			s:   `false`,
 			out: model.NewBoolValue(false),
 		}))
+		t.Run("empty array", runTest(testCase{
+			s: `[]`,
+			outFn: func() *model.Value {
+				r := model.NewSliceValue()
+				return r
+			},
+		}))
+		t.Run("array with one element", runTest(testCase{
+			s: `[1]`,
+			outFn: func() *model.Value {
+				r := model.NewSliceValue()
+				if err := r.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
+		}))
+		t.Run("array with many elements", runTest(testCase{
+			s: `[1, 2.2, "foo", true, [1, 2, 3]]`,
+			outFn: func() *model.Value {
+				nested := model.NewSliceValue()
+				if err := nested.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := nested.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := nested.Append(model.NewIntValue(3)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+
+				r := model.NewSliceValue()
+				if err := r.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewFloatValue(2.2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewStringValue("foo")); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewBoolValue(true)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(nested); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
+		}))
 	})
 
 	t.Run("function", func(t *testing.T) {
@@ -321,7 +371,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}))
 		t.Run("add evaluated fields", runTest(testCase{
 			in: inputMap(),
-			s:  `{..., over30 = age > 30}`,
+			s:  `{..., "over30": age > 30}`,
 			outFn: func() *model.Value {
 				return model.NewValue(
 					dencoding.NewMap().
@@ -376,7 +426,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}))
 		t.Run("set", runTest(testCase{
 			in: inputMap(),
-			s:  `{title="Mrs"}`,
+			s:  `{title:"Mrs"}`,
 			outFn: func() *model.Value {
 				res := model.NewMapValue()
 				_ = res.SetMapKey("title", model.NewStringValue("Mrs"))
@@ -385,7 +435,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}))
 		t.Run("set with spread", runTest(testCase{
 			in: inputMap(),
-			s:  `{..., title="Mrs"}`,
+			s:  `{..., title:"Mrs"}`,
 			outFn: func() *model.Value {
 				res := inputMap()
 				_ = res.SetMapKey("title", model.NewStringValue("Mrs"))
@@ -419,7 +469,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			s: `
 				map (
 					{
-						total = add( foo, bar, 1 )
+						total: add( foo, bar, 1 )
 					}
 				)
 				.map ( total )`,
@@ -529,7 +579,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			}
 		}
 
-		t.Run("direct to slice", runArrayTests(inSlice, ""))
+		t.Run("direct to slice", runArrayTests(inSlice, "$this"))
 		t.Run("property to slice", runArrayTests(inMap, "numbers"))
 	})
 

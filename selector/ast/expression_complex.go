@@ -64,6 +64,12 @@ type IndexExpr struct {
 
 func (IndexExpr) expr() {}
 
+type ArrayExpr struct {
+	Exprs Expressions
+}
+
+func (ArrayExpr) expr() {}
+
 type PropertyExpr struct {
 	Property Expr
 }
