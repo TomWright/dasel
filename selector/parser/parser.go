@@ -1,79 +1,15 @@
 package parser
 
 import (
-	"fmt"
 	"slices"
 
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
-type scope string
-
-const (
-	scopeRoot     scope = "root"
-	scopeFuncArgs scope = "funcArgs"
-	scopeArray    scope = "array"
-	scopeObject   scope = "object"
-	scopeMap      scope = "map"
-	scopeGroup    scope = "group"
-	scopeIf       scope = "if"
-)
-
 type Parser struct {
 	tokens lexer.Tokens
 	i      int
-	scopes []scope
-}
-
-func (p *Parser) pushScope(s scope) {
-	p.scopes = append(p.scopes, s)
-}
-
-func (p *Parser) popScope() {
-	p.scopes = p.scopes[:len(p.scopes)-1]
-}
-
-func (p *Parser) currentScope() scope {
-	if len(p.scopes) == 0 {
-		return scopeRoot
-	}
-	return p.scopes[len(p.scopes)-1]
-}
-
-func (p *Parser) endOfExpressionTokens() []lexer.TokenKind {
-	allowLeftDonation := true
-	var tokens []lexer.TokenKind
-	switch p.currentScope() {
-	case scopeRoot:
-		tokens = append(tokens, lexer.EOF, lexer.Dot)
-	case scopeFuncArgs:
-		tokens = append(tokens, lexer.Comma, lexer.CloseParen)
-	case scopeMap:
-		tokens = append(tokens, lexer.Comma, lexer.CloseParen, lexer.Dot, lexer.Spread)
-	case scopeArray:
-		tokens = append(tokens, lexer.CloseBracket, lexer.Colon, lexer.Number, lexer.Symbol, lexer.Spread)
-	case scopeObject:
-		tokens = append(tokens, lexer.CloseCurly, lexer.Equals, lexer.Number, lexer.Symbol, lexer.Comma)
-	case scopeGroup:
-		tokens = append(tokens, lexer.CloseParen, lexer.Dot)
-	default:
-		allowLeftDonation = false
-	}
-
-	if allowLeftDonation {
-		tokens = append(tokens, leftDenotationTokens...)
-	}
-
-	return tokens
-}
-
-func (p *Parser) expectEndOfExpression() error {
-	tokens := p.endOfExpressionTokens()
-	if len(tokens) == 0 {
-		return fmt.Errorf("no end of scope tokens found: %q", p.currentScope())
-	}
-	return p.expect(tokens...)
 }
 
 func NewParser(tokens lexer.Tokens) *Parser {
@@ -145,12 +81,6 @@ func (p *Parser) Parse() (ast.Expr, error) {
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
-	//defer func() {
-	//	if err == nil {
-	//		err = p.expectEndOfExpression()
-	//	}
-	//}()
-
 	switch p.current().Kind {
 	case lexer.String:
 		left, err = parseStringLiteral(p)
@@ -172,6 +102,12 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseGroup(p)
 	case lexer.If:
 		left, err = parseIf(p)
+	case lexer.Branch:
+		left, err = parseBranch(p)
+	case lexer.Map:
+		left, err = parseMap(p)
+	//case lexer.Filter:
+	//	left, err = parseFilter(p)
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),

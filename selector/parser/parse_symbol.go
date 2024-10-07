@@ -10,10 +10,6 @@ func parseSymbol(p *Parser) (ast.Expr, error) {
 
 	next := p.peek()
 
-	if token.Value == "map" && next.IsKind(lexer.OpenParen) {
-		return parseMap(p)
-	}
-
 	// Handle functions
 	if next.IsKind(lexer.OpenParen) {
 		return parseFunc(p)

@@ -53,7 +53,7 @@ func NewValue(v any) *Value {
 	}
 }
 
-func (v *Value) Interface() interface{} {
+func (v *Value) Interface() any {
 	return v.Value.Interface()
 }
 

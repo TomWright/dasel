@@ -31,6 +31,29 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 		}
 	}
 
+	t.Run("branching", func(t *testing.T) {
+		t.Run("two branches", run(t, testCase{
+			input: `branch("hello", len("world"))`,
+			expected: ast.BranchExprs(
+				ast.StringExpr{Value: "hello"},
+				ast.ChainExprs(
+					ast.CallExpr{
+						Function: "len",
+						Args:     ast.Expressions{ast.StringExpr{Value: "world"}},
+					},
+				),
+			),
+		}))
+		t.Run("three branches", run(t, testCase{
+			input: `branch("foo", "bar", "baz")`,
+			expected: ast.BranchExprs(
+				ast.StringExpr{Value: "foo"},
+				ast.StringExpr{Value: "bar"},
+				ast.StringExpr{Value: "baz"},
+			),
+		}))
+	})
+
 	t.Run("literal access", func(t *testing.T) {
 		t.Run("string", run(t, testCase{
 			input:    `"hello world"`,

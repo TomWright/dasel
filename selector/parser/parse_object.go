@@ -6,9 +6,6 @@ import (
 )
 
 func parseObject(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeObject)
-	defer p.popScope()
-
 	if err := p.expect(lexer.OpenCurly); err != nil {
 		return nil, err
 	}

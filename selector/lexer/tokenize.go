@@ -51,6 +51,11 @@ func (p *Tokenizer) peekRuneMatches(i int, fn func(rune) bool) bool {
 }
 
 func (p *Tokenizer) parseCurRune() (Token, error) {
+	// Skip over whitespace
+	for p.i < p.srcLen && unicode.IsSpace(rune(p.src[p.i])) {
+		p.i++
+	}
+
 	switch p.src[p.i] {
 	case '.':
 		if p.peekRuneEqual(p.i+1, '.') && p.peekRuneEqual(p.i+2, '.') {
@@ -180,10 +185,16 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 				return nil
 			}
 			other := p.src[pos : pos+l]
-			if m == other || caseInsensitive && strings.EqualFold(m, other) {
-				return ptr.To(NewToken(kind, other, pos, l))
+			if m != other && !(caseInsensitive && strings.EqualFold(m, other)) {
+				return nil
 			}
-			return nil
+
+			if pos+(l) < p.srcLen && (unicode.IsLetter(rune(p.src[pos+l])) || unicode.IsDigit(rune(p.src[pos+l]))) {
+				// There is a follow letter or digit.
+				return nil
+			}
+
+			return ptr.To(NewToken(kind, other, pos, l))
 		}
 
 		if t := matchStr(pos, "null", true, Null); t != nil {
@@ -202,6 +213,15 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 			return *t, nil
 		}
 		if t := matchStr(pos, "else", false, Else); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "branch", false, Branch); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "map", false, Map); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "filter", false, Filter); t != nil {
 			return *t, nil
 		}
 
@@ -237,11 +257,6 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 func (p *Tokenizer) Next() (Token, error) {
 	if p.i >= len(p.src) {
 		return NewToken(EOF, "", p.i, 0), nil
-	}
-
-	// Skip over whitespace
-	for p.i < p.srcLen && unicode.IsSpace(rune(p.src[p.i])) {
-		p.i++
 	}
 
 	t, err := p.parseCurRune()

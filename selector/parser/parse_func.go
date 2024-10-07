@@ -6,9 +6,6 @@ import (
 )
 
 func parseFunc(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeFuncArgs)
-	defer p.popScope()
-
 	if err := p.expect(lexer.Symbol); err != nil {
 		return nil, err
 	}

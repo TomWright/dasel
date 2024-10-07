@@ -20,5 +20,5 @@ type UnexpectedTokenError struct {
 }
 
 func (e *UnexpectedTokenError) Error() string {
-	return fmt.Sprintf("unexpected token %v %q at position %d.", e.Token.Kind, e.Token.Value, e.Token.Pos)
+	return fmt.Sprintf("failed to parse: unexpected token %v %q at position %d.", e.Token.Kind, e.Token.Value, e.Token.Pos)
 }

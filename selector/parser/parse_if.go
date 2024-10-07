@@ -14,9 +14,6 @@ func parseIfCondition(p *Parser) (ast.Expr, error) {
 }
 
 func parseIf(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeIf)
-	defer p.popScope()
-
 	if err := p.expect(lexer.If); err != nil {
 		return nil, err
 	}

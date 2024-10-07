@@ -1,21 +1,13 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
 func parseMap(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeMap)
-	defer p.popScope()
-
-	if err := p.expect(lexer.Symbol); err != nil {
+	if err := p.expect(lexer.Map); err != nil {
 		return nil, err
-	}
-	if p.current().Value != "map" {
-		return nil, fmt.Errorf("expected map but got %q", p.current().Value)
 	}
 
 	p.advance()
@@ -35,6 +27,32 @@ func parseMap(p *Parser) (ast.Expr, error) {
 	}
 
 	return ast.MapExpr{
+		Exprs: expressions,
+	}, nil
+}
+
+func parseBranch(p *Parser) (ast.Expr, error) {
+	if err := p.expect(lexer.Branch); err != nil {
+		return nil, err
+	}
+
+	p.advance()
+	if err := p.expect(lexer.OpenParen); err != nil {
+		return nil, err
+	}
+	p.advance()
+
+	expressions, err := p.parseExpressionsAsSlice(
+		[]lexer.TokenKind{lexer.CloseParen},
+		[]lexer.TokenKind{lexer.Comma},
+		true,
+		bpDefault,
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return ast.BranchExpr{
 		Exprs: expressions,
 	}, nil
 }

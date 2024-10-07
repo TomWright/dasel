@@ -66,7 +66,7 @@ func TestCrossFormatHappyPath(t *testing.T) {
 	"stringFalse": "false",
 	"stringTrue": "true",
 	"sliceOfNumbers": [1, 2, 3, 4, 5],
-	"map": {
+	"mapData": {
 		"oneTwoThree": 123,
 		"oneTwoDotThree": 12.3,
 		"hello": "world",
@@ -75,7 +75,7 @@ func TestCrossFormatHappyPath(t *testing.T) {
 		"stringFalse": "false",
 		"stringTrue": "true",
 		"sliceOfNumbers": [1, 2, 3, 4, 5],
-		"map": {
+		"mapData": {
 			"oneTwoThree": 123,
 			"oneTwoDotThree": 12.3,
 			"hello": "world",
@@ -100,7 +100,7 @@ sliceOfNumbers:
 - 3
 - 4
 - 5
-map:
+mapData:
     oneTwoThree: 123
     oneTwoDotThree: 12.3
     hello: world
@@ -114,7 +114,7 @@ map:
     - 3
     - 4
     - 5
-    map:
+    mapData:
         oneTwoThree: 123
         oneTwoDotThree: 12.3
         hello: world
@@ -140,7 +140,7 @@ stringFalse = 'false'
 stringTrue = 'true'
 sliceOfNumbers = [1, 2, 3, 4, 5]
 
-[map]
+[mapData]
 oneTwoThree = 123
 oneTwoDotThree = 12.3
 hello = "world"
@@ -150,7 +150,7 @@ stringFalse = "false"
 stringTrue = "true"
 sliceOfNumbers = [1, 2, 3, 4, 5]
 
-[map.map]
+[mapData.mapData]
 oneTwoThree = 123
 oneTwoDotThree = 12.3
 hello = "world"
@@ -261,7 +261,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 		}
 
 		t.Run("root", newTestsWithPrefix(""))
-		t.Run("nested once", newTestsWithPrefix("map."))
-		t.Run("nested twice", newTestsWithPrefix("map.map."))
+		t.Run("nested once", newTestsWithPrefix("mapData."))
+		t.Run("nested twice", newTestsWithPrefix("mapData.mapData."))
 	})
 }

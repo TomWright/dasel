@@ -106,3 +106,15 @@ type ConditionalExpr struct {
 }
 
 func (ConditionalExpr) expr() {}
+
+type BranchExpr struct {
+	Exprs []Expr
+}
+
+func (BranchExpr) expr() {}
+
+func BranchExprs(exprs ...Expr) Expr {
+	return BranchExpr{
+		Exprs: exprs,
+	}
+}

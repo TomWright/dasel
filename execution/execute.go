@@ -38,9 +38,26 @@ func ExecuteAST(expr ast.Expr, value *model.Value) (*model.Value, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error evaluating expression: %w", err)
 	}
-	res, err := executor(value)
-	if err != nil {
-		return nil, fmt.Errorf("execution error: %w", err)
+
+	if !value.IsBranch() {
+		res, err := executor(value)
+		if err != nil {
+			return nil, fmt.Errorf("execution error: %w", err)
+		}
+		return res, nil
+	}
+
+	res := model.NewSliceValue()
+	res.MarkAsBranch()
+
+	if err := value.RangeSlice(func(i int, value *model.Value) error {
+		r, err := executor(value)
+		if err != nil {
+			return err
+		}
+		return res.Append(r)
+	}); err != nil {
+		return nil, fmt.Errorf("branch execution error: %w", err)
 	}
 
 	return res, nil
@@ -78,6 +95,8 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return mapExprExecutor(e)
 	case ast.ConditionalExpr:
 		return conditionalExprExecutor(e)
+	case ast.BranchExpr:
+		return branchExprExecutor(e)
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

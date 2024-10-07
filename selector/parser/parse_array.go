@@ -44,8 +44,6 @@ func parseArray(p *Parser) (ast.Expr, error) {
 // parseSquareBrackets parses square bracket array access.
 // E.g. [0], [0:1], [0:], [:2]
 func parseSquareBrackets(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeArray)
-	defer p.popScope()
 	// Handle index (from bracket)
 	if err := p.expect(lexer.OpenBracket); err != nil {
 		return nil, err
@@ -62,9 +60,6 @@ func parseSquareBrackets(p *Parser) (ast.Expr, error) {
 		p.advance()
 		return ast.SpreadExpr{}, nil
 	}
-
-	p.pushScope(scopeArray)
-	defer p.popScope()
 
 	var (
 		start ast.Expr

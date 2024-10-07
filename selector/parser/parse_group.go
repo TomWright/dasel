@@ -6,8 +6,6 @@ import (
 )
 
 func parseGroup(p *Parser) (ast.Expr, error) {
-	p.pushScope(scopeGroup)
-	defer p.popScope()
 	if err := p.expect(lexer.OpenParen); err != nil {
 		return nil, err
 	}

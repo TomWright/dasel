@@ -50,6 +50,9 @@ const (
 	If
 	Else
 	ElseIf
+	Branch
+	Map
+	Filter
 )
 
 type Tokens []Token
@@ -108,5 +111,5 @@ type UnexpectedTokenError struct {
 }
 
 func (e *UnexpectedTokenError) Error() string {
-	return fmt.Sprintf("unexpected token: %s at position %d.", string(e.Token), e.Pos)
+	return fmt.Sprintf("failed to tokenize: unexpected token: %s at position %d.", string(e.Token), e.Pos)
 }

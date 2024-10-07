@@ -44,6 +44,12 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			if !equal {
 				t.Errorf("unexpected output: %v", cmp.Diff(exp.Interface(), res.Interface()))
 			}
+
+			expMeta := exp.Metadata
+			gotMeta := res.Metadata
+			if !cmp.Equal(expMeta, gotMeta) {
+				t.Errorf("unexpected output metadata: %v", cmp.Diff(expMeta, gotMeta))
+			}
 		}
 	}
 
@@ -573,6 +579,40 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				elseif (false) { "maybe" }
 				else { "nope" }`,
 			out: model.NewStringValue("nope"),
+		}))
+	})
+
+	t.Run("branch", func(t *testing.T) {
+		t.Run("single branch", runTest(testCase{
+			s: "branch(1)",
+			outFn: func() *model.Value {
+				r := model.NewSliceValue()
+				r.MarkAsBranch()
+				if err := r.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
+		}))
+		t.Run("many branches", runTest(testCase{
+			s: "branch(1, 1+1, 3/1, 123)",
+			outFn: func() *model.Value {
+				r := model.NewSliceValue()
+				r.MarkAsBranch()
+				if err := r.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewIntValue(3)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewIntValue(123)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
 		}))
 	})
 }
