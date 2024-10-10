@@ -15,12 +15,9 @@ func mapExprExecutor(e ast.MapExpr) (expressionExecutor, error) {
 		res := model.NewSliceValue()
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			var err error
-			for _, expr := range e.Exprs {
-				item, err = ExecuteAST(expr, item)
-				if err != nil {
-					return err
-				}
+			item, err := ExecuteAST(e.Expr, item)
+			if err != nil {
+				return err
 			}
 			if err := res.Append(item); err != nil {
 				return fmt.Errorf("error appending item to result: %w", err)

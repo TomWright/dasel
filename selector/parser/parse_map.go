@@ -27,7 +27,7 @@ func parseMap(p *Parser) (ast.Expr, error) {
 	}
 
 	return ast.MapExpr{
-		Exprs: expressions,
+		Expr: ast.ChainExprs(expressions...),
 	}, nil
 }
 

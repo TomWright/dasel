@@ -88,7 +88,7 @@ type ObjectExpr struct {
 func (ObjectExpr) expr() {}
 
 type MapExpr struct {
-	Exprs Expressions
+	Expr Expr
 }
 
 func (MapExpr) expr() {}

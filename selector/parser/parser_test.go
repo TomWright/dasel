@@ -267,9 +267,7 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 				ast.MapExpr{
-					Exprs: ast.Expressions{
-						ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
-					},
+					Expr: ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
 				},
 			),
 		}))
@@ -278,12 +276,10 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 				ast.MapExpr{
-					Exprs: ast.Expressions{
-						ast.ChainExprs(
-							ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
-							ast.PropertyExpr{Property: ast.StringExpr{Value: "y"}},
-						),
-					},
+					Expr: ast.ChainExprs(
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "y"}},
+					),
 				},
 			),
 		}))

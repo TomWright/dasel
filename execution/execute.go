@@ -8,6 +8,7 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
+// ExecuteSelector parses the selector and executes the resulting AST with the given input.
 func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, error) {
 	if selectorStr == "" {
 		return value, nil
@@ -28,6 +29,7 @@ func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, erro
 
 type expressionExecutor func(data *model.Value) (*model.Value, error)
 
+// ExecuteAST executes the given AST with the given input.
 func ExecuteAST(expr ast.Expr, value *model.Value) (*model.Value, error) {
 	if expr == nil {
 		return value, nil
