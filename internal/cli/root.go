@@ -30,7 +30,13 @@ func RootCmd() *cobra.Command {
 			}
 
 			reader, err := parsing.NewReader(parsing.Format(readerStr))
+			if err != nil {
+				return fmt.Errorf("failed to get input reader: %w", err)
+			}
 			writer, err := parsing.NewWriter(parsing.Format(writerStr))
+			if err != nil {
+				return fmt.Errorf("failed to get output writer: %w", err)
+			}
 
 			inputBytes, err := io.ReadAll(cmd.InOrStdin())
 			if err != nil {
