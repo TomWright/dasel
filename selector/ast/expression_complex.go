@@ -93,6 +93,12 @@ type MapExpr struct {
 
 func (MapExpr) expr() {}
 
+type FilterExpr struct {
+	Expr Expr
+}
+
+func (FilterExpr) expr() {}
+
 type VariableExpr struct {
 	Name string
 }

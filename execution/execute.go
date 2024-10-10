@@ -92,6 +92,8 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return objectExprExecutor(e)
 	case ast.MapExpr:
 		return mapExprExecutor(e)
+	case ast.FilterExpr:
+		return filterExprExecutor(e)
 	case ast.ConditionalExpr:
 		return conditionalExprExecutor(e)
 	case ast.BranchExpr:

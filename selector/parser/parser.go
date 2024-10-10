@@ -106,8 +106,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseBranch(p)
 	case lexer.Map:
 		left, err = parseMap(p)
-	//case lexer.Filter:
-	//	left, err = parseFilter(p)
+	case lexer.Filter:
+		left, err = parseFilter(p)
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),

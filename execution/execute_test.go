@@ -559,6 +559,72 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 		}))
 	})
 
+	t.Run("filter", func(t *testing.T) {
+		inSlice := func() *model.Value {
+			s := model.NewSliceValue()
+			if err := s.Append(model.NewIntValue(1)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if err := s.Append(model.NewIntValue(2)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if err := s.Append(model.NewIntValue(3)); err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			return s
+		}
+		t.Run("all true", runTest(testCase{
+			inFn: inSlice,
+			s:    "filter(true)",
+			outFn: func() *model.Value {
+				s := model.NewSliceValue()
+				if err := s.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				if err := s.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				if err := s.Append(model.NewIntValue(3)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return s
+			},
+		}))
+		t.Run("all false", runTest(testCase{
+			inFn: inSlice,
+			s:    "filter(false)",
+			outFn: func() *model.Value {
+				s := model.NewSliceValue()
+				return s
+			},
+		}))
+		t.Run("equal 2", runTest(testCase{
+			inFn: inSlice,
+			s:    "filter($this == 2)",
+			outFn: func() *model.Value {
+				s := model.NewSliceValue()
+				if err := s.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return s
+			},
+		}))
+		t.Run("not equal 2", runTest(testCase{
+			inFn: inSlice,
+			s:    "filter($this != 2)",
+			outFn: func() *model.Value {
+				s := model.NewSliceValue()
+				if err := s.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				if err := s.Append(model.NewIntValue(3)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return s
+			},
+		}))
+	})
+
 	t.Run("array", func(t *testing.T) {
 		inSlice := func() *model.Value {
 			s := model.NewSliceValue()
