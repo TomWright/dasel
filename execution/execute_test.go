@@ -168,6 +168,14 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 					s:   `2 <= 2`,
 					out: model.NewBoolValue(true),
 				}))
+				t.Run("like", runTest(testCase{
+					s:   `"hello world" =~ r/ello/`,
+					out: model.NewBoolValue(true),
+				}))
+				t.Run("not like", runTest(testCase{
+					s:   `"hello world" !~ r/helloworld/`,
+					out: model.NewBoolValue(true),
+				}))
 			})
 
 			t.Run("variables", func(t *testing.T) {

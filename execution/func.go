@@ -60,4 +60,31 @@ func init() {
 		}
 		return model.NewIntValue(intRes), nil
 	})
+
+	RegisterFunc("toString", func(data *model.Value, args model.Values) (*model.Value, error) {
+		switch data.Type() {
+		case model.TypeString:
+			return data, nil
+		case model.TypeInt:
+			i, err := data.IntValue()
+			if err != nil {
+				return nil, err
+			}
+			return model.NewStringValue(fmt.Sprintf("%d", i)), nil
+		case model.TypeFloat:
+			i, err := data.FloatValue()
+			if err != nil {
+				return nil, err
+			}
+			return model.NewStringValue(fmt.Sprintf("%f", i)), nil
+		case model.TypeBool:
+			i, err := data.BoolValue()
+			if err != nil {
+				return nil, err
+			}
+			return model.NewStringValue(fmt.Sprintf("%v", i)), nil
+		default:
+			return nil, fmt.Errorf("cannot convert %s to string", data.Type())
+		}
+	})
 }

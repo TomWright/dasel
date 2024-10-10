@@ -65,8 +65,20 @@ func binaryExprExecutor(e ast.BinaryExpr) (expressionExecutor, error) {
 				return nil, fmt.Errorf("error getting right bool value: %w", err)
 			}
 			return model.NewBoolValue(leftBool || rightBool), nil
-		//case lexer.Like:
-		//case lexer.NotLike:
+		case lexer.Like, lexer.NotLike:
+			leftStr, err := left.StringValue()
+			if err != nil {
+				return nil, fmt.Errorf("like requires left side to be a string, got %s", left.Type().String())
+			}
+			rightPatt, ok := e.Right.(ast.RegexExpr)
+			if !ok {
+				return nil, fmt.Errorf("like requires right side to be a regex pattern")
+			}
+			res := rightPatt.Regex.MatchString(leftStr)
+			if e.Operator.Kind == lexer.NotLike {
+				res = !res
+			}
+			return model.NewBoolValue(res), nil
 		default:
 			return nil, fmt.Errorf("unhandled operator: %s", e.Operator.Value)
 		}

@@ -57,6 +57,7 @@ const (
 	Branch
 	Map
 	Filter
+	RegexPattern
 )
 
 type Tokens []Token

@@ -46,6 +46,14 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 	}))
 
+	t.Run("regex", runTest(testCase{
+		in: `r/asd/ r/hello there/`,
+		out: []TokenKind{
+			RegexPattern,
+			RegexPattern,
+		},
+	}))
+
 	t.Run("everything", runTest(testCase{
 		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []TokenKind{

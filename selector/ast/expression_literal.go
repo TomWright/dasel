@@ -1,5 +1,7 @@
 package ast
 
+import "regexp"
+
 type NumberFloatExpr struct {
 	Value float64
 }
@@ -23,3 +25,9 @@ type BoolExpr struct {
 }
 
 func (BoolExpr) expr() {}
+
+type RegexExpr struct {
+	Regex *regexp.Regexp
+}
+
+func (RegexExpr) expr() {}

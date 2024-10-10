@@ -102,6 +102,11 @@ func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
 		return branchExprExecutor(e)
 	case ast.ArrayExpr:
 		return arrayExprExecutor(e)
+	case ast.RegexExpr:
+		// Noop
+		return func(data *model.Value) (*model.Value, error) {
+			return data, nil
+		}, nil
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

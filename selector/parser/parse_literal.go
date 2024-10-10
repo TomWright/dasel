@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -61,4 +63,23 @@ func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 			Value: value,
 		}, nil
 	}
+}
+
+func parseRegexPattern(p *Parser) (ast.Expr, error) {
+	if err := p.expect(lexer.RegexPattern); err != nil {
+		return nil, err
+	}
+
+	pattern := p.current()
+
+	p.advance()
+
+	comp, err := regexp.Compile(pattern.Value)
+	if err != nil {
+		return nil, fmt.Errorf("failed to compile regexp pattern: %w", err)
+	}
+
+	return ast.RegexExpr{
+		Regex: comp,
+	}, nil
 }
