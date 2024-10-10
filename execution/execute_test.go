@@ -12,11 +12,12 @@ import (
 
 func TestExecuteSelector_HappyPath(t *testing.T) {
 	type testCase struct {
-		in    *model.Value
-		inFn  func() *model.Value
-		s     string
-		out   *model.Value
-		outFn func() *model.Value
+		in          *model.Value
+		inFn        func() *model.Value
+		s           string
+		out         *model.Value
+		outFn       func() *model.Value
+		compareRoot bool
 	}
 
 	runTest := func(tc testCase) func(t *testing.T) {
@@ -35,6 +36,10 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			res, err := execution.ExecuteSelector(tc.s, in)
 			if err != nil {
 				t.Fatal(err)
+			}
+
+			if tc.compareRoot {
+				res = in
 			}
 
 			equal, err := res.EqualTypeValue(exp)
@@ -289,6 +294,39 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				return r
 			},
 		}))
+		t.Run("array with expressions", runTest(testCase{
+			s: `[1 + 1, 2f - 2, "foo" + "bar", true || false, [1 + 1, 2 * 2, 3 / 3]]`,
+			outFn: func() *model.Value {
+				nested := model.NewSliceValue()
+				if err := nested.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := nested.Append(model.NewIntValue(4)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := nested.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+
+				r := model.NewSliceValue()
+				if err := r.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewFloatValue(0)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewStringValue("foobar")); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewBoolValue(true)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(nested); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
+		}))
 	})
 
 	t.Run("function", func(t *testing.T) {
@@ -383,6 +421,48 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 						Set("over30", true),
 				)
 			},
+		}))
+	})
+
+	t.Run("set", func(t *testing.T) {
+		inputMap := func() *model.Value {
+			return model.NewValue(
+				dencoding.NewMap().
+					Set("title", "Mr").
+					Set("age", int64(31)).
+					Set("name", dencoding.NewMap().
+						Set("first", "Tom").
+						Set("last", "Wright")),
+			)
+		}
+		inputSlice := func() *model.Value {
+			return model.NewValue([]any{1, 2, 3})
+		}
+
+		t.Run("set property", runTest(testCase{
+			in: inputMap(),
+			s:  `title = "Mrs"`,
+			outFn: func() *model.Value {
+				res := inputMap()
+				if err := res.SetMapKey("title", model.NewStringValue("Mrs")); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return res
+			},
+			compareRoot: true,
+		}))
+
+		t.Run("set index", runTest(testCase{
+			in: inputSlice(),
+			s:  `$this[1] = 4`,
+			outFn: func() *model.Value {
+				res := inputSlice()
+				if err := res.SetSliceIndex(1, model.NewIntValue(4)); err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				return res
+			},
+			compareRoot: true,
 		}))
 	})
 
@@ -659,6 +739,23 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 					t.Fatalf("unexpected error: %v", err)
 				}
 				if err := r.Append(model.NewIntValue(123)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return r
+			},
+		}))
+		t.Run("spread into many branches", runTest(testCase{
+			s: "[1,2,3].branch(...)",
+			outFn: func() *model.Value {
+				r := model.NewSliceValue()
+				r.MarkAsBranch()
+				if err := r.Append(model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewIntValue(2)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := r.Append(model.NewIntValue(3)); err != nil {
 					t.Fatalf("unexpected error: %v", err)
 				}
 				return r

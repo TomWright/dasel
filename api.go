@@ -6,26 +6,50 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 )
 
-func Select(data any, selector string) (any, error) {
+// Query queries the data using the selector and returns the results.
+func Query(data any, selector string) ([]*model.Value, int, error) {
 	val := model.NewValue(data)
-	res, err := execution.ExecuteSelector(selector, val)
+	out, err := execution.ExecuteSelector(selector, val)
 	if err != nil {
-		return nil, err
+		return nil, 0, err
 	}
-	return res.Interface(), nil
+
+	res := make([]*model.Value, 0)
+
+	if out.IsBranch() {
+		if err := out.RangeSlice(func(i int, v *model.Value) error {
+			res = append(res, v)
+			return nil
+		}); err != nil {
+			return nil, 0, err
+		}
+		return res, len(res), nil
+	}
+
+	return []*model.Value{out}, 1, nil
 }
 
-func Modify(data any, selector string, newValue any) error {
-	val := model.NewValue(data)
-	newVal := model.NewValue(newValue)
-	res, err := execution.ExecuteSelector(selector, val)
+func Select(data any, selector string) (any, int, error) {
+	res, count, err := Query(data, selector)
 	if err != nil {
-		return err
+		return nil, 0, err
 	}
-
-	if err := res.Set(newVal); err != nil {
-		return err
+	out := make([]any, 0)
+	for _, v := range res {
+		out = append(out, v.Interface())
 	}
+	return out, count, err
+}
 
-	return nil
+func Modify(data any, selector string, newValue any) (int, error) {
+	res, count, err := Query(data, selector)
+	if err != nil {
+		return 0, err
+	}
+	for _, v := range res {
+		if err := v.Set(model.NewValue(newValue)); err != nil {
+			return 0, err
+		}
+	}
+	return count, nil
 }

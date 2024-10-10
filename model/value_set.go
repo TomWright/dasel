@@ -1,28 +1,53 @@
 package model
 
 import (
+	"fmt"
 	"reflect"
 )
 
 func (v *Value) Set(newValue *Value) error {
-	a := v.UnpackKinds(reflect.Ptr, reflect.Interface)
-	b := newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
+	if v.setFn != nil {
+		return v.setFn(newValue)
+	}
 
+	a, err := v.UnpackUntilAddressable()
+	if err != nil {
+		return err
+	}
+
+	if a.Kind() == newValue.Kind() {
+		a.Value.Set(newValue.Value)
+		return nil
+	}
+
+	b := newValue.UnpackKinds(reflect.Ptr)
 	if a.Kind() == b.Kind() {
 		a.Value.Set(b.Value)
 		return nil
 	}
 
-	// todo : figure this out
-	x := newPtr()
-	x.Elem().Set(b.Value)
+	b = newValue.UnpackKinds(reflect.Interface)
+	if a.Kind() == b.Kind() {
+		a.Value.Set(b.Value)
+		return nil
+	}
 
-	target, err := v.UnpackUntilAddressable()
+	b = newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
+	if a.Kind() == b.Kind() {
+		a.Value.Set(b.Value)
+		return nil
+	}
+
+	b, err = newValue.UnpackUntilAddressable()
 	if err != nil {
 		return err
 	}
+	if a.Kind() == b.Kind() {
+		a.Value.Set(b.Value)
+		return nil
+	}
 
-	target.Value.Set(x)
-
-	return nil
+	// This is a hard limitation at the moment.
+	// If the types are not the same, we cannot set the value.
+	return fmt.Errorf("could not set %s value on %s value", newValue.Type(), v.Type())
 }

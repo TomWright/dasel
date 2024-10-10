@@ -30,6 +30,8 @@ type KeyValue struct {
 type Value struct {
 	Value    reflect.Value
 	Metadata map[string]any
+
+	setFn func(*Value) error
 }
 
 func NewValue(v any) *Value {

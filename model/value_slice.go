@@ -7,10 +7,12 @@ import (
 
 // NewSliceValue returns a new slice value.
 func NewSliceValue() *Value {
+	res := newPtr()
 	s := reflect.MakeSlice(reflect.SliceOf(reflect.TypeFor[any]()), 0, 0)
 	ptr := reflect.New(reflect.SliceOf(reflect.TypeFor[any]()))
 	ptr.Elem().Set(s)
-	return NewValue(ptr)
+	res.Elem().Set(ptr)
+	return NewValue(res)
 }
 
 // IsSlice returns true if the value is a slice.
@@ -51,7 +53,8 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 	if i < 0 || i >= unpacked.Value.Len() {
 		return nil, fmt.Errorf("index out of range: %d", i)
 	}
-	return NewValue(unpacked.Value.Index(i)), nil
+	res := NewValue(unpacked.Value.Index(i))
+	return res, nil
 }
 
 // SetSliceIndex sets the value at the specified index in the slice.

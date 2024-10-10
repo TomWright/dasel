@@ -16,8 +16,16 @@ func branchExprExecutor(e ast.BranchExpr) (expressionExecutor, error) {
 			if err != nil {
 				return nil, fmt.Errorf("failed to execute branch expr: %w", err)
 			}
-			if err := res.Append(r); err != nil {
-				return nil, fmt.Errorf("failed to append branch result: %w", err)
+
+			// This deals with the spread operator in the branch expression.
+			valsToAppend, err := prepareSpreadValues(r)
+			if err != nil {
+				return nil, fmt.Errorf("error handling spread values: %w", err)
+			}
+			for _, v := range valsToAppend {
+				if err := res.Append(v); err != nil {
+					return nil, fmt.Errorf("failed to append branch result: %w", err)
+				}
 			}
 		}
 

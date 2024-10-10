@@ -70,9 +70,12 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		if !ok {
 			return nil, &MapKeyNotFound{Key: key}
 		}
-		return &Value{
-			Value: reflect.ValueOf(val),
-		}, nil
+		res := NewValue(val)
+		res.setFn = func(newValue *Value) error {
+			m.Set(key, newValue.Value.Interface())
+			return nil
+		}
+		return res, nil
 	case v.isStandardMap():
 		unpacked, err := v.UnpackUntilKind(reflect.Map)
 		if err != nil {
@@ -82,9 +85,16 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		if !i.IsValid() {
 			return nil, &MapKeyNotFound{Key: key}
 		}
-		return &Value{
-			Value: i,
-		}, nil
+		res := NewValue(i)
+		res.setFn = func(newValue *Value) error {
+			mapRv, err := v.UnpackUntilKind(reflect.Map)
+			if err != nil {
+				return fmt.Errorf("error unpacking value: %w", err)
+			}
+			mapRv.Value.SetMapIndex(reflect.ValueOf(key), newValue.Value)
+			return nil
+		}
+		return res, nil
 	default:
 		return nil, fmt.Errorf("value is not a map")
 	}

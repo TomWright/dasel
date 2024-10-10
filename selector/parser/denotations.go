@@ -18,6 +18,11 @@ var leftDenotationTokens = []lexer.TokenKind{
 	lexer.GreaterThanOrEqual,
 	lexer.LessThan,
 	lexer.LessThanOrEqual,
+	lexer.And,
+	lexer.Or,
+	lexer.Like,
+	lexer.NotLike,
+	lexer.Equals,
 }
 
 // right denotation tokens are tokens that expect a token to the right of them.
