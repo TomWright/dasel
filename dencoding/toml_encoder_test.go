@@ -2,8 +2,9 @@ package dencoding_test
 
 import (
 	"bytes"
-	"github.com/tomwright/dasel/v2/dencoding"
 	"testing"
+
+	"github.com/tomwright/dasel/v3/dencoding"
 )
 
 func TestTOMLEncoder_Encode(t *testing.T) {

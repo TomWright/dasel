@@ -42,7 +42,7 @@ jobs:
             tags: dasel:test
         - name: Test
           run: |
-            echo '{"hello": "World"}' | docker run -i --rm dasel:test -r json 'hello'
+            echo '{"hello": "World"}' | docker run -i --rm dasel:test -i json 'hello'
         - name: Set version tag variables
           if: ${{ steps.version.outputs.is_valid == 'true' }}
           run: |
