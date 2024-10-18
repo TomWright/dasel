@@ -7,16 +7,15 @@ import (
 )
 
 // Query queries the data using the selector and returns the results.
-func Query(data any, selector string) ([]*model.Value, int, error) {
+func Query(data any, selector string, opts ...execution.ExecuteOptionFn) ([]*model.Value, int, error) {
 	val := model.NewValue(data)
-	out, err := execution.ExecuteSelector(selector, val)
+	out, err := execution.ExecuteSelector(selector, val, opts...)
 	if err != nil {
 		return nil, 0, err
 	}
 
-	res := make([]*model.Value, 0)
-
 	if out.IsBranch() {
+		res := make([]*model.Value, 0)
 		if err := out.RangeSlice(func(i int, v *model.Value) error {
 			res = append(res, v)
 			return nil
@@ -29,8 +28,8 @@ func Query(data any, selector string) ([]*model.Value, int, error) {
 	return []*model.Value{out}, 1, nil
 }
 
-func Select(data any, selector string) (any, int, error) {
-	res, count, err := Query(data, selector)
+func Select(data any, selector string, opts ...execution.ExecuteOptionFn) (any, int, error) {
+	res, count, err := Query(data, selector, opts...)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -41,8 +40,8 @@ func Select(data any, selector string) (any, int, error) {
 	return out, count, err
 }
 
-func Modify(data any, selector string, newValue any) (int, error) {
-	res, count, err := Query(data, selector)
+func Modify(data any, selector string, newValue any, opts ...execution.ExecuteOptionFn) (int, error) {
+	res, count, err := Query(data, selector, opts...)
 	if err != nil {
 		return 0, err
 	}

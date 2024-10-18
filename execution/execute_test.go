@@ -382,6 +382,48 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				}))
 			})
 		})
+		t.Run("merge", func(t *testing.T) {
+			t.Run("shallow", runTest(testCase{
+				inFn: func() *model.Value {
+					a := model.NewMapValue()
+					if err := a.SetMapKey("foo", model.NewStringValue("afoo")); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					if err := a.SetMapKey("bar", model.NewStringValue("abar")); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					b := model.NewMapValue()
+					if err := b.SetMapKey("bar", model.NewStringValue("bbar")); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					if err := b.SetMapKey("baz", model.NewStringValue("bbaz")); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					res := model.NewMapValue()
+					if err := res.SetMapKey("a", a); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					if err := res.SetMapKey("b", b); err != nil {
+						t.Errorf("unexpected error: %v", err)
+					}
+					return res
+				},
+				s: `merge(a, b)`,
+				outFn: func() *model.Value {
+					b := model.NewMapValue()
+					if err := b.SetMapKey("foo", model.NewStringValue("afoo")); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					if err := b.SetMapKey("bar", model.NewStringValue("bbar")); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					if err := b.SetMapKey("baz", model.NewStringValue("bbaz")); err != nil {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					return b
+				},
+			}))
+		})
 	})
 
 	t.Run("get", func(t *testing.T) {
@@ -528,6 +570,49 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 				res := inputMap()
 				_ = res.SetMapKey("title", model.NewStringValue("Mrs"))
 				return res
+			},
+		}))
+		t.Run("merge with spread", runTest(testCase{
+			inFn: func() *model.Value {
+				a := model.NewMapValue()
+				if err := a.SetMapKey("foo", model.NewStringValue("afoo")); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if err := a.SetMapKey("bar", model.NewStringValue("abar")); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				b := model.NewMapValue()
+				if err := b.SetMapKey("bar", model.NewStringValue("bbar")); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if err := b.SetMapKey("baz", model.NewStringValue("bbaz")); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				res := model.NewMapValue()
+				if err := res.SetMapKey("a", a); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				if err := res.SetMapKey("b", b); err != nil {
+					t.Errorf("unexpected error: %v", err)
+				}
+				return res
+			},
+			s: `{a..., b..., x: 1}`,
+			outFn: func() *model.Value {
+				b := model.NewMapValue()
+				if err := b.SetMapKey("foo", model.NewStringValue("afoo")); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := b.SetMapKey("bar", model.NewStringValue("bbar")); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := b.SetMapKey("baz", model.NewStringValue("bbaz")); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				if err := b.SetMapKey("x", model.NewIntValue(1)); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+				return b
 			},
 		}))
 	})

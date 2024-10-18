@@ -317,13 +317,15 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 		t.Run("combine get set", run(t, testCase{
 			input: `{
 				...,
+				nestedSpread...,
 				foo,
 				bar: 2,
 				"baz": evalSomething(),
 				"Name": "Tom",
 			}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
-				{Key: ast.SpreadExpr{}, Value: ast.SpreadExpr{}},
+				{Key: ast.SpreadExpr{}, Value: nil},
+				{Key: ast.SpreadExpr{}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "nestedSpread"}}},
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}},
 				{Key: ast.StringExpr{Value: "bar"}, Value: ast.NumberIntExpr{Value: 2}},
 				{Key: ast.StringExpr{Value: "baz"}, Value: ast.CallExpr{Function: "evalSomething"}},

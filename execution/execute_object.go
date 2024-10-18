@@ -11,21 +11,46 @@ func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		obj := model.NewMapValue()
 		for _, p := range e.Pairs {
-			if ast.IsSpreadExpr(p.Key) && ast.IsSpreadExpr(p.Value) {
-				if err := data.RangeMap(func(key string, value *model.Value) error {
+
+			if ast.IsType[ast.SpreadExpr](p.Key) {
+				var val *model.Value
+				var err error
+				if p.Value != nil {
+					// We need to spread the resulting value.
+					val, err = ExecuteAST(p.Value, data)
+					if err != nil {
+						return nil, fmt.Errorf("error evaluated spread values")
+					}
+				} else {
+					val = data
+				}
+
+				if err := val.RangeMap(func(key string, value *model.Value) error {
 					if err := obj.SetMapKey(key, value); err != nil {
 						return fmt.Errorf("error setting map key: %w", err)
 					}
 					return nil
 				}); err != nil {
-					return nil, fmt.Errorf("error ranging map: %w", err)
+					return nil, fmt.Errorf("error spreading into object: %w", err)
 				}
 				continue
 			}
 
-			if ast.IsSpreadExpr(p.Key) {
-				return nil, fmt.Errorf("cannot spread object key name")
-			}
+			//if ast.IsType[ast.SpreadExpr](p.Key) && ast.IsType[ast.SpreadExpr](p.Value) {
+			//	if err := data.RangeMap(func(key string, value *model.Value) error {
+			//		if err := obj.SetMapKey(key, value); err != nil {
+			//			return fmt.Errorf("error setting map key: %w", err)
+			//		}
+			//		return nil
+			//	}); err != nil {
+			//		return nil, fmt.Errorf("error ranging map: %w", err)
+			//	}
+			//	continue
+			//}
+
+			//if ast.IsSpreadExpr(p.Key) {
+			//	return nil, fmt.Errorf("cannot spread object key name")
+			//}
 
 			key, err := ExecuteAST(p.Key, data)
 			if err != nil {

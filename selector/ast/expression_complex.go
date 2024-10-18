@@ -46,11 +46,6 @@ type SpreadExpr struct{}
 
 func (SpreadExpr) expr() {}
 
-func IsSpreadExpr(e Expr) bool {
-	_, ok := e.(SpreadExpr)
-	return ok
-}
-
 type RangeExpr struct {
 	Start Expr
 	End   Expr

@@ -1,11 +1,22 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
 func parseObject(p *Parser) (ast.Expr, error) {
+
+	//p.parseExpressionsFromTo(
+	//	lexer.OpenCurly,
+	//	lexer.CloseCurly,
+	//	lexer.TokenKinds(lexer.Comma),
+	//	false,
+	//	bpDefault,
+	//)
+
 	if err := p.expect(lexer.OpenCurly); err != nil {
 		return nil, err
 	}
@@ -13,72 +24,74 @@ func parseObject(p *Parser) (ast.Expr, error) {
 
 	pairs := make([]ast.KeyValue, 0)
 
-	for {
-		if p.current().IsKind(lexer.CloseCurly) {
-			break
-		}
-
-		if p.current().IsKind(lexer.Comma) {
-			p.advance()
-			continue
-		}
-
-		if p.current().IsKind(lexer.Spread) {
-			p.advance()
-			pairs = append(pairs, ast.KeyValue{
-				Key:   ast.SpreadExpr{},
-				Value: ast.SpreadExpr{},
-			})
-			if err := p.expect(lexer.Comma, lexer.CloseCurly); err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		if p.current().IsKind(lexer.Symbol) && p.peek().IsKind(lexer.Comma, lexer.CloseCurly) {
-			// if the next token is a comma or close curly, then it is a shorthand property
-			pairs = append(pairs, ast.KeyValue{
-				Key:   ast.StringExpr{Value: p.current().Value},
-				Value: ast.PropertyExpr{Property: ast.StringExpr{Value: p.current().Value}},
-			})
-			p.advance()
-			if err := p.expect(lexer.Comma, lexer.CloseCurly); err != nil {
-				return nil, err
-			}
-			continue
-		}
-
-		key, err := p.parseExpression(bpDefault)
+	parseKeyValue := func() (ast.KeyValue, error) {
+		var res ast.KeyValue
+		k, err := p.parseExpression(bpDefault)
 		if err != nil {
-			return nil, err
+			return res, err
 		}
 
-		// Attempt to simplify the key to a string expression.
-		if prop, ok := key.(ast.PropertyExpr); ok {
-			key = prop.Property
+		// Handle spread
+		kSpread, isSpread := ast.LastAsType[ast.SpreadExpr](k)
+		if isSpread {
+			res.Key = kSpread
+			res.Value = ast.RemoveLast(k)
+			if err := p.expect(lexer.Comma, lexer.CloseCurly); err != nil {
+				return res, err
+			}
+			return res, nil
+		}
+
+		kProp, kIsProp := ast.AsType[ast.PropertyExpr](k)
+		if p.current().IsKind(lexer.Comma, lexer.CloseCurly) {
+			if !kIsProp {
+				return res, fmt.Errorf("invalid shorthand property")
+			}
+			res.Key = kProp.Property
+			res.Value = kProp
+			return res, nil
+		}
+
+		// Handle unquoted keys
+		if kIsProp {
+			if kStr, ok := ast.AsType[ast.StringExpr](kProp.Property); ok {
+				k = kStr
+			}
 		}
 
 		if err := p.expect(lexer.Colon); err != nil {
-			return nil, err
+			return res, err
 		}
 		p.advance()
 
-		val, err := p.parseExpression(bpDefault)
+		v, err := p.parseExpression(bpDefault)
+		if err != nil {
+			return res, err
+		}
+
+		res.Key = k
+		res.Value = v
+		return res, nil
+	}
+
+	for !p.current().IsKind(lexer.CloseCurly) {
+		kv, err := parseKeyValue()
 		if err != nil {
 			return nil, err
 		}
 
-		pairs = append(pairs, ast.KeyValue{
-			Key:   key,
-			Value: val,
-		})
+		pairs = append(pairs, kv)
+
 		if err := p.expect(lexer.Comma, lexer.CloseCurly); err != nil {
-			return nil, err
+			return nil, fmt.Errorf("expected end of object element: %w", err)
+		}
+		if p.current().IsKind(lexer.Comma) {
+			p.advance()
 		}
 	}
 
 	if err := p.expect(lexer.CloseCurly); err != nil {
-		return nil, err
+		return nil, fmt.Errorf("expected end of object: %w", err)
 	}
 	p.advance()
 

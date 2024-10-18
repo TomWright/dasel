@@ -9,7 +9,7 @@ import (
 )
 
 // ExecuteSelector parses the selector and executes the resulting AST with the given input.
-func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, error) {
+func ExecuteSelector(selectorStr string, value *model.Value, opts ...ExecuteOptionFn) (*model.Value, error) {
 	if selectorStr == "" {
 		return value, nil
 	}
@@ -19,7 +19,7 @@ func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, erro
 		return nil, fmt.Errorf("error parsing selector: %w", err)
 	}
 
-	res, err := ExecuteAST(expr, value)
+	res, err := ExecuteAST(expr, value, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("error executing selector: %w", err)
 	}
@@ -30,12 +30,14 @@ func ExecuteSelector(selectorStr string, value *model.Value) (*model.Value, erro
 type expressionExecutor func(data *model.Value) (*model.Value, error)
 
 // ExecuteAST executes the given AST with the given input.
-func ExecuteAST(expr ast.Expr, value *model.Value) (*model.Value, error) {
+func ExecuteAST(expr ast.Expr, value *model.Value, opts ...ExecuteOptionFn) (*model.Value, error) {
+	options := NewOptions(opts...)
+
 	if expr == nil {
 		return value, nil
 	}
 
-	executor, err := exprExecutor(expr)
+	executor, err := exprExecutor(options, expr)
 	if err != nil {
 		return nil, fmt.Errorf("error evaluating expression: %w", err)
 	}
@@ -64,12 +66,12 @@ func ExecuteAST(expr ast.Expr, value *model.Value) (*model.Value, error) {
 	return res, nil
 }
 
-func exprExecutor(expr ast.Expr) (expressionExecutor, error) {
+func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	switch e := expr.(type) {
 	case ast.BinaryExpr:
 		return binaryExprExecutor(e)
 	case ast.CallExpr:
-		return callExprExecutor(e)
+		return callExprExecutor(opts, e)
 	case ast.ChainedExpr:
 		return chainedExprExecutor(e)
 	case ast.SpreadExpr:

@@ -44,6 +44,14 @@ func (v *Value) StringValue() (string, error) {
 	return unpacked.Value.String(), nil
 }
 
+func (v *Value) StringLen() (int, error) {
+	val, err := v.StringValue()
+	if err != nil {
+		return 0, err
+	}
+	return len(val), nil
+}
+
 func NewIntValue(x int64) *Value {
 	res := newPtr()
 	res.Elem().Set(reflect.ValueOf(x))

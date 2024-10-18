@@ -41,8 +41,8 @@ func callFnExecutor(f FuncFn, argsE ast.Expressions) (expressionExecutor, error)
 	}, nil
 }
 
-func callExprExecutor(e ast.CallExpr) (expressionExecutor, error) {
-	if f, ok := singleResponseFuncLookup[e.Function]; ok {
+func callExprExecutor(opts *Options, e ast.CallExpr) (expressionExecutor, error) {
+	if f, ok := opts.Funcs.Get(e.Function); ok {
 		res, err := callFnExecutor(f, e.Args)
 		if err != nil {
 			return nil, fmt.Errorf("error executing function %q: %w", e.Function, err)

@@ -143,8 +143,10 @@ func (v *Value) Len() (int, error) {
 		l, err = v.SliceLen()
 	case v.IsMap():
 		l, err = v.MapLen()
+	case v.IsString():
+		l, err = v.StringLen()
 	default:
-		err = fmt.Errorf("len expects slice or map")
+		err = fmt.Errorf("len expects string, slice or map")
 	}
 
 	if err != nil {

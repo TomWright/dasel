@@ -176,15 +176,15 @@ func (v *Value) MapKeyValues() ([]KeyValue, error) {
 
 	kvs := make([]KeyValue, len(keys))
 
-	for _, k := range keys {
+	for i, k := range keys {
 		va, err := v.GetMapKey(k)
 		if err != nil {
 			return nil, fmt.Errorf("error getting map key: %w", err)
 		}
-		kvs = append(kvs, KeyValue{
+		kvs[i] = KeyValue{
 			Key:   k,
 			Value: va,
-		})
+		}
 	}
 
 	return kvs, nil
