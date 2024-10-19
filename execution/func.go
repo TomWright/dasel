@@ -64,7 +64,11 @@ func (f *Func) Handler() FuncFn {
 				return nil, err
 			}
 		}
-		return f.handler(data, args)
+		res, err := f.handler(data, args)
+		if err != nil {
+			return nil, fmt.Errorf("error execution func %q: %w", f.name, err)
+		}
+		return res, nil
 	}
 }
 
@@ -126,6 +130,7 @@ var (
 		FuncAdd,
 		FuncToString,
 		FuncMerge,
+		FuncReverse,
 	)
 
 	// FuncLen is a function that returns the length of the given value.
@@ -256,5 +261,40 @@ var (
 			return base, nil
 		},
 		ValidateArgsMin(1),
+	)
+
+	// FuncReverse is a function that reverses the input.
+	FuncReverse = NewFunc(
+		"reverse",
+		func(data *model.Value, args model.Values) (*model.Value, error) {
+			if len(args) == 1 {
+				return args[0], nil
+			}
+
+			arg := args[0]
+
+			switch arg.Type() {
+			case model.TypeString:
+				v, err := arg.StringValue()
+				if err != nil {
+					return nil, err
+				}
+				vBytes := []byte(v)
+				res := string(vBytes[len(vBytes)-1 : 0])
+				return model.NewStringValue(res), nil
+			case model.TypeSlice:
+				l, err := arg.Len()
+				if err != nil {
+					return nil, err
+				}
+				if l <= 1 {
+					return arg, nil
+				}
+				return arg.SliceIndexRange(l-1, 0)
+			default:
+				return nil, fmt.Errorf("reverse expects a slice or string, got %s", arg.Type())
+			}
+		},
+		ValidateArgsExactly(1),
 	)
 )

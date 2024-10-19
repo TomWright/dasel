@@ -9,15 +9,11 @@ func parseMap(p *Parser) (ast.Expr, error) {
 	if err := p.expect(lexer.Map); err != nil {
 		return nil, err
 	}
-
-	p.advance()
-	if err := p.expect(lexer.OpenParen); err != nil {
-		return nil, err
-	}
 	p.advance()
 
-	expressions, err := p.parseExpressionsAsSlice(
-		[]lexer.TokenKind{lexer.CloseParen},
+	expr, err := p.parseExpressionsFromTo(
+		lexer.OpenParen,
+		lexer.CloseParen,
 		[]lexer.TokenKind{},
 		true,
 		bpDefault,
@@ -27,7 +23,7 @@ func parseMap(p *Parser) (ast.Expr, error) {
 	}
 
 	return ast.MapExpr{
-		Expr: ast.ChainExprs(expressions...),
+		Expr: expr,
 	}, nil
 }
 
