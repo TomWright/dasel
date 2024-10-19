@@ -7,7 +7,7 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func mapExprExecutor(e ast.MapExpr) (expressionExecutor, error) {
+func mapExprExecutor(opts *Options, e ast.MapExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot map over non-array")
@@ -15,7 +15,7 @@ func mapExprExecutor(e ast.MapExpr) (expressionExecutor, error) {
 		res := model.NewSliceValue()
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			item, err := ExecuteAST(e.Expr, item)
+			item, err := ExecuteAST(e.Expr, item, opts)
 			if err != nil {
 				return err
 			}

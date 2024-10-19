@@ -8,13 +8,13 @@ import (
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
-func binaryExprExecutor(e ast.BinaryExpr) (expressionExecutor, error) {
+func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
-		left, err := ExecuteAST(e.Left, data)
+		left, err := ExecuteAST(e.Left, data, opts)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating left expression: %w", err)
 		}
-		right, err := ExecuteAST(e.Right, data)
+		right, err := ExecuteAST(e.Right, data, opts)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating right expression: %w", err)
 		}

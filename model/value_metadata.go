@@ -20,6 +20,9 @@ func (v *Value) SetMetadataValue(key string, val any) {
 // IsSpread returns true if the value is a spread value.
 // Spread values are used to represent the spread operator.
 func (v *Value) IsSpread() bool {
+	if v == nil {
+		return false
+	}
 	val, ok := v.Metadata["spread"]
 	if !ok {
 		return false
@@ -39,6 +42,9 @@ func (v *Value) MarkAsSpread() {
 
 // IsBranch returns true if the value is a branched value.
 func (v *Value) IsBranch() bool {
+	if v == nil {
+		return false
+	}
 	val, ok := v.Metadata["spread"]
 	if !ok {
 		return false

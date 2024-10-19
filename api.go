@@ -8,8 +8,9 @@ import (
 
 // Query queries the data using the selector and returns the results.
 func Query(data any, selector string, opts ...execution.ExecuteOptionFn) ([]*model.Value, int, error) {
+	options := execution.NewOptions(opts...)
 	val := model.NewValue(data)
-	out, err := execution.ExecuteSelector(selector, val, opts...)
+	out, err := execution.ExecuteSelector(selector, val, options)
 	if err != nil {
 		return nil, 0, err
 	}

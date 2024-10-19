@@ -9,7 +9,7 @@ import (
 )
 
 // ExecuteSelector parses the selector and executes the resulting AST with the given input.
-func ExecuteSelector(selectorStr string, value *model.Value, opts ...ExecuteOptionFn) (*model.Value, error) {
+func ExecuteSelector(selectorStr string, value *model.Value, opts *Options) (*model.Value, error) {
 	if selectorStr == "" {
 		return value, nil
 	}
@@ -19,7 +19,7 @@ func ExecuteSelector(selectorStr string, value *model.Value, opts ...ExecuteOpti
 		return nil, fmt.Errorf("error parsing selector: %w", err)
 	}
 
-	res, err := ExecuteAST(expr, value, opts...)
+	res, err := ExecuteAST(expr, value, opts)
 	if err != nil {
 		return nil, fmt.Errorf("error executing selector: %w", err)
 	}
@@ -30,9 +30,7 @@ func ExecuteSelector(selectorStr string, value *model.Value, opts ...ExecuteOpti
 type expressionExecutor func(data *model.Value) (*model.Value, error)
 
 // ExecuteAST executes the given AST with the given input.
-func ExecuteAST(expr ast.Expr, value *model.Value, opts ...ExecuteOptionFn) (*model.Value, error) {
-	options := NewOptions(opts...)
-
+func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Value, error) {
 	if expr == nil {
 		return value, nil
 	}
@@ -69,21 +67,21 @@ func ExecuteAST(expr ast.Expr, value *model.Value, opts ...ExecuteOptionFn) (*mo
 func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	switch e := expr.(type) {
 	case ast.BinaryExpr:
-		return binaryExprExecutor(e)
+		return binaryExprExecutor(opts, e)
 	case ast.CallExpr:
 		return callExprExecutor(opts, e)
 	case ast.ChainedExpr:
-		return chainedExprExecutor(e)
+		return chainedExprExecutor(opts, e)
 	case ast.SpreadExpr:
 		return spreadExprExecutor()
 	case ast.RangeExpr:
-		return rangeExprExecutor(e)
+		return rangeExprExecutor(opts, e)
 	case ast.IndexExpr:
-		return indexExprExecutor(e)
+		return indexExprExecutor(opts, e)
 	case ast.PropertyExpr:
-		return propertyExprExecutor(e)
+		return propertyExprExecutor(opts, e)
 	case ast.VariableExpr:
-		return variableExprExecutor(e)
+		return variableExprExecutor(opts, e)
 	case ast.NumberIntExpr:
 		return numberIntExprExecutor(e)
 	case ast.NumberFloatExpr:
@@ -93,17 +91,17 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	case ast.BoolExpr:
 		return boolExprExecutor(e)
 	case ast.ObjectExpr:
-		return objectExprExecutor(e)
+		return objectExprExecutor(opts, e)
 	case ast.MapExpr:
-		return mapExprExecutor(e)
+		return mapExprExecutor(opts, e)
 	case ast.FilterExpr:
-		return filterExprExecutor(e)
+		return filterExprExecutor(opts, e)
 	case ast.ConditionalExpr:
-		return conditionalExprExecutor(e)
+		return conditionalExprExecutor(opts, e)
 	case ast.BranchExpr:
-		return branchExprExecutor(e)
+		return branchExprExecutor(opts, e)
 	case ast.ArrayExpr:
-		return arrayExprExecutor(e)
+		return arrayExprExecutor(opts, e)
 	case ast.RegexExpr:
 		// Noop
 		return func(data *model.Value) (*model.Value, error) {
@@ -114,10 +112,10 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	}
 }
 
-func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
+func chainedExprExecutor(options *Options, e ast.ChainedExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		for _, expr := range e.Exprs {
-			res, err := ExecuteAST(expr, data)
+			res, err := ExecuteAST(expr, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error executing expression: %w", err)
 			}
@@ -127,12 +125,16 @@ func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
 	}, nil
 }
 
-func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
+func variableExprExecutor(opts *Options, e ast.VariableExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		varName := e.Name
 		if varName == "this" {
 			return data, nil
 		}
-		return nil, fmt.Errorf("variable %s not found", varName)
+		res, ok := opts.Vars[varName]
+		if !ok {
+			return nil, fmt.Errorf("variable %s not found", varName)
+		}
+		return res, nil
 	}, nil
 }
