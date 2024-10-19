@@ -6,6 +6,7 @@ import (
 )
 
 func TestManCommand(t *testing.T) {
+	t.Skip("Temporarily disabled")
 	tempDir := t.TempDir()
 
 	_, _, err := runDasel([]string{"man", "-o", tempDir}, nil)

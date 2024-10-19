@@ -33,7 +33,7 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			if tc.outFn != nil {
 				exp = tc.outFn()
 			}
-			res, err := execution.ExecuteSelector(tc.s, in)
+			res, err := execution.ExecuteSelector(tc.s, in, execution.NewOptions())
 			if err != nil {
 				t.Fatal(err)
 			}
