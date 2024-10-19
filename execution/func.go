@@ -184,29 +184,29 @@ var (
 	FuncToString = NewFunc(
 		"toString",
 		func(data *model.Value, args model.Values) (*model.Value, error) {
-			switch data.Type() {
+			switch args[0].Type() {
 			case model.TypeString:
-				return data, nil
+				return args[0], nil
 			case model.TypeInt:
-				i, err := data.IntValue()
+				i, err := args[0].IntValue()
 				if err != nil {
 					return nil, err
 				}
 				return model.NewStringValue(fmt.Sprintf("%d", i)), nil
 			case model.TypeFloat:
-				i, err := data.FloatValue()
+				i, err := args[0].FloatValue()
 				if err != nil {
 					return nil, err
 				}
 				return model.NewStringValue(fmt.Sprintf("%f", i)), nil
 			case model.TypeBool:
-				i, err := data.BoolValue()
+				i, err := args[0].BoolValue()
 				if err != nil {
 					return nil, err
 				}
 				return model.NewStringValue(fmt.Sprintf("%v", i)), nil
 			default:
-				return nil, fmt.Errorf("cannot convert %s to string", data.Type())
+				return nil, fmt.Errorf("cannot convert %s to string", args[0].Type())
 			}
 		},
 		ValidateArgsExactly(1),
