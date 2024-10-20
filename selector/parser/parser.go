@@ -23,12 +23,15 @@ func (p *Parser) parseExpressionsAsSlice(
 	splitOn []lexer.TokenKind,
 	requireExpressions bool,
 	bp bindingPower,
+	advanceOnBreak bool,
 ) (ast.Expressions, error) {
 	var finalExpr ast.Expressions
 	var current ast.Expressions
 	for p.hasToken() {
 		if p.current().IsKind(breakOn...) {
-			p.advance()
+			if advanceOnBreak {
+				p.advance()
+			}
 			break
 		}
 		if p.current().IsKind(splitOn...) {
@@ -63,8 +66,9 @@ func (p *Parser) parseExpressions(
 	splitOn []lexer.TokenKind,
 	requireExpressions bool,
 	bp bindingPower,
+	advanceOnBreak bool,
 ) (ast.Expr, error) {
-	expressions, err := p.parseExpressionsAsSlice(breakOn, splitOn, requireExpressions, bp)
+	expressions, err := p.parseExpressionsAsSlice(breakOn, splitOn, requireExpressions, bp, advanceOnBreak)
 	if err != nil {
 		return nil, err
 	}
@@ -77,7 +81,7 @@ func (p *Parser) parseExpressions(
 }
 
 func (p *Parser) Parse() (ast.Expr, error) {
-	return p.parseExpressions([]lexer.TokenKind{lexer.EOF}, nil, true, bpDefault)
+	return p.parseExpressions([]lexer.TokenKind{lexer.EOF}, nil, true, bpDefault, true)
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
@@ -110,6 +114,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseFilter(p)
 	case lexer.RegexPattern:
 		left, err = parseRegexPattern(p)
+	case lexer.SortBy:
+		left, err = parseSortBy(p)
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),

@@ -1,5 +1,33 @@
 package model
 
+func (v *Value) Compare(other *Value) (int, error) {
+	eq, err := v.Equal(other)
+	if err != nil {
+		return 0, err
+	}
+	eqVal, err := eq.BoolValue()
+	if err != nil {
+		return 0, err
+	}
+	if eqVal {
+		return 0, nil
+	}
+
+	lt, err := v.LessThan(other)
+	if err != nil {
+		return 0, err
+	}
+	ltVal, err := lt.BoolValue()
+	if err != nil {
+		return 0, err
+	}
+	if ltVal {
+		return -1, nil
+	}
+
+	return 1, nil
+}
+
 func (v *Value) Equal(other *Value) (*Value, error) {
 	if v.IsInt() && other.IsFloat() {
 		a, err := v.IntValue()
@@ -92,6 +120,19 @@ func (v *Value) LessThan(other *Value) (*Value, error) {
 		}
 		return NewValue(a < float64(b)), nil
 	}
+
+	if v.IsString() && other.IsString() {
+		a, err := v.StringValue()
+		if err != nil {
+			return nil, err
+		}
+		b, err := other.StringValue()
+		if err != nil {
+			return nil, err
+		}
+		return NewValue(a < b), nil
+	}
+
 	return nil, &ErrIncompatibleTypes{A: v, B: other}
 }
 

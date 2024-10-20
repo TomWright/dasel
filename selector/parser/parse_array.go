@@ -16,6 +16,7 @@ func parseArray(p *Parser) (ast.Expr, error) {
 		lexer.TokenKinds(lexer.Comma),
 		false,
 		bpDefault,
+		true,
 	)
 	if err != nil {
 		return nil, err

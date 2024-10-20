@@ -5,8 +5,8 @@ import (
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
-func parseMap(p *Parser) (ast.Expr, error) {
-	if err := p.expect(lexer.Map); err != nil {
+func parseFilter(p *Parser) (ast.Expr, error) {
+	if err := p.expect(lexer.Filter); err != nil {
 		return nil, err
 	}
 	p.advance()
@@ -22,7 +22,7 @@ func parseMap(p *Parser) (ast.Expr, error) {
 		return nil, err
 	}
 
-	return ast.MapExpr{
+	return ast.FilterExpr{
 		Expr: expr,
 	}, nil
 }

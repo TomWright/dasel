@@ -92,6 +92,7 @@ func (p *Parser) parseExpressionsFromTo(
 		splitOn,
 		requireExpressions,
 		bp,
+		true,
 	)
 	if err != nil {
 		return nil, err

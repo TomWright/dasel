@@ -58,6 +58,9 @@ const (
 	Map
 	Filter
 	RegexPattern
+	SortBy
+	Asc
+	Desc
 )
 
 type Tokens []Token

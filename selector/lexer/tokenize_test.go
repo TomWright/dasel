@@ -54,6 +54,18 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 	}))
 
+	t.Run("sort by", runTest(testCase{
+		in: `sortBy(foo, asc)`,
+		out: []TokenKind{
+			SortBy,
+			OpenParen,
+			Symbol,
+			Comma,
+			Asc,
+			CloseParen,
+		},
+	}))
+
 	t.Run("everything", runTest(testCase{
 		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []TokenKind{

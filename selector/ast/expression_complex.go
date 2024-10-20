@@ -94,6 +94,13 @@ type FilterExpr struct {
 
 func (FilterExpr) expr() {}
 
+type SortByExpr struct {
+	Expr       Expr
+	Descending bool
+}
+
+func (SortByExpr) expr() {}
+
 type VariableExpr struct {
 	Name string
 }

@@ -16,5 +16,6 @@ func parseGroup(p *Parser) (ast.Expr, error) {
 		[]lexer.TokenKind{},
 		true,
 		bpDefault,
+		true,
 	)
 }

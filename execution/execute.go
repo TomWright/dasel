@@ -107,6 +107,8 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 		return func(data *model.Value) (*model.Value, error) {
 			return data, nil
 		}, nil
+	case ast.SortByExpr:
+		return sortByExprExecutor(opts, e)
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

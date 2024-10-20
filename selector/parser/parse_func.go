@@ -32,5 +32,6 @@ func parseArgs(p *Parser) (ast.Expressions, error) {
 		[]lexer.TokenKind{lexer.Comma},
 		false,
 		bpCall,
+		true,
 	)
 }
