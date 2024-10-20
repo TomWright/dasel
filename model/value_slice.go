@@ -92,22 +92,17 @@ func (v *Value) RangeSlice(f func(int, *Value) error) error {
 
 // SliceIndexRange returns a new slice containing the values between the start and end indexes.
 // Comparable to go's slice[start:end].
-// If start is -1, it will be treated as 0. e.g. slice[:end] becomes slice[-1:end].
-// If end is -1, it will be treated as the length of the slice. e.g. slice[start:] becomes slice[start:-1].
 func (v *Value) SliceIndexRange(start, end int) (*Value, error) {
-	var err error
-	if start == -1 {
-		start = 0
+	l, err := v.SliceLen()
+	if err != nil {
+		return nil, fmt.Errorf("error getting slice length: %w", err)
 	}
-	if end == -1 {
-		end, err = v.SliceLen()
-		if err != nil {
-			return nil, fmt.Errorf("error getting slice length: %w", err)
-		}
-		end = end - 1
-		if end < 0 {
-			end = 0
-		}
+
+	if start < 0 {
+		start = l + start
+	}
+	if end < 0 {
+		end = l + end
 	}
 
 	res := NewSliceValue()

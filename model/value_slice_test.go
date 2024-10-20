@@ -128,39 +128,9 @@ func TestSlice(t *testing.T) {
 			//	}
 			//})
 			t.Run("SliceIndexRange", func(t *testing.T) {
-				t.Run("end 0", func(t *testing.T) {
+				t.Run("last element", func(t *testing.T) {
 					v := v()
-					s, err := v.SliceIndexRange(-1, 0)
-					if err != nil {
-						t.Errorf("unexpected error: %s", err)
-						return
-					}
-					length, err := s.SliceLen()
-					if err != nil {
-						t.Errorf("unexpected error: %s", err)
-						return
-					}
-					if length != 1 {
-						t.Errorf("expected length of 1, got %d", length)
-					}
-
-					val, err := s.GetSliceIndex(0)
-					if err != nil {
-						t.Errorf("unexpected error: %s", err)
-						return
-					}
-					got, err := val.StringValue()
-					if err != nil {
-						t.Errorf("unexpected error: %s", err)
-						return
-					}
-					if got != "foo" {
-						t.Errorf("expected foo, got %s", got)
-					}
-				})
-				t.Run("start 1", func(t *testing.T) {
-					v := v()
-					s, err := v.SliceIndexRange(1, -1)
+					s, err := v.SliceIndexRange(-1, -1)
 					if err != nil {
 						t.Errorf("unexpected error: %s", err)
 						return
@@ -185,6 +155,36 @@ func TestSlice(t *testing.T) {
 						return
 					}
 					if got != "bar" {
+						t.Errorf("expected bar, got %s", got)
+					}
+				})
+				t.Run("first element", func(t *testing.T) {
+					v := v()
+					s, err := v.SliceIndexRange(0, 0)
+					if err != nil {
+						t.Errorf("unexpected error: %s", err)
+						return
+					}
+					length, err := s.SliceLen()
+					if err != nil {
+						t.Errorf("unexpected error: %s", err)
+						return
+					}
+					if length != 1 {
+						t.Errorf("expected length of 1, got %d", length)
+					}
+
+					val, err := s.GetSliceIndex(0)
+					if err != nil {
+						t.Errorf("unexpected error: %s", err)
+						return
+					}
+					got, err := val.StringValue()
+					if err != nil {
+						t.Errorf("unexpected error: %s", err)
+						return
+					}
+					if got != "foo" {
 						t.Errorf("expected foo, got %s", got)
 					}
 				})

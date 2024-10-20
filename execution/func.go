@@ -6,6 +6,17 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 )
 
+var (
+	// DefaultFuncCollection is the default collection of functions that can be executed.
+	DefaultFuncCollection = NewFuncCollection(
+		FuncLen,
+		FuncAdd,
+		FuncToString,
+		FuncMerge,
+		FuncReverse,
+	)
+)
+
 // ArgsValidator is a function that validates the arguments passed to a function.
 type ArgsValidator func(name string, args model.Values) error
 
@@ -122,179 +133,3 @@ func (fc FuncCollection) Copy() FuncCollection {
 	}
 	return c
 }
-
-var (
-	// DefaultFuncCollection is the default collection of functions that can be executed.
-	DefaultFuncCollection = NewFuncCollection(
-		FuncLen,
-		FuncAdd,
-		FuncToString,
-		FuncMerge,
-		FuncReverse,
-	)
-
-	// FuncLen is a function that returns the length of the given value.
-	FuncLen = NewFunc(
-		"len",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
-			arg := args[0]
-
-			l, err := arg.Len()
-			if err != nil {
-				return nil, err
-			}
-
-			return model.NewIntValue(int64(l)), nil
-		},
-		ValidateArgsExactly(1),
-	)
-
-	// FuncAdd is a function that adds the given values together.
-	FuncAdd = NewFunc(
-		"add",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
-			var foundInts, foundFloats int
-			var intRes int64
-			var floatRes float64
-			for _, arg := range args {
-				if arg.IsFloat() {
-					foundFloats++
-					v, err := arg.FloatValue()
-					if err != nil {
-						return nil, fmt.Errorf("error getting float value: %w", err)
-					}
-					floatRes += v
-					continue
-				}
-				if arg.IsInt() {
-					foundInts++
-					v, err := arg.IntValue()
-					if err != nil {
-						return nil, fmt.Errorf("error getting int value: %w", err)
-					}
-					intRes += v
-					continue
-				}
-				return nil, fmt.Errorf("expected int or float, got %s", arg.Type())
-			}
-			if foundFloats > 0 {
-				return model.NewFloatValue(floatRes + float64(intRes)), nil
-			}
-			return model.NewIntValue(intRes), nil
-		},
-		ValidateArgsMin(1),
-	)
-
-	// FuncToString is a function that converts the given value to a string.
-	FuncToString = NewFunc(
-		"toString",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
-			switch args[0].Type() {
-			case model.TypeString:
-				return args[0], nil
-			case model.TypeInt:
-				i, err := args[0].IntValue()
-				if err != nil {
-					return nil, err
-				}
-				return model.NewStringValue(fmt.Sprintf("%d", i)), nil
-			case model.TypeFloat:
-				i, err := args[0].FloatValue()
-				if err != nil {
-					return nil, err
-				}
-				return model.NewStringValue(fmt.Sprintf("%f", i)), nil
-			case model.TypeBool:
-				i, err := args[0].BoolValue()
-				if err != nil {
-					return nil, err
-				}
-				return model.NewStringValue(fmt.Sprintf("%v", i)), nil
-			default:
-				return nil, fmt.Errorf("cannot convert %s to string", args[0].Type())
-			}
-		},
-		ValidateArgsExactly(1),
-	)
-
-	// FuncMerge is a function that merges two or more items together.
-	FuncMerge = NewFunc(
-		"merge",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
-			if len(args) == 1 {
-				return args[0], nil
-			}
-
-			expectedType := args[0].Type()
-
-			switch expectedType {
-			case model.TypeMap:
-				break
-			default:
-				return nil, fmt.Errorf("merge exects a map, found %s", expectedType)
-			}
-
-			// Validate types match
-			for _, a := range args {
-				if a.Type() != expectedType {
-					return nil, fmt.Errorf("merge expects all arguments to be of the same type. expected %s, got %s", expectedType.String(), a.Type().String())
-				}
-			}
-
-			base := model.NewMapValue()
-
-			for i := 0; i < len(args); i++ {
-				next := args[i]
-
-				nextKVs, err := next.MapKeyValues()
-				if err != nil {
-					return nil, fmt.Errorf("merge failed to extract key values for arg %d: %w", i, err)
-				}
-
-				for _, kv := range nextKVs {
-					if err := base.SetMapKey(kv.Key, kv.Value); err != nil {
-						return nil, fmt.Errorf("merge failed to set map key %s: %w", kv.Key, err)
-					}
-				}
-			}
-
-			return base, nil
-		},
-		ValidateArgsMin(1),
-	)
-
-	// FuncReverse is a function that reverses the input.
-	FuncReverse = NewFunc(
-		"reverse",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
-			if len(args) == 1 {
-				return args[0], nil
-			}
-
-			arg := args[0]
-
-			switch arg.Type() {
-			case model.TypeString:
-				v, err := arg.StringValue()
-				if err != nil {
-					return nil, err
-				}
-				vBytes := []byte(v)
-				res := string(vBytes[len(vBytes)-1 : 0])
-				return model.NewStringValue(res), nil
-			case model.TypeSlice:
-				l, err := arg.Len()
-				if err != nil {
-					return nil, err
-				}
-				if l <= 1 {
-					return arg, nil
-				}
-				return arg.SliceIndexRange(l-1, 0)
-			default:
-				return nil, fmt.Errorf("reverse expects a slice or string, got %s", arg.Type())
-			}
-		},
-		ValidateArgsExactly(1),
-	)
-)

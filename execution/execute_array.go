@@ -27,7 +27,7 @@ func arrayExprExecutor(opts *Options, e ast.ArrayExpr) (expressionExecutor, erro
 
 func rangeExprExecutor(opts *Options, e ast.RangeExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
-		var start, end int64 = -1, -1
+		var start, end int64 = 0, -1
 		if e.Start != nil {
 			startE, err := ExecuteAST(e.Start, data, opts)
 			if err != nil {
@@ -52,9 +52,20 @@ func rangeExprExecutor(opts *Options, e ast.RangeExpr) (expressionExecutor, erro
 			}
 		}
 
-		res, err := data.SliceIndexRange(int(start), int(end))
+		var res *model.Value
+		var err error
+
+		switch data.Type() {
+		case model.TypeString:
+			res, err = data.StringIndexRange(int(start), int(end))
+		case model.TypeSlice:
+			res, err = data.SliceIndexRange(int(start), int(end))
+		default:
+			err = fmt.Errorf("range expects a slice or string, got %s", data.Type())
+		}
+
 		if err != nil {
-			return nil, fmt.Errorf("error getting slice index range: %w", err)
+			return nil, err
 		}
 
 		return res, nil
