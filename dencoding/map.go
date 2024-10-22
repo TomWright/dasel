@@ -1,6 +1,8 @@
 package dencoding
 
-import "reflect"
+import (
+	"reflect"
+)
 
 // NewMap returns a new *Map that has its values initialised.
 func NewMap() *Map {

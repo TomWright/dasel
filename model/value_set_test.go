@@ -46,6 +46,7 @@ func TestValue_Set(t *testing.T) {
 		boolValue   func() *model.Value
 		mapValue    func() *model.Value
 		sliceValue  func() *model.Value
+		nullValue   func() *model.Value
 	}{
 		{
 			name: "model constructor",
@@ -74,6 +75,9 @@ func TestValue_Set(t *testing.T) {
 					t.Fatal(err)
 				}
 				return res
+			},
+			nullValue: func() *model.Value {
+				return model.NewNullValue()
 			},
 		},
 		{
@@ -106,6 +110,9 @@ func TestValue_Set(t *testing.T) {
 				}
 				return model.NewValue(v)
 			},
+			nullValue: func() *model.Value {
+				return model.NewValue(nil)
+			},
 		},
 		{
 			name: "go types ptr",
@@ -136,6 +143,10 @@ func TestValue_Set(t *testing.T) {
 					"hello",
 				}
 				return model.NewValue(&v)
+			},
+			nullValue: func() *model.Value {
+				var x any
+				return model.NewValue(&x)
 			},
 		},
 	}
@@ -218,6 +229,10 @@ func TestValue_Set(t *testing.T) {
 					}
 					return res
 				},
+			}.run)
+			t.Run("string over null", setTestCase{
+				valueFn:  tc.nullValue,
+				newValue: model.NewStringValue("world"),
 			}.run)
 		})
 	}

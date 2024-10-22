@@ -17,7 +17,7 @@ func NewNullValue() *Value {
 
 // IsNull returns true if the value is null.
 func (v *Value) IsNull() bool {
-	return v.isNull()
+	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isNull()
 }
 
 func (v *Value) isNull() bool {

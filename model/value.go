@@ -20,6 +20,7 @@ const (
 	TypeMap     Type = "map"
 	TypeSlice   Type = "array"
 	TypeUnknown Type = "unknown"
+	TypeNull    Type = "null"
 )
 
 type KeyValue struct {
@@ -129,6 +130,8 @@ func (v *Value) Type() Type {
 		return TypeMap
 	case v.IsSlice():
 		return TypeSlice
+	case v.IsNull():
+		return TypeNull
 	default:
 		return TypeUnknown
 	}
