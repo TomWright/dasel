@@ -68,6 +68,8 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	switch e := expr.(type) {
 	case ast.BinaryExpr:
 		return binaryExprExecutor(opts, e)
+	case ast.UnaryExpr:
+		return unaryExprExecutor(opts, e)
 	case ast.CallExpr:
 		return callExprExecutor(opts, e)
 	case ast.ChainedExpr:
@@ -109,6 +111,10 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 		}, nil
 	case ast.SortByExpr:
 		return sortByExprExecutor(opts, e)
+	case ast.NullExpr:
+		return func(data *model.Value) (*model.Value, error) {
+			return model.NewNullValue(), nil
+		}, nil
 	default:
 		return nil, fmt.Errorf("unhandled expression type: %T", e)
 	}

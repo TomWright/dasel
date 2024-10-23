@@ -85,6 +85,25 @@ func (p *Parser) Parse() (ast.Expr, error) {
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
+	if p.hasToken() && slices.Contains(rightDenotationTokens, p.current().Kind) {
+		unary := ast.UnaryExpr{
+			Operator: p.current(),
+			Right:    nil,
+		}
+		p.advance()
+		expr, err := p.parseExpression(getTokenBindingPower(unary.Operator.Kind))
+		if err != nil {
+			return nil, err
+		}
+		p.advance()
+		unary.Right = expr
+		left = unary
+	}
+
+	if !p.hasToken() {
+		return
+	}
+
 	switch p.current().Kind {
 	case lexer.String:
 		left, err = parseStringLiteral(p)
@@ -116,6 +135,10 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseRegexPattern(p)
 	case lexer.SortBy:
 		left, err = parseSortBy(p)
+	case lexer.Null:
+		left = ast.NullExpr{}
+		err = nil
+		p.advance()
 	default:
 		return nil, &UnexpectedTokenError{
 			Token: p.current(),

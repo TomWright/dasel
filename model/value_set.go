@@ -5,6 +5,7 @@ import (
 	"reflect"
 )
 
+// Set sets the value of the value.
 func (v *Value) Set(newValue *Value) error {
 	if v.setFn != nil {
 		return v.setFn(newValue)

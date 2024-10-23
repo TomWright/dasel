@@ -23,11 +23,16 @@ const (
 	TypeNull    Type = "null"
 )
 
+// KeyValue represents a key value pair.
 type KeyValue struct {
 	Key   string
 	Value *Value
 }
 
+// Values represents a list of values.
+type Values []*Value
+
+// Value represents a value.
 type Value struct {
 	Value    reflect.Value
 	Metadata map[string]any
@@ -35,6 +40,7 @@ type Value struct {
 	setFn func(*Value) error
 }
 
+// NewValue creates a new value.
 func NewValue(v any) *Value {
 	switch val := v.(type) {
 	case *Value:
@@ -56,14 +62,17 @@ func NewValue(v any) *Value {
 	}
 }
 
+// Interface returns the value as an interface.
 func (v *Value) Interface() any {
 	return v.Value.Interface()
 }
 
+// Kind returns the reflect kind of the value.
 func (v *Value) Kind() reflect.Kind {
 	return v.Value.Kind()
 }
 
+// UnpackKinds unpacks the reflect value until it no longer matches the given kinds.
 func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 	res := v.Value
 	for {
@@ -74,6 +83,7 @@ func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 	}
 }
 
+// UnpackUntilType unpacks the reflect value until it matches the given type.
 func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 	res := v.Value
 	for {
@@ -88,6 +98,7 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 	}
 }
 
+// UnpackUntilAddressable unpacks the reflect value until it is addressable.
 func (v *Value) UnpackUntilAddressable() (*Value, error) {
 	res := v.Value
 	for {
@@ -102,6 +113,7 @@ func (v *Value) UnpackUntilAddressable() (*Value, error) {
 	}
 }
 
+// UnpackUntilKind unpacks the reflect value until it matches the given kind.
 func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 	res := v.Value
 	for {
@@ -116,6 +128,7 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 	}
 }
 
+// Type returns the type of the value.
 func (v *Value) Type() Type {
 	switch {
 	case v.IsString():
@@ -137,6 +150,7 @@ func (v *Value) Type() Type {
 	}
 }
 
+// Len returns the length of the value.
 func (v *Value) Len() (int, error) {
 	var l int
 	var err error
@@ -149,7 +163,10 @@ func (v *Value) Len() (int, error) {
 	case v.IsString():
 		l, err = v.StringLen()
 	default:
-		err = fmt.Errorf("len expects string, slice or map")
+		err = ErrUnexpectedTypes{
+			Expected: []Type{TypeSlice, TypeMap, TypeString},
+			Actual:   v.Type(),
+		}
 	}
 
 	if err != nil {

@@ -1,7 +1,6 @@
 package model
 
 import (
-	"fmt"
 	"reflect"
 	"slices"
 )
@@ -44,7 +43,10 @@ func (v *Value) isString() bool {
 func (v *Value) StringValue() (string, error) {
 	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
 	if !unpacked.isString() {
-		return "", fmt.Errorf("expected string, got %s", unpacked.Type())
+		return "", ErrUnexpectedType{
+			Expected: TypeString,
+			Actual:   v.Type(),
+		}
 	}
 	return unpacked.Value.String(), nil
 }
@@ -113,7 +115,10 @@ func (v *Value) isInt() bool {
 func (v *Value) IntValue() (int64, error) {
 	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
 	if !unpacked.isInt() {
-		return 0, fmt.Errorf("expected int, got %s", unpacked.Type())
+		return 0, ErrUnexpectedType{
+			Expected: TypeInt,
+			Actual:   v.Type(),
+		}
 	}
 	return unpacked.Value.Int(), nil
 }
@@ -138,7 +143,10 @@ func (v *Value) isFloat() bool {
 func (v *Value) FloatValue() (float64, error) {
 	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
 	if !unpacked.IsFloat() {
-		return 0, fmt.Errorf("expected float, got %s", unpacked.Type())
+		return 0, ErrUnexpectedType{
+			Expected: TypeFloat,
+			Actual:   v.Type(),
+		}
 	}
 	return unpacked.Value.Float(), nil
 }
@@ -163,7 +171,10 @@ func (v *Value) isBool() bool {
 func (v *Value) BoolValue() (bool, error) {
 	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
 	if !unpacked.IsBool() {
-		return false, fmt.Errorf("expected bool, got %s", unpacked.Type())
+		return false, ErrUnexpectedType{
+			Expected: TypeBool,
+			Actual:   v.Type(),
+		}
 	}
 	return unpacked.Value.Bool(), nil
 }

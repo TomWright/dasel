@@ -14,6 +14,7 @@ var (
 		FuncToString,
 		FuncMerge,
 		FuncReverse,
+		FuncTypeOf,
 	)
 )
 

@@ -8,7 +8,7 @@ type MapKeyNotFound struct {
 }
 
 // Error returns the error message.
-func (e *MapKeyNotFound) Error() string {
+func (e MapKeyNotFound) Error() string {
 	return fmt.Sprintf("map key not found: %q", e.Key)
 }
 
@@ -18,7 +18,7 @@ type SliceIndexOutOfRange struct {
 }
 
 // Error returns the error message.
-func (e *SliceIndexOutOfRange) Error() string {
+func (e SliceIndexOutOfRange) Error() string {
 	return fmt.Sprintf("slice index out of range: %d", e.Index)
 }
 
@@ -29,6 +29,24 @@ type ErrIncompatibleTypes struct {
 }
 
 // Error returns the error message.
-func (e *ErrIncompatibleTypes) Error() string {
+func (e ErrIncompatibleTypes) Error() string {
 	return fmt.Sprintf("incompatible types: %s and %s", e.A.Type(), e.B.Type())
+}
+
+type ErrUnexpectedType struct {
+	Expected Type
+	Actual   Type
+}
+
+func (e ErrUnexpectedType) Error() string {
+	return fmt.Sprintf("unexpected type: expected %s, got %s", e.Expected, e.Actual)
+}
+
+type ErrUnexpectedTypes struct {
+	Expected []Type
+	Actual   Type
+}
+
+func (e ErrUnexpectedTypes) Error() string {
+	return fmt.Sprintf("unexpected type: expected %v, got %s", e.Expected, e.Actual)
 }

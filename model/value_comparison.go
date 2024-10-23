@@ -1,5 +1,6 @@
 package model
 
+// Compare compares two values.
 func (v *Value) Compare(other *Value) (int, error) {
 	eq, err := v.Equal(other)
 	if err != nil {
@@ -28,6 +29,7 @@ func (v *Value) Compare(other *Value) (int, error) {
 	return 1, nil
 }
 
+// Equal compares two values.
 func (v *Value) Equal(other *Value) (*Value, error) {
 	if v.IsInt() && other.IsFloat() {
 		a, err := v.IntValue()
@@ -63,6 +65,7 @@ func (v *Value) Equal(other *Value) (*Value, error) {
 	return NewValue(isEqual), nil
 }
 
+// NotEqual compares two values.
 func (v *Value) NotEqual(other *Value) (*Value, error) {
 	equals, err := v.Equal(other)
 	if err != nil {
@@ -75,6 +78,7 @@ func (v *Value) NotEqual(other *Value) (*Value, error) {
 	return NewValue(!boolValue), nil
 }
 
+// LessThan compares two values.
 func (v *Value) LessThan(other *Value) (*Value, error) {
 	if v.IsInt() && other.IsInt() {
 		a, err := v.IntValue()
@@ -136,6 +140,7 @@ func (v *Value) LessThan(other *Value) (*Value, error) {
 	return nil, &ErrIncompatibleTypes{A: v, B: other}
 }
 
+// LessThanOrEqual compares two values.
 func (v *Value) LessThanOrEqual(other *Value) (*Value, error) {
 	lessThan, err := v.LessThan(other)
 	if err != nil {
@@ -156,6 +161,7 @@ func (v *Value) LessThanOrEqual(other *Value) (*Value, error) {
 	return NewValue(boolValue || boolEquals), nil
 }
 
+// GreaterThan compares two values.
 func (v *Value) GreaterThan(other *Value) (*Value, error) {
 	lessThanOrEqual, err := v.LessThanOrEqual(other)
 	if err != nil {
@@ -168,6 +174,7 @@ func (v *Value) GreaterThan(other *Value) (*Value, error) {
 	return NewValue(!boolValue), nil
 }
 
+// GreaterThanOrEqual compares two values.
 func (v *Value) GreaterThanOrEqual(other *Value) (*Value, error) {
 	lessThan, err := v.LessThan(other)
 	if err != nil {
@@ -180,6 +187,7 @@ func (v *Value) GreaterThanOrEqual(other *Value) (*Value, error) {
 	return NewValue(!boolValue), nil
 }
 
+// EqualTypeValue compares two values of the same type.
 func (v *Value) EqualTypeValue(other *Value) (bool, error) {
 	if v.Type() != other.Type() {
 		return false, nil
@@ -286,6 +294,8 @@ func (v *Value) EqualTypeValue(other *Value) (bool, error) {
 			}
 		}
 		return true, nil
+	case TypeNull:
+		return other.Type() == TypeNull, nil
 	default:
 		return false, nil
 	}

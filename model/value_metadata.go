@@ -23,15 +23,12 @@ func (v *Value) IsSpread() bool {
 	if v == nil {
 		return false
 	}
-	val, ok := v.Metadata["spread"]
+	val, ok := v.MetadataValue("spread")
 	if !ok {
 		return false
 	}
 	spread, ok := val.(bool)
-	if !ok {
-		return false
-	}
-	return spread
+	return ok && spread
 }
 
 // MarkAsSpread marks the value as a spread value.
@@ -45,15 +42,12 @@ func (v *Value) IsBranch() bool {
 	if v == nil {
 		return false
 	}
-	val, ok := v.Metadata["spread"]
+	val, ok := v.MetadataValue("branch")
 	if !ok {
 		return false
 	}
-	spread, ok := val.(bool)
-	if !ok {
-		return false
-	}
-	return spread
+	branch, ok := val.(bool)
+	return ok && branch
 }
 
 // MarkAsBranch marks the value as a branch value.

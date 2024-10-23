@@ -31,3 +31,7 @@ type RegexExpr struct {
 }
 
 func (RegexExpr) expr() {}
+
+type NullExpr struct{}
+
+func (NullExpr) expr() {}

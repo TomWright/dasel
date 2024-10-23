@@ -96,7 +96,10 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		}
 		return res, nil
 	default:
-		return nil, fmt.Errorf("value is not a map")
+		return nil, ErrUnexpectedType{
+			Expected: TypeMap,
+			Actual:   v.Type(),
+		}
 	}
 }
 
@@ -118,7 +121,10 @@ func (v *Value) DeleteMapKey(key string) error {
 		unpacked.Value.SetMapIndex(reflect.ValueOf(key), reflect.Value{})
 		return nil
 	default:
-		return fmt.Errorf("value is not a map")
+		return ErrUnexpectedType{
+			Expected: TypeMap,
+			Actual:   v.Type(),
+		}
 	}
 }
 
@@ -143,7 +149,10 @@ func (v *Value) MapKeys() ([]string, error) {
 		}
 		return strKeys, nil
 	default:
-		return nil, fmt.Errorf("value is not a map")
+		return nil, ErrUnexpectedType{
+			Expected: TypeMap,
+			Actual:   v.Type(),
+		}
 	}
 }
 
@@ -192,11 +201,6 @@ func (v *Value) MapKeyValues() ([]KeyValue, error) {
 
 // MapLen returns the length of the slice.
 func (v *Value) MapLen() (int, error) {
-	if !v.IsMap() {
-		return 0, fmt.Errorf("expected map, got %s", v.Type())
-	}
-	// There will be more efficient ways of doing this, but this
-	// accounts for maps, dencoding maps and structs.
 	keys, err := v.MapKeys()
 	if err != nil {
 		return 0, err
