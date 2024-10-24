@@ -55,4 +55,55 @@ func TestBranch(t *testing.T) {
 			return r
 		},
 	}.run)
+	t.Run("chained branch set", testCase{
+		s: "branch(1, 2, 3).$this=5",
+		outFn: func() *model.Value {
+			r := model.NewSliceValue()
+			r.MarkAsBranch()
+			if err := r.Append(model.NewIntValue(5)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(5)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(5)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			return r
+		},
+	}.run)
+	t.Run("chained branch math", testCase{
+		s: "branch(1, 2, 3) * 2",
+		outFn: func() *model.Value {
+			r := model.NewSliceValue()
+			r.MarkAsBranch()
+			if err := r.Append(model.NewIntValue(2)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(4)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(6)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			return r
+		},
+	}.run)
+	t.Run("chained branch math using branched value", testCase{
+		s: `branch({"x":1}, {"x":2}, {"x":3}).x * $this`,
+		outFn: func() *model.Value {
+			r := model.NewSliceValue()
+			r.MarkAsBranch()
+			if err := r.Append(model.NewIntValue(1)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(4)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(9)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			return r
+		},
+	}.run)
 }

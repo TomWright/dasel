@@ -51,8 +51,8 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 	res := model.NewSliceValue()
 	res.MarkAsBranch()
 
-	if err := value.RangeSlice(func(i int, value *model.Value) error {
-		r, err := executor(value)
+	if err := value.RangeSlice(func(i int, v *model.Value) error {
+		r, err := executor(v)
 		if err != nil {
 			return err
 		}
@@ -123,9 +123,30 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 func chainedExprExecutor(options *Options, e ast.ChainedExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		for _, expr := range e.Exprs {
-			res, err := ExecuteAST(expr, data, options)
-			if err != nil {
-				return nil, fmt.Errorf("error executing expression: %w", err)
+
+			if !data.IsBranch() {
+				res, err := ExecuteAST(expr, data, options)
+				if err != nil {
+					return nil, fmt.Errorf("error executing expression: %w", err)
+				}
+				data = res
+				continue
+			}
+
+			res := model.NewSliceValue()
+			res.MarkAsBranch()
+			if err := data.RangeSlice(func(i int, value *model.Value) error {
+				r, err := ExecuteAST(expr, value, options)
+				if err != nil {
+					return fmt.Errorf("error executing expression: %w", err)
+				}
+
+				if err := res.Append(r); err != nil {
+					return err
+				}
+				return nil
+			}); err != nil {
+				return nil, err
 			}
 			data = res
 		}
