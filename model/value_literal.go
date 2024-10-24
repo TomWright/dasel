@@ -20,7 +20,12 @@ func (v *Value) IsNull() bool {
 }
 
 func (v *Value) isNull() bool {
-	return v.Value.IsNil()
+	// This logic can be cleaned up.
+	unpacked, err := v.UnpackUntilKinds(reflect.Chan, reflect.Func, reflect.Map, reflect.Pointer, reflect.UnsafePointer, reflect.Interface, reflect.Slice)
+	if err != nil {
+		return false
+	}
+	return unpacked.Value.IsNil()
 }
 
 // NewStringValue creates a new Value with a string value.

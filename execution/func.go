@@ -15,6 +15,8 @@ var (
 		FuncMerge,
 		FuncReverse,
 		FuncTypeOf,
+		FuncMax,
+		FuncMin,
 	)
 )
 

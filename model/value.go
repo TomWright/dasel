@@ -128,6 +128,21 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 	}
 }
 
+// UnpackUntilKinds unpacks the reflect value until it matches the given kind.
+func (v *Value) UnpackUntilKinds(kinds ...reflect.Kind) (*Value, error) {
+	res := v.Value
+	for {
+		if slices.Contains(kinds, res.Kind()) {
+			return NewValue(res), nil
+		}
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+			res = res.Elem()
+			continue
+		}
+		return nil, fmt.Errorf("could not unpack to kinds: %v", kinds)
+	}
+}
+
 // Type returns the type of the value.
 func (v *Value) Type() Type {
 	switch {

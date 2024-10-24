@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"os"
 
 	"github.com/tomwright/dasel/v3/internal/cli"
@@ -11,5 +12,10 @@ import (
 )
 
 func main() {
-	cli.MustRun(os.Stdin, os.Stdout, os.Stderr)
+	var stdin io.Reader = os.Stdin
+	fi, err := os.Stdin.Stat()
+	if err != nil || (fi.Mode()&os.ModeNamedPipe == 0) {
+		stdin = nil
+	}
+	cli.MustRun(stdin, os.Stdout, os.Stderr)
 }
