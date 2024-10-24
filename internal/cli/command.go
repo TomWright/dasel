@@ -17,7 +17,7 @@ type Globals struct {
 type CLI struct {
 	Globals
 
-	Query   QueryCmd   `cmd:"" help:"[default] Execute a query"`
+	Query   QueryCmd   `cmd:"" default:"withargs" help:"[default] Execute a query"`
 	Version VersionCmd `cmd:"" help:"Print the version"`
 }
 
@@ -49,16 +49,6 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 		kong.OptionFunc(func(k *kong.Kong) error {
 			k.Stdout = cli.Stdout
 			k.Stderr = cli.Stderr
-			return nil
-		}),
-		kong.PostBuild(func(k *kong.Kong) error {
-			defaultCommandName := "query"
-			for _, c := range k.Model.Children {
-				if c.Name == defaultCommandName {
-					k.Model.DefaultCmd = c
-					break
-				}
-			}
 			return nil
 		}),
 	)
