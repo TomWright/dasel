@@ -1,18 +1,29 @@
-package parsing
+package yaml
 
 import (
 	"bytes"
+
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/parsing"
 	"gopkg.in/yaml.v3"
 )
 
-// NewYAMLReader creates a new YAML reader.
-func NewYAMLReader() (Reader, error) {
+// YAML represents the YAML file format.
+const YAML parsing.Format = "yaml"
+
+var _ parsing.Reader = (*yamlReader)(nil)
+var _ parsing.Writer = (*yamlWriter)(nil)
+
+func init() {
+	parsing.RegisterReader(YAML, newYAMLReader)
+	parsing.RegisterWriter(YAML, newYAMLWriter)
+}
+
+func newYAMLReader() (parsing.Reader, error) {
 	return &yamlReader{}, nil
 }
 
-// NewYAMLWriter creates a new YAML writer.
-func NewYAMLWriter() (Writer, error) {
+func newYAMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
 	return &yamlWriter{}, nil
 }
 

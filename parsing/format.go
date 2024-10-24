@@ -2,61 +2,48 @@ package parsing
 
 import (
 	"fmt"
-
-	"github.com/tomwright/dasel/v3/model"
 )
 
 // Format represents a file format.
 type Format string
 
-// Supported file formats.
-const (
-	JSON Format = "json"
-	YAML Format = "yaml"
-	TOML Format = "toml"
-)
+// NewReader creates a new reader for the format.
+func (f Format) NewReader() (Reader, error) {
+	fn, ok := readers[f]
+	if !ok {
+		return nil, fmt.Errorf("unsupported reader file format: %s", f)
+	}
+	return fn()
+}
+
+// NewWriter creates a new writer for the format.
+func (f Format) NewWriter(options WriterOptions) (Writer, error) {
+	fn, ok := writers[f]
+	if !ok {
+		return nil, fmt.Errorf("unsupported writer file format: %s", f)
+	}
+	return fn(options)
+}
 
 // String returns the string representation of the format.
 func (f Format) String() string {
 	return string(f)
 }
 
-// Reader reads a value from a byte slice.
-type Reader interface {
-	// Read reads a value from a byte slice.
-	Read([]byte) (*model.Value, error)
-}
-
-// Writer writes a value to a byte slice.
-type Writer interface {
-	// Write writes a value to a byte slice.
-	Write(*model.Value) ([]byte, error)
-}
-
-// NewReader creates a new reader for the specified format.
-func NewReader(format Format) (Reader, error) {
-	switch format {
-	case JSON:
-		return NewJSONReader()
-	case YAML:
-		return NewYAMLReader()
-	case TOML:
-		return NewTOMLReader()
-	default:
-		return nil, fmt.Errorf("unsupported file format: %s", format)
+// RegisteredReaders returns a list of registered readers.
+func RegisteredReaders() []Format {
+	var formats []Format
+	for format := range readers {
+		formats = append(formats, format)
 	}
+	return formats
 }
 
-// NewWriter creates a new writer for the specified format.
-func NewWriter(format Format) (Writer, error) {
-	switch format {
-	case JSON:
-		return NewJSONWriter()
-	case YAML:
-		return NewYAMLWriter()
-	case TOML:
-		return NewTOMLWriter()
-	default:
-		return nil, fmt.Errorf("unsupported file format: %s", format)
+// RegisteredWriters returns a list of registered writers.
+func RegisteredWriters() []Format {
+	var formats []Format
+	for format := range writers {
+		formats = append(formats, format)
 	}
+	return formats
 }

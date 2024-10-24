@@ -12,6 +12,11 @@ var FuncToString = NewFunc(
 	func(data *model.Value, args model.Values) (*model.Value, error) {
 		switch args[0].Type() {
 		case model.TypeString:
+			stringValue, err := args[0].StringValue()
+			if err != nil {
+				return nil, err
+			}
+			model.NewStringValue(stringValue)
 			return args[0], nil
 		case model.TypeInt:
 			i, err := args[0].IntValue()

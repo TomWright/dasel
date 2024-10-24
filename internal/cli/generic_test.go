@@ -6,6 +6,9 @@ import (
 	"testing"
 
 	"github.com/tomwright/dasel/v3/parsing"
+	"github.com/tomwright/dasel/v3/parsing/json"
+	"github.com/tomwright/dasel/v3/parsing/toml"
+	"github.com/tomwright/dasel/v3/parsing/yaml"
 )
 
 func newStringWithFormat(format parsing.Format, data string) bytesWithFormat {
@@ -42,7 +45,7 @@ func (tcs testCases) run(t *testing.T) {
 			}
 
 			args := slices.Clone(tcs.args)
-			args = append(args, "--input", i.format.String(), "--output", o.format.String())
+			args = append(args, "-i", i.format.String(), "-o", o.format.String())
 			if tcs.selector != "" {
 				args = append(args, tcs.selector)
 			}
@@ -57,7 +60,7 @@ func (tcs testCases) run(t *testing.T) {
 }
 
 func TestCrossFormatHappyPath(t *testing.T) {
-	jsonInputData := newStringWithFormat(parsing.JSON, `{
+	jsonInputData := newStringWithFormat(json.JSON, `{
 	"oneTwoThree": 123,
 	"oneTwoDotThree": 12.3,
 	"hello": "world",
@@ -87,7 +90,7 @@ func TestCrossFormatHappyPath(t *testing.T) {
 		}
 	}
 }`)
-	yamlInputData := newStringWithFormat(parsing.YAML, `oneTwoThree: 123
+	yamlInputData := newStringWithFormat(yaml.YAML, `oneTwoThree: 123
 oneTwoDotThree: 12.3
 hello: world
 boolFalse: false
@@ -130,7 +133,7 @@ mapData:
         - 5
 `)
 
-	tomlInputData := newStringWithFormat(parsing.TOML, `
+	tomlInputData := newStringWithFormat(toml.TOML, `
 oneTwoThree = 123
 oneTwoDotThree = 12.3
 hello = 'world'
@@ -172,9 +175,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						tomlInputData,
 					},
 					out: []bytesWithFormat{
-						newStringWithFormat(parsing.JSON, `"world"`),
-						newStringWithFormat(parsing.YAML, `world`),
-						newStringWithFormat(parsing.TOML, `'world'`),
+						newStringWithFormat(json.JSON, `"world"`),
+						newStringWithFormat(yaml.YAML, `world`),
+						newStringWithFormat(toml.TOML, `'world'`),
 					},
 				}.run)
 				t.Run("int", testCases{
@@ -185,9 +188,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						tomlInputData,
 					},
 					out: []bytesWithFormat{
-						newStringWithFormat(parsing.JSON, `123`),
-						newStringWithFormat(parsing.YAML, `123`),
-						newStringWithFormat(parsing.TOML, `123`),
+						newStringWithFormat(json.JSON, `123`),
+						newStringWithFormat(yaml.YAML, `123`),
+						newStringWithFormat(toml.TOML, `123`),
 					},
 					skip: []string{
 						// Skipped because the parser outputs as a float.
@@ -202,9 +205,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						tomlInputData,
 					},
 					out: []bytesWithFormat{
-						newStringWithFormat(parsing.JSON, `12.3`),
-						newStringWithFormat(parsing.YAML, `12.3`),
-						newStringWithFormat(parsing.TOML, `12.3`),
+						newStringWithFormat(json.JSON, `12.3`),
+						newStringWithFormat(yaml.YAML, `12.3`),
+						newStringWithFormat(toml.TOML, `12.3`),
 					},
 				}.run)
 				t.Run("bool", func(t *testing.T) {
@@ -215,9 +218,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							yamlInputData,
 						},
 						out: []bytesWithFormat{
-							newStringWithFormat(parsing.JSON, `true`),
-							newStringWithFormat(parsing.YAML, `true`),
-							newStringWithFormat(parsing.TOML, `true`),
+							newStringWithFormat(json.JSON, `true`),
+							newStringWithFormat(yaml.YAML, `true`),
+							newStringWithFormat(toml.TOML, `true`),
 						},
 					}.run)
 					t.Run("false", testCases{
@@ -227,9 +230,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							yamlInputData,
 						},
 						out: []bytesWithFormat{
-							newStringWithFormat(parsing.JSON, `false`),
-							newStringWithFormat(parsing.YAML, `false`),
-							newStringWithFormat(parsing.TOML, `false`),
+							newStringWithFormat(json.JSON, `false`),
+							newStringWithFormat(yaml.YAML, `false`),
+							newStringWithFormat(toml.TOML, `false`),
 						},
 					}.run)
 					t.Run("true string", testCases{
@@ -239,9 +242,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							yamlInputData,
 						},
 						out: []bytesWithFormat{
-							newStringWithFormat(parsing.JSON, `"true"`),
-							newStringWithFormat(parsing.YAML, `"true"`),
-							newStringWithFormat(parsing.TOML, `'true'`),
+							newStringWithFormat(json.JSON, `"true"`),
+							newStringWithFormat(yaml.YAML, `"true"`),
+							newStringWithFormat(toml.TOML, `'true'`),
 						},
 					}.run)
 					t.Run("false string", testCases{
@@ -251,9 +254,9 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							yamlInputData,
 						},
 						out: []bytesWithFormat{
-							newStringWithFormat(parsing.JSON, `"false"`),
-							newStringWithFormat(parsing.YAML, `"false"`),
-							newStringWithFormat(parsing.TOML, `'false'`),
+							newStringWithFormat(json.JSON, `"false"`),
+							newStringWithFormat(yaml.YAML, `"false"`),
+							newStringWithFormat(toml.TOML, `'false'`),
 						},
 					}.run)
 				})

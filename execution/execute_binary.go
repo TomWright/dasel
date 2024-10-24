@@ -44,7 +44,7 @@ func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, er
 			return left.NotEqual(right)
 		case lexer.Equals:
 			err := left.Set(right)
-			return left, err
+			return right, err
 		case lexer.And:
 			leftBool, err := left.BoolValue()
 			if err != nil {

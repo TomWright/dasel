@@ -16,18 +16,7 @@ func (v *Value) Set(newValue *Value) error {
 		return err
 	}
 
-	if a.Kind() == newValue.Kind() {
-		a.Value.Set(newValue.Value)
-		return nil
-	}
-
 	b := newValue.UnpackKinds(reflect.Ptr)
-	if a.Kind() == b.Kind() {
-		a.Value.Set(b.Value)
-		return nil
-	}
-
-	b = newValue.UnpackKinds(reflect.Interface)
 	if a.Kind() == b.Kind() {
 		a.Value.Set(b.Value)
 		return nil
@@ -39,14 +28,33 @@ func (v *Value) Set(newValue *Value) error {
 		return nil
 	}
 
-	b, err = newValue.UnpackUntilAddressable()
-	if err != nil {
-		return err
-	}
-	if a.Kind() == b.Kind() {
-		a.Value.Set(b.Value)
-		return nil
-	}
+	// These are commented out because I don't think they are needed.
+
+	//if a.Kind() == newValue.Kind() {
+	//	a.Value.Set(newValue.Value)
+	//	return nil
+	//}
+
+	//b = newValue.UnpackKinds(reflect.Interface)
+	//if a.Kind() == b.Kind() {
+	//	a.Value.Set(b.Value)
+	//	return nil
+	//}
+
+	//b = newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
+	//if a.Kind() == b.Kind() {
+	//	a.Value.Set(b.Value)
+	//	return nil
+	//}
+
+	//b, err = newValue.UnpackUntilAddressable()
+	//if err != nil {
+	//	return err
+	//}
+	//if a.Kind() == b.Kind() {
+	//	a.Value.Set(b.Value)
+	//	return nil
+	//}
 
 	// This is a hard limitation at the moment.
 	// If the types are not the same, we cannot set the value.

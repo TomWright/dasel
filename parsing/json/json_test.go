@@ -1,10 +1,11 @@
-package parsing_test
+package json_test
 
 import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tomwright/dasel/v3/parsing"
+	"github.com/tomwright/dasel/v3/parsing/json"
 )
 
 func TestJson(t *testing.T) {
@@ -24,11 +25,11 @@ func TestJson(t *testing.T) {
     }
 }
 `)
-	reader, err := parsing.NewJSONReader()
+	reader, err := json.JSON.NewReader()
 	if err != nil {
 		t.Fatal(err)
 	}
-	writer, err := parsing.NewJSONWriter()
+	writer, err := json.JSON.NewWriter(parsing.DefaultWriterOptions())
 	if err != nil {
 		t.Fatal(err)
 	}

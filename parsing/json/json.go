@@ -1,4 +1,4 @@
-package parsing
+package json
 
 import (
 	"bytes"
@@ -8,23 +8,36 @@ import (
 	"strings"
 
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/parsing"
 )
 
 const (
+	// JSON represents the JSON file format.
+	JSON parsing.Format = "json"
+
 	jsonOpenObject  = json.Delim('{')
 	jsonCloseObject = json.Delim('}')
 	jsonOpenArray   = json.Delim('[')
 	jsonCloseArray  = json.Delim(']')
 )
 
-// NewJSONReader creates a new JSON reader.
-func NewJSONReader() (Reader, error) {
+var _ parsing.Reader = (*jsonReader)(nil)
+var _ parsing.Writer = (*jsonWriter)(nil)
+
+func init() {
+	parsing.RegisterReader(JSON, newJSONReader)
+	parsing.RegisterWriter(JSON, newJSONWriter)
+}
+
+func newJSONReader() (parsing.Reader, error) {
 	return &jsonReader{}, nil
 }
 
 // NewJSONWriter creates a new JSON writer.
-func NewJSONWriter() (Writer, error) {
-	return &jsonWriter{}, nil
+func newJSONWriter(options parsing.WriterOptions) (parsing.Writer, error) {
+	return &jsonWriter{
+		options: options,
+	}, nil
 }
 
 type jsonReader struct{}
@@ -188,7 +201,9 @@ func (j *jsonReader) decodeToken(decoder *json.Decoder, t json.Token) (*model.Va
 	}
 }
 
-type jsonWriter struct{}
+type jsonWriter struct {
+	options parsing.WriterOptions
+}
 
 // Write writes a value to a byte slice.
 func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
