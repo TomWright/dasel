@@ -4,9 +4,9 @@ import (
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 type testCase struct {
@@ -59,10 +59,10 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 	t.Run("get", func(t *testing.T) {
 		inputMap := func() *model.Value {
 			return model.NewValue(
-				dencoding.NewMap().
+				orderedmap.NewMap().
 					Set("title", "Mr").
 					Set("age", int64(31)).
-					Set("name", dencoding.NewMap().
+					Set("name", orderedmap.NewMap().
 						Set("first", "Tom").
 						Set("last", "Wright")),
 			)
@@ -92,10 +92,10 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 			s:  `{..., "over30": age > 30}`,
 			outFn: func() *model.Value {
 				return model.NewValue(
-					dencoding.NewMap().
+					orderedmap.NewMap().
 						Set("title", "Mr").
 						Set("age", int64(31)).
-						Set("name", dencoding.NewMap().
+						Set("name", orderedmap.NewMap().
 							Set("first", "Tom").
 							Set("last", "Wright")).
 						Set("over30", true),
@@ -107,10 +107,10 @@ func TestExecuteSelector_HappyPath(t *testing.T) {
 	t.Run("set", func(t *testing.T) {
 		inputMap := func() *model.Value {
 			return model.NewValue(
-				dencoding.NewMap().
+				orderedmap.NewMap().
 					Set("title", "Mr").
 					Set("age", int64(31)).
-					Set("name", dencoding.NewMap().
+					Set("name", orderedmap.NewMap().
 						Set("first", "Tom").
 						Set("last", "Wright")),
 			)

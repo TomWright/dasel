@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/tomwright/dasel/v3/dencoding"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 // NewMapValue creates a new map value.
 func NewMapValue() *Value {
-	return NewValue(dencoding.NewMap())
+	return NewValue(orderedmap.NewMap())
 }
 
 // IsMap returns true if the value is a map.
@@ -22,16 +22,16 @@ func (v *Value) isStandardMap() bool {
 }
 
 func (v *Value) isDencodingMap() bool {
-	return v.UnpackKinds(reflect.Interface, reflect.Ptr).Value.Type() == reflect.TypeFor[dencoding.Map]()
+	return v.UnpackKinds(reflect.Interface, reflect.Ptr).Value.Type() == reflect.TypeFor[orderedmap.Map]()
 }
 
-func (v *Value) dencodingMapValue() (*dencoding.Map, error) {
+func (v *Value) dencodingMapValue() (*orderedmap.Map, error) {
 	if v.isDencodingMap() {
-		m, err := v.UnpackUntilType(reflect.TypeFor[*dencoding.Map]())
+		m, err := v.UnpackUntilType(reflect.TypeFor[*orderedmap.Map]())
 		if err != nil {
 			return nil, fmt.Errorf("error getting map: %w", err)
 		}
-		return m.Value.Interface().(*dencoding.Map), nil
+		return m.Value.Interface().(*orderedmap.Map), nil
 	}
 	return nil, fmt.Errorf("value is not a dencoding map")
 }

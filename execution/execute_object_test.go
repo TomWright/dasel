@@ -3,16 +3,16 @@ package execution_test
 import (
 	"testing"
 
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 func TestObject(t *testing.T) {
 	inputMap := func() *model.Value {
-		return model.NewValue(dencoding.NewMap().
+		return model.NewValue(orderedmap.NewMap().
 			Set("title", "Mr").
 			Set("age", int64(30)).
-			Set("name", dencoding.NewMap().
+			Set("name", orderedmap.NewMap().
 				Set("first", "Tom").
 				Set("last", "Wright")))
 	}
@@ -20,21 +20,14 @@ func TestObject(t *testing.T) {
 		in: inputMap(),
 		s:  `{title}`,
 		outFn: func() *model.Value {
-			return model.NewValue(dencoding.NewMap().Set("title", "Mr"))
-			//res := model.NewMapValue()
-			//_ = res.SetMapKey("title", model.NewStringValue("Mr"))
-			//return res
+			return model.NewValue(orderedmap.NewMap().Set("title", "Mr"))
 		},
 	}.run)
 	t.Run("get multiple", testCase{
 		in: inputMap(),
 		s:  `{title, age}`,
 		outFn: func() *model.Value {
-			return model.NewValue(dencoding.NewMap().Set("title", "Mr").Set("age", int64(30)))
-			//res := model.NewMapValue()
-			//_ = res.SetMapKey("title", model.NewStringValue("Mr"))
-			//_ = res.SetMapKey("age", model.NewIntValue(30))
-			//return res
+			return model.NewValue(orderedmap.NewMap().Set("title", "Mr").Set("age", int64(30)))
 		},
 	}.run)
 	t.Run("get with spread", testCase{

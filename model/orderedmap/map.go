@@ -1,8 +1,14 @@
-package dencoding
+package orderedmap
 
 import (
 	"reflect"
 )
+
+// KeyValue is a single key value pair from a *Map.
+type KeyValue struct {
+	Key   string
+	Value any
+}
 
 // NewMap returns a new *Map that has its values initialised.
 func NewMap() *Map {

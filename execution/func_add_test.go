@@ -3,8 +3,8 @@ package execution_test
 import (
 	"testing"
 
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 func TestFuncAdd(t *testing.T) {
@@ -22,8 +22,8 @@ func TestFuncAdd(t *testing.T) {
 	}.run)
 	t.Run("properties", func(t *testing.T) {
 		in := func() *model.Value {
-			return model.NewValue(dencoding.NewMap().
-				Set("numbers", dencoding.NewMap().
+			return model.NewValue(orderedmap.NewMap().
+				Set("numbers", orderedmap.NewMap().
 					Set("one", 1).
 					Set("two", 2).
 					Set("three", 3)).

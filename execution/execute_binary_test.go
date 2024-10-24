@@ -3,8 +3,8 @@ package execution_test
 import (
 	"testing"
 
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 func TestBinary(t *testing.T) {
@@ -41,7 +41,7 @@ func TestBinary(t *testing.T) {
 		})
 		t.Run("variables", func(t *testing.T) {
 			in := func() *model.Value {
-				return model.NewValue(dencoding.NewMap().
+				return model.NewValue(orderedmap.NewMap().
 					Set("one", 1).
 					Set("two", 2).
 					Set("three", 3).
@@ -129,10 +129,10 @@ func TestBinary(t *testing.T) {
 
 		t.Run("variables", func(t *testing.T) {
 			in := func() *model.Value {
-				return model.NewValue(dencoding.NewMap().
+				return model.NewValue(orderedmap.NewMap().
 					Set("one", 1).
 					Set("two", 2).
-					Set("nested", dencoding.NewMap().
+					Set("nested", orderedmap.NewMap().
 						Set("three", 3).
 						Set("four", 4)))
 			}

@@ -4,8 +4,8 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 func TestMap(t *testing.T) {
@@ -17,7 +17,7 @@ func TestMap(t *testing.T) {
 	}
 
 	dencodingMap := func() *model.Value {
-		return model.NewValue(dencoding.NewMap().
+		return model.NewValue(orderedmap.NewMap().
 			Set("foo", "foo1").
 			Set("bar", "bar1"))
 	}

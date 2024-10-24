@@ -3,8 +3,8 @@ package execution_test
 import (
 	"testing"
 
-	"github.com/tomwright/dasel/v3/dencoding"
 	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
 
 func TestUnary(t *testing.T) {
@@ -37,7 +37,7 @@ func TestUnary(t *testing.T) {
 		})
 		t.Run("variables", func(t *testing.T) {
 			in := func() *model.Value {
-				return model.NewValue(dencoding.NewMap().
+				return model.NewValue(orderedmap.NewMap().
 					Set("t", true).
 					Set("f", false))
 			}
