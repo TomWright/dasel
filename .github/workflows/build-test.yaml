@@ -84,7 +84,7 @@ jobs:
         run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} CGO_ENABLED=0 go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/v3/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
       - name: Test version
         if: matrix.test_version == true
-        run: ./target/release/${{ matrix.artifact_name }} --version
+        run: ./target/release/${{ matrix.artifact_name }} version
       - name: Test execution
         if: matrix.test_execution == true
         run: |

@@ -17,7 +17,8 @@ type Globals struct {
 type CLI struct {
 	Globals
 
-	Query QueryCmd `cmd:"" help:"Execute a query"`
+	Query   QueryCmd   `cmd:"" help:"Execute a query"`
+	Version VersionCmd `cmd:"" help:"Print the version"`
 }
 
 func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
