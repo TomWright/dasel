@@ -86,6 +86,7 @@ func (c *QueryCmd) Run(ctx *Globals) error {
 		if err != nil {
 			return fmt.Errorf("error writing output: %w", err)
 		}
+		return nil
 	}
 
 	if num == 0 {
