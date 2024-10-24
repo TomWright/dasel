@@ -154,7 +154,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Changed go module to `github.com/tomwright/dasel/v2` to ensure it works correctly with go modules.
+- Changed go module to `github.com/tomwright/dasel/v3` to ensure it works correctly with go modules.
 
 ## [v2.1.0] - 2023-01-11
 
