@@ -47,7 +47,8 @@ func NewValue(v any) *Value {
 		return val
 	case reflect.Value:
 		return &Value{
-			Value: val,
+			Value:    val,
+			Metadata: make(map[string]any),
 		}
 	case nil:
 		return NewNullValue()
@@ -57,13 +58,17 @@ func NewValue(v any) *Value {
 			res.Elem().Set(reflect.ValueOf(v))
 		}
 		return &Value{
-			Value: res,
+			Value:    res,
+			Metadata: make(map[string]any),
 		}
 	}
 }
 
 // Interface returns the value as an interface.
 func (v *Value) Interface() any {
+	if v.IsNull() {
+		return nil
+	}
 	return v.Value.Interface()
 }
 
