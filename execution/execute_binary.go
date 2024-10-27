@@ -65,7 +65,17 @@ func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, er
 		case lexer.Equals:
 			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
 				err := a.Set(b)
-				return b, err
+				if err != nil {
+					return nil, fmt.Errorf("error setting value: %w", err)
+				}
+				switch a.Type() {
+				case model.TypeMap:
+					return a, nil
+				case model.TypeSlice:
+					return a, nil
+				default:
+					return b, nil
+				}
 			}
 		case lexer.And:
 			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {

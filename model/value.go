@@ -32,6 +32,16 @@ type KeyValue struct {
 // Values represents a list of values.
 type Values []*Value
 
+func (v Values) ToSliceValue() (*Value, error) {
+	slice := NewSliceValue()
+	for _, val := range v {
+		if err := slice.Append(val); err != nil {
+			return nil, err
+		}
+	}
+	return slice, nil
+}
+
 // Value represents a value.
 type Value struct {
 	Value    reflect.Value

@@ -2,7 +2,6 @@ package cli
 
 import (
 	"fmt"
-	"github.com/tomwright/dasel/v3"
 	"io"
 
 	"github.com/tomwright/dasel/v3/execution"
@@ -71,38 +70,24 @@ func (c *QueryCmd) Run(ctx *Globals) error {
 
 	opts = append(opts, execution.WithVariable("root", inputData))
 
-	out, num, err := dasel.Query(inputData, c.Query, opts...)
+	options := execution.NewOptions(opts...)
+	out, err := execution.ExecuteSelector(c.Query, inputData, options)
 	if err != nil {
 		return err
 	}
 
 	if c.ReturnRoot {
-		outputBytes, err := writer.Write(inputData)
-		if err != nil {
-			return fmt.Errorf("error writing output: %w", err)
-		}
-
-		_, err = ctx.Stdout.Write(outputBytes)
-		if err != nil {
-			return fmt.Errorf("error writing output: %w", err)
-		}
-		return nil
+		out = inputData
 	}
 
-	if num == 0 {
-		return nil
+	outputBytes, err := writer.Write(out)
+	if err != nil {
+		return fmt.Errorf("error writing output: %w", err)
 	}
 
-	for _, o := range out {
-		outputBytes, err := writer.Write(o)
-		if err != nil {
-			return fmt.Errorf("error writing output: %w", err)
-		}
-
-		_, err = ctx.Stdout.Write(outputBytes)
-		if err != nil {
-			return fmt.Errorf("error writing output: %w", err)
-		}
+	_, err = ctx.Stdout.Write(outputBytes)
+	if err != nil {
+		return fmt.Errorf("error writing output: %w", err)
 	}
 
 	return nil

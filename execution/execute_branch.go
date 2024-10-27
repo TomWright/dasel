@@ -10,26 +10,36 @@ import (
 func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
 		res := model.NewSliceValue()
+		res.MarkAsBranch()
 
-		for _, expr := range e.Exprs {
-			r, err := ExecuteAST(expr, data, opts)
-			if err != nil {
-				return nil, fmt.Errorf("failed to execute branch expr: %w", err)
+		if len(e.Exprs) == 0 {
+			if err := data.RangeSlice(func(_ int, value *model.Value) error {
+				if err := res.Append(value); err != nil {
+					return fmt.Errorf("failed to append branch result: %w", err)
+				}
+				return nil
+			}); err != nil {
+				return nil, fmt.Errorf("failed to range slice: %w", err)
 			}
+		} else {
+			for _, expr := range e.Exprs {
+				r, err := ExecuteAST(expr, data, opts)
+				if err != nil {
+					return nil, fmt.Errorf("failed to execute branch expr: %w", err)
+				}
 
-			// This deals with the spread operator in the branch expression.
-			valsToAppend, err := prepareSpreadValues(r)
-			if err != nil {
-				return nil, fmt.Errorf("error handling spread values: %w", err)
-			}
-			for _, v := range valsToAppend {
-				if err := res.Append(v); err != nil {
-					return nil, fmt.Errorf("failed to append branch result: %w", err)
+				// This deals with the spread operator in the branch expression.
+				valsToAppend, err := prepareSpreadValues(r)
+				if err != nil {
+					return nil, fmt.Errorf("error handling spread values: %w", err)
+				}
+				for _, v := range valsToAppend {
+					if err := res.Append(v); err != nil {
+						return nil, fmt.Errorf("failed to append branch result: %w", err)
+					}
 				}
 			}
 		}
-
-		res.MarkAsBranch()
 
 		return res, nil
 	}, nil
