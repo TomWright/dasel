@@ -61,6 +61,8 @@ const (
 	SortBy
 	Asc
 	Desc
+	QuestionMark
+	DoubleQuestionMark
 )
 
 type Tokens []Token

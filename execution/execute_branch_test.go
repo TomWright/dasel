@@ -3,6 +3,7 @@ package execution_test
 import (
 	"testing"
 
+	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
 )
 
@@ -16,6 +17,9 @@ func TestBranch(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
 		},
 	}.run)
 	t.Run("many branches", testCase{
@@ -37,6 +41,9 @@ func TestBranch(t *testing.T) {
 			}
 			return r
 		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
+		},
 	}.run)
 	t.Run("spread into many branches", testCase{
 		s: "[1,2,3].branch(...)",
@@ -53,6 +60,9 @@ func TestBranch(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
 		},
 	}.run)
 	t.Run("chained branch set", testCase{
@@ -71,9 +81,12 @@ func TestBranch(t *testing.T) {
 			}
 			return r
 		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
+		},
 	}.run)
 	t.Run("chained branch math", testCase{
-		s: "branch(1, 2, 3) * 2",
+		s: "(branch(1, 2, 3)) * 2",
 		outFn: func() *model.Value {
 			r := model.NewSliceValue()
 			r.MarkAsBranch()
@@ -87,6 +100,9 @@ func TestBranch(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
 		},
 	}.run)
 	t.Run("chained branch math using branched value", testCase{
@@ -104,6 +120,9 @@ func TestBranch(t *testing.T) {
 				t.Fatalf("unexpected error: %v", err)
 			}
 			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
 		},
 	}.run)
 }

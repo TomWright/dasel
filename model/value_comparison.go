@@ -55,7 +55,7 @@ func (v *Value) Equal(other *Value) (*Value, error) {
 	}
 
 	if v.Type() != other.Type() {
-		return nil, &ErrIncompatibleTypes{A: v, B: other}
+		return nil, ErrIncompatibleTypes{A: v, B: other}
 	}
 
 	isEqual, err := v.EqualTypeValue(other)
@@ -137,7 +137,7 @@ func (v *Value) LessThan(other *Value) (*Value, error) {
 		return NewValue(a < b), nil
 	}
 
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }
 
 // LessThanOrEqual compares two values.

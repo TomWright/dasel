@@ -68,7 +68,7 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		}
 		val, ok := m.Get(key)
 		if !ok {
-			return nil, &MapKeyNotFound{Key: key}
+			return nil, MapKeyNotFound{Key: key}
 		}
 		res := NewValue(val)
 		res.setFn = func(newValue *Value) error {
@@ -83,7 +83,7 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		}
 		i := unpacked.Value.MapIndex(reflect.ValueOf(key))
 		if !i.IsValid() {
-			return nil, &MapKeyNotFound{Key: key}
+			return nil, MapKeyNotFound{Key: key}
 		}
 		res := NewValue(i)
 		res.setFn = func(newValue *Value) error {

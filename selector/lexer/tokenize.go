@@ -151,6 +151,11 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 			Pos:   p.i,
 			Token: rune(p.src[p.i]),
 		}
+	case '?':
+		if p.peekRuneEqual(p.i+1, '?') {
+			return NewToken(DoubleQuestionMark, "??", p.i, 2), nil
+		}
+		return NewToken(QuestionMark, "?", p.i, 1), nil
 	case '"', '\'':
 		pos := p.i
 		buf := make([]rune, 0)

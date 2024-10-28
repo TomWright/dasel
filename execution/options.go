@@ -7,8 +7,9 @@ type ExecuteOptionFn func(*Options)
 
 // Options contains the options for the execution of the selector.
 type Options struct {
-	Funcs FuncCollection
-	Vars  map[string]*model.Value
+	Funcs    FuncCollection
+	Vars     map[string]*model.Value
+	Unstable bool
 }
 
 // NewOptions creates a new Options struct with the given options.
@@ -37,5 +38,19 @@ func WithFuncs(fc FuncCollection) ExecuteOptionFn {
 func WithVariable(key string, val *model.Value) ExecuteOptionFn {
 	return func(o *Options) {
 		o.Vars[key] = val
+	}
+}
+
+// WithUnstable allows access to potentially unstable features.
+func WithUnstable() ExecuteOptionFn {
+	return func(o *Options) {
+		o.Unstable = true
+	}
+}
+
+// WithoutUnstable disallows access to potentially unstable features.
+func WithoutUnstable() ExecuteOptionFn {
+	return func(o *Options) {
+		o.Unstable = false
 	}
 }

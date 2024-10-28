@@ -134,7 +134,7 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				input: "$this[1]",
 				expected: ast.ChainExprs(
 					ast.VariableExpr{Name: "this"},
-					ast.IndexExpr{Index: ast.NumberIntExpr{Value: 1}},
+					ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 1}},
 				),
 			}))
 			t.Run("range", func(t *testing.T) {
@@ -199,7 +199,7 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				input: "foo[1]",
 				expected: ast.ChainExprs(
 					ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
-					ast.IndexExpr{Index: ast.NumberIntExpr{Value: 1}},
+					ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 1}},
 				),
 			}))
 			t.Run("range", func(t *testing.T) {
@@ -423,6 +423,47 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 						Else: ast.StringExpr{Value: "no"},
 					},
 				},
+			},
+		}))
+	})
+
+	t.Run("coalesce", func(t *testing.T) {
+		t.Run("chained on left side", run(t, testCase{
+			input: `foo ?? bar ?? baz`,
+			expected: ast.BinaryExpr{
+				Left: ast.BinaryExpr{
+					Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+					Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 4, Len: 2},
+					Right:    ast.PropertyExpr{Property: ast.StringExpr{Value: "bar"}},
+				},
+				Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 11, Len: 2},
+				Right:    ast.PropertyExpr{Property: ast.StringExpr{Value: "baz"}},
+			},
+		}))
+
+		t.Run("chained nested on left side", run(t, testCase{
+			input: `nested.one ?? nested.two ?? nested.three ?? 10`,
+			expected: ast.BinaryExpr{
+				Left: ast.BinaryExpr{
+					Left: ast.BinaryExpr{
+						Left: ast.ChainExprs(
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "nested"}},
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "one"}},
+						),
+						Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 11, Len: 2},
+						Right: ast.ChainExprs(
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "nested"}},
+							ast.PropertyExpr{Property: ast.StringExpr{Value: "two"}},
+						),
+					},
+					Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 25, Len: 2},
+					Right: ast.ChainExprs(
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "nested"}},
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "three"}},
+					),
+				},
+				Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 41, Len: 2},
+				Right:    ast.NumberIntExpr{Value: 10},
 			},
 		}))
 	})

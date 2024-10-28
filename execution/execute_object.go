@@ -78,13 +78,22 @@ func propertyExprExecutor(opts *Options, e ast.PropertyExpr) (expressionExecutor
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating property: %w", err)
 		}
-		if !key.IsString() {
-			return nil, fmt.Errorf("expected property to resolve to string, got %s", key.Type())
+		switch {
+		case key.IsString():
+			keyStr, err := key.StringValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting string value: %w", err)
+			}
+
+			return data.GetMapKey(keyStr)
+		case key.IsInt():
+			keyInt, err := key.IntValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting int value: %w", err)
+			}
+			return data.GetSliceIndex(int(keyInt))
+		default:
+			return nil, fmt.Errorf("expected key to be a string or int, got %s", key.Type())
 		}
-		keyStr, err := key.StringValue()
-		if err != nil {
-			return nil, fmt.Errorf("error getting string value: %w", err)
-		}
-		return data.GetMapKey(keyStr)
 	}, nil
 }

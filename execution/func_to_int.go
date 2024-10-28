@@ -2,13 +2,14 @@ package execution
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/tomwright/dasel/v3/model"
 )
 
-// FuncToString is a function that converts the given value to a string.
-var FuncToString = NewFunc(
-	"toString",
+// FuncToInt is a function that converts the given value to a string.
+var FuncToInt = NewFunc(
+	"toInt",
 	func(data *model.Value, args model.Values) (*model.Value, error) {
 		switch args[0].Type() {
 		case model.TypeString:
@@ -16,28 +17,32 @@ var FuncToString = NewFunc(
 			if err != nil {
 				return nil, err
 			}
-			model.NewStringValue(stringValue)
-			return args[0], nil
-		case model.TypeInt:
-			i, err := args[0].IntValue()
+
+			i, err := strconv.ParseInt(stringValue, 10, 64)
 			if err != nil {
 				return nil, err
 			}
-			return model.NewStringValue(fmt.Sprintf("%d", i)), nil
+
+			return model.NewIntValue(i), nil
+		case model.TypeInt:
+			return args[0], nil
 		case model.TypeFloat:
 			i, err := args[0].FloatValue()
 			if err != nil {
 				return nil, err
 			}
-			return model.NewStringValue(fmt.Sprintf("%g", i)), nil
+			return model.NewIntValue(int64(i)), nil
 		case model.TypeBool:
 			i, err := args[0].BoolValue()
 			if err != nil {
 				return nil, err
 			}
-			return model.NewStringValue(fmt.Sprintf("%v", i)), nil
+			if i {
+				return model.NewIntValue(1), nil
+			}
+			return model.NewIntValue(0), nil
 		default:
-			return nil, fmt.Errorf("cannot convert %s to string", args[0].Type())
+			return nil, fmt.Errorf("cannot convert %s to int", args[0].Type())
 		}
 	},
 	ValidateArgsExactly(1),

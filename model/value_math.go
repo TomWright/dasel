@@ -61,7 +61,7 @@ func (v *Value) Add(other *Value) (*Value, error) {
 		}
 		return NewValue(a + b), nil
 	}
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }
 
 // Subtract returns the difference between two values.
@@ -110,7 +110,7 @@ func (v *Value) Subtract(other *Value) (*Value, error) {
 		}
 		return NewValue(a - float64(b)), nil
 	}
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }
 
 // Multiply returns the product of the two values.
@@ -159,7 +159,7 @@ func (v *Value) Multiply(other *Value) (*Value, error) {
 		}
 		return NewValue(a * float64(b)), nil
 	}
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }
 
 // Divide returns the result of dividing the value by another value.
@@ -208,7 +208,7 @@ func (v *Value) Divide(other *Value) (*Value, error) {
 		}
 		return NewValue(a / float64(b)), nil
 	}
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }
 
 // Modulo returns the remainder of the division of two values.
@@ -257,5 +257,5 @@ func (v *Value) Modulo(other *Value) (*Value, error) {
 		}
 		return NewValue(math.Mod(a, float64(b))), nil
 	}
-	return nil, &ErrIncompatibleTypes{A: v, B: other}
+	return nil, ErrIncompatibleTypes{A: v, B: other}
 }

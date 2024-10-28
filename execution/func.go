@@ -12,6 +12,8 @@ var (
 		FuncLen,
 		FuncAdd,
 		FuncToString,
+		FuncToInt,
+		FuncToFloat,
 		FuncMerge,
 		FuncReverse,
 		FuncTypeOf,

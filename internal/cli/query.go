@@ -14,6 +14,7 @@ type QueryCmd struct {
 	InFormat   string      `flag:"" name:"in" short:"i" help:"The format of the input data."`
 	OutFormat  string      `flag:"" name:"out" short:"o" help:"The format of the output data."`
 	ReturnRoot bool        `flag:"" name:"root" help:"Return the root value."`
+	Unstable   bool        `flag:"" name:"unstable" help:"Allow access to potentially unstable features."`
 
 	Query string `arg:"" help:"The query to execute." optional:"" default:""`
 }
@@ -69,6 +70,10 @@ func (c *QueryCmd) Run(ctx *Globals) error {
 	}
 
 	opts = append(opts, execution.WithVariable("root", inputData))
+
+	if c.Unstable {
+		opts = append(opts, execution.WithUnstable())
+	}
 
 	options := execution.NewOptions(opts...)
 	out, err := execution.ExecuteSelector(c.Query, inputData, options)

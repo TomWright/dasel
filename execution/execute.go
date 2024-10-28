@@ -1,7 +1,10 @@
 package execution
 
 import (
+	"errors"
 	"fmt"
+	"reflect"
+	"slices"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector"
@@ -64,7 +67,16 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 	return res, nil
 }
 
+var unstableAstTypes = []reflect.Type{
+	reflect.TypeFor[ast.BranchExpr](),
+}
+
 func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
+	if !opts.Unstable && (slices.Contains(unstableAstTypes, reflect.TypeOf(expr)) ||
+		slices.Contains(unstableAstTypes, reflect.ValueOf(expr).Type())) {
+		return nil, errors.New("unstable ast types are not enabled. to enable them use --unstable")
+	}
+
 	switch e := expr.(type) {
 	case ast.BinaryExpr:
 		return binaryExprExecutor(opts, e)

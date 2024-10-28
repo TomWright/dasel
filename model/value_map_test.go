@@ -140,8 +140,7 @@ func TestMap(t *testing.T) {
 					return
 				}
 				_, err := v.GetMapKey("foo")
-				notFoundErr := &model.MapKeyNotFound{}
-				if !errors.As(err, &notFoundErr) {
+				if !errors.As(err, &model.MapKeyNotFound{}) {
 					t.Errorf("expected key not found error, got %s", err)
 				}
 			})

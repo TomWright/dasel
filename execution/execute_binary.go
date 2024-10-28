@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -8,140 +9,31 @@ import (
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
 
-func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		left, err := ExecuteAST(e.Left, data, opts)
+type binaryExpressionExecutorFn func(expr ast.BinaryExpr, value *model.Value, options *Options) (*model.Value, error)
+
+func basicBinaryExpressionExecutorFn(handler func(left *model.Value, right *model.Value, e ast.BinaryExpr) (*model.Value, error)) binaryExpressionExecutorFn {
+	return func(expr ast.BinaryExpr, value *model.Value, options *Options) (*model.Value, error) {
+		left, err := ExecuteAST(expr.Left, value, options)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating left expression: %w", err)
 		}
 
-		var doOperation func(a *model.Value, b *model.Value) (*model.Value, error)
-
-		switch e.Operator.Kind {
-		case lexer.Plus:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Add(b)
-			}
-		case lexer.Dash:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Subtract(b)
-			}
-		case lexer.Star:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Multiply(b)
-			}
-		case lexer.Slash:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Divide(b)
-			}
-		case lexer.Percent:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Modulo(b)
-			}
-		case lexer.GreaterThan:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.GreaterThan(b)
-			}
-		case lexer.GreaterThanOrEqual:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.GreaterThanOrEqual(b)
-			}
-		case lexer.LessThan:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.LessThan(b)
-			}
-		case lexer.LessThanOrEqual:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.LessThanOrEqual(b)
-			}
-		case lexer.Equal:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.Equal(b)
-			}
-		case lexer.NotEqual:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				return a.NotEqual(b)
-			}
-		case lexer.Equals:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				err := a.Set(b)
-				if err != nil {
-					return nil, fmt.Errorf("error setting value: %w", err)
-				}
-				switch a.Type() {
-				case model.TypeMap:
-					return a, nil
-				case model.TypeSlice:
-					return a, nil
-				default:
-					return b, nil
-				}
-			}
-		case lexer.And:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				leftBool, err := a.BoolValue()
-				if err != nil {
-					return nil, fmt.Errorf("error getting left bool value: %w", err)
-				}
-				rightBool, err := b.BoolValue()
-				if err != nil {
-					return nil, fmt.Errorf("error getting right bool value: %w", err)
-				}
-				return model.NewBoolValue(leftBool && rightBool), nil
-			}
-		case lexer.Or:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				leftBool, err := a.BoolValue()
-				if err != nil {
-					return nil, fmt.Errorf("error getting left bool value: %w", err)
-				}
-				rightBool, err := b.BoolValue()
-				if err != nil {
-					return nil, fmt.Errorf("error getting right bool value: %w", err)
-				}
-				return model.NewBoolValue(leftBool || rightBool), nil
-			}
-		case lexer.Like, lexer.NotLike:
-			doOperation = func(a *model.Value, b *model.Value) (*model.Value, error) {
-				leftStr, err := a.StringValue()
-				if err != nil {
-					return nil, fmt.Errorf("like requires left side to be a string, got %s", left.Type().String())
-				}
-				rightPatt, ok := e.Right.(ast.RegexExpr)
-				if !ok {
-					return nil, fmt.Errorf("like requires right side to be a regex pattern")
-				}
-				res := rightPatt.Regex.MatchString(leftStr)
-				if e.Operator.Kind == lexer.NotLike {
-					res = !res
-				}
-				return model.NewBoolValue(res), nil
-			}
-		default:
-			return nil, fmt.Errorf("unhandled operator: %s", e.Operator.Value)
-		}
-
-		if doOperation == nil {
-			return nil, fmt.Errorf("missing operation for operator %s", e.Operator.Value)
-		}
-
 		if !left.IsBranch() {
-			right, err := ExecuteAST(e.Right, data, opts)
+			right, err := ExecuteAST(expr.Right, value, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating right expression: %w", err)
 			}
-			return doOperation(left, right)
+			return handler(left, right, expr)
 		}
 
 		res := model.NewSliceValue()
 		res.MarkAsBranch()
 		if err := left.RangeSlice(func(i int, v *model.Value) error {
-			right, err := ExecuteAST(e.Right, v, opts)
+			right, err := ExecuteAST(expr.Right, v, options)
 			if err != nil {
 				return fmt.Errorf("error evaluating right expression: %w", err)
 			}
-
-			r, err := doOperation(v, right)
+			r, err := handler(v, right, expr)
 			if err != nil {
 				return err
 			}
@@ -153,5 +45,149 @@ func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, er
 			return nil, err
 		}
 		return res, nil
+	}
+}
+
+var binaryExpressionExecutors = map[lexer.TokenKind]binaryExpressionExecutorFn{}
+
+func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, error) {
+	return func(data *model.Value) (*model.Value, error) {
+
+		exec, ok := binaryExpressionExecutors[e.Operator.Kind]
+		if !ok {
+			return nil, fmt.Errorf("unhandled operator: %s", e.Operator.Value)
+		}
+
+		return exec(e, data, opts)
 	}, nil
+}
+
+func init() {
+	binaryExpressionExecutors[lexer.Plus] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Add(right)
+	})
+	binaryExpressionExecutors[lexer.Dash] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Subtract(right)
+	})
+	binaryExpressionExecutors[lexer.Star] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Multiply(right)
+	})
+	binaryExpressionExecutors[lexer.Slash] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Divide(right)
+	})
+	binaryExpressionExecutors[lexer.Percent] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Modulo(right)
+	})
+	binaryExpressionExecutors[lexer.GreaterThan] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.GreaterThan(right)
+	})
+	binaryExpressionExecutors[lexer.GreaterThanOrEqual] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.GreaterThanOrEqual(right)
+	})
+	binaryExpressionExecutors[lexer.LessThan] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.LessThan(right)
+	})
+	binaryExpressionExecutors[lexer.LessThanOrEqual] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.LessThanOrEqual(right)
+	})
+	binaryExpressionExecutors[lexer.Equal] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.Equal(right)
+	})
+	binaryExpressionExecutors[lexer.NotEqual] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		return left.NotEqual(right)
+	})
+	binaryExpressionExecutors[lexer.Equals] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		err := left.Set(right)
+		if err != nil {
+			return nil, fmt.Errorf("error setting value: %w", err)
+		}
+		switch left.Type() {
+		case model.TypeMap:
+			return left, nil
+		case model.TypeSlice:
+			return left, nil
+		default:
+			return right, nil
+		}
+	})
+	binaryExpressionExecutors[lexer.And] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		leftBool, err := left.BoolValue()
+		if err != nil {
+			return nil, fmt.Errorf("error getting left bool value: %w", err)
+		}
+		rightBool, err := right.BoolValue()
+		if err != nil {
+			return nil, fmt.Errorf("error getting right bool value: %w", err)
+		}
+		return model.NewBoolValue(leftBool && rightBool), nil
+	})
+	binaryExpressionExecutors[lexer.Or] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
+		leftBool, err := left.BoolValue()
+		if err != nil {
+			return nil, fmt.Errorf("error getting left bool value: %w", err)
+		}
+		rightBool, err := right.BoolValue()
+		if err != nil {
+			return nil, fmt.Errorf("error getting right bool value: %w", err)
+		}
+		return model.NewBoolValue(leftBool || rightBool), nil
+	})
+	binaryExpressionExecutors[lexer.Like] = basicBinaryExpressionExecutorFn(func(left *model.Value, _ *model.Value, e ast.BinaryExpr) (*model.Value, error) {
+		leftStr, err := left.StringValue()
+		if err != nil {
+			return nil, fmt.Errorf("like requires left side to be a string, got %s", left.Type().String())
+		}
+		rightPatt, ok := e.Right.(ast.RegexExpr)
+		if !ok {
+			return nil, fmt.Errorf("like requires right side to be a regex pattern")
+		}
+		res := rightPatt.Regex.MatchString(leftStr)
+		return model.NewBoolValue(res), nil
+	})
+	binaryExpressionExecutors[lexer.NotLike] = basicBinaryExpressionExecutorFn(func(left *model.Value, _ *model.Value, e ast.BinaryExpr) (*model.Value, error) {
+		leftStr, err := left.StringValue()
+		if err != nil {
+			return nil, fmt.Errorf("like requires left side to be a string, got %s", left.Type().String())
+		}
+		rightPatt, ok := e.Right.(ast.RegexExpr)
+		if !ok {
+			return nil, fmt.Errorf("like requires right side to be a regex pattern")
+		}
+		res := rightPatt.Regex.MatchString(leftStr)
+		return model.NewBoolValue(!res), nil
+	})
+	binaryExpressionExecutors[lexer.DoubleQuestionMark] = func(expr ast.BinaryExpr, value *model.Value, options *Options) (*model.Value, error) {
+		left, err := ExecuteAST(expr.Left, value, options)
+
+		if err == nil && !left.IsNull() {
+			return left, nil
+		}
+
+		if err != nil {
+			handleErrs := []any{
+				model.ErrIncompatibleTypes{},
+				model.ErrUnexpectedType{},
+				model.ErrUnexpectedTypes{},
+				model.SliceIndexOutOfRange{},
+				model.MapKeyNotFound{},
+			}
+			for _, e := range handleErrs {
+				if errors.As(err, &e) {
+					err = nil
+					break
+				}
+			}
+
+			if err != nil {
+				return nil, fmt.Errorf("error evaluating left expression: %w", err)
+			}
+		}
+
+		// Do we need to handle branches here?
+		right, err := ExecuteAST(expr.Right, value, options)
+		if err != nil {
+			return nil, fmt.Errorf("error evaluating right expression: %w", err)
+		}
+		return right, nil
+	}
 }

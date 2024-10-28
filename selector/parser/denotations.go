@@ -23,6 +23,7 @@ var leftDenotationTokens = []lexer.TokenKind{
 	lexer.Like,
 	lexer.NotLike,
 	lexer.Equals,
+	lexer.DoubleQuestionMark,
 }
 
 // right denotation tokens are tokens that expect a token to the right of them.
@@ -36,6 +37,7 @@ const (
 	bpDefault bindingPower = iota
 	bpAssignment
 	bpLogical
+	bpEarlyLogical
 	bpRelational
 	bpAdditive
 	bpMultiplicative
@@ -77,6 +79,8 @@ var tokenBindingPowers = map[lexer.TokenKind]bindingPower{
 	lexer.Or:      bpLogical,
 	lexer.Like:    bpLogical,
 	lexer.NotLike: bpLogical,
+
+	lexer.DoubleQuestionMark: bpEarlyLogical,
 
 	lexer.Equals: bpAssignment,
 }

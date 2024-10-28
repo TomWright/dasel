@@ -66,6 +66,9 @@ type ArrayExpr struct {
 func (ArrayExpr) expr() {}
 
 type PropertyExpr struct {
+	// Property can resolve to a string or number.
+	// If it resolves to a number, we expect to be reading from an array.
+	// If it resolves to a string, we expect to be reading from a map.
 	Property Expr
 }
 
