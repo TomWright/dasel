@@ -22,7 +22,7 @@ func init() {
 	parsing.RegisterWriter(YAML, newYAMLWriter)
 }
 
-func newYAMLReader() (parsing.Reader, error) {
+func newYAMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &yamlReader{}, nil
 }
 

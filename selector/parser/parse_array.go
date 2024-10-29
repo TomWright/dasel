@@ -22,9 +22,16 @@ func parseArray(p *Parser) (ast.Expr, error) {
 		return nil, err
 	}
 
-	return ast.ArrayExpr{
+	arr := ast.ArrayExpr{
 		Exprs: elements,
-	}, nil
+	}
+
+	res, err := parseFollowingSymbol(p, arr)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 func parseIndex(p *Parser) (ast.Expr, error) {

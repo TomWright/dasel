@@ -20,15 +20,15 @@ const (
 var _ parsing.Reader = (*xmlReader)(nil)
 var _ parsing.Writer = (*xmlWriter)(nil)
 
-//var _ parsing.Writer = (*xmlWriter)(nil)
-
 func init() {
 	parsing.RegisterReader(XML, newXMLReader)
 	parsing.RegisterWriter(XML, newXMLWriter)
 }
 
-func newXMLReader() (parsing.Reader, error) {
-	return &xmlReader{}, nil
+func newXMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
+	return &xmlReader{
+		structured: options.Ext["xml-mode"] == "structured",
+	}, nil
 }
 
 // NewXMLWriter creates a new XML writer.
@@ -38,7 +38,9 @@ func newXMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
 	}, nil
 }
 
-type xmlReader struct{}
+type xmlReader struct {
+	structured bool
+}
 
 // Read reads a value from a byte slice.
 func (j *xmlReader) Read(data []byte) (*model.Value, error) {
@@ -54,7 +56,10 @@ func (j *xmlReader) Read(data []byte) (*model.Value, error) {
 		return nil, err
 	}
 
-	return el.toModel()
+	if j.structured {
+		return el.toStructuredModel()
+	}
+	return el.toFriendlyModel()
 }
 
 type xmlAttr struct {
@@ -69,7 +74,7 @@ type xmlElement struct {
 	Content  string
 }
 
-func (e *xmlElement) toModel() (*model.Value, error) {
+func (e *xmlElement) toStructuredModel() (*model.Value, error) {
 	attrs := model.NewMapValue()
 	for _, attr := range e.Attrs {
 		if err := attrs.SetMapKey(attr.Name, model.NewStringValue(attr.Value)); err != nil {
@@ -89,7 +94,7 @@ func (e *xmlElement) toModel() (*model.Value, error) {
 	}
 	children := model.NewSliceValue()
 	for _, child := range e.Children {
-		childModel, err := child.toModel()
+		childModel, err := child.toStructuredModel()
 		if err != nil {
 			return nil, err
 		}
@@ -100,6 +105,69 @@ func (e *xmlElement) toModel() (*model.Value, error) {
 	if err := res.SetMapKey("children", children); err != nil {
 		return nil, err
 	}
+	return res, nil
+}
+
+func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
+	if len(e.Attrs) == 0 && len(e.Children) == 0 {
+		return model.NewStringValue(e.Content), nil
+	}
+
+	res := model.NewMapValue()
+	for _, attr := range e.Attrs {
+		if err := res.SetMapKey("-"+attr.Name, model.NewStringValue(attr.Value)); err != nil {
+			return nil, err
+		}
+	}
+
+	if len(e.Content) > 0 {
+		if err := res.SetMapKey("#text", model.NewStringValue(e.Content)); err != nil {
+			return nil, err
+		}
+	}
+
+	if len(e.Children) > 0 {
+		childElementKeys := make([]string, 0)
+		childElements := make(map[string][]*xmlElement)
+
+		for _, child := range e.Children {
+			if _, ok := childElements[child.Name]; !ok {
+				childElementKeys = append(childElementKeys, child.Name)
+			}
+			childElements[child.Name] = append(childElements[child.Name], child)
+		}
+
+		for _, key := range childElementKeys {
+			cs := childElements[key]
+			switch len(cs) {
+			case 0:
+				continue
+			case 1:
+				childModel, err := cs[0].toFriendlyModel()
+				if err != nil {
+					return nil, err
+				}
+				if err := res.SetMapKey(key, childModel); err != nil {
+					return nil, err
+				}
+			default:
+				children := model.NewSliceValue()
+				for _, child := range cs {
+					childModel, err := child.toFriendlyModel()
+					if err != nil {
+						return nil, err
+					}
+					if err := children.Append(childModel); err != nil {
+						return nil, err
+					}
+				}
+				if err := res.SetMapKey(key, children); err != nil {
+					return nil, err
+				}
+			}
+		}
+	}
+
 	return res, nil
 }
 

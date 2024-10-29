@@ -23,7 +23,11 @@ func basicBinaryExpressionExecutorFn(handler func(left *model.Value, right *mode
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating right expression: %w", err)
 			}
-			return handler(left, right, expr)
+			res, err := handler(left, right, expr)
+			if err != nil {
+				return nil, err
+			}
+			return res, nil
 		}
 
 		res := model.NewSliceValue()
@@ -52,6 +56,9 @@ var binaryExpressionExecutors = map[lexer.TokenKind]binaryExpressionExecutorFn{}
 
 func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, error) {
 	return func(data *model.Value) (*model.Value, error) {
+		if e.Left == nil || e.Right == nil {
+			return nil, fmt.Errorf("left and right expressions must be provided")
+		}
 
 		exec, ok := binaryExpressionExecutors[e.Operator.Kind]
 		if !ok {

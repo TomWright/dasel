@@ -95,7 +95,14 @@ func parseObject(p *Parser) (ast.Expr, error) {
 	}
 	p.advance()
 
-	return ast.ObjectExpr{
+	obj := ast.ObjectExpr{
 		Pairs: pairs,
-	}, nil
+	}
+
+	res, err := parseFollowingSymbol(p, obj)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

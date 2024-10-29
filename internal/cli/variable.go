@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/alecthomas/kong"
+	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 )
@@ -15,6 +16,18 @@ import (
 type variable struct {
 	Name  string
 	Value *model.Value
+}
+
+type variables *[]variable
+
+func variableOptions(vars variables) []execution.ExecuteOptionFn {
+	var opts []execution.ExecuteOptionFn
+	if vars != nil {
+		for _, v := range *vars {
+			opts = append(opts, execution.WithVariable(v.Name, v.Value))
+		}
+	}
+	return opts
 }
 
 type variableMapper struct {
@@ -65,7 +78,7 @@ func (vm *variableMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) 
 		valueRaw = string(contents)
 	}
 
-	reader, err := parsing.Format(format).NewReader()
+	reader, err := parsing.Format(format).NewReader(parsing.DefaultReaderOptions())
 	if err != nil {
 		return fmt.Errorf("failed to create reader: %w", err)
 	}

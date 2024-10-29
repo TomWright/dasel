@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"strings"
 )
 
 type Type string
@@ -48,6 +49,66 @@ type Value struct {
 	Metadata map[string]any
 
 	setFn func(*Value) error
+}
+
+func (v *Value) String() string {
+	switch v.Type() {
+	case TypeString:
+		val, err := v.StringValue()
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Sprintf("string{%s}", val)
+	case TypeInt:
+		val, err := v.IntValue()
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Sprintf("int{%d}", val)
+	case TypeFloat:
+		val, err := v.FloatValue()
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Sprintf("float(%g)", val)
+	case TypeBool:
+		val, err := v.BoolValue()
+		if err != nil {
+			panic(err)
+		}
+		return fmt.Sprintf("bool{%t}", val)
+	case TypeMap:
+		res := fmt.Sprintf("map[%d]{", len(v.Metadata))
+		if err := v.RangeMap(func(k string, v *Value) error {
+			res += fmt.Sprintf("%s: %s, ", k, v.String())
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+		res = strings.TrimSuffix(res, ", ")
+		return res + "}"
+	case TypeSlice:
+		md := ""
+		if v.IsSpread() {
+			md = "spread, "
+		}
+		if v.IsBranch() {
+			md += "branch, "
+		}
+		res := fmt.Sprintf("array[%s]{", strings.TrimSuffix(md, ", "))
+		if err := v.RangeSlice(func(k int, v *Value) error {
+			res += fmt.Sprintf("%d: %s, ", k, v.String())
+			return nil
+		}); err != nil {
+			panic(err)
+		}
+		res = strings.TrimSuffix(res, ", ")
+		return res + "}"
+	case TypeNull:
+		return "null"
+	default:
+		return fmt.Sprintf("unknown[%s]", v.Interface())
+	}
 }
 
 // NewValue creates a new value.

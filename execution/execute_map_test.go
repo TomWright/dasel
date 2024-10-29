@@ -3,7 +3,6 @@ package execution_test
 import (
 	"testing"
 
-	"github.com/tomwright/dasel/v3/internal/ptr"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/model/orderedmap"
 )
@@ -38,7 +37,17 @@ func TestMap(t *testing.T) {
 				)
 				.map ( total )`,
 		outFn: func() *model.Value {
-			return model.NewValue([]any{ptr.To(int64(6)), ptr.To(int64(8)), ptr.To(int64(10))})
+			res := model.NewSliceValue()
+			if err := res.Append(model.NewValue(6)); err != nil {
+				t.Fatal(err)
+			}
+			if err := res.Append(model.NewValue(8)); err != nil {
+				t.Fatal(err)
+			}
+			if err := res.Append(model.NewValue(10)); err != nil {
+				t.Fatal(err)
+			}
+			return res
 		},
 	}.run)
 }

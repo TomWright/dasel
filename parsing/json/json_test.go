@@ -25,7 +25,7 @@ func TestJson(t *testing.T) {
     }
 }
 `)
-	reader, err := json.JSON.NewReader()
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
 	if err != nil {
 		t.Fatal(err)
 	}

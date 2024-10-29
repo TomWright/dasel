@@ -26,7 +26,6 @@ func mapExprExecutor(opts *Options, e ast.MapExpr) (expressionExecutor, error) {
 		}); err != nil {
 			return nil, fmt.Errorf("error ranging over slice: %w", err)
 		}
-
 		return res, nil
 	}, nil
 }

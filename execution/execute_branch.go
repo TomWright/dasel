@@ -13,6 +13,7 @@ func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, er
 		res.MarkAsBranch()
 
 		if len(e.Exprs) == 0 {
+			// No expressions given. We'll branch on the input data.
 			if err := data.RangeSlice(func(_ int, value *model.Value) error {
 				if err := res.Append(value); err != nil {
 					return fmt.Errorf("failed to append branch result: %w", err)

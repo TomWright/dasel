@@ -16,7 +16,7 @@ type testCase struct {
 }
 
 func (tc testCase) run(t *testing.T) {
-	r, err := yaml.YAML.NewReader()
+	r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}
@@ -37,7 +37,7 @@ func (tc rwTestCase) run(t *testing.T) {
 	if tc.out == "" {
 		tc.out = tc.in
 	}
-	r, err := yaml.YAML.NewReader()
+	r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)
 	}

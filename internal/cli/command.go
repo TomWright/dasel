@@ -17,8 +17,9 @@ type Globals struct {
 type CLI struct {
 	Globals
 
-	Query   QueryCmd   `cmd:"" default:"withargs" help:"[default] Execute a query"`
-	Version VersionCmd `cmd:"" help:"Print the version"`
+	Query       QueryCmd       `cmd:"" default:"withargs" help:"[default] Execute a query"`
+	Version     VersionCmd     `cmd:"" help:"Print the version"`
+	Interactive InteractiveCmd `cmd:"" help:"Start an interactive session"`
 }
 
 func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
@@ -46,6 +47,7 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 		},
 		kong.Bind(&cli.Globals),
 		kong.TypeMapper(reflect.TypeFor[*[]variable](), &variableMapper{}),
+		kong.TypeMapper(reflect.TypeFor[*[]extReadWriteFlag](), &extReadWriteFlagMapper{}),
 		kong.OptionFunc(func(k *kong.Kong) error {
 			k.Stdout = cli.Stdout
 			k.Stderr = cli.Stderr

@@ -29,7 +29,7 @@ func init() {
 	parsing.RegisterWriter(JSON, newJSONWriter)
 }
 
-func newJSONReader() (parsing.Reader, error) {
+func newJSONReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &jsonReader{}, nil
 }
 

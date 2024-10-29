@@ -125,4 +125,24 @@ func TestBranch(t *testing.T) {
 			execution.WithUnstable(),
 		},
 	}.run)
+	t.Run("map on branch", testCase{
+		s: `branch([1], [2], [3]).map($this * 2).branch()`,
+		outFn: func() *model.Value {
+			r := model.NewSliceValue()
+			r.MarkAsBranch()
+			if err := r.Append(model.NewIntValue(2)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(4)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if err := r.Append(model.NewIntValue(6)); err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
+		},
+	}.run)
 }

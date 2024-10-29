@@ -26,6 +26,14 @@ func (v *Value) isSlice() bool {
 
 // Append appends a value to the slice.
 func (v *Value) Append(val *Value) error {
+	// Branches behave differently when appending to a slice.
+	// We expect each item in a branch to be its own value.
+	if val.IsBranch() {
+		return val.RangeSlice(func(_ int, item *Value) error {
+			return v.Append(item)
+		})
+	}
+
 	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
 	if !unpacked.isSlice() {
 		return ErrUnexpectedType{

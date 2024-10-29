@@ -19,7 +19,7 @@ func init() {
 	parsing.RegisterReader(Dasel, newDaselReader)
 }
 
-func newDaselReader() (parsing.Reader, error) {
+func newDaselReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &daselReader{}, nil
 }
 

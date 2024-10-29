@@ -19,7 +19,7 @@ func init() {
 	parsing.RegisterWriter(TOML, newTOMLWriter)
 }
 
-func newTOMLReader() (parsing.Reader, error) {
+func newTOMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &tomlReader{}, nil
 }
 

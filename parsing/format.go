@@ -8,12 +8,12 @@ import (
 type Format string
 
 // NewReader creates a new reader for the format.
-func (f Format) NewReader() (Reader, error) {
+func (f Format) NewReader(options ReaderOptions) (Reader, error) {
 	fn, ok := readers[f]
 	if !ok {
 		return nil, fmt.Errorf("unsupported reader file format: %s", f)
 	}
-	return fn()
+	return fn(options)
 }
 
 // NewWriter creates a new writer for the format.

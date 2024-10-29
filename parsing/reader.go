@@ -4,6 +4,17 @@ import "github.com/tomwright/dasel/v3/model"
 
 var readers = map[Format]NewReaderFn{}
 
+type ReaderOptions struct {
+	Ext map[string]string
+}
+
+// DefaultReaderOptions returns the default reader options.
+func DefaultReaderOptions() ReaderOptions {
+	return ReaderOptions{
+		Ext: make(map[string]string),
+	}
+}
+
 // Reader reads a value from a byte slice.
 type Reader interface {
 	// Read reads a value from a byte slice.
@@ -11,7 +22,7 @@ type Reader interface {
 }
 
 // NewReaderFn is a function that creates a new reader.
-type NewReaderFn func() (Reader, error)
+type NewReaderFn func(options ReaderOptions) (Reader, error)
 
 // RegisterReader registers a new reader for the format.
 func RegisterReader(format Format, fn NewReaderFn) {
