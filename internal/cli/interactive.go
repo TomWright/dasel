@@ -73,10 +73,14 @@ func (c *InteractiveCmd) Run(ctx *Globals) error {
 
 	m := initialModel(c, c.Query, stdInBytes)
 
-	p := tea.NewProgram(m)
+	p := tea.NewProgram(m, tea.WithOutput(ctx.Stdout))
 
 	_, err = p.Run()
-	return err
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func initialModel(it *InteractiveCmd, defaultCommand string, stdInBytes []byte) interactiveTeaModel {
@@ -124,6 +128,9 @@ func (m interactiveTeaModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	m.previousCommand = m.currentCommand
 
 	m.currentCommand = m.commandInput.Value()
+	if m.firstUpdate {
+		cmds = append(cmds, tea.EnterAltScreen)
+	}
 	if m.firstUpdate || m.currentCommand != m.previousCommand {
 		m.firstUpdate = false
 		// If the command has changed, we need to execute it
@@ -160,12 +167,7 @@ func (m interactiveTeaModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
 		switch msg.Type {
-		case tea.KeyEsc:
-			return m, tea.Quit
-			//if m.commandInput.Focused() {
-			//	m.commandInput.Blur()
-			//}
-		case tea.KeyCtrlC:
+		case tea.KeyEsc, tea.KeyCtrlC:
 			return m, tea.Quit
 		default:
 			if !m.commandInput.Focused() {
@@ -180,7 +182,7 @@ func (m interactiveTeaModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		resultHeaderHeight := lipgloss.Height(m.resultHeaderView())
 		verticalMarginHeight := headerHeight + 2 + commandInputHeight + resultHeaderHeight
 
-		viewportHeight := msg.Height - verticalMarginHeight
+		viewportHeight := msg.Height - verticalMarginHeight - 2
 		viewportWidth := (msg.Width / 2) - 4
 
 		if !m.outputReady {
