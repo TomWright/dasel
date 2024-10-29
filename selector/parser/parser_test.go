@@ -9,30 +9,28 @@ import (
 	"github.com/tomwright/dasel/v3/selector/parser"
 )
 
+type happyTestCase struct {
+	input    string
+	expected ast.Expr
+}
+
+func (tc happyTestCase) run(t *testing.T) {
+	tokens, err := lexer.NewTokenizer(tc.input).Tokenize()
+	if err != nil {
+		t.Fatal(err)
+	}
+	got, err := parser.NewParser(tokens).Parse()
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !cmp.Equal(tc.expected, got) {
+		t.Errorf("unexpected result: %s", cmp.Diff(tc.expected, got))
+	}
+}
+
 func TestParser_Parse_HappyPath(t *testing.T) {
-	type testCase struct {
-		input    string
-		expected ast.Expr
-	}
-
-	run := func(t *testing.T, tc testCase) func(*testing.T) {
-		return func(t *testing.T) {
-			tokens, err := lexer.NewTokenizer(tc.input).Tokenize()
-			if err != nil {
-				t.Fatal(err)
-			}
-			got, err := parser.NewParser(tokens).Parse()
-			if err != nil {
-				t.Fatal(err)
-			}
-			if !cmp.Equal(tc.expected, got) {
-				t.Errorf("unexpected result: %s", cmp.Diff(tc.expected, got))
-			}
-		}
-	}
-
 	t.Run("branching", func(t *testing.T) {
-		t.Run("two branches", run(t, testCase{
+		t.Run("two branches", happyTestCase{
 			input: `branch("hello", len("world"))`,
 			expected: ast.BranchExprs(
 				ast.StringExpr{Value: "hello"},
@@ -43,80 +41,80 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 					},
 				),
 			),
-		}))
-		t.Run("three branches", run(t, testCase{
+		}.run)
+		t.Run("three branches", happyTestCase{
 			input: `branch("foo", "bar", "baz")`,
 			expected: ast.BranchExprs(
 				ast.StringExpr{Value: "foo"},
 				ast.StringExpr{Value: "bar"},
 				ast.StringExpr{Value: "baz"},
 			),
-		}))
+		}.run)
 	})
 
 	t.Run("literal access", func(t *testing.T) {
-		t.Run("string", run(t, testCase{
+		t.Run("string", happyTestCase{
 			input:    `"hello world"`,
 			expected: ast.StringExpr{Value: "hello world"},
-		}))
-		t.Run("int", run(t, testCase{
+		}.run)
+		t.Run("int", happyTestCase{
 			input:    "42",
 			expected: ast.NumberIntExpr{Value: 42},
-		}))
-		t.Run("float", run(t, testCase{
+		}.run)
+		t.Run("float", happyTestCase{
 			input:    "42.1",
 			expected: ast.NumberFloatExpr{Value: 42.1},
-		}))
-		t.Run("whole number float", run(t, testCase{
+		}.run)
+		t.Run("whole number float", happyTestCase{
 			input:    "42f",
 			expected: ast.NumberFloatExpr{Value: 42},
-		}))
-		t.Run("bool true lowercase", run(t, testCase{
+		}.run)
+		t.Run("bool true lowercase", happyTestCase{
 			input:    "true",
 			expected: ast.BoolExpr{Value: true},
-		}))
-		t.Run("bool true uppercase", run(t, testCase{
+		}.run)
+		t.Run("bool true uppercase", happyTestCase{
 			input:    "TRUE",
 			expected: ast.BoolExpr{Value: true},
-		}))
-		t.Run("bool true mixed case", run(t, testCase{
+		}.run)
+		t.Run("bool true mixed case", happyTestCase{
 			input:    "TrUe",
 			expected: ast.BoolExpr{Value: true},
-		}))
-		t.Run("bool false lowercase", run(t, testCase{
+		}.run)
+		t.Run("bool false lowercase", happyTestCase{
 			input:    "false",
 			expected: ast.BoolExpr{Value: false},
-		}))
-		t.Run("bool false uppercase", run(t, testCase{
+		}.run)
+		t.Run("bool false uppercase", happyTestCase{
 			input:    "FALSE",
 			expected: ast.BoolExpr{Value: false},
-		}))
-		t.Run("bool false mixed case", run(t, testCase{
+		}.run)
+		t.Run("bool false mixed case", happyTestCase{
 			input:    "FaLsE",
 			expected: ast.BoolExpr{Value: false},
-		}))
+		}.run)
 	})
 
 	t.Run("property access", func(t *testing.T) {
-		t.Run("single property access", run(t, testCase{
+		t.Run("single property access", happyTestCase{
 			input:    "foo",
 			expected: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
-		}))
-		t.Run("chained property access", run(t, testCase{
+		}.run)
+		t.Run("chained property access", happyTestCase{
 			input: "foo.bar",
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "bar"}},
 			),
-		}))
-		t.Run("property access spread", run(t, testCase{
+		}.run)
+		t.Run("property access spread", happyTestCase{
 			input: "foo...",
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 				ast.SpreadExpr{},
 			),
-		}))
-		t.Run("property access spread into property access", run(t, testCase{
+		}.run)
+		t.Run("property access spread into property access", happyTestCase{
 			input: "foo....bar",
 			expected: ast.ChainExprs(
 				ast.ChainExprs(
@@ -125,20 +123,20 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				),
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "bar"}},
 			),
-		}))
+		}.run)
 	})
 
 	t.Run("array access", func(t *testing.T) {
 		t.Run("root array", func(t *testing.T) {
-			t.Run("index", run(t, testCase{
+			t.Run("index", happyTestCase{
 				input: "$this[1]",
 				expected: ast.ChainExprs(
 					ast.VariableExpr{Name: "this"},
 					ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 1}},
 				),
-			}))
+			}.run)
 			t.Run("range", func(t *testing.T) {
-				t.Run("start and end funcs", run(t, testCase{
+				t.Run("start and end funcs", happyTestCase{
 					input: "$this[calcStart(1):calcEnd()]",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
@@ -154,56 +152,56 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 							},
 						},
 					),
-				}))
-				t.Run("start and end", run(t, testCase{
+				}.run)
+				t.Run("start and end", happyTestCase{
 					input: "$this[5:10]",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
 						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}, End: ast.NumberIntExpr{Value: 10}},
 					),
-				}))
-				t.Run("start", run(t, testCase{
+				}.run)
+				t.Run("start", happyTestCase{
 					input: "$this[5:]",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
 						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}},
 					),
-				}))
-				t.Run("end", run(t, testCase{
+				}.run)
+				t.Run("end", happyTestCase{
 					input: "$this[:10]",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
 						ast.RangeExpr{End: ast.NumberIntExpr{Value: 10}},
 					),
-				}))
+				}.run)
 			})
 			t.Run("spread", func(t *testing.T) {
-				t.Run("standard", run(t, testCase{
+				t.Run("standard", happyTestCase{
 					input: "$this...",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
 						ast.SpreadExpr{},
 					),
-				}))
-				t.Run("brackets", run(t, testCase{
+				}.run)
+				t.Run("brackets", happyTestCase{
 					input: "$this[...]",
 					expected: ast.ChainExprs(
 						ast.VariableExpr{Name: "this"},
 						ast.SpreadExpr{},
 					),
-				}))
+				}.run)
 			})
 		})
 		t.Run("property array", func(t *testing.T) {
-			t.Run("index", run(t, testCase{
+			t.Run("index", happyTestCase{
 				input: "foo[1]",
 				expected: ast.ChainExprs(
 					ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 					ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 1}},
 				),
-			}))
+			}.run)
 			t.Run("range", func(t *testing.T) {
-				t.Run("start and end funcs", run(t, testCase{
+				t.Run("start and end funcs", happyTestCase{
 					input: "foo[calcStart(1):calcEnd()]",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
@@ -219,50 +217,50 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 							},
 						},
 					),
-				}))
-				t.Run("start and end", run(t, testCase{
+				}.run)
+				t.Run("start and end", happyTestCase{
 					input: "foo[5:10]",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}, End: ast.NumberIntExpr{Value: 10}},
 					),
-				}))
-				t.Run("start", run(t, testCase{
+				}.run)
+				t.Run("start", happyTestCase{
 					input: "foo[5:]",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 						ast.RangeExpr{Start: ast.NumberIntExpr{Value: 5}},
 					),
-				}))
-				t.Run("end", run(t, testCase{
+				}.run)
+				t.Run("end", happyTestCase{
 					input: "foo[:10]",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 						ast.RangeExpr{End: ast.NumberIntExpr{Value: 10}},
 					),
-				}))
+				}.run)
 			})
 			t.Run("spread", func(t *testing.T) {
-				t.Run("standard", run(t, testCase{
+				t.Run("standard", happyTestCase{
 					input: "foo...",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 						ast.SpreadExpr{},
 					),
-				}))
-				t.Run("brackets", run(t, testCase{
+				}.run)
+				t.Run("brackets", happyTestCase{
 					input: "foo[...]",
 					expected: ast.ChainExprs(
 						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
 						ast.SpreadExpr{},
 					),
-				}))
+				}.run)
 			})
 		})
 	})
 
 	t.Run("map", func(t *testing.T) {
-		t.Run("single property", run(t, testCase{
+		t.Run("single property", happyTestCase{
 			input: "foo.map(x)",
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
@@ -270,8 +268,8 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 					Expr: ast.PropertyExpr{Property: ast.StringExpr{Value: "x"}},
 				},
 			),
-		}))
-		t.Run("nested property", run(t, testCase{
+		}.run)
+		t.Run("nested property", happyTestCase{
 			input: "foo.map(x.y)",
 			expected: ast.ChainExprs(
 				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
@@ -282,39 +280,39 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 					),
 				},
 			),
-		}))
+		}.run)
 	})
 
 	t.Run("object", func(t *testing.T) {
-		t.Run("get single property", run(t, testCase{
+		t.Run("get single property", happyTestCase{
 			input: "{foo}",
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}},
 			}},
-		}))
-		t.Run("get multiple properties", run(t, testCase{
+		}.run)
+		t.Run("get multiple properties", happyTestCase{
 			input: "{foo, bar, baz}",
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}},
 				{Key: ast.StringExpr{Value: "bar"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "bar"}}},
 				{Key: ast.StringExpr{Value: "baz"}, Value: ast.PropertyExpr{Property: ast.StringExpr{Value: "baz"}}},
 			}},
-		}))
-		t.Run("set single property", run(t, testCase{
+		}.run)
+		t.Run("set single property", happyTestCase{
 			input: `{"foo":1}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.NumberIntExpr{Value: 1}},
 			}},
-		}))
-		t.Run("set multiple properties", run(t, testCase{
+		}.run)
+		t.Run("set multiple properties", happyTestCase{
 			input: `{foo: 1, bar: 2, baz: 3}`,
 			expected: ast.ObjectExpr{Pairs: []ast.KeyValue{
 				{Key: ast.StringExpr{Value: "foo"}, Value: ast.NumberIntExpr{Value: 1}},
 				{Key: ast.StringExpr{Value: "bar"}, Value: ast.NumberIntExpr{Value: 2}},
 				{Key: ast.StringExpr{Value: "baz"}, Value: ast.NumberIntExpr{Value: 3}},
 			}},
-		}))
-		t.Run("combine get set", run(t, testCase{
+		}.run)
+		t.Run("combine get set", happyTestCase{
 			input: `{
 				...,
 				nestedSpread...,
@@ -331,41 +329,41 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				{Key: ast.StringExpr{Value: "baz"}, Value: ast.CallExpr{Function: "evalSomething"}},
 				{Key: ast.StringExpr{Value: "Name"}, Value: ast.StringExpr{Value: "Tom"}},
 			}},
-		}))
+		}.run)
 	})
 
 	t.Run("variables", func(t *testing.T) {
-		t.Run("single variable", run(t, testCase{
+		t.Run("single variable", happyTestCase{
 			input:    `$foo`,
 			expected: ast.VariableExpr{Name: "foo"},
-		}))
-		t.Run("variable passed to func", run(t, testCase{
+		}.run)
+		t.Run("variable passed to func", happyTestCase{
 			input:    `len($foo)`,
 			expected: ast.CallExpr{Function: "len", Args: ast.Expressions{ast.VariableExpr{Name: "foo"}}},
-		}))
+		}.run)
 	})
 
 	t.Run("combinations and grouping", func(t *testing.T) {
-		t.Run("string concat with grouping", run(t, testCase{
+		t.Run("string concat with grouping", happyTestCase{
 			input: `(foo.a) + (foo.b)`,
 			expected: ast.BinaryExpr{
 				Left:     ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "a"}}),
 				Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 8, Len: 1},
 				Right:    ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "b"}}),
 			},
-		}))
-		t.Run("string concat with nested properties", run(t, testCase{
+		}.run)
+		t.Run("string concat with nested properties", happyTestCase{
 			input: `foo.a + foo.b`,
 			expected: ast.BinaryExpr{
 				Left:     ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "a"}}),
 				Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 6, Len: 1},
 				Right:    ast.ChainExprs(ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}}, ast.PropertyExpr{Property: ast.StringExpr{Value: "b"}}),
 			},
-		}))
+		}.run)
 	})
 
 	t.Run("conditional", func(t *testing.T) {
-		t.Run("if", run(t, testCase{
+		t.Run("if", happyTestCase{
 			input: `if (foo == 1) { "yes" } else { "no" }`,
 			expected: ast.ConditionalExpr{
 				Cond: ast.BinaryExpr{
@@ -376,8 +374,8 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				Then: ast.StringExpr{Value: "yes"},
 				Else: ast.StringExpr{Value: "no"},
 			},
-		}))
-		t.Run("if elseif else", run(t, testCase{
+		}.run)
+		t.Run("if elseif else", happyTestCase{
 			input: `if (foo == 1) { "yes" } elseif (foo == 2) { "maybe" } else { "no" }`,
 			expected: ast.ConditionalExpr{
 				Cond: ast.BinaryExpr{
@@ -396,8 +394,8 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 					Else: ast.StringExpr{Value: "no"},
 				},
 			},
-		}))
-		t.Run("if elseif elseif else", run(t, testCase{
+		}.run)
+		t.Run("if elseif elseif else", happyTestCase{
 			input: `if (foo == 1) { "yes" } elseif (foo == 2) { "maybe" } elseif (foo == 3) { "probably" } else { "no" }`,
 			expected: ast.ConditionalExpr{
 				Cond: ast.BinaryExpr{
@@ -424,11 +422,11 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 					},
 				},
 			},
-		}))
+		}.run)
 	})
 
 	t.Run("coalesce", func(t *testing.T) {
-		t.Run("chained on left side", run(t, testCase{
+		t.Run("chained on left side", happyTestCase{
 			input: `foo ?? bar ?? baz`,
 			expected: ast.BinaryExpr{
 				Left: ast.BinaryExpr{
@@ -439,9 +437,9 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 11, Len: 2},
 				Right:    ast.PropertyExpr{Property: ast.StringExpr{Value: "baz"}},
 			},
-		}))
+		}.run)
 
-		t.Run("chained nested on left side", run(t, testCase{
+		t.Run("chained nested on left side", happyTestCase{
 			input: `nested.one ?? nested.two ?? nested.three ?? 10`,
 			expected: ast.BinaryExpr{
 				Left: ast.BinaryExpr{
@@ -465,6 +463,6 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 				Operator: lexer.Token{Kind: lexer.DoubleQuestionMark, Value: "??", Pos: 41, Len: 2},
 				Right:    ast.NumberIntExpr{Value: 10},
 			},
-		}))
+		}.run)
 	})
 }

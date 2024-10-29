@@ -160,24 +160,34 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		pos := p.i
 		buf := make([]rune, 0)
 		pos++
-		var escaped bool
+		foundCloseRune := false
 		for pos < p.srcLen {
-			if p.src[pos] == p.src[p.i] && !escaped {
+			if p.src[pos] == p.src[p.i] {
+				foundCloseRune = true
 				break
 			}
-			if escaped {
-				escaped = false
+			if p.src[pos] == '\\' {
+				pos++
 				buf = append(buf, rune(p.src[pos]))
 				pos++
 				continue
 			}
-			if p.src[pos] == '\\' {
-				pos++
-				escaped = true
-				continue
-			}
 			buf = append(buf, rune(p.src[pos]))
 			pos++
+		}
+		if !foundCloseRune {
+			// We didn't find a closing quote.
+			if pos < p.srcLen {
+				// This shouldn't be possible.
+				return Token{}, &UnexpectedTokenError{
+					Pos:   p.i,
+					Token: rune(p.src[pos]),
+				}
+			}
+			// This can happen if the selector ends before the closing quote.
+			return Token{}, &UnexpectedEOFError{
+				Pos: pos,
+			}
 		}
 		res := NewToken(String, string(buf), p.i, pos+1-p.i)
 		return res, nil

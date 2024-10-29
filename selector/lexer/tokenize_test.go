@@ -1,83 +1,135 @@
-package lexer
+package lexer_test
 
-import "testing"
+import (
+	"errors"
+	"testing"
 
-func TestTokenizer_Parse(t *testing.T) {
-	type testCase struct {
-		in  string
-		out []TokenKind
+	"github.com/tomwright/dasel/v3/selector/lexer"
+)
+
+type testCase struct {
+	in  string
+	out []lexer.TokenKind
+}
+
+func (tc testCase) run(t *testing.T) {
+	tok := lexer.NewTokenizer(tc.in)
+	tokens, err := tok.Tokenize()
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
 	}
-
-	runTest := func(tc testCase) func(t *testing.T) {
-		return func(t *testing.T) {
-			tok := NewTokenizer(tc.in)
-			tokens, err := tok.Tokenize()
-			if err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if len(tokens) != len(tc.out) {
-				t.Fatalf("unexpected number of tokens: %d", len(tokens))
-			}
-			for i := range tokens {
-				if tokens[i].Kind != tc.out[i] {
-					t.Errorf("unexpected token kind at position %d: exp %v, got %v", i, tc.out[i], tokens[i].Kind)
-					return
-				}
-			}
+	if len(tokens) != len(tc.out) {
+		t.Fatalf("unexpected number of tokens: %d", len(tokens))
+	}
+	for i := range tokens {
+		if tokens[i].Kind != tc.out[i] {
+			t.Errorf("unexpected token kind at position %d: exp %v, got %v", i, tc.out[i], tokens[i].Kind)
+			return
 		}
 	}
+}
 
-	t.Run("variables", runTest(testCase{
+type errTestCase struct {
+	in    string
+	match func(error) bool
+}
+
+func (tc errTestCase) run(t *testing.T) {
+	tok := lexer.NewTokenizer(tc.in)
+	tokens, err := tok.Tokenize()
+	if !tc.match(err) {
+		t.Errorf("unexpected error, got %v", err)
+	}
+	if tokens != nil {
+		t.Errorf("unexpected tokens: %v", tokens)
+	}
+}
+
+func matchUnexpectedError(r rune, p int) func(error) bool {
+	return func(err error) bool {
+		var e *lexer.UnexpectedTokenError
+		if !errors.As(err, &e) {
+			return false
+		}
+
+		return e.Token == r && e.Pos == p
+	}
+}
+
+func matchUnexpectedEOFError(p int) func(error) bool {
+	return func(err error) bool {
+		var e *lexer.UnexpectedEOFError
+		if !errors.As(err, &e) {
+			return false
+		}
+
+		return e.Pos == p
+	}
+}
+
+func TestTokenizer_Parse(t *testing.T) {
+	t.Run("variables", testCase{
 		in: "$foo $bar123 $baz $",
-		out: []TokenKind{
-			Variable,
-			Variable,
-			Variable,
-			Dollar,
+		out: []lexer.TokenKind{
+			lexer.Variable,
+			lexer.Variable,
+			lexer.Variable,
+			lexer.Dollar,
 		},
-	}))
+	}.run)
 
-	t.Run("if", runTest(testCase{
+	t.Run("if", testCase{
 		in: `if elseif else`,
-		out: []TokenKind{
-			If,
-			ElseIf,
-			Else,
+		out: []lexer.TokenKind{
+			lexer.If,
+			lexer.ElseIf,
+			lexer.Else,
 		},
-	}))
+	}.run)
 
-	t.Run("regex", runTest(testCase{
+	t.Run("regex", testCase{
 		in: `r/asd/ r/hello there/`,
-		out: []TokenKind{
-			RegexPattern,
-			RegexPattern,
+		out: []lexer.TokenKind{
+			lexer.RegexPattern,
+			lexer.RegexPattern,
 		},
-	}))
+	}.run)
 
-	t.Run("sort by", runTest(testCase{
+	t.Run("sort by", testCase{
 		in: `sortBy(foo, asc)`,
-		out: []TokenKind{
-			SortBy,
-			OpenParen,
-			Symbol,
-			Comma,
-			Asc,
-			CloseParen,
+		out: []lexer.TokenKind{
+			lexer.SortBy,
+			lexer.OpenParen,
+			lexer.Symbol,
+			lexer.Comma,
+			lexer.Asc,
+			lexer.CloseParen,
 		},
-	}))
+	}.run)
 
-	t.Run("everything", runTest(testCase{
+	t.Run("everything", testCase{
 		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
-		out: []TokenKind{
-			Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, Number, CloseBracket, NotEqual, Number,
-			Or,
-			Symbol, Dot, Symbol, Dot, Symbol, OpenBracket, String, CloseBracket, Equal, Number,
-			And,
-			Symbol, Equal, String,
-			Plus, Bool, Bool,
-			Dot, Spread, Dot,
-			Symbol, Spread,
-			Variable, Null,
+		out: []lexer.TokenKind{
+			lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.OpenBracket, lexer.Number, lexer.CloseBracket, lexer.NotEqual, lexer.Number,
+			lexer.Or,
+			lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.OpenBracket, lexer.String, lexer.CloseBracket, lexer.Equal, lexer.Number,
+			lexer.And,
+			lexer.Symbol, lexer.Equal, lexer.String,
+			lexer.Plus, lexer.Bool, lexer.Bool,
+			lexer.Dot, lexer.Spread, lexer.Dot,
+			lexer.Symbol, lexer.Spread,
+			lexer.Variable, lexer.Null,
 		},
-	}))
+	}.run)
+
+	t.Run("unhappy", func(t *testing.T) {
+		t.Run("unfinished double quote", errTestCase{
+			in:    `"hello`,
+			match: matchUnexpectedEOFError(6),
+		}.run)
+		t.Run("unfinished single quote", errTestCase{
+			in:    `'hello`,
+			match: matchUnexpectedEOFError(6),
+		}.run)
+	})
 }

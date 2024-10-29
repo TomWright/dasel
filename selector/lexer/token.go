@@ -106,15 +106,6 @@ func (t Token) IsKind(kind ...TokenKind) bool {
 	return slices.Contains(kind, t.Kind)
 }
 
-type PositionalError struct {
-	Pos int
-	Err error
-}
-
-func (e *PositionalError) Error() string {
-	return fmt.Sprintf("%v. Position %d.", e.Pos, e.Err)
-}
-
 type UnexpectedTokenError struct {
 	Pos   int
 	Token rune
@@ -122,4 +113,12 @@ type UnexpectedTokenError struct {
 
 func (e *UnexpectedTokenError) Error() string {
 	return fmt.Sprintf("failed to tokenize: unexpected token: %s at position %d.", string(e.Token), e.Pos)
+}
+
+type UnexpectedEOFError struct {
+	Pos int
+}
+
+func (e *UnexpectedEOFError) Error() string {
+	return fmt.Sprintf("failed to tokenize: unexpected EOF at position %d.", e.Pos)
 }
