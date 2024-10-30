@@ -19,6 +19,10 @@ var (
 		FuncTypeOf,
 		FuncMax,
 		FuncMin,
+		FuncIgnore,
+		FuncBase64Encode,
+		FuncBase64Decode,
+		FuncParse,
 	)
 )
 

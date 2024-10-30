@@ -54,3 +54,21 @@ func (v *Value) IsBranch() bool {
 func (v *Value) MarkAsBranch() {
 	v.SetMetadataValue("branch", true)
 }
+
+// IsIgnore returns true if value should be ignored.
+func (v *Value) IsIgnore() bool {
+	if v == nil {
+		return false
+	}
+	val, ok := v.MetadataValue("ignore")
+	if !ok {
+		return false
+	}
+	ignore, ok := val.(bool)
+	return ok && ignore
+}
+
+// MarkAsIgnore marks the value to be ignored.
+func (v *Value) MarkAsIgnore() {
+	v.SetMetadataValue("ignore", true)
+}

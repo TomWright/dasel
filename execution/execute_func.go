@@ -1,7 +1,9 @@
 package execution
 
 import (
+	"errors"
 	"fmt"
+	"slices"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
@@ -41,7 +43,14 @@ func callFnExecutor(opts *Options, f FuncFn, argsE ast.Expressions) (expressionE
 	}, nil
 }
 
+var unstableFuncs = []string{
+	"ignore",
+}
+
 func callExprExecutor(opts *Options, e ast.CallExpr) (expressionExecutor, error) {
+	if !opts.Unstable && (slices.Contains(unstableFuncs, e.Function)) {
+		return nil, errors.New("unstable function are not enabled. to enable them use --unstable")
+	}
 	if f, ok := opts.Funcs.Get(e.Function); ok {
 		res, err := callFnExecutor(opts, f, e.Args)
 		if err != nil {

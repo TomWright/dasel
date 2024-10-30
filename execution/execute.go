@@ -59,6 +59,9 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 		if err != nil {
 			return err
 		}
+		if r.IsIgnore() {
+			return nil
+		}
 		return res.Append(r)
 	}); err != nil {
 		return nil, fmt.Errorf("branch execution error: %w", err)
