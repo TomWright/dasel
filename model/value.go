@@ -52,6 +52,14 @@ type Value struct {
 }
 
 func (v *Value) String() string {
+	return v.string(0)
+}
+
+func indentStr(indent int) string {
+	return strings.Repeat("    ", indent)
+}
+
+func (v *Value) string(indent int) string {
 	switch v.Type() {
 	case TypeString:
 		val, err := v.StringValue()
@@ -78,15 +86,14 @@ func (v *Value) String() string {
 		}
 		return fmt.Sprintf("bool{%t}", val)
 	case TypeMap:
-		res := fmt.Sprintf("map[%d]{", len(v.Metadata))
+		res := fmt.Sprintf("{\n")
 		if err := v.RangeMap(func(k string, v *Value) error {
-			res += fmt.Sprintf("%s: %s, ", k, v.String())
+			res += fmt.Sprintf("%s%s: %s,\n", indentStr(indent+1), k, v.string(indent+1))
 			return nil
 		}); err != nil {
 			panic(err)
 		}
-		res = strings.TrimSuffix(res, ", ")
-		return res + "}"
+		return res + indentStr(indent) + "}"
 	case TypeSlice:
 		md := ""
 		if v.IsSpread() {
@@ -95,17 +102,16 @@ func (v *Value) String() string {
 		if v.IsBranch() {
 			md += "branch, "
 		}
-		res := fmt.Sprintf("array[%s]{", strings.TrimSuffix(md, ", "))
+		res := fmt.Sprintf("array[%s]{\n", strings.TrimSuffix(md, ", "))
 		if err := v.RangeSlice(func(k int, v *Value) error {
-			res += fmt.Sprintf("%d: %s, ", k, v.String())
+			res += fmt.Sprintf("%s%d: %s,\n", indentStr(indent+1), k, v.string(indent+1))
 			return nil
 		}); err != nil {
 			panic(err)
 		}
-		res = strings.TrimSuffix(res, ", ")
-		return res + "}"
+		return res + indentStr(indent) + "}"
 	case TypeNull:
-		return "null"
+		return indentStr(indent) + "null"
 	default:
 		return fmt.Sprintf("unknown[%s]", v.Interface())
 	}
