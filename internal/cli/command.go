@@ -46,8 +46,8 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 			"version": internal.Version,
 		},
 		kong.Bind(&cli.Globals),
-		kong.TypeMapper(reflect.TypeFor[*[]variable](), &variableMapper{}),
-		kong.TypeMapper(reflect.TypeFor[*[]extReadWriteFlag](), &extReadWriteFlagMapper{}),
+		kong.TypeMapper(reflect.TypeFor[variables](), &variableMapper{}),
+		kong.TypeMapper(reflect.TypeFor[extReadWriteFlags](), &extReadWriteFlagMapper{}),
 		kong.OptionFunc(func(k *kong.Kong) error {
 			k.Stdout = cli.Stdout
 			k.Stderr = cli.Stderr

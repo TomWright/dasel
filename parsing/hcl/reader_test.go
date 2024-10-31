@@ -2,9 +2,10 @@ package hcl_test
 
 import (
 	"fmt"
+	"testing"
+
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/hcl"
-	"testing"
 )
 
 type readTestCase struct {
@@ -61,5 +62,26 @@ service "http" "web_proxy" {
     ]
   }
 }`,
+	}.run)
+	t.Run("document c", readTestCase{
+		in: `image_id = "ami-123"
+cluster_min_nodes = 2
+cluster_decimal_nodes = 2.2
+cluster_max_nodes = true
+availability_zone_names = [
+"us-east-1a",
+"us-west-1c",
+]
+docker_ports = [{
+internal = 8300
+external = 8300
+protocol = "tcp"
+},
+{
+internal = 8301
+external = 8301
+protocol = "tcp"
+}
+]`,
 	}.run)
 }

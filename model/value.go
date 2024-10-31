@@ -272,3 +272,12 @@ func (v *Value) Len() (int, error) {
 
 	return l, nil
 }
+
+func (v *Value) Copy() (*Value, error) {
+	switch v.Type() {
+	case TypeMap:
+		return v.MapCopy()
+	default:
+		return nil, fmt.Errorf("copy not supported for type: %s", v.Type())
+	}
+}

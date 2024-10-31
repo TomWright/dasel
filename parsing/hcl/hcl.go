@@ -10,10 +10,10 @@ const (
 )
 
 var _ parsing.Reader = (*hclReader)(nil)
-
-//var _ parsing.Writer = (*hclWriter)(nil)
+var _ parsing.Writer = (*hclWriter)(nil)
 
 func init() {
 	parsing.RegisterReader(HCL, newHCLReader)
-	parsing.RegisterWriter(HCL, newHCLWriter)
+	// HCL writer is not implemented yet
+	//parsing.RegisterWriter(HCL, newHCLWriter)
 }

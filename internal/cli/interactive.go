@@ -21,11 +21,11 @@ func NewInteractiveCmd(queryCmd *QueryCmd) *InteractiveCmd {
 }
 
 type InteractiveCmd struct {
-	Vars          *[]variable         `flag:"" name:"var" help:"Variables to pass to the query. E.g. --var foo=\"bar\" --var baz=json:file:./some/file.json"`
-	ExtReadFlags  *[]extReadWriteFlag `flag:"" name:"read-flag" help:"Reader flag to customise parsing. E.g. --read-flag xml-mode=structured"`
-	ExtWriteFlags *[]extReadWriteFlag `flag:"" name:"write-flag" help:"Writer flag to customise output"`
-	InFormat      string              `flag:"" name:"in" short:"i" help:"The format of the input data."`
-	OutFormat     string              `flag:"" name:"out" short:"o" help:"The format of the output data."`
+	Vars          variables         `flag:"" name:"var" help:"Variables to pass to the query. E.g. --var foo=\"bar\" --var baz=json:file:./some/file.json"`
+	ExtReadFlags  extReadWriteFlags `flag:"" name:"read-flag" help:"Reader flag to customise parsing. E.g. --read-flag xml-mode=structured"`
+	ExtWriteFlags extReadWriteFlags `flag:"" name:"write-flag" help:"Writer flag to customise output"`
+	InFormat      string            `flag:"" name:"in" short:"i" help:"The format of the input data."`
+	OutFormat     string            `flag:"" name:"out" short:"o" help:"The format of the output data."`
 
 	Query string `arg:"" help:"The query to execute." optional:"" default:""`
 }

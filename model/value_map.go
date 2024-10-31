@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"reflect"
 
@@ -56,6 +57,28 @@ func (v *Value) SetMapKey(key string, value *Value) error {
 	default:
 		return fmt.Errorf("value is not a map")
 	}
+}
+
+func (v *Value) MapCopy() (*Value, error) {
+	res := NewMapValue()
+	kvs, err := v.MapKeyValues()
+	if err != nil {
+		return nil, fmt.Errorf("error getting map key values: %w", err)
+	}
+	for _, kv := range kvs {
+		if err := res.SetMapKey(kv.Key, kv.Value); err != nil {
+			return nil, fmt.Errorf("error setting map key: %w", err)
+		}
+	}
+	return res, nil
+}
+
+func (v *Value) MapKeyExists(key string) (bool, error) {
+	_, err := v.GetMapKey(key)
+	if err != nil && !errors.As(err, &MapKeyNotFound{}) {
+		return false, err
+	}
+	return err == nil, nil
 }
 
 // GetMapKey returns the value at the specified key in the map.
