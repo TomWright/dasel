@@ -14,6 +14,5 @@ var _ parsing.Writer = (*hclWriter)(nil)
 
 func init() {
 	parsing.RegisterReader(HCL, newHCLReader)
-	// HCL writer is not implemented yet
-	//parsing.RegisterWriter(HCL, newHCLWriter)
+	parsing.RegisterWriter(HCL, newHCLWriter)
 }
