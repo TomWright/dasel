@@ -1,8 +1,9 @@
 package hcl_test
 
 import (
-	"github.com/google/go-cmp/cmp"
 	"testing"
+
+	"github.com/google/go-cmp/cmp"
 
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/hcl"
@@ -45,21 +46,22 @@ func (tc readWriteTestCase) run(t *testing.T) {
 func TestHclReader_ReadWrite(t *testing.T) {
 	t.Run("document a", readWriteTestCase{
 		in: `io_mode = "async"
-
-service "http" "web_proxy" {
-  listen_addr = "127.0.0.1:8080"
-
-  process "main" {
-    command = ["/usr/local/bin/awesome-app", "server"]
+service {
+  http {
+    listen_addr = "127.0.0.1:8080"
+    process {
+      main {
+        command = ["/usr/local/bin/awesome-app", "server"]
+      }
+      mgmt {
+        command = ["/usr/local/bin/awesome-app", "mgmt"]
+      }
+      mgmt {
+        command = ["/usr/local/bin/awesome-app", "mgmt2"]
+      }
+    }
   }
-
-  process "mgmt" {
-    command = ["/usr/local/bin/awesome-app", "mgmt"]
-  }
-
-  process "mgmt" {
-    command = ["/usr/local/bin/awesome-app", "mgmt2"]
-  }
-}`,
+}
+`,
 	}.run)
 }
