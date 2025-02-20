@@ -5,7 +5,7 @@ import "fmt"
 type QueryCmd struct {
 	Vars          variables         `flag:"" name:"var" help:"Variables to pass to the query. E.g. --var foo=\"bar\" --var baz=json:file:./some/file.json"`
 	ExtReadFlags  extReadWriteFlags `flag:"" name:"read-flag" help:"Reader flag to customise parsing. E.g. --read-flag xml-mode=structured"`
-	ExtWriteFlags extReadWriteFlags `flag:"" name:"write-flag" help:"Writer flag to customise output"`
+	ExtWriteFlags extReadWriteFlags `flag:"" name:"write-flag" help:"Writer flag to customise output. E.g. --write-flag csv-delimiter=;"`
 	InFormat      string            `flag:"" name:"in" short:"i" help:"The format of the input data."`
 	OutFormat     string            `flag:"" name:"out" short:"o" help:"The format of the output data."`
 	ReturnRoot    bool              `flag:"" name:"root" help:"Return the root value."`
