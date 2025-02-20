@@ -132,8 +132,6 @@ func (j *csvWriter) Write(value *model.Value) ([]byte, error) {
 			values = append(values, csvVal)
 		}
 
-		fmt.Println("headers", headers, "values", values)
-
 		if err := w.Write(values); err != nil {
 			return fmt.Errorf("error writing row: %w", err)
 		}

@@ -220,28 +220,12 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 		return err
 	}
 
-	if value.IsBranch() || value.IsSpread() {
-		if err := value.RangeSlice(func(i int, v *model.Value) error {
-			if err := j.write(buf, encoderFn, es, v); err != nil {
-				return err
-			}
+	if err := j.write(buf, encoderFn, es, value); err != nil {
+		return nil, err
+	}
 
-			if _, err := buf.Write([]byte("\n")); err != nil {
-				return err
-			}
-
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-	} else {
-		if err := j.write(buf, encoderFn, es, value); err != nil {
-			return nil, err
-		}
-
-		if _, err := buf.Write([]byte("\n")); err != nil {
-			return nil, err
-		}
+	if _, err := buf.Write([]byte("\n")); err != nil {
+		return nil, err
 	}
 
 	return buf.Bytes(), nil

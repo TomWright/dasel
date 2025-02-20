@@ -66,31 +66,12 @@ func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 
 type yamlWriter struct{}
 
+func (j *yamlWriter) Separator() []byte {
+	return []byte("---\n")
+}
+
 // Write writes a value to a byte slice.
 func (j *yamlWriter) Write(value *model.Value) ([]byte, error) {
-	if value.IsBranch() {
-		res := make([]byte, 0)
-		sliceLen, err := value.SliceLen()
-		if err != nil {
-			return nil, err
-		}
-		if err := value.RangeSlice(func(i int, val *model.Value) error {
-			yv := &yamlValue{value: val}
-			marshalled, err := yaml.Marshal(yv)
-			if err != nil {
-				return err
-			}
-			res = append(res, marshalled...)
-			if i < sliceLen-1 {
-				res = append(res, []byte("---\n")...)
-			}
-			return nil
-		}); err != nil {
-			return nil, err
-		}
-		return res, nil
-	}
-
 	yv := &yamlValue{value: value}
 	res, err := yv.ToNode()
 	if err != nil {
