@@ -172,6 +172,11 @@ func (r *hclReader) decodeCtyValue(source cty.Value) (res *model.Value, err erro
 	}
 
 	sourceT := source.Type()
+	if sourceT.HasDynamicTypes() {
+		// TODO : Handle DynamicPseudoType.
+		// I haben't found a clear way to do this.
+		return model.NewNullValue(), nil
+	}
 	switch {
 	case sourceT.IsListType(), sourceT.IsTupleType():
 		res = model.NewSliceValue()
