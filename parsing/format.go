@@ -22,7 +22,11 @@ func (f Format) NewWriter(options WriterOptions) (Writer, error) {
 	if !ok {
 		return nil, fmt.Errorf("unsupported writer file format: %s", f)
 	}
-	return fn(options)
+	w, err := fn(options)
+	if err != nil {
+		return nil, err
+	}
+	return MultiDocumentWriter(w), nil
 }
 
 // String returns the string representation of the format.

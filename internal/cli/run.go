@@ -51,8 +51,6 @@ func run(o runOpts) ([]byte, error) {
 		return nil, fmt.Errorf("failed to get output writer: %w", err)
 	}
 
-	writer = parsing.MultiDocumentWriter(writer)
-
 	opts = append(opts, variableOptions(o.Vars)...)
 
 	// Default to null. If stdin is being read then this will be overwritten.
