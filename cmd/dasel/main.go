@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/tomwright/dasel/v3/internal/cli"
+	_ "github.com/tomwright/dasel/v3/parsing/csv"
 	_ "github.com/tomwright/dasel/v3/parsing/d"
 	_ "github.com/tomwright/dasel/v3/parsing/hcl"
 	_ "github.com/tomwright/dasel/v3/parsing/json"

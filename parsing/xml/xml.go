@@ -14,8 +14,7 @@ var _ parsing.Writer = (*xmlWriter)(nil)
 
 func init() {
 	parsing.RegisterReader(XML, newXMLReader)
-	// XML writer is not implemented yet
-	//parsing.RegisterWriter(XML, newXMLWriter)
+	parsing.RegisterWriter(XML, newXMLWriter)
 }
 
 type xmlAttr struct {

@@ -220,7 +220,7 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 		return err
 	}
 
-	if value.IsBranch() {
+	if value.IsBranch() || value.IsSpread() {
 		if err := value.RangeSlice(func(i int, v *model.Value) error {
 			if err := j.write(buf, encoderFn, es, v); err != nil {
 				return err

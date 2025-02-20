@@ -33,6 +33,7 @@ type KeyValue struct {
 // Values represents a list of values.
 type Values []*Value
 
+// ToSliceValue converts a list of values to a slice value.
 func (v Values) ToSliceValue() (*Value, error) {
 	slice := NewSliceValue()
 	for _, val := range v {
@@ -51,6 +52,7 @@ type Value struct {
 	setFn func(*Value) error
 }
 
+// String returns the value as a formatted string, along with type info.
 func (v *Value) String() string {
 	return v.string(0)
 }

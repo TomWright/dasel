@@ -192,10 +192,6 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						newStringWithFormat(yaml.YAML, `123`),
 						newStringWithFormat(toml.TOML, `123`),
 					},
-					skip: []string{
-						// Skipped because the parser outputs as a float.
-						"json to toml",
-					},
 				}.run)
 				t.Run("float", testCases{
 					selector: prefix + "oneTwoDotThree",
