@@ -10,14 +10,15 @@ import (
 )
 
 type runOpts struct {
-	Vars          variables
-	ExtReadFlags  extReadWriteFlags
-	ExtWriteFlags extReadWriteFlags
-	InFormat      string
-	OutFormat     string
-	ReturnRoot    bool
-	Unstable      bool
-	Query         string
+	Vars              variables
+	ExtReadWriteFlags extReadWriteFlags
+	ExtReadFlags      extReadWriteFlags
+	ExtWriteFlags     extReadWriteFlags
+	InFormat          string
+	OutFormat         string
+	ReturnRoot        bool
+	Unstable          bool
+	Query             string
 
 	Stdin io.Reader
 }
@@ -32,7 +33,7 @@ func run(o runOpts) ([]byte, error) {
 	}
 
 	readerOptions := parsing.DefaultReaderOptions()
-	applyReaderFlags(&readerOptions, o.ExtReadFlags)
+	applyReaderFlags(&readerOptions, o.ExtReadFlags, o.ExtReadWriteFlags)
 
 	var reader parsing.Reader
 	var err error
@@ -44,7 +45,7 @@ func run(o runOpts) ([]byte, error) {
 	}
 
 	writerOptions := parsing.DefaultWriterOptions()
-	applyWriterFlags(&writerOptions, o.ExtWriteFlags)
+	applyWriterFlags(&writerOptions, o.ExtWriteFlags, o.ExtReadWriteFlags)
 
 	writer, err := parsing.Format(o.OutFormat).NewWriter(writerOptions)
 	if err != nil {

@@ -16,17 +16,27 @@ type extReadWriteFlag struct {
 
 type extReadWriteFlags *[]extReadWriteFlag
 
-func applyReaderFlags(readerOptions *parsing.ReaderOptions, f extReadWriteFlags) {
-	if f != nil {
-		for _, flag := range *f {
+func applyReaderFlags(readerOptions *parsing.ReaderOptions, readerFlags extReadWriteFlags, readWriterFlags extReadWriteFlags) {
+	if readWriterFlags != nil {
+		for _, flag := range *readWriterFlags {
+			readerOptions.Ext[flag.Name] = flag.Value
+		}
+	}
+	if readerFlags != nil {
+		for _, flag := range *readerFlags {
 			readerOptions.Ext[flag.Name] = flag.Value
 		}
 	}
 }
 
-func applyWriterFlags(writerOptions *parsing.WriterOptions, f extReadWriteFlags) {
-	if f != nil {
-		for _, flag := range *f {
+func applyWriterFlags(writerOptions *parsing.WriterOptions, writerFlags extReadWriteFlags, readWriterFlags extReadWriteFlags) {
+	if readWriterFlags != nil {
+		for _, flag := range *readWriterFlags {
+			writerOptions.Ext[flag.Name] = flag.Value
+		}
+	}
+	if writerFlags != nil {
+		for _, flag := range *writerFlags {
 			writerOptions.Ext[flag.Name] = flag.Value
 		}
 	}
