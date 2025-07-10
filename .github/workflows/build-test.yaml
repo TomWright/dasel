@@ -77,7 +77,7 @@ jobs:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
         with:
-          go-version: '^1.21.0' # The Go version to download (if necessary) and use.
+          go-version: '^1.24.0' # The Go version to download (if necessary) and use.
       - name: Set env
         run: echo RELEASE_VERSION=development >> $GITHUB_ENV
       - name: Build
