@@ -72,4 +72,14 @@ $fullName = $firstName + ' ' + $lastName;
 			execution.WithUnstable(),
 		},
 	}.run)
+	t.Run("self referencing variable", testCase{
+		s: `$x=1;$x=$x*2`,
+		outFn: func() *model.Value {
+			r := model.NewIntValue(2)
+			return r
+		},
+		opts: []execution.ExecuteOptionFn{
+			execution.WithUnstable(),
+		},
+	}.run)
 }
