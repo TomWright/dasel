@@ -69,12 +69,13 @@ func matchUnexpectedEOFError(p int) func(error) bool {
 
 func TestTokenizer_Parse(t *testing.T) {
 	t.Run("variables", testCase{
-		in: "$foo $bar123 $baz $",
+		in: "$foo $bar123 $baz $ $quietLoudSCREAM",
 		out: []lexer.TokenKind{
 			lexer.Variable,
 			lexer.Variable,
 			lexer.Variable,
 			lexer.Dollar,
+			lexer.Variable,
 		},
 	}.run)
 

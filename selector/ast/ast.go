@@ -1,5 +1,13 @@
 package ast
 
+type Program struct {
+	Statements []Statement
+}
+
+type Statement struct {
+	Expressions Expr
+}
+
 type Expressions []Expr
 
 type Expr interface {

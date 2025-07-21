@@ -135,3 +135,10 @@ func BranchExprs(exprs ...Expr) Expr {
 		Exprs: exprs,
 	}
 }
+
+type AssignExpr struct {
+	Variable VariableExpr
+	Value    Expr
+}
+
+func (AssignExpr) expr() {}

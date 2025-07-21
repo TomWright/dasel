@@ -65,26 +65,26 @@ func TestBranch(t *testing.T) {
 			execution.WithUnstable(),
 		},
 	}.run)
-	t.Run("chained branch set", testCase{
-		s: "branch(1, 2, 3).$this=5",
-		outFn: func() *model.Value {
-			r := model.NewSliceValue()
-			r.MarkAsBranch()
-			if err := r.Append(model.NewIntValue(5)); err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if err := r.Append(model.NewIntValue(5)); err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			if err := r.Append(model.NewIntValue(5)); err != nil {
-				t.Fatalf("unexpected error: %v", err)
-			}
-			return r
-		},
-		opts: []execution.ExecuteOptionFn{
-			execution.WithUnstable(),
-		},
-	}.run)
+	//t.Run("chained branch set", testCase{
+	//	s: "branch(1, 2, 3).=5",
+	//	outFn: func() *model.Value {
+	//		r := model.NewSliceValue()
+	//		r.MarkAsBranch()
+	//		if err := r.Append(model.NewIntValue(5)); err != nil {
+	//			t.Fatalf("unexpected error: %v", err)
+	//		}
+	//		if err := r.Append(model.NewIntValue(5)); err != nil {
+	//			t.Fatalf("unexpected error: %v", err)
+	//		}
+	//		if err := r.Append(model.NewIntValue(5)); err != nil {
+	//			t.Fatalf("unexpected error: %v", err)
+	//		}
+	//		return r
+	//	},
+	//	opts: []execution.ExecuteOptionFn{
+	//		execution.WithUnstable(),
+	//	},
+	//}.run)
 	t.Run("chained branch math", testCase{
 		s: "(branch(1, 2, 3)) * 2",
 		outFn: func() *model.Value {

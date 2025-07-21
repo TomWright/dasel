@@ -99,6 +99,8 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 		return propertyExprExecutor(opts, e)
 	case ast.VariableExpr:
 		return variableExprExecutor(opts, e)
+	case ast.AssignExpr:
+		return assignExprExecutor(opts, e)
 	case ast.NumberIntExpr:
 		return numberIntExprExecutor(e)
 	case ast.NumberFloatExpr:
@@ -159,5 +161,23 @@ func variableExprExecutor(opts *Options, e ast.VariableExpr) (expressionExecutor
 			return nil, fmt.Errorf("variable %s not found", varName)
 		}
 		return res, nil
+	}, nil
+}
+
+func assignExprExecutor(opts *Options, e ast.AssignExpr) (expressionExecutor, error) {
+	return func(data *model.Value) (*model.Value, error) {
+		varName := e.Variable.Name
+		if varName == "this" {
+			return nil, fmt.Errorf("cannot assign to $this variable")
+		}
+
+		value, err := ExecuteAST(e.Value, data, opts)
+		if err != nil {
+			return nil, fmt.Errorf("error executing variable assignment expression: %w", err)
+		}
+
+		opts.Vars[varName] = value
+
+		return value, nil
 	}, nil
 }

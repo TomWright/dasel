@@ -66,6 +66,8 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		return NewToken(Comma, ",", p.i, 1), nil
 	case ':':
 		return NewToken(Colon, ":", p.i, 1), nil
+	case ';':
+		return NewToken(Semicolon, ";", p.i, 1), nil
 	case '[':
 		return NewToken(OpenBracket, "[", p.i, 1), nil
 	case ']':

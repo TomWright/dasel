@@ -63,6 +63,7 @@ const (
 	Desc
 	QuestionMark
 	DoubleQuestionMark
+	Semicolon
 )
 
 type Tokens []Token
