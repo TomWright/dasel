@@ -107,5 +107,14 @@ func TestRun(t *testing.T) {
 			stderr: nil,
 			err:    nil,
 		}))
+		t.Run("create object with empty stdin", runTest(testCase{
+			args: []string{`{"name":"Tom"}`},
+			in:   []byte{},
+			stdout: []byte(`{
+    "name": "Tom"
+`),
+			stderr: nil,
+			err:    nil,
+		}))
 	})
 }

@@ -2,6 +2,7 @@ package cli
 
 import (
 	"fmt"
+	"github.com/tomwright/dasel/v3/parsing/json"
 	"io"
 
 	"github.com/tomwright/dasel/v3/execution"
@@ -30,6 +31,9 @@ func run(o runOpts) ([]byte, error) {
 		o.OutFormat = o.InFormat
 	} else if o.OutFormat != "" && o.InFormat == "" {
 		o.InFormat = o.OutFormat
+	} else if o.OutFormat == "" {
+		// TODO : Swap this out for a value stored in dasel.yaml file.
+		o.OutFormat = json.JSON.String()
 	}
 
 	readerOptions := parsing.DefaultReaderOptions()

@@ -59,10 +59,12 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 			if !key.IsString() {
 				return nil, fmt.Errorf("expected key to resolve to string, got %s", key.Type())
 			}
+
 			val, err := ExecuteAST(p.Value, data, opts)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating value: %w", err)
 			}
+
 			keyStr, err := key.StringValue()
 			if err := obj.SetMapKey(keyStr, val); err != nil {
 				return nil, fmt.Errorf("error setting map key: %w", err)
