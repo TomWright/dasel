@@ -112,6 +112,7 @@ func TestRun(t *testing.T) {
 			in:   []byte{},
 			stdout: []byte(`{
     "name": "Tom"
+}
 `),
 			stderr: nil,
 			err:    nil,
