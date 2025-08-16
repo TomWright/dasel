@@ -283,8 +283,10 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 			return NewToken(Number, p.src[p.i:pos], p.i, pos-p.i), nil
 		}
 
-		if unicode.IsLetter(rune(p.src[pos])) {
-			for pos < p.srcLen && (unicode.IsLetter(rune(p.src[pos])) || unicode.IsDigit(rune(p.src[pos]))) {
+		if unicode.IsLetter(rune(p.src[pos])) || p.src[pos] == '_' {
+			for pos < p.srcLen && (unicode.IsLetter(rune(p.src[pos])) ||
+				unicode.IsDigit(rune(p.src[pos])) ||
+				p.src[pos] == '_') {
 				pos++
 			}
 			return NewToken(Symbol, p.src[p.i:pos], p.i, pos-p.i), nil

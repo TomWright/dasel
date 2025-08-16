@@ -109,7 +109,7 @@ func TestTokenizer_Parse(t *testing.T) {
 	}.run)
 
 	t.Run("everything", testCase{
-		in: "foo.bar.baz[1] != 42.123 || foo.bar.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
+		in: "foo.bar.baz[1] != 42.123 || foo.b_a_r.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []lexer.TokenKind{
 			lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.Dot, lexer.Symbol, lexer.OpenBracket, lexer.Number, lexer.CloseBracket, lexer.NotEqual, lexer.Number,
 			lexer.Or,
