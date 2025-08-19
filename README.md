@@ -1,8 +1,8 @@
 # dasel
 
 [![Gitbook](https://badges.aleen42.com/src/gitbook_1.svg)](https://daseldocs.tomwright.me)
-[![Go Report Card](https://goreportcard.com/badge/github.com/TomWright/dasel/v2)](https://goreportcard.com/report/github.com/TomWright/dasel/v2)
-[![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel/v2)
+[![Go Report Card](https://goreportcard.com/badge/github.com/tomwright/dasel/v3)](https://goreportcard.com/report/github.com/tomwright/dasel/v3)
+[![PkgGoDev](https://pkg.go.dev/badge/github.com/tomwright/dasel)](https://pkg.go.dev/github.com/tomwright/dasel/v3)
 ![Test](https://github.com/TomWright/dasel/workflows/Test/badge.svg)
 ![Build](https://github.com/TomWright/dasel/workflows/Build/badge.svg)
 [![codecov](https://codecov.io/gh/TomWright/dasel/branch/master/graph/badge.svg)](https://codecov.io/gh/TomWright/dasel)
@@ -75,7 +75,7 @@ brew install dasel
 You can also install a [development version](https://daseldocs.tomwright.me/installation#development-version) with:
 
 ```bash
-go install github.com/tomwright/dasel/v2/cmd/dasel@master
+go install github.com/tomwright/dasel/v3/cmd/dasel@master
 ```
 
 For more information see the [installation documentation](https://daseldocs.tomwright.me/installation).
@@ -181,7 +181,7 @@ Please [open a discussion](https://github.com/TomWright/dasel/discussions) if:
 - Uses a [standard query/selector syntax](https://daseldocs.tomwright.me/functions/selector-overview) across all data formats.
 - Zero runtime dependencies.
 - [Available on Linux, Mac and Windows](https://daseldocs.tomwright.me/installation).
-- Available to [import and use in your own projects](https://pkg.go.dev/github.com/tomwright/dasel/v2).
+- Available to [import and use in your own projects](https://pkg.go.dev/github.com/tomwright/dasel/v3).
 - [Run via Docker](https://daseldocs.tomwright.me/installation#docker).
 - [Faster than jq/yq](#benchmarks).
 - [Pre-commit hooks](#pre-commit).
