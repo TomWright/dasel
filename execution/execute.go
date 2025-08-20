@@ -40,13 +40,13 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 
 	executor, err := exprExecutor(options, expr)
 	if err != nil {
-		return nil, fmt.Errorf("error evaluating expression: %w", err)
+		return nil, fmt.Errorf("error evaluating expression %T: %w", expr, err)
 	}
 
 	if !value.IsBranch() {
 		res, err := executor(value)
 		if err != nil {
-			return nil, fmt.Errorf("execution error: %w", err)
+			return nil, fmt.Errorf("execution error when processing %T: %w", expr, err)
 		}
 		return res, nil
 	}
@@ -64,7 +64,7 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 		}
 		return res.Append(r)
 	}); err != nil {
-		return nil, fmt.Errorf("branch execution error: %w", err)
+		return nil, fmt.Errorf("branch execution error when processing %T: %w", expr, err)
 	}
 
 	return res, nil

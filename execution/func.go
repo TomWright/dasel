@@ -23,6 +23,7 @@ var (
 		FuncBase64Encode,
 		FuncBase64Decode,
 		FuncParse,
+		FuncReadFile,
 	)
 )
 
