@@ -109,6 +109,14 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseStringLiteral(p)
 	case lexer.Number:
 		left, err = parseNumberLiteral(p)
+	case lexer.Dash:
+		if p.peek().Kind == lexer.Number {
+			left, err = parseNumberLiteral(p)
+		} else {
+			return nil, &UnexpectedTokenError{
+				Token: p.current(),
+			}
+		}
 	case lexer.Symbol:
 		left, err = parseSymbol(p)
 	case lexer.OpenBracket:

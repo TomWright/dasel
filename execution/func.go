@@ -24,6 +24,7 @@ var (
 		FuncBase64Decode,
 		FuncParse,
 		FuncReadFile,
+		FuncHas,
 	)
 )
 

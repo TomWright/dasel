@@ -33,6 +33,13 @@ func parseSpread(p *Parser) (ast.Expr, error) {
 
 func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 	token := p.current()
+
+	var negative bool
+	if token.IsKind(lexer.Dash) {
+		negative = true
+		token = p.advance()
+	}
+
 	next := p.advance()
 	switch {
 	case next.IsKind(lexer.Symbol) && strings.EqualFold(next.Value, "f"):
@@ -41,6 +48,9 @@ func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 			return nil, err
 		}
 		p.advance()
+		if negative {
+			value = -value
+		}
 		return ast.NumberFloatExpr{
 			Value: value,
 		}, nil
@@ -50,6 +60,9 @@ func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 		if err != nil {
 			return nil, err
 		}
+		if negative {
+			value = -value
+		}
 		return ast.NumberFloatExpr{
 			Value: value,
 		}, nil
@@ -58,6 +71,9 @@ func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 		value, err := strconv.ParseInt(token.Value, 10, 64)
 		if err != nil {
 			return nil, err
+		}
+		if negative {
+			value = -value
 		}
 		return ast.NumberIntExpr{
 			Value: value,
