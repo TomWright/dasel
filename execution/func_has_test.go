@@ -19,12 +19,20 @@ func TestFuncHas(t *testing.T) {
 		s:   `[1,2,3].has(3)`,
 		out: model.NewBoolValue(false),
 	}.run)
+	t.Run("index string", testCase{
+		s:   `[1,2,3].has("foo")`,
+		out: model.NewBoolValue(false),
+	}.run)
 	t.Run("has map key", testCase{
 		s:   `{"x":1}.has("x")`,
 		out: model.NewBoolValue(true),
 	}.run)
 	t.Run("does not have map key", testCase{
 		s:   `{"x":1}.has("y")`,
+		out: model.NewBoolValue(false),
+	}.run)
+	t.Run("does not have map index", testCase{
+		s:   `{"x":1}.has(1)`,
 		out: model.NewBoolValue(false),
 	}.run)
 }
