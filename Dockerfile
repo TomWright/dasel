@@ -8,7 +8,7 @@ ARG CGO_ENABLED=0
 
 COPY . .
 
-RUN go build -o /dasel -ldflags="-X 'github.com/tomwright/dasel/${MAJOR_VERSION}/internal.Version=${RELEASE_VERSION}'" ./cmd/dasel
+RUN go build -o /dasel -ldflags="-w -s -X 'github.com/tomwright/dasel/${MAJOR_VERSION}/internal.Version=${RELEASE_VERSION}'" ./cmd/dasel
 
 FROM ${TARGET_BASE_IMAGE}
 
