@@ -57,6 +57,7 @@ const (
 	Branch
 	Map
 	Filter
+	Search
 	RegexPattern
 	SortBy
 	Asc

@@ -254,6 +254,9 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if t := matchStr(pos, "filter", false, Filter); t != nil {
 			return *t, nil
 		}
+		if t := matchStr(pos, "search", false, Search); t != nil {
+			return *t, nil
+		}
 		if t := matchStr(pos, "sortBy", false, SortBy); t != nil {
 			return *t, nil
 		}

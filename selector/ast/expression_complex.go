@@ -97,6 +97,12 @@ type FilterExpr struct {
 
 func (FilterExpr) expr() {}
 
+type SearchExpr struct {
+	Expr Expr
+}
+
+func (SearchExpr) expr() {}
+
 type SortByExpr struct {
 	Expr       Expr
 	Descending bool

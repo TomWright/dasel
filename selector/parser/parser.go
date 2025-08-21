@@ -139,6 +139,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseMap(p)
 	case lexer.Filter:
 		left, err = parseFilter(p)
+	case lexer.Search:
+		left, err = parseSearch(p)
 	case lexer.RegexPattern:
 		left, err = parseRegexPattern(p)
 	case lexer.SortBy:
