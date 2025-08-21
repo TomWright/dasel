@@ -69,7 +69,7 @@ jobs:
       - name: Set env
         run: echo RELEASE_VERSION=development >> $GITHUB_ENV
       - name: Build
-        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} CGO_ENABLED=0 go build -o target/release/${{ matrix.artifact_name }} -ldflags="-X 'github.com/tomwright/dasel/v3/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
+        run: GOOS=${{ matrix.os }} GOARCH=${{ matrix.arch }} CGO_ENABLED=0 go build -o target/release/${{ matrix.artifact_name }} -ldflags="-w -s -X 'github.com/tomwright/dasel/v3/internal.Version=${{ env.RELEASE_VERSION }}'" ./cmd/dasel
       - name: Test version
         if: matrix.test_version == true
         run: ./target/release/${{ matrix.artifact_name }} version
