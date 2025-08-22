@@ -117,6 +117,8 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 		return filterExprExecutor(opts, e)
 	case ast.SearchExpr:
 		return searchExprExecutor(opts, e)
+	case ast.RecursiveDescentExpr:
+		return recursiveDescentExprExecutor(opts, e)
 	case ast.ConditionalExpr:
 		return conditionalExprExecutor(opts, e)
 	case ast.BranchExpr:

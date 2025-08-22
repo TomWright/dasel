@@ -249,6 +249,24 @@ func (v *Value) Type() Type {
 	}
 }
 
+// IsScalar returns true if the type is scalar.
+func (v *Value) IsScalar() bool {
+	switch {
+	case v.IsString():
+		return true
+	case v.IsInt():
+		return true
+	case v.IsFloat():
+		return true
+	case v.IsBool():
+		return true
+	case v.IsNull():
+		return true
+	default:
+		return false
+	}
+}
+
 // Len returns the length of the value.
 func (v *Value) Len() (int, error) {
 	var l int

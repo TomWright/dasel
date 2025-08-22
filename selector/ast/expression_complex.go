@@ -103,6 +103,13 @@ type SearchExpr struct {
 
 func (SearchExpr) expr() {}
 
+type RecursiveDescentExpr struct {
+	IsWildcard bool
+	Expr       Expr
+}
+
+func (RecursiveDescentExpr) expr() {}
+
 type SortByExpr struct {
 	Expr       Expr
 	Descending bool

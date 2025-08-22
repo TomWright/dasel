@@ -118,4 +118,79 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("recursive descent", func(t *testing.T) {
+		t.Run("wildcard", runTest(testCase{
+			args: []string{"-i", "json", `..*`},
+			in: []byte(`{
+  "user": {
+    "name": "Alice",
+    "roles": ["admin", "editor"],
+    "meta": {
+      "active": true,
+      "score": 42
+    }
+  },
+  "tags": ["x", "y"],
+  "count": 10
+}`),
+			stdout: []byte(`[
+    "Alice",
+    "admin",
+    "editor",
+    true,
+    42,
+    "x",
+    "y",
+    10
+]
+`),
+			stderr: nil,
+			err:    nil,
+		}))
+
+		t.Run("property", runTest(testCase{
+			args: []string{"-i", "json", `..name`},
+			in: []byte(`{
+  "user": {
+    "name": "Alice",
+    "roles": ["admin", "editor"],
+    "meta": {
+      "active": true,
+      "score": 42
+    }
+  },
+  "tags": ["x", "y"],
+  "count": 10
+}`),
+			stdout: []byte(`[
+    "Alice"
+]
+`),
+			stderr: nil,
+			err:    nil,
+		}))
+
+		t.Run("index", runTest(testCase{
+			args: []string{"-i", "json", `..[0]`},
+			in: []byte(`{
+  "user": {
+    "name": "Alice",
+    "roles": ["admin", "editor"],
+    "meta": {
+      "active": true,
+      "score": 42
+    }
+  },
+  "tags": ["x", "y"],
+  "count": 10
+}`),
+			stdout: []byte(`[
+    "admin",
+    "x"
+]
+`),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
 }

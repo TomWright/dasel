@@ -118,7 +118,7 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 			}
 		}
 	case lexer.Symbol:
-		left, err = parseSymbol(p)
+		left, err = parseSymbol(p, true)
 	case lexer.OpenBracket:
 		left, err = parseArray(p)
 	case lexer.OpenCurly:
@@ -141,6 +141,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseFilter(p)
 	case lexer.Search:
 		left, err = parseSearch(p)
+	case lexer.RecursiveDescent:
+		left, err = parseRecursiveDescent(p)
 	case lexer.RegexPattern:
 		left, err = parseRegexPattern(p)
 	case lexer.SortBy:

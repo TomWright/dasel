@@ -27,8 +27,8 @@ const (
 	NotEqual // !=
 	And
 	Or
-	Like
-	NotLike
+	Like    // =~
+	NotLike // !~
 	String
 	Number
 	Bool
@@ -42,7 +42,8 @@ const (
 	Slash
 	Percent
 	Dot
-	Spread
+	Spread           // ...
+	RecursiveDescent // ..
 	Dollar
 	Variable
 	GreaterThan
