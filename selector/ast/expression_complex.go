@@ -91,6 +91,12 @@ type MapExpr struct {
 
 func (MapExpr) expr() {}
 
+type EachExpr struct {
+	Expr Expr
+}
+
+func (EachExpr) expr() {}
+
 type FilterExpr struct {
 	Expr Expr
 }

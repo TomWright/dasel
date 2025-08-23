@@ -7,8 +7,8 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		obj := model.NewMapValue()
 		for _, p := range e.Pairs {
 
@@ -17,7 +17,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 				var err error
 				if p.Value != nil {
 					// We need to spread the resulting value.
-					val, err = ExecuteAST(p.Value, data, opts)
+					val, err = ExecuteAST(p.Value, data, options)
 					if err != nil {
 						return nil, fmt.Errorf("error evaluating spread values: %w", err)
 					}
@@ -52,7 +52,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 			//	return nil, fmt.Errorf("cannot spread object key name")
 			//}
 
-			key, err := ExecuteAST(p.Key, data, opts)
+			key, err := ExecuteAST(p.Key, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating key: %w", err)
 			}
@@ -60,7 +60,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 				return nil, fmt.Errorf("expected key to resolve to string, got %s", key.Type())
 			}
 
-			val, err := ExecuteAST(p.Value, data, opts)
+			val, err := ExecuteAST(p.Value, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating value: %w", err)
 			}
@@ -74,9 +74,9 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 	}, nil
 }
 
-func propertyExprExecutor(opts *Options, e ast.PropertyExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		key, err := ExecuteAST(e.Property, data, opts)
+func propertyExprExecutor(e ast.PropertyExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
+		key, err := ExecuteAST(e.Property, data, options)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating property: %w", err)
 		}

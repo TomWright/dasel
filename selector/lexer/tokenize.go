@@ -254,6 +254,9 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if t := matchStr(pos, "map", false, Map); t != nil {
 			return *t, nil
 		}
+		if t := matchStr(pos, "each", false, Each); t != nil {
+			return *t, nil
+		}
 		if t := matchStr(pos, "filter", false, Filter); t != nil {
 			return *t, nil
 		}

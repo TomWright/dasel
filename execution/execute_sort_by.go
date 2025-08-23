@@ -8,8 +8,8 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func sortByExprExecutor(opts *Options, e ast.SortByExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func sortByExprExecutor(e ast.SortByExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot sort by on non-slice data")
 		}
@@ -21,7 +21,7 @@ func sortByExprExecutor(opts *Options, e ast.SortByExpr) (expressionExecutor, er
 		values := make([]sortableValue, 0)
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			item, err := ExecuteAST(e.Expr, item, opts)
+			item, err := ExecuteAST(e.Expr, item, options)
 			if err != nil {
 				return err
 			}
@@ -61,8 +61,8 @@ func sortByExprExecutor(opts *Options, e ast.SortByExpr) (expressionExecutor, er
 	}, nil
 }
 
-func sortByExprExecutor2(opts *Options, e ast.SortByExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func sortByExprExecutor2(e ast.SortByExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot sort by on non-slice data")
 		}
@@ -71,7 +71,7 @@ func sortByExprExecutor2(opts *Options, e ast.SortByExpr) (expressionExecutor, e
 		sortedIndexes := make([]int, 0)
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			item, err := ExecuteAST(e.Expr, item, opts)
+			item, err := ExecuteAST(e.Expr, item, options)
 			if err != nil {
 				return err
 			}

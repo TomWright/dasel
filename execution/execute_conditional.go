@@ -7,9 +7,9 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func conditionalExprExecutor(opts *Options, e ast.ConditionalExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		cond, err := ExecuteAST(e.Cond, data, opts)
+func conditionalExprExecutor(e ast.ConditionalExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
+		cond, err := ExecuteAST(e.Cond, data, options)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating condition: %w", err)
 		}
@@ -20,7 +20,7 @@ func conditionalExprExecutor(opts *Options, e ast.ConditionalExpr) (expressionEx
 		}
 
 		if condBool {
-			res, err := ExecuteAST(e.Then, data, opts)
+			res, err := ExecuteAST(e.Then, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error executing then block: %w", err)
 			}
@@ -28,7 +28,7 @@ func conditionalExprExecutor(opts *Options, e ast.ConditionalExpr) (expressionEx
 		}
 
 		if e.Else != nil {
-			res, err := ExecuteAST(e.Else, data, opts)
+			res, err := ExecuteAST(e.Else, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error executing else block: %w", err)
 			}

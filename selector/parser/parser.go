@@ -81,7 +81,7 @@ func (p *Parser) parseExpressions(
 }
 
 func (p *Parser) Parse() (ast.Expr, error) {
-	return p.parseExpressions([]lexer.TokenKind{lexer.EOF}, nil, true, bpDefault, true)
+	return p.parseExpressions([]lexer.TokenKind{lexer.EOF}, []lexer.TokenKind{lexer.Semicolon}, true, bpDefault, true)
 }
 
 func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
@@ -137,6 +137,8 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 		left, err = parseBranch(p)
 	case lexer.Map:
 		left, err = parseMap(p)
+	case lexer.Each:
+		left, err = parseEach(p)
 	case lexer.Filter:
 		left, err = parseFilter(p)
 	case lexer.Search:

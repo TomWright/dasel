@@ -7,8 +7,8 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func branchExprExecutor(e ast.BranchExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		res := model.NewSliceValue()
 		res.MarkAsBranch()
 
@@ -24,7 +24,7 @@ func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, er
 			}
 		} else {
 			for _, expr := range e.Exprs {
-				r, err := ExecuteAST(expr, data, opts)
+				r, err := ExecuteAST(expr, data, options)
 				if err != nil {
 					return nil, fmt.Errorf("failed to execute branch expr: %w", err)
 				}

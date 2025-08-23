@@ -7,7 +7,7 @@ import (
 )
 
 func spreadExprExecutor() (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		s := model.NewSliceValue()
 
 		s.MarkAsSpread()

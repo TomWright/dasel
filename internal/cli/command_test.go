@@ -107,6 +107,47 @@ func TestRun(t *testing.T) {
 			stderr: nil,
 			err:    nil,
 		}))
+		t.Run("set recursive descent", func(t *testing.T) {
+
+			t.Run("property", runTest(testCase{
+				args: []string{"-i", "json", "-o", "json", "--root", `$root..x.each($this = $this+1)`},
+				in:   []byte(`[{"x":1},{"x":2},{"x":3}]`),
+				stdout: []byte(`[
+    {
+        "x": 2
+    },
+    {
+        "x": 3
+    },
+    {
+        "x": 4
+    }
+]
+`),
+				stderr: nil,
+				err:    nil,
+			}))
+
+			t.Run("wildcard", runTest(testCase{
+				args: []string{"-i", "json", "-o", "json", "--root", `$root..*.each($this = 4)`},
+				in:   []byte(`[{"x":1},{"x":2},{"x":3}]`),
+				stdout: []byte(`[
+    {
+        "x": 4
+    },
+    {
+        "x": 4
+    },
+    {
+        "x": 4
+    }
+]
+`),
+				stderr: nil,
+				err:    nil,
+			}))
+
+		})
 		t.Run("create object with empty stdin", runTest(testCase{
 			args: []string{`{"name":"Tom"}`},
 			in:   []byte{},
@@ -118,6 +159,24 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("set search", runTest(testCase{
+		args: []string{"-i", "json", "-o", "json", "--root", `search(has("x")).each(x = 4)`},
+		in:   []byte(`[{"x":1},{"x":2},{"x":3}]`),
+		stdout: []byte(`[
+    {
+        "x": 4
+    },
+    {
+        "x": 4
+    },
+    {
+        "x": 4
+    }
+]
+`),
+		stderr: nil,
+		err:    nil,
+	}))
 	t.Run("recursive descent", func(t *testing.T) {
 		t.Run("wildcard", runTest(testCase{
 			args: []string{"-i", "json", `..*`},

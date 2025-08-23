@@ -5,15 +5,15 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func searchExprExecutor(opts *Options, e ast.SearchExpr) (expressionExecutor, error) {
-	var doSearch func(data *model.Value) ([]*model.Value, error)
-	doSearch = func(data *model.Value) ([]*model.Value, error) {
+func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
+	var doSearch func(options *Options, data *model.Value) ([]*model.Value, error)
+	doSearch = func(options *Options, data *model.Value) ([]*model.Value, error) {
 		res := make([]*model.Value, 0)
 
 		switch data.Type() {
 		case model.TypeMap:
 			if err := data.RangeMap(func(key string, v *model.Value) error {
-				got, err := ExecuteAST(e.Expr, v, opts)
+				got, err := ExecuteAST(e.Expr, v, options)
 				if err != nil {
 					return err
 				}
@@ -27,7 +27,7 @@ func searchExprExecutor(opts *Options, e ast.SearchExpr) (expressionExecutor, er
 					res = append(res, v)
 				}
 
-				gotNext, err := doSearch(v)
+				gotNext, err := doSearch(options, v)
 				if err != nil {
 					return err
 				}
@@ -39,7 +39,7 @@ func searchExprExecutor(opts *Options, e ast.SearchExpr) (expressionExecutor, er
 			}
 		case model.TypeSlice:
 			if err := data.RangeSlice(func(i int, v *model.Value) error {
-				got, err := ExecuteAST(e.Expr, v, opts)
+				got, err := ExecuteAST(e.Expr, v, options)
 				if err != nil {
 					return err
 				}
@@ -53,7 +53,7 @@ func searchExprExecutor(opts *Options, e ast.SearchExpr) (expressionExecutor, er
 					res = append(res, v)
 				}
 
-				gotNext, err := doSearch(v)
+				gotNext, err := doSearch(options, v)
 				if err != nil {
 					return err
 				}
@@ -68,10 +68,10 @@ func searchExprExecutor(opts *Options, e ast.SearchExpr) (expressionExecutor, er
 		return res, nil
 	}
 
-	return func(data *model.Value) (*model.Value, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		matches := model.NewSliceValue()
 
-		found, err := doSearch(data)
+		found, err := doSearch(options, data)
 		if err != nil {
 			return nil, err
 		}

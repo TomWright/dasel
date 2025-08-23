@@ -73,16 +73,16 @@ func doesValueMatchRecursiveDescentKey(opts *Options, data *model.Value, e ast.R
 	}
 }
 
-func recursiveDescentExprExecutor(opts *Options, e ast.RecursiveDescentExpr) (expressionExecutor, error) {
-	var recurseTree func(data *model.Value) ([]*model.Value, error)
+func recursiveDescentExprExecutor(e ast.RecursiveDescentExpr) (expressionExecutor, error) {
+	var recurseTree func(options *Options, data *model.Value) ([]*model.Value, error)
 
-	recurseTree = func(data *model.Value) ([]*model.Value, error) {
+	recurseTree = func(options *Options, data *model.Value) ([]*model.Value, error) {
 		res := make([]*model.Value, 0)
 
 		switch data.Type() {
 		case model.TypeMap:
 			if err := data.RangeMap(func(key string, v *model.Value) error {
-				appendValue, err := doesValueMatchRecursiveDescentKey(opts, v, e)
+				appendValue, err := doesValueMatchRecursiveDescentKey(options, v, e)
 				if err != nil {
 					return err
 				}
@@ -90,7 +90,7 @@ func recursiveDescentExprExecutor(opts *Options, e ast.RecursiveDescentExpr) (ex
 					res = append(res, appendValue)
 				}
 
-				gotNext, err := recurseTree(v)
+				gotNext, err := recurseTree(options, v)
 				if err != nil {
 					return err
 				}
@@ -103,7 +103,7 @@ func recursiveDescentExprExecutor(opts *Options, e ast.RecursiveDescentExpr) (ex
 		case model.TypeSlice:
 			if err := data.RangeSlice(func(i int, v *model.Value) error {
 
-				appendValue, err := doesValueMatchRecursiveDescentKey(opts, v, e)
+				appendValue, err := doesValueMatchRecursiveDescentKey(options, v, e)
 				if err != nil {
 					return err
 				}
@@ -111,7 +111,7 @@ func recursiveDescentExprExecutor(opts *Options, e ast.RecursiveDescentExpr) (ex
 					res = append(res, appendValue)
 				}
 
-				gotNext, err := recurseTree(v)
+				gotNext, err := recurseTree(options, v)
 				if err != nil {
 					return err
 				}
@@ -126,10 +126,10 @@ func recursiveDescentExprExecutor(opts *Options, e ast.RecursiveDescentExpr) (ex
 		return res, nil
 	}
 
-	return func(data *model.Value) (*model.Value, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		matches := model.NewSliceValue()
 
-		found, err := recurseTree(data)
+		found, err := recurseTree(options, data)
 		if err != nil {
 			return nil, err
 		}

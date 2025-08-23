@@ -14,9 +14,9 @@ func parseVariable(p *Parser) (ast.Expr, error) {
 
 	p.advance()
 
-	if p.current().IsKind(lexer.Equals) {
-		return parseAssignment(p, prop)
-	}
+	//if p.current().IsKind(lexer.Equals) {
+	//	return parseAssignment(p, prop)
+	//}
 
 	res, err := parseFollowingSymbol(p, prop)
 	if err != nil {
@@ -36,7 +36,7 @@ func parseAssignment(p *Parser, variableExpr ast.VariableExpr) (ast.Expr, error)
 		Variable: variableExpr,
 	}
 
-	valueExpr, err := p.parseExpressions(lexer.TokenKinds(lexer.Semicolon), nil, true, bpAssignment, true)
+	valueExpr, err := p.parseExpressions(lexer.TokenKinds(lexer.Semicolon, lexer.CloseParen), nil, true, bpAssignment, true)
 	if err != nil {
 		return nil, err
 	}

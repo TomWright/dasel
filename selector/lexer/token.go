@@ -57,6 +57,7 @@ const (
 	ElseIf
 	Branch
 	Map
+	Each
 	Filter
 	Search
 	RegexPattern
