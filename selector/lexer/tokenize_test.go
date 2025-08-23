@@ -108,6 +108,32 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 	}.run)
 
+	t.Run("recursive descent", func(t *testing.T) {
+		t.Run("key", testCase{
+			in: `..foo`,
+			out: []lexer.TokenKind{
+				lexer.RecursiveDescent,
+				lexer.Symbol,
+			},
+		}.run)
+		t.Run("index", testCase{
+			in: `..[1]`,
+			out: []lexer.TokenKind{
+				lexer.RecursiveDescent,
+				lexer.OpenBracket,
+				lexer.Number,
+				lexer.CloseBracket,
+			},
+		}.run)
+		t.Run("wildcard", testCase{
+			in: `..*`,
+			out: []lexer.TokenKind{
+				lexer.RecursiveDescent,
+				lexer.Star,
+			},
+		}.run)
+	})
+
 	t.Run("everything", testCase{
 		in: "foo.bar.baz[1] != 42.123 || foo.b_a_r.baz['hello'] == 42 && x == 'a\\'b' + false true . .... asd... $name null",
 		out: []lexer.TokenKind{

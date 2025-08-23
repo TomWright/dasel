@@ -21,6 +21,7 @@ func TestExpr_expr(t *testing.T) {
 	PropertyExpr{}.expr()
 	ObjectExpr{}.expr()
 	MapExpr{}.expr()
+	EachExpr{}.expr()
 	VariableExpr{}.expr()
 	GroupExpr{}.expr()
 	ConditionalExpr{}.expr()

@@ -44,7 +44,7 @@ func parseIndex(p *Parser) (ast.Expr, error) {
 	token := p.current()
 	p.advance()
 
-	idx, err := parseIndexSquareBrackets(p)
+	idx, err := parseIndexSquareBrackets(p, false)
 	if err != nil {
 		return nil, err
 	}
@@ -72,7 +72,7 @@ func parseIndex(p *Parser) (ast.Expr, error) {
 
 // parseIndexSquareBrackets parses square bracket array access.
 // E.g. [0], [0:1], [0:], [:2]
-func parseIndexSquareBrackets(p *Parser) (ast.Expr, error) {
+func parseIndexSquareBrackets(p *Parser, expectIndex bool) (ast.Expr, error) {
 	// Handle index (from bracket)
 	if err := p.expect(lexer.OpenBracket); err != nil {
 		return nil, err
@@ -120,6 +120,11 @@ func parseIndexSquareBrackets(p *Parser) (ast.Expr, error) {
 		return ast.IndexExpr{
 			Index: start,
 		}, nil
+	}
+	if expectIndex {
+		if err := p.expect(lexer.CloseBracket); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := p.expect(lexer.Colon); err != nil {

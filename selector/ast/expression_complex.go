@@ -91,11 +91,30 @@ type MapExpr struct {
 
 func (MapExpr) expr() {}
 
+type EachExpr struct {
+	Expr Expr
+}
+
+func (EachExpr) expr() {}
+
 type FilterExpr struct {
 	Expr Expr
 }
 
 func (FilterExpr) expr() {}
+
+type SearchExpr struct {
+	Expr Expr
+}
+
+func (SearchExpr) expr() {}
+
+type RecursiveDescentExpr struct {
+	IsWildcard bool
+	Expr       Expr
+}
+
+func (RecursiveDescentExpr) expr() {}
 
 type SortByExpr struct {
 	Expr       Expr

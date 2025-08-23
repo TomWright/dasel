@@ -7,15 +7,15 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func filterExprExecutor(opts *Options, e ast.FilterExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func filterExprExecutor(e ast.FilterExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot filter over non-array")
 		}
 		res := model.NewSliceValue()
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			v, err := ExecuteAST(e.Expr, item, opts)
+			v, err := ExecuteAST(e.Expr, item, options)
 			if err != nil {
 				return err
 			}

@@ -54,8 +54,8 @@ func basicBinaryExpressionExecutorFn(handler func(left *model.Value, right *mode
 
 var binaryExpressionExecutors = map[lexer.TokenKind]binaryExpressionExecutorFn{}
 
-func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func binaryExprExecutor(e ast.BinaryExpr) (expressionExecutor, error) {
+	return func(options *Options, data *model.Value) (*model.Value, error) {
 		if e.Left == nil || e.Right == nil {
 			return nil, fmt.Errorf("left and right expressions must be provided")
 		}
@@ -65,7 +65,7 @@ func binaryExprExecutor(opts *Options, e ast.BinaryExpr) (expressionExecutor, er
 			return nil, fmt.Errorf("unhandled operator: %s", e.Operator.Value)
 		}
 
-		return exec(e, data, opts)
+		return exec(e, data, options)
 	}, nil
 }
 
@@ -103,20 +103,15 @@ func init() {
 	binaryExpressionExecutors[lexer.NotEqual] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
 		return left.NotEqual(right)
 	})
-	binaryExpressionExecutors[lexer.Equals] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
-		err := left.Set(right)
-		if err != nil {
-			return nil, fmt.Errorf("error setting value: %w", err)
+	binaryExpressionExecutors[lexer.Equals] = func(expr ast.BinaryExpr, value *model.Value, options *Options) (*model.Value, error) {
+		if leftVar, ok := expr.Left.(ast.VariableExpr); ok {
+			if _, ok := options.Vars[leftVar.Name]; !ok {
+				options.Vars[leftVar.Name] = model.NewNullValue()
+			}
 		}
-		switch left.Type() {
-		case model.TypeMap:
-			return left, nil
-		case model.TypeSlice:
-			return left, nil
-		default:
-			return right, nil
-		}
-	})
+		return basicBinaryExpressionExecutorFn(executeAssign)(expr, value, options)
+	}
+	//binaryExpressionExecutors[lexer.Equals] = basicBinaryExpressionExecutorFn(executeAssign)
 	binaryExpressionExecutors[lexer.And] = basicBinaryExpressionExecutorFn(func(left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
 		leftBool, err := left.BoolValue()
 		if err != nil {
