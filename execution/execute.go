@@ -101,8 +101,6 @@ func exprExecutor(options *Options, expr ast.Expr) (expressionExecutor, error) {
 		return propertyExprExecutor(e)
 	case ast.VariableExpr:
 		return variableExprExecutor(e)
-	case ast.AssignExpr:
-		return variableAssignExprExecutor(e)
 	case ast.NumberIntExpr:
 		return numberIntExprExecutor(e)
 	case ast.NumberFloatExpr:
