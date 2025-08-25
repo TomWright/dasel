@@ -7,7 +7,7 @@ require (
 	github.com/charmbracelet/bubbles v0.20.0
 	github.com/charmbracelet/bubbletea v1.1.2
 	github.com/charmbracelet/lipgloss v0.13.1
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/hcl/v2 v2.22.0
 	github.com/pelletier/go-toml/v2 v2.2.2
 	github.com/zclconf/go-cty v1.13.0
