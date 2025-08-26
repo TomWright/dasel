@@ -41,26 +41,9 @@ func (v *Value) Append(val *Value) error {
 			Actual:   v.Type(),
 		}
 	}
-	// value is losing the SetFn here.
-	//
+
 	newVal := reflect.Append(unpacked.value, val.value)
 	unpacked.value.Set(newVal)
-	return nil
-}
-
-// AppendNested appends a value to the slice.
-func (v *Value) AppendNested(val *Value) error {
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
-	if !unpacked.isSlice() {
-		return ErrUnexpectedType{
-			Expected: TypeSlice,
-			Actual:   v.Type(),
-		}
-	}
-	// Assume the slice holds []*model.Value
-	slice := unpacked.value.Interface().([]any)
-	slice = append(slice, val)
-	unpacked.value.Set(reflect.ValueOf(slice))
 	return nil
 }
 
@@ -88,7 +71,7 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 	if i < 0 || i >= unpacked.value.Len() {
 		return nil, SliceIndexOutOfRange{Index: i}
 	}
-	
+
 	res := NewValue(unpacked.value.Index(i))
 	return res, nil
 }

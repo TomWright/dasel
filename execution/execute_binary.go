@@ -107,13 +107,13 @@ func init() {
 	})
 	binaryExpressionExecutors[lexer.Equals] = func(ctx context.Context, expr ast.BinaryExpr, value *model.Value, options *Options) (*model.Value, error) {
 		if leftVar, ok := expr.Left.(ast.VariableExpr); ok {
+			// It is expected that the left side of an assignment may not exist yet.
 			if _, ok := options.Vars[leftVar.Name]; !ok {
 				options.Vars[leftVar.Name] = model.NewNullValue()
 			}
 		}
 		return basicBinaryExpressionExecutorFn(executeAssign)(ctx, expr, value, options)
 	}
-	//binaryExpressionExecutors[lexer.Equals] = basicBinaryExpressionExecutorFn(executeAssign)
 	binaryExpressionExecutors[lexer.And] = basicBinaryExpressionExecutorFn(func(ctx context.Context, left *model.Value, right *model.Value, _ ast.BinaryExpr) (*model.Value, error) {
 		leftBool, err := left.BoolValue()
 		if err != nil {
