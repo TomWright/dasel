@@ -7,6 +7,7 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector"
 	"github.com/tomwright/dasel/v3/selector/ast"
+	"os"
 	"reflect"
 	"slices"
 )
@@ -172,9 +173,15 @@ func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
 		ctx = WithExecutorID(ctx, "variableExpr")
 		varName := e.Name
 		res, ok := options.Vars[varName]
-		if !ok {
-			return nil, fmt.Errorf("variable %s not found", varName)
+		if ok {
+			return res, nil
 		}
-		return res, nil
+
+		envVarValue := os.Getenv(varName)
+		if envVarValue != "" {
+			return model.NewStringValue(envVarValue), nil
+		}
+
+		return nil, fmt.Errorf("variable %s not found", varName)
 	}, nil
 }
