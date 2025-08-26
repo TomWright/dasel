@@ -213,9 +213,19 @@ func (e ErrCouldNotUnpackToType) Error() string {
 // UnpackUntilType unpacks the reflect value until it matches the given type.
 func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 	res := v.value
+	var daselValueType = reflect.TypeFor[*Value]()
 	for {
 		if res.Type() == t {
 			return NewValue(res), nil
+		}
+		if t != daselValueType && res.Type() == daselValueType {
+			m, err := v.daselValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting dasel value: %w", err)
+			}
+			res = m.value
+			continue
+
 		}
 		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
 			res = res.Elem()

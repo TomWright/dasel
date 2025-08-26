@@ -2,29 +2,56 @@ package execution
 
 import (
 	"context"
+	"errors"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
 func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 	var doSearch func(ctx context.Context, options *Options, data *model.Value) ([]*model.Value, error)
+	processValue := func(ctx context.Context, v *model.Value, options *Options) (bool, error) {
+		got, err := ExecuteAST(ctx, e.Expr, v, options)
+		if err != nil {
+			handleErrs := []any{
+				model.ErrIncompatibleTypes{},
+				model.ErrUnexpectedType{},
+				model.ErrUnexpectedTypes{},
+				model.SliceIndexOutOfRange{},
+				model.MapKeyNotFound{},
+			}
+			for _, e := range handleErrs {
+				if errors.As(err, &e) {
+					err = nil
+					break
+				}
+			}
+		}
+		if err != nil {
+			return false, err
+		}
+
+		if got == nil {
+			return false, nil
+		}
+
+		gotV, err := got.BoolValue()
+		if err != nil {
+			return false, err
+		}
+		return gotV, nil
+	}
 	doSearch = func(ctx context.Context, options *Options, data *model.Value) ([]*model.Value, error) {
 		res := make([]*model.Value, 0)
 
 		switch data.Type() {
 		case model.TypeMap:
 			if err := data.RangeMap(func(key string, v *model.Value) error {
-				got, err := ExecuteAST(ctx, e.Expr, v, options)
+				match, err := processValue(ctx, v, options)
 				if err != nil {
 					return err
 				}
 
-				gotV, err := got.BoolValue()
-				if err != nil {
-					return err
-				}
-
-				if gotV {
+				if match {
 					res = append(res, v)
 				}
 
@@ -40,17 +67,12 @@ func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 			}
 		case model.TypeSlice:
 			if err := data.RangeSlice(func(i int, v *model.Value) error {
-				got, err := ExecuteAST(ctx, e.Expr, v, options)
+				match, err := processValue(ctx, v, options)
 				if err != nil {
 					return err
 				}
 
-				gotV, err := got.BoolValue()
-				if err != nil {
-					return err
-				}
-
-				if gotV {
+				if match {
 					res = append(res, v)
 				}
 
