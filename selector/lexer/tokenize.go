@@ -90,9 +90,11 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 	case '%':
 		return NewToken(Percent, "%", p.i, 1), nil
 	case '$':
-		if p.peekRuneMatches(p.i+1, unicode.IsLetter) {
+		if p.peekRuneMatches(p.i+1, unicode.IsLetter) || p.peekRuneEqual(p.i+1, '_') {
 			pos := p.i + 1
-			for pos < p.srcLen && (unicode.IsLetter(rune(p.src[pos])) || unicode.IsDigit(rune(p.src[pos]))) {
+			for pos < p.srcLen && (unicode.IsLetter(rune(p.src[pos])) ||
+				unicode.IsDigit(rune(p.src[pos])) ||
+				p.src[pos] == '_') {
 				pos++
 			}
 			return NewToken(Variable, p.src[p.i+1:pos], p.i, pos-p.i), nil
