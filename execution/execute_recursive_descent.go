@@ -105,8 +105,7 @@ func recursiveDescentExprExecutor2(e ast.RecursiveDescentExpr) (expressionExecut
 		}
 
 		for _, f := range found {
-			// We purposely wrap the value here to ensure any downstream changes are applied to the root.
-			if err := matches.Append(model.NewValue(f)); err != nil {
+			if err := matches.Append(f); err != nil {
 				return nil, err
 			}
 		}

@@ -42,7 +42,14 @@ func (v *Value) Append(val *Value) error {
 		}
 	}
 
-	newVal := reflect.Append(unpacked.value, val.value)
+	valToAppend := val.value
+	// Wrap the value if it has a set function. This helps ensures sets are made correctly.
+	// This was first noticed as an issue with the recursive descent response slice.
+	// We could always wrap, but that would be less efficient.
+	if val.isDaselValue() || val.setFn != nil || val.IsScalar() {
+		valToAppend = reflect.ValueOf(val)
+	}
+	newVal := reflect.Append(unpacked.value, valToAppend)
 	unpacked.value.Set(newVal)
 	return nil
 }

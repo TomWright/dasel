@@ -153,13 +153,10 @@ func NewNestedValue(v *Value) *Value {
 
 func (v *Value) isDaselValue() bool {
 	cur := v.value
-	for {
-		if cur.Kind() == reflect.Interface && !cur.IsNil() {
-			cur = cur.Elem()
-			continue
-		}
-		return cur.Type() == reflect.TypeFor[*Value]()
+	for cur.Kind() == reflect.Interface && !cur.IsNil() {
+		cur = cur.Elem()
 	}
+	return cur.Type() == reflect.TypeFor[*Value]()
 }
 
 func (v *Value) daselValue() (*Value, error) {
