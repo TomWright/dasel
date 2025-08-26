@@ -1,6 +1,7 @@
 package execution_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -31,7 +32,7 @@ func (tc testCase) run(t *testing.T) {
 	if tc.outFn != nil {
 		exp = tc.outFn()
 	}
-	res, err := execution.ExecuteSelector(tc.s, in, execution.NewOptions(tc.opts...))
+	res, err := execution.ExecuteSelector(context.Background(), tc.s, in, execution.NewOptions(tc.opts...))
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -8,14 +9,15 @@ import (
 )
 
 func filterExprExecutor(e ast.FilterExpr) (expressionExecutor, error) {
-	return func(options *Options, data *model.Value) (*model.Value, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "filterExpr")
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot filter over non-array")
 		}
 		res := model.NewSliceValue()
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			v, err := ExecuteAST(e.Expr, item, options)
+			v, err := ExecuteAST(ctx, e.Expr, item, options)
 			if err != nil {
 				return err
 			}

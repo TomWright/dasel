@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 	"github.com/tomwright/dasel/v3/model"
 )
@@ -8,7 +9,7 @@ import (
 // FuncHas is a function that true or false if the input has the given key/index.
 var FuncHas = NewFunc(
 	"has",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 
 		arg := args[0]
 

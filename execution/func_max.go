@@ -1,13 +1,14 @@
 package execution
 
 import (
+	"context"
 	"github.com/tomwright/dasel/v3/model"
 )
 
 // FuncMax is a function that returns the highest number.
 var FuncMax = NewFunc(
 	"max",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		res := model.NewNullValue()
 		for _, arg := range args {
 			if res.IsNull() {

@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"slices"
@@ -9,10 +10,10 @@ import (
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func prepareArgs(opts *Options, data *model.Value, argsE ast.Expressions) (model.Values, error) {
+func prepareArgs(ctx context.Context, opts *Options, data *model.Value, argsE ast.Expressions) (model.Values, error) {
 	args := make(model.Values, 0)
 	for i, arg := range argsE {
-		res, err := ExecuteAST(arg, data, opts)
+		res, err := ExecuteAST(ctx, arg, data, opts)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating argument %d: %w", i, err)
 		}
@@ -28,13 +29,14 @@ func prepareArgs(opts *Options, data *model.Value, argsE ast.Expressions) (model
 }
 
 func callFnExecutor(f FuncFn, argsE ast.Expressions) (expressionExecutor, error) {
-	return func(options *Options, data *model.Value) (*model.Value, error) {
-		args, err := prepareArgs(options, data, argsE)
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "callFnExpr")
+		args, err := prepareArgs(ctx, options, data, argsE)
 		if err != nil {
 			return nil, fmt.Errorf("error preparing arguments: %w", err)
 		}
 
-		res, err := f(data, args)
+		res, err := f(ctx, data, args)
 		if err != nil {
 			return nil, fmt.Errorf("error executing function: %w", err)
 		}

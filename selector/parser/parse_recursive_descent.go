@@ -1,7 +1,6 @@
 package parser
 
 import (
-	"fmt"
 	"github.com/tomwright/dasel/v3/selector/ast"
 	"github.com/tomwright/dasel/v3/selector/lexer"
 )
@@ -21,14 +20,10 @@ func parseRecursiveDescent(p *Parser) (ast.Expr, error) {
 	case lexer.Star:
 		res.IsWildcard = true
 		p.advance()
-	case lexer.Symbol:
-		res.Expr, err = parseSymbol(p, false)
 	case lexer.OpenBracket:
-		res.Expr, err = parseIndexSquareBrackets(p, false)
-	case lexer.Variable:
-		res.Expr, err = parseVariable(p)
+		res.Expr, err = parseIndexSquareBrackets(p, true)
 	default:
-		err = fmt.Errorf("unhandled token kind when parsing recursive descent: %v", cur.Kind)
+		res.Expr, err = parseSymbol(p, false, false)
 	}
 
 	if err != nil {

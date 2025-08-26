@@ -23,7 +23,7 @@ func (v *Value) isStandardMap() bool {
 }
 
 func (v *Value) isDencodingMap() bool {
-	return v.UnpackKinds(reflect.Interface, reflect.Ptr).Value.Type() == reflect.TypeFor[orderedmap.Map]()
+	return v.UnpackKinds(reflect.Interface, reflect.Ptr).value.Type() == reflect.TypeFor[orderedmap.Map]()
 }
 
 func (v *Value) dencodingMapValue() (*orderedmap.Map, error) {
@@ -32,7 +32,7 @@ func (v *Value) dencodingMapValue() (*orderedmap.Map, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error getting map: %w", err)
 		}
-		return m.Value.Interface().(*orderedmap.Map), nil
+		return m.value.Interface().(*orderedmap.Map), nil
 	}
 	return nil, fmt.Errorf("value is not a dencoding map")
 }
@@ -45,14 +45,14 @@ func (v *Value) SetMapKey(key string, value *Value) error {
 		if err != nil {
 			return fmt.Errorf("error getting map: %w", err)
 		}
-		m.Set(key, value.Value.Interface())
+		m.Set(key, value.value.Interface())
 		return nil
 	case v.isStandardMap():
 		unpacked, err := v.UnpackUntilKind(reflect.Map)
 		if err != nil {
 			return fmt.Errorf("error unpacking value: %w", err)
 		}
-		unpacked.Value.SetMapIndex(reflect.ValueOf(key), value.Value)
+		unpacked.value.SetMapIndex(reflect.ValueOf(key), value.value)
 		return nil
 	default:
 		return fmt.Errorf("value is not a map")
@@ -95,7 +95,7 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		}
 		res := NewValue(val)
 		res.setFn = func(newValue *Value) error {
-			m.Set(key, newValue.Value.Interface())
+			m.Set(key, newValue.value.Interface())
 			return nil
 		}
 		return res, nil
@@ -104,7 +104,7 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error unpacking value: %w", err)
 		}
-		i := unpacked.Value.MapIndex(reflect.ValueOf(key))
+		i := unpacked.value.MapIndex(reflect.ValueOf(key))
 		if !i.IsValid() {
 			return nil, MapKeyNotFound{Key: key}
 		}
@@ -114,7 +114,7 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 			if err != nil {
 				return fmt.Errorf("error unpacking value: %w", err)
 			}
-			mapRv.Value.SetMapIndex(reflect.ValueOf(key), newValue.Value)
+			mapRv.value.SetMapIndex(reflect.ValueOf(key), newValue.value)
 			return nil
 		}
 		return res, nil
@@ -141,7 +141,7 @@ func (v *Value) DeleteMapKey(key string) error {
 		if err != nil {
 			return fmt.Errorf("error unpacking value: %w", err)
 		}
-		unpacked.Value.SetMapIndex(reflect.ValueOf(key), reflect.Value{})
+		unpacked.value.SetMapIndex(reflect.ValueOf(key), reflect.Value{})
 		return nil
 	default:
 		return ErrUnexpectedType{
@@ -165,7 +165,7 @@ func (v *Value) MapKeys() ([]string, error) {
 		if err != nil {
 			return nil, fmt.Errorf("error unpacking value: %w", err)
 		}
-		keys := unpacked.Value.MapKeys()
+		keys := unpacked.value.MapKeys()
 		strKeys := make([]string, len(keys))
 		for i, k := range keys {
 			strKeys[i] = k.String()

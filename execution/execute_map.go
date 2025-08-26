@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -8,14 +9,15 @@ import (
 )
 
 func mapExprExecutor(e ast.MapExpr) (expressionExecutor, error) {
-	return func(options *Options, data *model.Value) (*model.Value, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "mapExpr")
 		if !data.IsSlice() {
 			return nil, fmt.Errorf("cannot map over non-array")
 		}
 		res := model.NewSliceValue()
 
 		if err := data.RangeSlice(func(i int, item *model.Value) error {
-			item, err := ExecuteAST(e.Expr, item, options)
+			item, err := ExecuteAST(ctx, e.Expr, item, options)
 			if err != nil {
 				return err
 			}

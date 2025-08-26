@@ -1,19 +1,20 @@
 package execution
 
 import (
+	"context"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
 func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
-	var doSearch func(options *Options, data *model.Value) ([]*model.Value, error)
-	doSearch = func(options *Options, data *model.Value) ([]*model.Value, error) {
+	var doSearch func(ctx context.Context, options *Options, data *model.Value) ([]*model.Value, error)
+	doSearch = func(ctx context.Context, options *Options, data *model.Value) ([]*model.Value, error) {
 		res := make([]*model.Value, 0)
 
 		switch data.Type() {
 		case model.TypeMap:
 			if err := data.RangeMap(func(key string, v *model.Value) error {
-				got, err := ExecuteAST(e.Expr, v, options)
+				got, err := ExecuteAST(ctx, e.Expr, v, options)
 				if err != nil {
 					return err
 				}
@@ -27,7 +28,7 @@ func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 					res = append(res, v)
 				}
 
-				gotNext, err := doSearch(options, v)
+				gotNext, err := doSearch(ctx, options, v)
 				if err != nil {
 					return err
 				}
@@ -39,7 +40,7 @@ func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 			}
 		case model.TypeSlice:
 			if err := data.RangeSlice(func(i int, v *model.Value) error {
-				got, err := ExecuteAST(e.Expr, v, options)
+				got, err := ExecuteAST(ctx, e.Expr, v, options)
 				if err != nil {
 					return err
 				}
@@ -53,7 +54,7 @@ func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 					res = append(res, v)
 				}
 
-				gotNext, err := doSearch(options, v)
+				gotNext, err := doSearch(ctx, options, v)
 				if err != nil {
 					return err
 				}
@@ -68,10 +69,11 @@ func searchExprExecutor(e ast.SearchExpr) (expressionExecutor, error) {
 		return res, nil
 	}
 
-	return func(options *Options, data *model.Value) (*model.Value, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "searchExpr")
 		matches := model.NewSliceValue()
 
-		found, err := doSearch(options, data)
+		found, err := doSearch(ctx, options, data)
 		if err != nil {
 			return nil, err
 		}

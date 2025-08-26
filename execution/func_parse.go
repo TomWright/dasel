@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 )
@@ -8,7 +9,7 @@ import (
 // FuncParse parses the given data at runtime.
 var FuncParse = NewFunc(
 	"parse",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		var format parsing.Format
 		var content []byte
 		{

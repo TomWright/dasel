@@ -128,6 +128,37 @@ func TestRun(t *testing.T) {
 				err:    nil,
 			}))
 
+			t.Run("index", runTest(testCase{
+				args: []string{"-i", "json", "-o", "json", "--root", `$root..[1].each($this = $this+1)`},
+				in:   []byte(`[ {"x":[1,2,3]} , {"y":[4,5,6]} , {"z":[7,8,9]} ]`),
+				stdout: []byte(`[
+    {
+        "x": [
+            1,
+            3,
+            3
+        ]
+    },
+    {
+        "y": [
+            4,
+            6,
+            6
+        ]
+    },
+    {
+        "z": [
+            7,
+            9,
+            9
+        ]
+    }
+]
+`),
+				stderr: nil,
+				err:    nil,
+			}))
+
 			t.Run("wildcard", runTest(testCase{
 				args: []string{"-i", "json", "-o", "json", "--root", `$root..*.each($this = 4)`},
 				in:   []byte(`[{"x":1},{"x":2},{"x":3}]`),
@@ -160,14 +191,14 @@ func TestRun(t *testing.T) {
 		}))
 	})
 	t.Run("set search", runTest(testCase{
-		args: []string{"-i", "json", "-o", "json", "--root", `search(has("x")).each(x = 4)`},
+		args: []string{"-i", "json", "-o", "json", "--root", `search(has("x")).each(x = x+1)`},
 		in:   []byte(`[{"x":1},{"x":2},{"x":3}]`),
 		stdout: []byte(`[
     {
-        "x": 4
+        "x": 2
     },
     {
-        "x": 4
+        "x": 3
     },
     {
         "x": 4
@@ -223,6 +254,18 @@ func TestRun(t *testing.T) {
 }`),
 			stdout: []byte(`[
     "Alice"
+]
+`),
+			stderr: nil,
+			err:    nil,
+		}))
+
+		t.Run("property2", runTest(testCase{
+			args: []string{"-i", "json", `..name`},
+			in:   []byte(`[{"name":"Tom"}, {"name":"Jim"}, {"foo": "Bar"}]`),
+			stdout: []byte(`[
+    "Tom",
+    "Jim"
 ]
 `),
 			stderr: nil,

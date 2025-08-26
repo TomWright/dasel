@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -9,7 +10,7 @@ import (
 // FuncAdd is a function that adds the given values together.
 var FuncAdd = NewFunc(
 	"add",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		var foundInts, foundFloats int
 		var intRes int64
 		var floatRes float64

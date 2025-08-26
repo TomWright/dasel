@@ -64,13 +64,13 @@ func parseFollowingSymbol(p *Parser, prev ast.Expr) (ast.Expr, error) {
 	return ast.ChainExprs(res...), nil
 }
 
-func parseSymbol(p *Parser, withFollowing bool) (ast.Expr, error) {
+func parseSymbol(p *Parser, withFollowing bool, allowFunc bool) (ast.Expr, error) {
 	token := p.current()
 
 	next := p.peek()
 
 	// Handle functions
-	if next.IsKind(lexer.OpenParen) {
+	if next.IsKind(lexer.OpenParen) && allowFunc {
 		return parseFunc(p)
 	}
 

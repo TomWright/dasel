@@ -118,7 +118,7 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 			}
 		}
 	case lexer.Symbol:
-		left, err = parseSymbol(p, true)
+		left, err = parseSymbol(p, true, true)
 	case lexer.OpenBracket:
 		left, err = parseArray(p)
 	case lexer.OpenCurly:

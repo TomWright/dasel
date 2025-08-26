@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"encoding/base64"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -9,7 +10,7 @@ import (
 // FuncBase64Encode base64 encodes the given value.
 var FuncBase64Encode = NewFunc(
 	"base64e",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		arg := args[0]
 		strVal, err := arg.StringValue()
 		if err != nil {
@@ -24,7 +25,7 @@ var FuncBase64Encode = NewFunc(
 // FuncBase64Decode base64 decodes the given value.
 var FuncBase64Decode = NewFunc(
 	"base64d",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		arg := args[0]
 		strVal, err := arg.StringValue()
 		if err != nil {

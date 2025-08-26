@@ -1,11 +1,14 @@
 package execution
 
-import "github.com/tomwright/dasel/v3/model"
+import (
+	"context"
+	"github.com/tomwright/dasel/v3/model"
+)
 
 // FuncLen is a function that returns the length of the given value.
 var FuncLen = NewFunc(
 	"len",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		arg := args[0]
 
 		l, err := arg.Len()
