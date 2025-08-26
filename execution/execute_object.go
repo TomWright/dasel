@@ -1,14 +1,16 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "objectExpr")
 		obj := model.NewMapValue()
 		for _, p := range e.Pairs {
 
@@ -17,7 +19,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 				var err error
 				if p.Value != nil {
 					// We need to spread the resulting value.
-					val, err = ExecuteAST(p.Value, data, opts)
+					val, err = ExecuteAST(ctx, p.Value, data, options)
 					if err != nil {
 						return nil, fmt.Errorf("error evaluating spread values: %w", err)
 					}
@@ -36,23 +38,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 				continue
 			}
 
-			//if ast.IsType[ast.SpreadExpr](p.Key) && ast.IsType[ast.SpreadExpr](p.Value) {
-			//	if err := data.RangeMap(func(key string, value *model.Value) error {
-			//		if err := obj.SetMapKey(key, value); err != nil {
-			//			return fmt.Errorf("error setting map key: %w", err)
-			//		}
-			//		return nil
-			//	}); err != nil {
-			//		return nil, fmt.Errorf("error ranging map: %w", err)
-			//	}
-			//	continue
-			//}
-
-			//if ast.IsSpreadExpr(p.Key) {
-			//	return nil, fmt.Errorf("cannot spread object key name")
-			//}
-
-			key, err := ExecuteAST(p.Key, data, opts)
+			key, err := ExecuteAST(ctx, p.Key, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating key: %w", err)
 			}
@@ -60,7 +46,7 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 				return nil, fmt.Errorf("expected key to resolve to string, got %s", key.Type())
 			}
 
-			val, err := ExecuteAST(p.Value, data, opts)
+			val, err := ExecuteAST(ctx, p.Value, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating value: %w", err)
 			}
@@ -74,9 +60,10 @@ func objectExprExecutor(opts *Options, e ast.ObjectExpr) (expressionExecutor, er
 	}, nil
 }
 
-func propertyExprExecutor(opts *Options, e ast.PropertyExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		key, err := ExecuteAST(e.Property, data, opts)
+func propertyExprExecutor(e ast.PropertyExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "propertyExpr")
+		key, err := ExecuteAST(ctx, e.Property, data, options)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating property: %w", err)
 		}

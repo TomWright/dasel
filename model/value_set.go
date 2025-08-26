@@ -7,6 +7,14 @@ import (
 
 // Set sets the value of the value.
 func (v *Value) Set(newValue *Value) error {
+	if v.isDaselValue() {
+		dv, err := v.daselValue()
+		if err != nil {
+			return err
+		}
+		return dv.Set(newValue)
+	}
+	
 	if v.setFn != nil {
 		return v.setFn(newValue)
 	}
@@ -18,13 +26,13 @@ func (v *Value) Set(newValue *Value) error {
 
 	b := newValue.UnpackKinds(reflect.Ptr)
 	if a.Kind() == b.Kind() {
-		a.Value.Set(b.Value)
+		a.value.Set(b.value)
 		return nil
 	}
 
 	b = newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
 	if a.Kind() == b.Kind() {
-		a.Value.Set(b.Value)
+		a.value.Set(b.value)
 		return nil
 	}
 

@@ -25,7 +25,7 @@ func (v *Value) isNull() bool {
 	if err != nil {
 		return false
 	}
-	return unpacked.Value.IsNil()
+	return unpacked.value.IsNil()
 }
 
 // NewStringValue creates a new Value with a string value.
@@ -41,7 +41,7 @@ func (v *Value) IsString() bool {
 }
 
 func (v *Value) isString() bool {
-	return v.Value.Kind() == reflect.String
+	return v.value.Kind() == reflect.String
 }
 
 // StringValue returns the string value of the Value.
@@ -53,7 +53,7 @@ func (v *Value) StringValue() (string, error) {
 			Actual:   v.Type(),
 		}
 	}
-	return unpacked.Value.String(), nil
+	return unpacked.value.String(), nil
 }
 
 // StringLen returns the length of the string.
@@ -113,7 +113,7 @@ func (v *Value) IsInt() bool {
 }
 
 func (v *Value) isInt() bool {
-	return slices.Contains([]reflect.Kind{reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64}, v.Value.Kind())
+	return slices.Contains([]reflect.Kind{reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64}, v.value.Kind())
 }
 
 // IntValue returns the int value of the Value.
@@ -125,7 +125,7 @@ func (v *Value) IntValue() (int64, error) {
 			Actual:   v.Type(),
 		}
 	}
-	return unpacked.Value.Int(), nil
+	return unpacked.value.Int(), nil
 }
 
 // NewFloatValue creates a new Value with a float value.
@@ -141,7 +141,7 @@ func (v *Value) IsFloat() bool {
 }
 
 func (v *Value) isFloat() bool {
-	return slices.Contains([]reflect.Kind{reflect.Float32, reflect.Float64}, v.Value.Kind())
+	return slices.Contains([]reflect.Kind{reflect.Float32, reflect.Float64}, v.value.Kind())
 }
 
 // FloatValue returns the float value of the Value.
@@ -153,7 +153,7 @@ func (v *Value) FloatValue() (float64, error) {
 			Actual:   v.Type(),
 		}
 	}
-	return unpacked.Value.Float(), nil
+	return unpacked.value.Float(), nil
 }
 
 // NewBoolValue creates a new Value with a bool value.
@@ -169,7 +169,7 @@ func (v *Value) IsBool() bool {
 }
 
 func (v *Value) isBool() bool {
-	return v.Value.Kind() == reflect.Bool
+	return v.value.Kind() == reflect.Bool
 }
 
 // BoolValue returns the bool value of the Value.
@@ -181,5 +181,5 @@ func (v *Value) BoolValue() (bool, error) {
 			Actual:   v.Type(),
 		}
 	}
-	return unpacked.Value.Bool(), nil
+	return unpacked.value.Bool(), nil
 }

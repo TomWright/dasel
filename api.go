@@ -2,15 +2,16 @@
 package dasel
 
 import (
+	"context"
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
 )
 
 // Query queries the data using the selector and returns the results.
-func Query(data any, selector string, opts ...execution.ExecuteOptionFn) ([]*model.Value, int, error) {
+func Query(ctx context.Context, data any, selector string, opts ...execution.ExecuteOptionFn) ([]*model.Value, int, error) {
 	options := execution.NewOptions(opts...)
 	val := model.NewValue(data)
-	out, err := execution.ExecuteSelector(selector, val, options)
+	out, err := execution.ExecuteSelector(ctx, selector, val, options)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -29,8 +30,8 @@ func Query(data any, selector string, opts ...execution.ExecuteOptionFn) ([]*mod
 	return []*model.Value{out}, 1, nil
 }
 
-func Select(data any, selector string, opts ...execution.ExecuteOptionFn) (any, int, error) {
-	res, count, err := Query(data, selector, opts...)
+func Select(ctx context.Context, data any, selector string, opts ...execution.ExecuteOptionFn) (any, int, error) {
+	res, count, err := Query(ctx, data, selector, opts...)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -41,8 +42,8 @@ func Select(data any, selector string, opts ...execution.ExecuteOptionFn) (any, 
 	return out, count, err
 }
 
-func Modify(data any, selector string, newValue any, opts ...execution.ExecuteOptionFn) (int, error) {
-	res, count, err := Query(data, selector, opts...)
+func Modify(ctx context.Context, data any, selector string, newValue any, opts ...execution.ExecuteOptionFn) (int, error) {
+	res, count, err := Query(ctx, data, selector, opts...)
 	if err != nil {
 		return 0, err
 	}

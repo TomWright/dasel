@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -9,7 +10,7 @@ import (
 // FuncMerge is a function that merges two or more items together.
 var FuncMerge = NewFunc(
 	"merge",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		if len(args) == 1 {
 			return args[0], nil
 		}

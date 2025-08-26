@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -9,7 +10,7 @@ import (
 // FuncReverse is a function that reverses the input.
 var FuncReverse = NewFunc(
 	"reverse",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		arg := args[0]
 
 		switch arg.Type() {

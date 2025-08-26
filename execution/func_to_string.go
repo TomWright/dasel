@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -9,7 +10,7 @@ import (
 // FuncToString is a function that converts the given value to a string.
 var FuncToString = NewFunc(
 	"toString",
-	func(data *model.Value, args model.Values) (*model.Value, error) {
+	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		switch args[0].Type() {
 		case model.TypeString:
 			stringValue, err := args[0].StringValue()

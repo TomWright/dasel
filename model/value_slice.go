@@ -21,7 +21,7 @@ func (v *Value) IsSlice() bool {
 }
 
 func (v *Value) isSlice() bool {
-	return v.Value.Kind() == reflect.Slice
+	return v.value.Kind() == reflect.Slice
 }
 
 // Append appends a value to the slice.
@@ -41,8 +41,16 @@ func (v *Value) Append(val *Value) error {
 			Actual:   v.Type(),
 		}
 	}
-	newVal := reflect.Append(unpacked.Value, val.Value)
-	unpacked.Value.Set(newVal)
+
+	valToAppend := val.value
+	// Wrap the value if it has a set function. This helps ensures sets are made correctly.
+	// This was first noticed as an issue with the recursive descent response slice.
+	// We could always wrap, but that would be less efficient.
+	if val.isDaselValue() || val.setFn != nil || val.IsScalar() {
+		valToAppend = reflect.ValueOf(val)
+	}
+	newVal := reflect.Append(unpacked.value, valToAppend)
+	unpacked.value.Set(newVal)
 	return nil
 }
 
@@ -55,7 +63,7 @@ func (v *Value) SliceLen() (int, error) {
 			Actual:   v.Type(),
 		}
 	}
-	return unpacked.Value.Len(), nil
+	return unpacked.value.Len(), nil
 }
 
 // GetSliceIndex returns the value at the specified index in the slice.
@@ -67,10 +75,11 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 			Actual:   v.Type(),
 		}
 	}
-	if i < 0 || i >= unpacked.Value.Len() {
+	if i < 0 || i >= unpacked.value.Len() {
 		return nil, SliceIndexOutOfRange{Index: i}
 	}
-	res := NewValue(unpacked.Value.Index(i))
+
+	res := NewValue(unpacked.value.Index(i))
 	return res, nil
 }
 
@@ -83,10 +92,10 @@ func (v *Value) SetSliceIndex(i int, val *Value) error {
 			Actual:   v.Type(),
 		}
 	}
-	if i < 0 || i >= unpacked.Value.Len() {
+	if i < 0 || i >= unpacked.value.Len() {
 		return SliceIndexOutOfRange{Index: i}
 	}
-	unpacked.Value.Index(i).Set(val.Value)
+	unpacked.value.Index(i).Set(val.value)
 	return nil
 }
 

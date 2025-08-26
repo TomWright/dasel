@@ -1,18 +1,18 @@
 package execution
 
 import (
+	"context"
 	"errors"
 	"fmt"
-	"reflect"
-	"slices"
-
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector"
 	"github.com/tomwright/dasel/v3/selector/ast"
+	"reflect"
+	"slices"
 )
 
 // ExecuteSelector parses the selector and executes the resulting AST with the given input.
-func ExecuteSelector(selectorStr string, value *model.Value, opts *Options) (*model.Value, error) {
+func ExecuteSelector(ctx context.Context, selectorStr string, value *model.Value, opts *Options) (*model.Value, error) {
 	if selectorStr == "" {
 		return value, nil
 	}
@@ -22,7 +22,7 @@ func ExecuteSelector(selectorStr string, value *model.Value, opts *Options) (*mo
 		return nil, fmt.Errorf("error parsing selector: %w", err)
 	}
 
-	res, err := ExecuteAST(expr, value, opts)
+	res, err := ExecuteAST(ctx, expr, value, opts)
 	if err != nil {
 		return nil, fmt.Errorf("error executing selector: %w", err)
 	}
@@ -30,21 +30,30 @@ func ExecuteSelector(selectorStr string, value *model.Value, opts *Options) (*mo
 	return res, nil
 }
 
-type expressionExecutor func(data *model.Value) (*model.Value, error)
+type expressionExecutor func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error)
 
 // ExecuteAST executes the given AST with the given input.
-func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Value, error) {
+func ExecuteAST(ctx context.Context, expr ast.Expr, value *model.Value, options *Options) (*model.Value, error) {
 	if expr == nil {
 		return value, nil
 	}
 
-	executor, err := exprExecutor(options, expr)
+	executorFn, err := exprExecutor(options, expr)
 	if err != nil {
 		return nil, fmt.Errorf("error evaluating expression %T: %w", expr, err)
 	}
 
+	executor := func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		options.Vars["this"] = data
+		out, err := executorFn(ctx, options, data)
+		if err != nil {
+			return out, err
+		}
+		return out, nil
+	}
+
 	if !value.IsBranch() {
-		res, err := executor(value)
+		res, err := executor(ctx, options, value)
 		if err != nil {
 			return nil, fmt.Errorf("execution error when processing %T: %w", expr, err)
 		}
@@ -55,7 +64,7 @@ func ExecuteAST(expr ast.Expr, value *model.Value, options *Options) (*model.Val
 	res.MarkAsBranch()
 
 	if err := value.RangeSlice(func(i int, v *model.Value) error {
-		r, err := executor(v)
+		r, err := executor(ctx, options, v)
 		if err != nil {
 			return err
 		}
@@ -74,33 +83,31 @@ var unstableAstTypes = []reflect.Type{
 	reflect.TypeFor[ast.BranchExpr](),
 }
 
-func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
-	if !opts.Unstable && (slices.Contains(unstableAstTypes, reflect.TypeOf(expr)) ||
+func exprExecutor(options *Options, expr ast.Expr) (expressionExecutor, error) {
+	if !options.Unstable && (slices.Contains(unstableAstTypes, reflect.TypeOf(expr)) ||
 		slices.Contains(unstableAstTypes, reflect.ValueOf(expr).Type())) {
 		return nil, errors.New("unstable ast types are not enabled. to enable them use --unstable")
 	}
 
 	switch e := expr.(type) {
 	case ast.BinaryExpr:
-		return binaryExprExecutor(opts, e)
+		return binaryExprExecutor(e)
 	case ast.UnaryExpr:
-		return unaryExprExecutor(opts, e)
+		return unaryExprExecutor(e)
 	case ast.CallExpr:
-		return callExprExecutor(opts, e)
+		return callExprExecutor(options, e)
 	case ast.ChainedExpr:
-		return chainedExprExecutor(opts, e)
+		return chainedExprExecutor(e)
 	case ast.SpreadExpr:
 		return spreadExprExecutor()
 	case ast.RangeExpr:
-		return rangeExprExecutor(opts, e)
+		return rangeExprExecutor(e)
 	case ast.IndexExpr:
-		return indexExprExecutor(opts, e)
+		return indexExprExecutor(e)
 	case ast.PropertyExpr:
-		return propertyExprExecutor(opts, e)
+		return propertyExprExecutor(e)
 	case ast.VariableExpr:
-		return variableExprExecutor(opts, e)
-	case ast.AssignExpr:
-		return assignExprExecutor(opts, e)
+		return variableExprExecutor(e)
 	case ast.NumberIntExpr:
 		return numberIntExprExecutor(e)
 	case ast.NumberFloatExpr:
@@ -110,26 +117,34 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	case ast.BoolExpr:
 		return boolExprExecutor(e)
 	case ast.ObjectExpr:
-		return objectExprExecutor(opts, e)
+		return objectExprExecutor(e)
 	case ast.MapExpr:
-		return mapExprExecutor(opts, e)
+		return mapExprExecutor(e)
+	case ast.EachExpr:
+		return eachExprExecutor(e)
 	case ast.FilterExpr:
-		return filterExprExecutor(opts, e)
+		return filterExprExecutor(e)
+	case ast.SearchExpr:
+		return searchExprExecutor(e)
+	case ast.RecursiveDescentExpr:
+		return recursiveDescentExprExecutor2(e)
 	case ast.ConditionalExpr:
-		return conditionalExprExecutor(opts, e)
+		return conditionalExprExecutor(e)
 	case ast.BranchExpr:
-		return branchExprExecutor(opts, e)
+		return branchExprExecutor(e)
 	case ast.ArrayExpr:
-		return arrayExprExecutor(opts, e)
+		return arrayExprExecutor(e)
 	case ast.RegexExpr:
 		// Noop
-		return func(data *model.Value) (*model.Value, error) {
+		return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+			ctx = WithExecutorID(ctx, "regexExpr")
 			return data, nil
 		}, nil
 	case ast.SortByExpr:
-		return sortByExprExecutor(opts, e)
+		return sortByExprExecutor(e)
 	case ast.NullExpr:
-		return func(data *model.Value) (*model.Value, error) {
+		return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+			ctx = WithExecutorID(ctx, "nullExpr")
 			return model.NewNullValue(), nil
 		}, nil
 	default:
@@ -137,47 +152,29 @@ func exprExecutor(opts *Options, expr ast.Expr) (expressionExecutor, error) {
 	}
 }
 
-func chainedExprExecutor(options *Options, e ast.ChainedExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "chainedExpr")
+		var curData = data
 		for _, expr := range e.Exprs {
-			res, err := ExecuteAST(expr, data, options)
+			res, err := ExecuteAST(ctx, expr, curData, options)
 			if err != nil {
 				return nil, fmt.Errorf("error executing expression: %w", err)
 			}
-			data = res
+			curData = res
 		}
-		return data, nil
+		return curData, nil
 	}, nil
 }
 
-func variableExprExecutor(opts *Options, e ast.VariableExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "variableExpr")
 		varName := e.Name
-		if varName == "this" {
-			return data, nil
-		}
-		res, ok := opts.Vars[varName]
+		res, ok := options.Vars[varName]
 		if !ok {
 			return nil, fmt.Errorf("variable %s not found", varName)
 		}
 		return res, nil
-	}, nil
-}
-
-func assignExprExecutor(opts *Options, e ast.AssignExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		varName := e.Variable.Name
-		if varName == "this" {
-			return nil, fmt.Errorf("cannot assign to $this variable")
-		}
-
-		value, err := ExecuteAST(e.Value, data, opts)
-		if err != nil {
-			return nil, fmt.Errorf("error executing variable assignment expression: %w", err)
-		}
-
-		opts.Vars[varName] = value
-
-		return value, nil
 	}, nil
 }

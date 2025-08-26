@@ -61,6 +61,9 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if p.peekRuneEqual(p.i+1, '.') && p.peekRuneEqual(p.i+2, '.') {
 			return NewToken(Spread, "...", p.i, 3), nil
 		}
+		if p.peekRuneEqual(p.i+1, '.') {
+			return NewToken(RecursiveDescent, "..", p.i, 2), nil
+		}
 		return NewToken(Dot, ".", p.i, 1), nil
 	case ',':
 		return NewToken(Comma, ",", p.i, 1), nil
@@ -251,7 +254,13 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		if t := matchStr(pos, "map", false, Map); t != nil {
 			return *t, nil
 		}
+		if t := matchStr(pos, "each", false, Each); t != nil {
+			return *t, nil
+		}
 		if t := matchStr(pos, "filter", false, Filter); t != nil {
+			return *t, nil
+		}
+		if t := matchStr(pos, "search", false, Search); t != nil {
 			return *t, nil
 		}
 		if t := matchStr(pos, "sortBy", false, SortBy); t != nil {

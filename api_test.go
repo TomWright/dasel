@@ -16,7 +16,7 @@ type modifyTestCase struct {
 }
 
 func (tc modifyTestCase) run(t *testing.T) {
-	count, err := dasel.Modify(&tc.in, tc.selector, tc.value)
+	count, err := dasel.Modify(t.Context(), &tc.in, tc.selector, tc.value)
 	if err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}

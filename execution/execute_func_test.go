@@ -1,6 +1,7 @@
 package execution_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/tomwright/dasel/v3/execution"
@@ -10,7 +11,7 @@ import (
 func TestFunc(t *testing.T) {
 	returnInputData := execution.NewFunc(
 		"returnInputData",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
+		func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 			return data, nil
 		},
 		execution.ValidateArgsExactly(0),
@@ -18,7 +19,7 @@ func TestFunc(t *testing.T) {
 
 	returnFirstArg := execution.NewFunc(
 		"returnFirstArg",
-		func(data *model.Value, args model.Values) (*model.Value, error) {
+		func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 			return args[0], nil
 		},
 		execution.ValidateArgsExactly(1),

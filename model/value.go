@@ -46,7 +46,7 @@ func (v Values) ToSliceValue() (*Value, error) {
 
 // Value represents a value.
 type Value struct {
-	Value    reflect.Value
+	value    reflect.Value
 	Metadata map[string]any
 
 	setFn func(*Value) error
@@ -123,10 +123,10 @@ func (v *Value) string(indent int) string {
 func NewValue(v any) *Value {
 	switch val := v.(type) {
 	case *Value:
-		return val
+		return NewNestedValue(val)
 	case reflect.Value:
 		return &Value{
-			Value:    val,
+			value:    val,
 			Metadata: make(map[string]any),
 		}
 	case nil:
@@ -137,10 +137,37 @@ func NewValue(v any) *Value {
 			res.Elem().Set(reflect.ValueOf(v))
 		}
 		return &Value{
-			Value:    res,
+			value:    res,
 			Metadata: make(map[string]any),
 		}
 	}
+}
+
+// NewNestedValue creates a new nested value.
+func NewNestedValue(v *Value) *Value {
+	return &Value{
+		value:    reflect.ValueOf(v),
+		Metadata: make(map[string]any),
+	}
+}
+
+func (v *Value) isDaselValue() bool {
+	cur := v.value
+	for cur.Kind() == reflect.Interface && !cur.IsNil() {
+		cur = cur.Elem()
+	}
+	return cur.Type() == reflect.TypeFor[*Value]()
+}
+
+func (v *Value) daselValue() (*Value, error) {
+	if v.isDaselValue() {
+		m, err := v.UnpackUntilType(reflect.TypeFor[*Value]())
+		if err != nil {
+			return nil, fmt.Errorf("error getting dasel value: %w", err)
+		}
+		return m.value.Interface().(*Value), nil
+	}
+	return nil, fmt.Errorf("value is not a dasel value")
 }
 
 // Interface returns the value as an interface.
@@ -148,17 +175,25 @@ func (v *Value) Interface() any {
 	if v.IsNull() {
 		return nil
 	}
-	return v.Value.Interface()
+	return v.value.Interface()
 }
 
 // Kind returns the reflect kind of the value.
 func (v *Value) Kind() reflect.Kind {
-	return v.Value.Kind()
+	return v.value.Kind()
 }
 
 // UnpackKinds unpacks the reflect value until it no longer matches the given kinds.
 func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
-	res := v.Value
+	val := v
+	for val.isDaselValue() {
+		var err error
+		val, err = val.daselValue()
+		if err != nil {
+			panic(err)
+		}
+	}
+	res := val.value
 	for {
 		if !slices.Contains(kinds, res.Kind()) || res.IsNil() {
 			return NewValue(res)
@@ -167,9 +202,17 @@ func (v *Value) UnpackKinds(kinds ...reflect.Kind) *Value {
 	}
 }
 
+type ErrCouldNotUnpackToType struct {
+	Type reflect.Type
+}
+
+func (e ErrCouldNotUnpackToType) Error() string {
+	return fmt.Sprintf("could not unpack to type: %s", e.Type)
+}
+
 // UnpackUntilType unpacks the reflect value until it matches the given type.
 func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
-	res := v.Value
+	res := v.value
 	for {
 		if res.Type() == t {
 			return NewValue(res), nil
@@ -178,13 +221,13 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 			res = res.Elem()
 			continue
 		}
-		return nil, fmt.Errorf("could not unpack to type: %s", t)
+		return nil, &ErrCouldNotUnpackToType{Type: t}
 	}
 }
 
 // UnpackUntilAddressable unpacks the reflect value until it is addressable.
 func (v *Value) UnpackUntilAddressable() (*Value, error) {
-	res := v.Value
+	res := v.value
 	for {
 		if res.CanAddr() {
 			return NewValue(res), nil
@@ -199,7 +242,7 @@ func (v *Value) UnpackUntilAddressable() (*Value, error) {
 
 // UnpackUntilKind unpacks the reflect value until it matches the given kind.
 func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
-	res := v.Value
+	res := v.value
 	for {
 		if res.Kind() == k {
 			return NewValue(res), nil
@@ -214,7 +257,7 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 
 // UnpackUntilKinds unpacks the reflect value until it matches the given kind.
 func (v *Value) UnpackUntilKinds(kinds ...reflect.Kind) (*Value, error) {
-	res := v.Value
+	res := v.value
 	for {
 		if slices.Contains(kinds, res.Kind()) {
 			return NewValue(res), nil
@@ -246,6 +289,24 @@ func (v *Value) Type() Type {
 		return TypeNull
 	default:
 		return TypeUnknown
+	}
+}
+
+// IsScalar returns true if the type is scalar.
+func (v *Value) IsScalar() bool {
+	switch {
+	case v.IsString():
+		return true
+	case v.IsInt():
+		return true
+	case v.IsFloat():
+		return true
+	case v.IsBool():
+		return true
+	case v.IsNull():
+		return true
+	default:
+		return false
 	}
 }
 

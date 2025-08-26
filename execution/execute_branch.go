@@ -1,14 +1,16 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func branchExprExecutor(e ast.BranchExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "branchExpr")
 		res := model.NewSliceValue()
 		res.MarkAsBranch()
 
@@ -24,7 +26,7 @@ func branchExprExecutor(opts *Options, e ast.BranchExpr) (expressionExecutor, er
 			}
 		} else {
 			for _, expr := range e.Exprs {
-				r, err := ExecuteAST(expr, data, opts)
+				r, err := ExecuteAST(ctx, expr, data, options)
 				if err != nil {
 					return nil, fmt.Errorf("failed to execute branch expr: %w", err)
 				}

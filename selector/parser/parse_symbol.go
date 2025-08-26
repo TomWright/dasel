@@ -33,7 +33,7 @@ func parseFollowingSymbol(p *Parser, prev ast.Expr) (ast.Expr, error) {
 				continue
 			}
 
-			e, err := parseIndexSquareBrackets(p)
+			e, err := parseIndexSquareBrackets(p, false)
 			if err != nil {
 				return nil, err
 			}
@@ -64,13 +64,13 @@ func parseFollowingSymbol(p *Parser, prev ast.Expr) (ast.Expr, error) {
 	return ast.ChainExprs(res...), nil
 }
 
-func parseSymbol(p *Parser) (ast.Expr, error) {
+func parseSymbol(p *Parser, withFollowing bool, allowFunc bool) (ast.Expr, error) {
 	token := p.current()
 
 	next := p.peek()
 
 	// Handle functions
-	if next.IsKind(lexer.OpenParen) {
+	if next.IsKind(lexer.OpenParen) && allowFunc {
 		return parseFunc(p)
 	}
 
@@ -80,10 +80,13 @@ func parseSymbol(p *Parser) (ast.Expr, error) {
 
 	p.advance()
 
-	res, err := parseFollowingSymbol(p, prop)
-	if err != nil {
-		return nil, err
+	if withFollowing {
+		res, err := parseFollowingSymbol(p, prop)
+		if err != nil {
+			return nil, err
+		}
+		return res, nil
 	}
 
-	return res, nil
+	return prop, nil
 }

@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"context"
 	"fmt"
 	"github.com/tomwright/dasel/v3/parsing/json"
 	"io"
@@ -86,7 +87,7 @@ func run(o runOpts) ([]byte, error) {
 	}
 
 	options := execution.NewOptions(opts...)
-	out, err := execution.ExecuteSelector(o.Query, inputData, options)
+	out, err := execution.ExecuteSelector(context.Background(), o.Query, inputData, options)
 	if err != nil {
 		return nil, err
 	}

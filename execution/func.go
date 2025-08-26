@@ -1,6 +1,7 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -29,11 +30,11 @@ var (
 )
 
 // ArgsValidator is a function that validates the arguments passed to a function.
-type ArgsValidator func(name string, args model.Values) error
+type ArgsValidator func(ctx context.Context, name string, args model.Values) error
 
 // ValidateArgsExactly returns an ArgsValidator that validates that the number of arguments passed to a function is exactly the expected number.
 func ValidateArgsExactly(expected int) ArgsValidator {
-	return func(name string, args model.Values) error {
+	return func(ctx context.Context, name string, args model.Values) error {
 		if len(args) == expected {
 			return nil
 		}
@@ -43,7 +44,7 @@ func ValidateArgsExactly(expected int) ArgsValidator {
 
 // ValidateArgsMin returns an ArgsValidator that validates that the number of arguments passed to a function is at least the expected number.
 func ValidateArgsMin(expected int) ArgsValidator {
-	return func(name string, args model.Values) error {
+	return func(ctx context.Context, name string, args model.Values) error {
 		if len(args) >= expected {
 			return nil
 		}
@@ -53,7 +54,7 @@ func ValidateArgsMin(expected int) ArgsValidator {
 
 // ValidateArgsMax returns an ArgsValidator that validates that the number of arguments passed to a function is at most the expected number.
 func ValidateArgsMax(expected int) ArgsValidator {
-	return func(name string, args model.Values) error {
+	return func(ctx context.Context, name string, args model.Values) error {
 		if len(args) <= expected {
 			return nil
 		}
@@ -63,7 +64,7 @@ func ValidateArgsMax(expected int) ArgsValidator {
 
 // ValidateArgsMinMax returns an ArgsValidator that validates that the number of arguments passed to a function is between the min and max expected numbers.
 func ValidateArgsMinMax(min int, max int) ArgsValidator {
-	return func(name string, args model.Values) error {
+	return func(ctx context.Context, name string, args model.Values) error {
 		if len(args) >= min && len(args) <= max {
 			return nil
 		}
@@ -80,13 +81,13 @@ type Func struct {
 
 // Handler returns a FuncFn that can be used to execute the function.
 func (f *Func) Handler() FuncFn {
-	return func(data *model.Value, args model.Values) (*model.Value, error) {
+	return func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
 		if f.argsValidator != nil {
-			if err := f.argsValidator(f.name, args); err != nil {
+			if err := f.argsValidator(ctx, f.name, args); err != nil {
 				return nil, err
 			}
 		}
-		res, err := f.handler(data, args)
+		res, err := f.handler(ctx, data, args)
 		if err != nil {
 			return nil, fmt.Errorf("error execution func %q: %w", f.name, err)
 		}
@@ -104,7 +105,7 @@ func NewFunc(name string, handler FuncFn, argsValidator ArgsValidator) *Func {
 }
 
 // FuncFn is a function that can be executed.
-type FuncFn func(data *model.Value, args model.Values) (*model.Value, error)
+type FuncFn func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error)
 
 // FuncCollection is a collection of functions that can be executed.
 type FuncCollection map[string]FuncFn

@@ -1,18 +1,20 @@
 package execution
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/selector/ast"
 )
 
-func arrayExprExecutor(opts *Options, e ast.ArrayExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func arrayExprExecutor(e ast.ArrayExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "arrayExpr")
 		res := model.NewSliceValue()
 
 		for _, expr := range e.Exprs {
-			el, err := ExecuteAST(expr, data, opts)
+			el, err := ExecuteAST(ctx, expr, data, options)
 			if err != nil {
 				return nil, err
 			}
@@ -25,11 +27,12 @@ func arrayExprExecutor(opts *Options, e ast.ArrayExpr) (expressionExecutor, erro
 	}, nil
 }
 
-func rangeExprExecutor(opts *Options, e ast.RangeExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
+func rangeExprExecutor(e ast.RangeExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "rangeExpr")
 		var start, end int64 = 0, -1
 		if e.Start != nil {
-			startE, err := ExecuteAST(e.Start, data, opts)
+			startE, err := ExecuteAST(ctx, e.Start, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating start expression: %w", err)
 			}
@@ -41,7 +44,7 @@ func rangeExprExecutor(opts *Options, e ast.RangeExpr) (expressionExecutor, erro
 		}
 
 		if e.End != nil {
-			endE, err := ExecuteAST(e.End, data, opts)
+			endE, err := ExecuteAST(ctx, e.End, data, options)
 			if err != nil {
 				return nil, fmt.Errorf("error evaluating end expression: %w", err)
 			}
@@ -72,9 +75,10 @@ func rangeExprExecutor(opts *Options, e ast.RangeExpr) (expressionExecutor, erro
 	}, nil
 }
 
-func indexExprExecutor(opts *Options, e ast.IndexExpr) (expressionExecutor, error) {
-	return func(data *model.Value) (*model.Value, error) {
-		indexE, err := ExecuteAST(e.Index, data, opts)
+func indexExprExecutor(e ast.IndexExpr) (expressionExecutor, error) {
+	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
+		ctx = WithExecutorID(ctx, "indexExpr")
+		indexE, err := ExecuteAST(ctx, e.Index, data, options)
 		if err != nil {
 			return nil, fmt.Errorf("error evaluating index expression: %w", err)
 		}
