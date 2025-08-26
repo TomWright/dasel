@@ -92,14 +92,14 @@ Update values based on previous value:
 
 ```sh
 echo '[1,2,3,4,5]' | dasel -i json --root 'each($this = $this*2)'
-# Output
-# [
-#     2,
-#     4,
-#     6,
-#     8,
-#     10
-# ]
+# Output:
+[
+    2,
+    4,
+    6,
+    8,
+    10
+]
 ```
 
 ### Format Conversion
@@ -114,10 +114,10 @@ Searches all nested objects and arrays for a matching key or index.
 
 ```sh
 echo '{"foo": {"bar": "baz"}}' | dasel -i json '..bar'
-# Output
-# [
-#     "baz"
-# ]
+# Output:
+[
+    "baz"
+]
 
 ```
 
@@ -127,12 +127,12 @@ Finds all values matching a condition anywhere in the structure.
 
 ```sh
 echo '{"foo": {"bar": "baz"}}' | dasel -i json 'search(bar == "baz")'
-# Output
-# [
-#     {
-#         "bar": "baz"
-#     }
-# ]
+# Output:
+[
+    {
+        "bar": "baz"
+    }
+]
 
 ```
 
