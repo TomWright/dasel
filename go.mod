@@ -1,6 +1,6 @@
 module github.com/tomwright/dasel/v3
 
-go 1.24
+go 1.25
 
 require (
 	github.com/alecthomas/kong v1.12.1
