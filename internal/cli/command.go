@@ -36,13 +36,13 @@ func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
 		panic(err)
 	}
 
-	ctx.Errorf(err.Error())
+	ctx.Errorf("%s", err.Error())
 	if errors.Is(err, ErrNoArgsGiven) {
 		if err := ctx.PrintUsage(false); err != nil {
 			panic(err)
 		}
 	}
-	
+
 	ctx.Exit(1)
 }
 
