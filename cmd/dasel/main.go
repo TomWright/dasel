@@ -8,6 +8,7 @@ import (
 	_ "github.com/tomwright/dasel/v3/parsing/csv"
 	_ "github.com/tomwright/dasel/v3/parsing/d"
 	_ "github.com/tomwright/dasel/v3/parsing/hcl"
+	_ "github.com/tomwright/dasel/v3/parsing/ini"
 	_ "github.com/tomwright/dasel/v3/parsing/json"
 	_ "github.com/tomwright/dasel/v3/parsing/toml"
 	_ "github.com/tomwright/dasel/v3/parsing/xml"

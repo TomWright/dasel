@@ -14,9 +14,6 @@ func TestIni(t *testing.T) {
 
 [paths]
 data = /home/git/grafana
-datas[] = foo
-datas[] = bar
-datas[] = baz
 
 [server]
 protocol = http
