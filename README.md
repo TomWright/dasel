@@ -10,7 +10,9 @@
 [![GitHub tag (latest by date)](https://img.shields.io/github/v/tag/TomWright/dasel?label=latest%20release)](https://github.com/TomWright/dasel/releases/latest)
 [![Homebrew tag (latest by date)](https://img.shields.io/homebrew/v/dasel)](https://formulae.brew.sh/formula/dasel)
 
-<img src="./daselgopher.png" alt="Dasel mascot" width="250"/>
+<div align="center">
+    <img src="./daselgopher.png" alt="Dasel mascot" width="250"/>
+</div>
 
 # Dasel
 
