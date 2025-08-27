@@ -42,6 +42,9 @@ func (tc rwTestCase) run(t *testing.T) {
 		t.Fatalf("unexpected error: %s", err)
 	}
 	w, err := yaml.YAML.NewWriter(parsing.WriterOptions{})
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
 	res, err := r.Read([]byte(tc.in))
 	if err != nil {
 		t.Fatalf("unexpected error: %s", err)

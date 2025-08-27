@@ -9,7 +9,7 @@ import (
 
 func spreadExprExecutor() (expressionExecutor, error) {
 	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
-		ctx = WithExecutorID(ctx, "spreadExpr")
+		//ctx = WithExecutorID(ctx, "spreadExpr")
 		s := model.NewSliceValue()
 
 		s.MarkAsSpread()

@@ -34,42 +34,6 @@ func parseArray(p *Parser) (ast.Expr, error) {
 	return res, nil
 }
 
-func parseIndex(p *Parser) (ast.Expr, error) {
-	if err := p.expect(lexer.Symbol, lexer.Variable); err != nil {
-		return nil, err
-	}
-	if err := p.expectN(1, lexer.OpenBracket); err != nil {
-		return nil, err
-	}
-	token := p.current()
-	p.advance()
-
-	idx, err := parseIndexSquareBrackets(p, false)
-	if err != nil {
-		return nil, err
-	}
-
-	var e ast.Expr
-
-	switch {
-	case token.IsKind(lexer.Variable):
-		e = ast.VariableExpr{
-			Name: token.Value,
-		}
-	case token.IsKind(lexer.Symbol):
-		e = ast.PropertyExpr{
-			Property: ast.StringExpr{Value: token.Value},
-		}
-	default:
-		panic("unexpected token kind")
-	}
-
-	return ast.ChainExprs(
-		e,
-		idx,
-	), nil
-}
-
 // parseIndexSquareBrackets parses square bracket array access.
 // E.g. [0], [0:1], [0:], [:2]
 func parseIndexSquareBrackets(p *Parser, expectIndex bool) (ast.Expr, error) {

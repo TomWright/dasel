@@ -2,9 +2,6 @@ package parser
 
 import "github.com/tomwright/dasel/v3/selector/lexer"
 
-// null denotation tokens are tokens that expect no token to the left of them.
-var nullDenotationTokens = []lexer.TokenKind{}
-
 // left denotation tokens are tokens that expect a token to the left of them.
 var leftDenotationTokens = []lexer.TokenKind{
 	lexer.Plus,

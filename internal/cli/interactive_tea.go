@@ -28,12 +28,6 @@ var (
 	inputStyle = func() lipgloss.Style {
 		return lipgloss.NewStyle().Margin(0, 0, 1, 0)
 	}()
-	inputContentStyle = func() lipgloss.Style {
-		return lipgloss.NewStyle().Padding(0, 1).Border(lipgloss.RoundedBorder())
-	}()
-	inputHeaderStyle = func() lipgloss.Style {
-		return lipgloss.NewStyle().Padding(0, 2).Margin(0, 0, 1, 0).Underline(true)
-	}()
 	outputContentStyle = func() lipgloss.Style {
 		return lipgloss.NewStyle().Padding(0, 1).Border(lipgloss.RoundedBorder())
 	}()

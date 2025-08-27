@@ -201,7 +201,7 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 }
 
 func (p *Parser) hasToken() bool {
-	return p.i < len(p.tokens) && !p.tokens[p.i].IsKind(lexer.EOF)
+	return p.hasTokenN(0)
 }
 
 func (p *Parser) hasTokenN(n int) bool {
@@ -215,17 +215,8 @@ func (p *Parser) current() lexer.Token {
 	return lexer.Token{Kind: lexer.EOF}
 }
 
-func (p *Parser) previous() lexer.Token {
-	i := p.i - 1
-	if i > 0 && i < len(p.tokens) {
-		return p.tokens[i]
-	}
-	return lexer.Token{Kind: lexer.EOF}
-}
-
 func (p *Parser) advance() lexer.Token {
-	p.i++
-	return p.current()
+	return p.advanceN(1)
 }
 
 func (p *Parser) advanceN(n int) lexer.Token {

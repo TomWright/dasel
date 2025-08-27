@@ -207,7 +207,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 				return nil
 			}
 			other := p.src[pos : pos+l]
-			if m != other && !(caseInsensitive && strings.EqualFold(m, other)) {
+			if m != other && (!caseInsensitive || !strings.EqualFold(m, other)) {
 				return nil
 			}
 
@@ -220,7 +220,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		}
 
 		matchRegexPattern := func(pos int) *Token {
-			if !(p.src[pos] == 'r' && p.peekRuneEqual(pos+1, '/')) {
+			if p.src[pos] != 'r' || !p.peekRuneEqual(pos+1, '/') {
 				return nil
 			}
 			start := pos

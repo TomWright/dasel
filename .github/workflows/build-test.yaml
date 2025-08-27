@@ -74,8 +74,8 @@ jobs:
     name: Dev build ${{ matrix.os }} ${{ matrix.arch }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-      - uses: actions/setup-go@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v5
         with:
           go-version: '^1.24.0' # The Go version to download (if necessary) and use.
       - name: Set env

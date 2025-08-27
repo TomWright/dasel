@@ -9,7 +9,7 @@ jobs:
     name: Update homebrew-core
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0
       - name: Set env

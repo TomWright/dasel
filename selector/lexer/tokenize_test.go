@@ -45,6 +45,7 @@ func (tc errTestCase) run(t *testing.T) {
 	}
 }
 
+// nolint:unused
 func matchUnexpectedError(r rune, p int) func(error) bool {
 	return func(err error) bool {
 		var e *lexer.UnexpectedTokenError
