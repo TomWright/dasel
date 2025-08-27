@@ -1,6 +1,7 @@
 package cli
 
 import (
+	"errors"
 	"io"
 	"reflect"
 
@@ -8,10 +9,13 @@ import (
 	"github.com/tomwright/dasel/v3/internal"
 )
 
+var ErrNoArgsGiven = errors.New("no arguments given")
+
 type Globals struct {
-	Stdin  io.Reader `kong:"-"`
-	Stdout io.Writer `kong:"-"`
-	Stderr io.Writer `kong:"-"`
+	Stdin       io.Reader        `kong:"-"`
+	Stdout      io.Writer        `kong:"-"`
+	Stderr      io.Writer        `kong:"-"`
+	helpPrinter kong.HelpPrinter `kong:"-"`
 }
 
 type CLI struct {
@@ -24,15 +28,31 @@ type CLI struct {
 
 func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
 	ctx, err := Run(stdin, stdout, stderr)
-	ctx.FatalIfErrorf(err)
+	if err == nil {
+		return
+	}
+
+	if ctx == nil {
+		panic(err)
+	}
+
+	ctx.Errorf(err.Error())
+	if errors.Is(err, ErrNoArgsGiven) {
+		if err := ctx.PrintUsage(false); err != nil {
+			panic(err)
+		}
+	}
+	
+	ctx.Exit(1)
 }
 
 func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 	cli := &CLI{
 		Globals: Globals{
-			Stdin:  stdin,
-			Stdout: stdout,
-			Stderr: stderr,
+			Stdin:       stdin,
+			Stdout:      stdout,
+			Stderr:      stderr,
+			helpPrinter: kong.DefaultHelpPrinter,
 		},
 	}
 
@@ -53,6 +73,7 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 			k.Stderr = cli.Stderr
 			return nil
 		}),
+		kong.Help(cli.helpPrinter),
 	)
 	err := ctx.Run()
 	return ctx, err
