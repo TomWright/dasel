@@ -58,7 +58,7 @@ func (c *InteractiveCmd) Run(ctx *Globals) error {
 				err = fmt.Errorf("panic: %v", r)
 			}
 		}()
-		var stdIn *bytes.Reader = nil
+		var stdIn *bytes.Reader
 		if in != "" {
 			stdIn = bytes.NewReader([]byte(in))
 		} else {

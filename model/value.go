@@ -88,7 +88,7 @@ func (v *Value) string(indent int) string {
 		}
 		return fmt.Sprintf("bool{%t}", val)
 	case TypeMap:
-		res := fmt.Sprintf("{\n")
+		res := "{\n"
 		if err := v.RangeMap(func(k string, v *Value) error {
 			res += fmt.Sprintf("%s%s: %s,\n", indentStr(indent+1), k, v.string(indent+1))
 			return nil

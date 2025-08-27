@@ -64,13 +64,14 @@ func (vm *variableMapper) Decode(ctx *kong.DecodeContext, target reflect.Value) 
 	}
 	if strings.HasPrefix(valueRaw, "file:") {
 		filePath := valueRaw[len("file:"):]
-		valueRaw = valueRaw[:len("file:")]
 
 		f, err := os.Open(filePath)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
-		defer f.Close()
+		defer func() {
+			_ = f.Close()
+		}()
 		contents, err := io.ReadAll(f)
 		if err != nil {
 			return fmt.Errorf("failed to read file contents: %w", err)

@@ -21,7 +21,9 @@ var FuncReadFile = NewFunc(
 		if err != nil {
 			return nil, fmt.Errorf("readFile: %w", err)
 		}
-		defer f.Close()
+		defer func() {
+			_ = f.Close()
+		}()
 
 		fileBytes, err := io.ReadAll(f)
 		if err != nil {

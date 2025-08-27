@@ -138,14 +138,14 @@ func exprExecutor(options *Options, expr ast.Expr) (expressionExecutor, error) {
 	case ast.RegexExpr:
 		// Noop
 		return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
-			ctx = WithExecutorID(ctx, "regexExpr")
+			//ctx = WithExecutorID(ctx, "regexExpr")
 			return data, nil
 		}, nil
 	case ast.SortByExpr:
 		return sortByExprExecutor(e)
 	case ast.NullExpr:
 		return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
-			ctx = WithExecutorID(ctx, "nullExpr")
+			//ctx = WithExecutorID(ctx, "nullExpr")
 			return model.NewNullValue(), nil
 		}, nil
 	default:
@@ -170,7 +170,7 @@ func chainedExprExecutor(e ast.ChainedExpr) (expressionExecutor, error) {
 
 func variableExprExecutor(e ast.VariableExpr) (expressionExecutor, error) {
 	return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
-		ctx = WithExecutorID(ctx, "variableExpr")
+		//ctx = WithExecutorID(ctx, "variableExpr")
 		varName := e.Name
 		res, ok := options.Vars[varName]
 		if ok {

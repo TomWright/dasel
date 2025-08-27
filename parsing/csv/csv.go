@@ -65,9 +65,7 @@ func (j *csvReader) Read(data []byte) (*model.Value, error) {
 		}
 
 		if headers == nil {
-			for _, header := range record {
-				headers = append(headers, header)
-			}
+			headers = append(headers, record...)
 			continue
 		}
 

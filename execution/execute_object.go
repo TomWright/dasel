@@ -52,6 +52,9 @@ func objectExprExecutor(e ast.ObjectExpr) (expressionExecutor, error) {
 			}
 
 			keyStr, err := key.StringValue()
+			if err != nil {
+				return nil, fmt.Errorf("error getting string value: %w", err)
+			}
 			if err := obj.SetMapKey(keyStr, val); err != nil {
 				return nil, fmt.Errorf("error setting map key: %w", err)
 			}

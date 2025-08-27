@@ -10,7 +10,9 @@ import (
 )
 
 func newHCLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
-	return &hclWriter{}, nil
+	return &hclWriter{
+		options: options,
+	}, nil
 }
 
 type hclWriter struct {

@@ -312,7 +312,7 @@ func (j *jsonWriter) writeMap(w io.Writer, encoder encoderFn, es encoderState, v
 				return err
 			}
 
-			if _, err := w.Write([]byte(fmt.Sprintf(`"%s": `, kv.Key))); err != nil {
+			if _, err := fmt.Fprintf(w, `"%s": `, kv.Key); err != nil {
 				return err
 			}
 
