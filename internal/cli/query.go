@@ -17,6 +17,10 @@ type QueryCmd struct {
 }
 
 func (c *QueryCmd) Run(ctx *Globals) error {
+	if c.Query == "" && c.InFormat == "" && ctx.Stdin == nil {
+		return ErrNoArgsGiven
+	}
+
 	if c.Interactive {
 		return NewInteractiveCmd(c).Run(ctx)
 	}
