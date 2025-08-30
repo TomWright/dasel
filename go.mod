@@ -10,13 +10,12 @@ require (
 	github.com/google/go-cmp v0.6.0
 	github.com/hashicorp/hcl/v2 v2.22.0
 	github.com/pelletier/go-toml/v2 v2.2.2
-	github.com/zclconf/go-cty v1.13.0
+	github.com/zclconf/go-cty v1.16.4
 	gopkg.in/yaml.v3 v3.0.1
 )
 
 require (
 	github.com/agext/levenshtein v1.2.1 // indirect
-	github.com/apparentlymart/go-textseg/v13 v13.0.0 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
