@@ -26,6 +26,7 @@ var (
 		FuncParse,
 		FuncReadFile,
 		FuncHas,
+		FuncGet,
 		FuncContains,
 	)
 )
