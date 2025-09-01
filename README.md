@@ -45,7 +45,7 @@ brew install dasel
 ### Go Install
 
 ```sh
-go install github.com/tomwright/dasel/v3/cmd/dasel@latest
+go install github.com/tomwright/dasel/v3/cmd/dasel@master
 ```
 
 ### Prebuilt Binaries
