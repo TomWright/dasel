@@ -9,7 +9,7 @@ require (
 	github.com/charmbracelet/lipgloss v1.1.0
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
-	github.com/pelletier/go-toml/v2 v2.2.4
+	github.com/pelletier/go-toml/v2 v2.2.5-0.20250826075308-a0e846496753
 	github.com/zclconf/go-cty v1.17.0
 	gopkg.in/yaml.v3 v3.0.1
 )
