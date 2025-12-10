@@ -45,10 +45,11 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 	switch value.Type() {
 
 	case model.TypeString:
+		strVal, err := valueToString(value)
 		return &xmlElement{
 			Name:    "root",
-			Content: value.String(),
-		}, nil
+			Content: strVal,
+		}, err
 
 	case model.TypeMap:
 		kvs, err := value.MapKeyValues()
@@ -116,8 +117,35 @@ func valueToString(v *model.Value) (string, error) {
 	if v.IsNull() {
 		return "", nil
 	}
-	// TODO : Parse based on type. Do not assume string.
-	return v.String(), nil
+
+	switch v.Type() {
+	case model.TypeString:
+		stringValue, err := v.StringValue()
+		if err != nil {
+			return "", err
+		}
+		return stringValue, nil
+	case model.TypeInt:
+		i, err := v.IntValue()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%d", i), nil
+	case model.TypeFloat:
+		i, err := v.FloatValue()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%g", i), nil
+	case model.TypeBool:
+		i, err := v.BoolValue()
+		if err != nil {
+			return "", err
+		}
+		return fmt.Sprintf("%t", i), nil
+	default:
+		return "", fmt.Errorf("csv writer cannot format type %s to string", v.Type())
+	}
 }
 
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
