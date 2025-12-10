@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
         - name: Checkout
-          uses: actions/checkout@v5
+          uses: actions/checkout@v6
         - name: Set up QEMU
           uses: docker/setup-qemu-action@v3
         - name: Set up Docker Buildx
@@ -37,7 +37,7 @@ jobs:
             build-args: |
               GOLANG_VERSION=${{ env.GOLANG_VERSION }}
               RELEASE_VERSION=${{ github.ref_name }}
-              MAJOR_VERSION=${{ steps.version.outputs.major || 'v2' }}
+              MAJOR_VERSION=${{ steps.version.outputs.major || 'v3' }}
               TARGET_BASE_IMAGE=${{ matrix.distro }}:${{ matrix.distro-tag }}
             tags: dasel:test
         - name: Test

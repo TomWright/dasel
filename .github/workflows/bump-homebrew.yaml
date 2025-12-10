@@ -9,13 +9,13 @@ jobs:
     name: Update homebrew-core
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
       - name: Set env
         run: echo "RELEASE_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
       - name: Homebrew bump formula
-        uses: dawidd6/action-homebrew-bump-formula@v3.8.0
+        uses: dawidd6/action-homebrew-bump-formula@v7
         with:
           token: ${{ secrets.GH_HOMEBREW_TOKEN }}
           formula: dasel

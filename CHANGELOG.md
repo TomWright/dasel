@@ -9,6 +9,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
+## [v3.0.0] - 2025-12-10
+
+### Added
+- Major new version release.
+- INI support.
+- HCL support.
+- Dasel syntax now supports variables and expressions.
+- Files can now be read and parsed inside a dasel query.
+- Variables can now be passed to dasel from the command line.
+
+### Changed
+- Go module path changed to `github.com/tomwright/dasel/v3`.
+- Internal changes to support new version.
+- Query/selector syntax revamp. See [docs](https://daseldocs.tomwright.me) for more information.
+- Majority of read/write operations will now maintain ordering.
+- Migrated from Cobra to Kong for CLI parsing/processing.
+- Removed `put` and `delete` commands. Instead, modify within the query and use `--root` flag.
+
+### Fixed
+- File redirect now works in the same way as piped input.
+- Various other bug fixes and improvements.
+- Whitespace in query syntax is now handled correctly.
+
 ## [v2.8.1] - 2024-06-30
 
 ### Fixed
