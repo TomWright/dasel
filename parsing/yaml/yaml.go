@@ -9,6 +9,8 @@ import (
 // YAML represents the YAML file format.
 const YAML parsing.Format = "yaml"
 
+// TODO : Migrate to https://github.com/kubernetes-sigs/yaml
+
 func init() {
 	parsing.RegisterReader(YAML, newYAMLReader)
 	parsing.RegisterWriter(YAML, newYAMLWriter)
