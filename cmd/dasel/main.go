@@ -18,7 +18,7 @@ import (
 func main() {
 	var stdin io.Reader = os.Stdin
 	fi, err := os.Stdin.Stat()
-	if err != nil || (fi.Mode()&os.ModeNamedPipe == 0) {
+	if err != nil || (fi.Mode()&os.ModeCharDevice != 0) {
 		stdin = nil
 	}
 	cli.MustRun(stdin, os.Stdout, os.Stderr)

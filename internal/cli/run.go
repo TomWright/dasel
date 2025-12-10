@@ -3,12 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
-	"github.com/tomwright/dasel/v3/parsing/json"
-	"io"
-
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
+	"github.com/tomwright/dasel/v3/parsing/json"
+	"io"
 )
 
 type runOpts struct {
