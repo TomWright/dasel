@@ -56,6 +56,21 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		p.i++
 	}
 
+	// Skip over comments
+	if p.src[p.i] == '/' && p.i+1 < p.srcLen && p.src[p.i+1] == '/' {
+		p.i += 2
+		for p.i < p.srcLen && p.src[p.i] != '\n' {
+			p.i++
+		}
+		// After skipping the comment, skip any whitespace again.
+		for p.i < p.srcLen && unicode.IsSpace(rune(p.src[p.i])) {
+			p.i++
+		}
+		if p.i >= p.srcLen {
+			return NewToken(EOF, "", p.i, 0), nil
+		}
+	}
+
 	switch p.src[p.i] {
 	case '.':
 		if p.peekRuneEqual(p.i+1, '.') && p.peekRuneEqual(p.i+2, '.') {
