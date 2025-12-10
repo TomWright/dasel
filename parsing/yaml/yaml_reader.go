@@ -42,6 +42,9 @@ func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 		slice := model.NewSliceValue()
 		slice.MarkAsBranch()
 		for _, v := range res {
+			if v == nil {
+				continue
+			}
 			if err := slice.Append(v.value); err != nil {
 				return nil, err
 			}
