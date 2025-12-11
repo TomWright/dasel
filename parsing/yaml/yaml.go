@@ -3,13 +3,11 @@ package yaml
 import (
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 )
 
 // YAML represents the YAML file format.
 const YAML parsing.Format = "yaml"
-
-// TODO : Migrate to https://github.com/kubernetes-sigs/yaml
 
 func init() {
 	parsing.RegisterReader(YAML, newYAMLReader)

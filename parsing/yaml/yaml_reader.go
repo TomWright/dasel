@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
-	"gopkg.in/yaml.v3"
+	"go.yaml.in/yaml/v4"
 	"io"
 	"strconv"
 )
