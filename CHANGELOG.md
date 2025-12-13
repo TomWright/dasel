@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
-## [v3.0.0] - 2025-12-10
+## [v3.0.0] - 2025-12-13
 
 ### Added
 - Major new version release.
@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Dasel syntax now supports variables and expressions.
 - Files can now be read and parsed inside a dasel query.
 - Variables can now be passed to dasel from the command line.
+- Support for comments in queries.
 
 ### Changed
 - Go module path changed to `github.com/tomwright/dasel/v3`.
