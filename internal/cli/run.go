@@ -3,11 +3,11 @@ package cli
 import (
 	"context"
 	"fmt"
+	"io"
+
 	"github.com/tomwright/dasel/v3/execution"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
-	"github.com/tomwright/dasel/v3/parsing/json"
-	"io"
 )
 
 type runOpts struct {
@@ -21,10 +21,17 @@ type runOpts struct {
 	Unstable          bool
 	Query             string
 
+	ConfigPath string
+
 	Stdin io.Reader
 }
 
 func run(o runOpts) ([]byte, error) {
+	cfg, err := LoadConfig(o.ConfigPath)
+	if err != nil {
+		return nil, fmt.Errorf("error loading config: %w", err)
+	}
+
 	var opts []execution.ExecuteOptionFn
 
 	if o.OutFormat == "" && o.InFormat != "" {
@@ -32,15 +39,13 @@ func run(o runOpts) ([]byte, error) {
 	} else if o.OutFormat != "" && o.InFormat == "" {
 		o.InFormat = o.OutFormat
 	} else if o.OutFormat == "" {
-		// TODO : Swap this out for a value stored in dasel.yaml file.
-		o.OutFormat = json.JSON.String()
+		o.OutFormat = cfg.DefaultFormat
 	}
 
 	readerOptions := parsing.DefaultReaderOptions()
 	applyReaderFlags(&readerOptions, o.ExtReadFlags, o.ExtReadWriteFlags)
 
 	var reader parsing.Reader
-	var err error
 	if len(o.InFormat) > 0 {
 		reader, err = parsing.Format(o.InFormat).NewReader(readerOptions)
 		if err != nil {

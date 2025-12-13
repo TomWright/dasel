@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Files can now be read and parsed inside a dasel query.
 - Variables can now be passed to dasel from the command line.
 - Support for comments in queries.
+- Dasel config file to define default file format.
 
 ### Changed
 - Go module path changed to `github.com/tomwright/dasel/v3`.

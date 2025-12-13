@@ -13,10 +13,22 @@ type QueryCmd struct {
 	Unstable          bool              `flag:"" name:"unstable" help:"Allow access to potentially unstable features."`
 	Interactive       bool              `flag:"" name:"it" help:"Run in interactive mode."`
 
+	ConfigPath string `name:"config" short:"c" help:"Path to config file" default:"~/dasel.yaml"`
+
 	Query string `arg:"" help:"The query to execute." optional:"" default:""`
 }
 
 func (c *QueryCmd) Run(ctx *Globals) error {
+	cfg, err := LoadConfig(c.ConfigPath)
+	if err != nil {
+		return err
+	}
+
+	if c.InFormat == "" && c.OutFormat == "" {
+		c.InFormat = cfg.DefaultFormat
+		c.OutFormat = cfg.DefaultFormat
+	}
+
 	if c.Query == "" && c.InFormat == "" && ctx.Stdin == nil {
 		return ErrNoArgsGiven
 	}
@@ -35,6 +47,8 @@ func (c *QueryCmd) Run(ctx *Globals) error {
 		ReturnRoot:        c.ReturnRoot,
 		Unstable:          c.Unstable,
 		Query:             c.Query,
+
+		ConfigPath: c.ConfigPath,
 
 		Stdin: ctx.Stdin,
 	}

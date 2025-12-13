@@ -3,11 +3,12 @@ package yaml
 import (
 	"bytes"
 	"fmt"
+	"io"
+	"strconv"
+
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"go.yaml.in/yaml/v4"
-	"io"
-	"strconv"
 )
 
 var _ parsing.Reader = (*yamlReader)(nil)

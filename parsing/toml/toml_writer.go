@@ -16,6 +16,7 @@ type tomlWriter struct{}
 
 // Write writes a value to a byte slice.
 func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
+	// TODO : This doesn't work for complex types.
 	res, err := toml.Marshal(value.Interface())
 	if err != nil {
 		return nil, err

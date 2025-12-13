@@ -29,6 +29,8 @@ type InteractiveCmd struct {
 	InFormat          string            `flag:"" name:"in" short:"i" help:"The format of the input data."`
 	OutFormat         string            `flag:"" name:"out" short:"o" help:"The format of the output data."`
 
+	ConfigPath string `name:"config" short:"c" help:"Path to config file" default:"~/dasel.yaml"`
+
 	Query string `arg:"" help:"The query to execute." optional:"" default:""`
 }
 
@@ -43,9 +45,14 @@ func (c *InteractiveCmd) Run(ctx *Globals) error {
 		}
 	}
 
+	cfg, err := LoadConfig(c.ConfigPath)
+	if err != nil {
+		return err
+	}
+
 	if c.InFormat == "" && c.OutFormat == "" {
-		c.InFormat = "json"
-		c.OutFormat = "json"
+		c.InFormat = cfg.DefaultFormat
+		c.OutFormat = cfg.DefaultFormat
 	} else if c.InFormat == "" {
 		c.InFormat = c.OutFormat
 	} else if c.OutFormat == "" {
@@ -76,6 +83,8 @@ func (c *InteractiveCmd) Run(ctx *Globals) error {
 			Unstable:          true,
 			Query:             selector,
 
+			ConfigPath: c.ConfigPath,
+
 			Stdin: stdIn,
 		}
 
@@ -85,7 +94,7 @@ func (c *InteractiveCmd) Run(ctx *Globals) error {
 
 	p, selectorFn := newInteractiveTeaProgram(string(stdInBytes), c.Query, parsing.Format(c.InFormat), parsing.Format(c.OutFormat), runDasel)
 
-	_, err := p.Run()
+	_, err = p.Run()
 	if err != nil {
 		return err
 	}
