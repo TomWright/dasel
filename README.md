@@ -54,7 +54,7 @@ Prebuilt binaries are available on the [Releases](https://github.com/TomWright/d
 
 ### None of the above?
 
-See the [installation docs](https://daseldocs.tomwright.me/getting-started/installation) for more options.
+See the [installation docs](https://daseldocs.tomwright.me/installation) for more options.
 
 ---
 
