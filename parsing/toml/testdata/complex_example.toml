@@ -1,0 +1,80 @@
+# Comprehensive TOML example exercising many features
+
+"quoted key" = "quoted value"
+
+"a.b" = 42
+
+title = "TOML Example"
+
+[owner]
+name = "Tom Preston-Werner"
+organization = "GitHub"
+bio = "Developer\nMaintainer"
+
+# Quoted keys and dotted keys
+[server]
+ip = "192.168.0.1"
+port = 8080
+
+[server.settings]
+# inline table-like structure but using table header
+max_connections = 100
+enabled = true
+
+# Inline table example
+props = { key1 = "value1", key2 = "value2" }
+
+# Arrays
+nums = [1, 2, 3]
+mix = [1, "two", true]
+empty = []
+trailing = ["a", "b",]
+
+# Nested inline table and array
+props2 = { sub = { a = 1 }, arr = [1,2] }
+
+
+# Mixed dotted and quoted
+[a."b.c"]
+d = "x"
+
+# Negative and scientific numbers
+n = -5
+f = 1e3
+
+# Arrays of inline tables
+items = [{a = 1}, {a = 2}]
+
+# Array of tables
+[[products]]
+name = "Hammer"
+sku = 738594937
+
+[[products]]
+name = "Screwdriver"
+sku = 12341234
+
+# Nested table headers
+[database]
+server = "192.168.1.1"
+ports = [ 8001, 8001, 8002 ]
+connection_max = 5000
+enabled = true
+
+[database.replica]
+name = "replica1"
+
+# Multi-line basic string
+multiline = """
+This is a
+multiline string.
+"""
+
+# Literal multi-line string
+literal = '''
+This is a 'literal' multiline
+string with no escapes.
+'''
+
+# Comments and spacing
+# End of file

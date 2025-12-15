@@ -15,31 +15,73 @@ func newTOMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &tomlReader{}, nil
 }
 
-type tomlReader struct {
-	skipNext bool
-}
+type tomlReader struct{}
 
 // Read reads a value from a byte slice.
 func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 	p := &unstable.Parser{}
 	p.Reset(data)
 
-	res := model.NewMapValue()
+	root := model.NewMapValue()
 
-	for j.skipNext || p.NextExpression() {
-		j.skipNext = false
-		next := p.Expression()
-		k, v, err := j.readNode(p, next)
-		if err != nil {
-			return nil, err
-		}
-		if err := res.SetMapKey(k, v); err != nil {
-			return nil, err
+	var active *model.Value
+
+	for p.NextExpression() {
+		expr := p.Expression()
+		switch expr.Kind {
+		case unstable.Invalid, unstable.Comment:
+			// ignore
+			continue
+		case unstable.KeyValue:
+			keyParts, val, err := j.parseKeyValueNode(p, expr)
+			if err != nil {
+				return nil, err
+			}
+			if active != nil {
+				if err := setDottedKey(root, active, keyParts, val); err != nil {
+					return nil, err
+				}
+			} else {
+				if err := setDottedKey(root, nil, keyParts, val); err != nil {
+					return nil, err
+				}
+			}
+
+		case unstable.Table:
+			parts, err := extractKeyFromTableNode(expr)
+			if err != nil {
+				return nil, err
+			}
+			m, err := ensureMapAt(root, parts)
+			if err != nil {
+				return nil, err
+			}
+			active = m
+
+		case unstable.ArrayTable:
+			parts, err := extractKeyFromTableNode(expr)
+			if err != nil {
+				return nil, err
+			}
+			slice, err := ensureSliceAt(root, parts)
+			if err != nil {
+				return nil, err
+			}
+			obj := model.NewMapValue()
+			if err := slice.Append(obj); err != nil {
+				return nil, err
+			}
+			active = obj
+
+		default:
+			// top-level value nodes are unexpected; ignore
 		}
 	}
-	return res, nil
+
+	return root, nil
 }
 
+// readNode parses a value node (not table/keyvalue headers).
 func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
 	switch n.Kind {
 	// Meta
@@ -50,15 +92,7 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 	case unstable.Key:
 		return "", model.NewStringValue(string(n.Data)), nil
 
-	// Top level structures
-	case unstable.Table:
-		return j.readTable(p, n)
-	case unstable.ArrayTable:
-		return j.readArrayTable(p, n)
-	case unstable.KeyValue:
-		return j.readKeyValue(p, n)
-
-	// Containers values
+	// Container values
 	case unstable.Array:
 		v, err := j.readArrayValue(p, n)
 		return "", v, err
@@ -77,11 +111,11 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 		}
 		return "", model.NewFloatValue(f), nil
 	case unstable.Integer:
-		i, err := strconv.Atoi(string(n.Data))
+		i64, err := strconv.ParseInt(string(n.Data), 10, 64)
 		if err != nil {
 			return "", nil, err
 		}
-		return "", model.NewIntValue(int64(i)), nil
+		return "", model.NewIntValue(int64(i64)), nil
 	case unstable.LocalDate:
 	case unstable.LocalTime:
 	case unstable.LocalDateTime:
@@ -91,92 +125,143 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 	return "", nil, fmt.Errorf("unhandled node kind: %s", n.Kind.String())
 }
 
-func (j *tomlReader) readKeyValue(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
+// parseKeyValueNode extracts the key segments and value from a KeyValue node without consuming parser expressions.
+func (j *tomlReader) parseKeyValueNode(p *unstable.Parser, n *unstable.Node) ([]string, *model.Value, error) {
 	i := n.Children()
+	var keyParts []string
+	var val *model.Value
 
-	i.Next()
-	valueNode := i.Node()
+	for i.Next() {
+		child := i.Node()
+		if child.Kind == unstable.Key {
+			keyParts = append(keyParts, string(child.Data))
+			continue
+		}
+		_, v, err := j.readNode(p, child)
+		if err != nil {
+			return nil, nil, err
+		}
+		val = v
+	}
 
-	_, value, err := j.readNode(p, valueNode)
+	if len(keyParts) == 0 {
+		return nil, nil, fmt.Errorf("missing key in key/value node")
+	}
+	if val == nil {
+		return nil, nil, fmt.Errorf("missing value in key/value node")
+	}
+
+	return keyParts, val, nil
+}
+
+// extractKeyFromTableNode returns the key segments from a Table/ArrayTable node.
+func extractKeyFromTableNode(n *unstable.Node) ([]string, error) {
+	i := n.Children()
+	var parts []string
+	for i.Next() {
+		child := i.Node()
+		if child.Kind == unstable.Key {
+			parts = append(parts, string(child.Data))
+			continue
+		}
+		return nil, fmt.Errorf("expected table child node, got %s", child.Kind.String())
+	}
+	if len(parts) == 0 {
+		return nil, fmt.Errorf("missing table child key node")
+	}
+	return parts, nil
+}
+
+// ensureMapAt ensures a map exists at the dotted path under root and returns it.
+func ensureMapAt(root *model.Value, path []string) (*model.Value, error) {
+	if len(path) == 0 {
+		return root, nil
+	}
+	cur := root
+	for _, seg := range path {
+		exists, err := cur.MapKeyExists(seg)
+		if err != nil {
+			return nil, err
+		}
+		if !exists {
+			m := model.NewMapValue()
+			if err := cur.SetMapKey(seg, m); err != nil {
+				return nil, err
+			}
+			cur = m
+			continue
+		}
+		next, err := cur.GetMapKey(seg)
+		if err != nil {
+			return nil, err
+		}
+		if !next.IsMap() {
+			return nil, fmt.Errorf("conflicting types at path '%s': expected map", seg)
+		}
+		cur = next
+	}
+	return cur, nil
+}
+
+// ensureSliceAt ensures a slice exists at the dotted path under root and returns it.
+func ensureSliceAt(root *model.Value, path []string) (*model.Value, error) {
+	if len(path) == 0 {
+		return nil, fmt.Errorf("empty path for array table")
+	}
+	parentPath := path[:len(path)-1]
+	finalSeg := path[len(path)-1]
+	parent, err := ensureMapAt(root, parentPath)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
-
-	i.Next()
-	keyNode := i.Node()
-
-	return string(keyNode.Data), value, nil
+	exists, err := parent.MapKeyExists(finalSeg)
+	if err != nil {
+		return nil, err
+	}
+	if !exists {
+		s := model.NewSliceValue()
+		if err := parent.SetMapKey(finalSeg, s); err != nil {
+			return nil, err
+		}
+		return s, nil
+	}
+	v, err := parent.GetMapKey(finalSeg)
+	if err != nil {
+		return nil, err
+	}
+	if !v.IsSlice() {
+		return nil, fmt.Errorf("conflicting types at path '%s': expected slice", finalSeg)
+	}
+	return v, nil
 }
 
-func (j *tomlReader) readTable(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
-	res := model.NewMapValue()
-
-	i := n.Children()
-
-	var k string
-
-	for i.Next() {
-		childNode := i.Node()
-		if childNode.Kind == unstable.Key {
-			k = string(childNode.Data)
-			continue
+// setDottedKey sets a value at a (possibly dotted) key within the given container (creating intermediate maps).
+// If active is non-nil, it is the current table object to set keys relative to; root is only used when active is nil to
+// create implicit parent maps on the root.
+func setDottedKey(root, active *model.Value, parts []string, val *model.Value) error {
+	if len(parts) == 0 {
+		return fmt.Errorf("empty key")
+	}
+	// If active table provided, we should set relative to it. But parts may be dotted (i.e., multiple segments).
+	if active != nil {
+		if len(parts) == 1 {
+			return active.SetMapKey(parts[0], val)
 		}
-		return k, nil, fmt.Errorf("expected table child node, got %s", childNode.Kind.String())
-	}
-	if k == "" {
-		return k, nil, fmt.Errorf("missing table child key node")
-	}
-
-	for p.NextExpression() {
-		key, value, err := j.readNode(p, p.Expression())
+		parent, err := ensureMapAt(active, parts[:len(parts)-1])
 		if err != nil {
-			return k, nil, err
+			return err
 		}
-		if err := res.SetMapKey(key, value); err != nil {
-			return k, nil, err
-		}
+		return parent.SetMapKey(parts[len(parts)-1], val)
 	}
-
-	return k, res, nil
-}
-
-func (j *tomlReader) readArrayTable(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
-	i := n.Children()
-	var k string
-
-	for i.Next() {
-		childNode := i.Node()
-		if childNode.Kind == unstable.Key {
-			k = string(childNode.Data)
-			continue
-		}
-		return k, nil, fmt.Errorf("expected table child node, got %s", childNode.Kind.String())
+	// No active table: set on root
+	if len(parts) == 1 {
+		return root.SetMapKey(parts[0], val)
 	}
-	if k == "" {
-		return k, nil, fmt.Errorf("missing table child key node")
+	parent, err := ensureMapAt(root, parts[:len(parts)-1])
+	if err != nil {
+		return err
 	}
-
-	obj := model.NewMapValue()
-
-	for p.NextExpression() {
-		if p.Expression().Kind != unstable.KeyValue {
-			j.skipNext = true
-			break
-		}
-		expr := p.Expression()
-		next := expr.Next()
-		key, value, err := j.readNode(p, expr)
-		fmt.Println(key, value, next, err)
-		if err != nil {
-			return k, nil, err
-		}
-
-		if err := obj.SetMapKey(key, value); err != nil {
-			return k, nil, err
-		}
-	}
-
-	return k, obj, nil
+	return parent.SetMapKey(parts[len(parts)-1], val)
 }
 
 func (j *tomlReader) readInlineTable(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
@@ -186,12 +271,28 @@ func (j *tomlReader) readInlineTable(p *unstable.Parser, n *unstable.Node) (stri
 	i := n.Children()
 	for i.Next() {
 		childNode := i.Node()
-		key, val, err := j.readNode(p, childNode)
-		if err != nil {
-			return "", nil, err
-		}
-		if err := res.SetMapKey(key, val); err != nil {
-			return "", nil, err
+		// Inline table children are key/value pairs. Handle KeyValue specially.
+		switch childNode.Kind {
+		case unstable.KeyValue:
+			kparts, v, err := j.parseKeyValueNode(p, childNode)
+			if err != nil {
+				return "", nil, err
+			}
+			if err := setDottedKey(res, nil, kparts, v); err != nil {
+				return "", nil, err
+			}
+		default:
+			// fallback to readNode for other kinds (e.g., Key)
+			key, val, err := j.readNode(p, childNode)
+			if err != nil {
+				return "", nil, err
+			}
+			if key == "" {
+				return "", nil, fmt.Errorf("missing key in inline table child")
+			}
+			if err := res.SetMapKey(key, val); err != nil {
+				return "", nil, err
+			}
 		}
 	}
 
