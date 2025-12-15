@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Added
+- `sum` function to sum numeric values in an array. [See docs](https://daseldocs.tomwright.me/functions/sum).
 
 ## [v3.0.0] - 2025-12-15
 
@@ -704,7 +705,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v2.8.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.0.0...HEAD
+[v3.0.0]: https://github.com/TomWright/dasel/compare/v2.8.1...v3.0.0
 [v2.8.1]: https://github.com/TomWright/dasel/compare/v2.8.0...v2.8.1
 [v2.8.0]: https://github.com/TomWright/dasel/compare/v2.7.0...v2.8.0
 [v2.7.0]: https://github.com/TomWright/dasel/compare/v2.6.0...v2.7.0
