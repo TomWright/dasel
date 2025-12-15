@@ -1,7 +1,7 @@
 package toml_test
 
 import (
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"testing"
 
@@ -284,7 +284,7 @@ func TestTomlReader_QuotedKeys(t *testing.T) {
 
 func TestTomlReader_ComplexFile(t *testing.T) {
 	dataPath := filepath.Join("testdata", "complex_example.toml")
-	b, err := ioutil.ReadFile(dataPath)
+	b, err := os.ReadFile(dataPath)
 	if err != nil {
 		t.Fatalf("failed reading test data: %v", err)
 	}

@@ -16,6 +16,20 @@ func newTOMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &tomlReader{}, nil
 }
 
+const (
+	tomlStringStyleKey = "toml_string_style"
+
+	tomlStringStyleMultilineLiteral = "multiline_literal"
+	tomlStringStyleMultilineBasic   = "multiline_basic"
+	tomlStringStyleLiteral          = "literal"
+	tomlStringStyleBasic            = "basic"
+
+	tomlTableStyleKey      = "toml_table_style"
+	tomlTableStyleStandard = "standard"
+	tomlTableStyleArray    = "array"
+	tomlTableStyleInline   = "inline"
+)
+
 type tomlReader struct{}
 
 // Read reads a value from a byte slice.
@@ -59,6 +73,7 @@ func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 			}
 			// Record table header parts and quoting info on the map so the writer
 			// can reproduce the header exactly if needed.
+			m.SetMetadataValue(tomlTableStyleKey, tomlTableStyleStandard)
 			m.SetMetadataValue("toml_table_header_parts", parts)
 			m.SetMetadataValue("toml_table_header_quoted", quoted)
 			active = m
@@ -75,7 +90,7 @@ func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 			obj := model.NewMapValue()
 			// Mark this object as created via an array table so the writer can
 			// emit [[...]] headers for it.
-			obj.SetMetadataValue("toml_array_table", true)
+			obj.SetMetadataValue(tomlTableStyleKey, tomlTableStyleArray)
 			obj.SetMetadataValue("toml_table_header_parts", parts)
 			obj.SetMetadataValue("toml_table_header_quoted", quoted)
 			if err := slice.Append(obj); err != nil {
@@ -111,22 +126,20 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 
 	// Values
 	case unstable.String:
-		// Create string value and attach TOML-specific style metadata derived
-		// from the raw bytes so the writer can reproduce the original form.
-		raw := p.Raw(n.Raw)
 		v := model.NewStringValue(string(n.Data))
-		// Determine style based on raw delimiters
-		style := "basic"
-		if len(raw) >= 3 && bytes.HasPrefix(raw, []byte("''")) && bytes.HasPrefix(raw, []byte("'''")) {
-			style = "multiline_literal"
-		} else if len(raw) >= 3 && bytes.HasPrefix(raw, []byte("\"\"\"")) {
-			style = "multiline_basic"
-		} else if len(raw) >= 1 && raw[0] == '\'' {
-			style = "literal"
-		} else {
-			style = "basic"
+
+		raw := p.Raw(n.Raw)
+		switch {
+		case len(raw) >= 3 && bytes.HasPrefix(raw, []byte("''")) && bytes.HasPrefix(raw, []byte("'''")):
+			v.SetMetadataValue(tomlStringStyleKey, tomlStringStyleMultilineLiteral)
+		case len(raw) >= 3 && bytes.HasPrefix(raw, []byte("\"\"\"")):
+			v.SetMetadataValue(tomlStringStyleKey, tomlStringStyleMultilineBasic)
+		case len(raw) >= 1 && raw[0] == '\'':
+			v.SetMetadataValue(tomlStringStyleKey, tomlStringStyleLiteral)
+		default:
+			v.SetMetadataValue(tomlStringStyleKey, tomlStringStyleBasic)
 		}
-		v.SetMetadataValue("toml_style", style)
+
 		return "", v, nil
 	case unstable.Bool:
 		return "", model.NewBoolValue(string(n.Data) == "true"), nil
@@ -150,9 +163,9 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 		return "", model.NewStringValue(string(n.Data)), nil
 	case unstable.DateTime:
 		return "", model.NewStringValue(string(n.Data)), nil
+	default:
+		return "", nil, fmt.Errorf("unhandled node kind: %s", n.Kind.String())
 	}
-
-	return "", nil, fmt.Errorf("unhandled node kind: %s", n.Kind.String())
 }
 
 // parseKeyValueNode extracts the key segments and value from a KeyValue node without consuming parser expressions.
@@ -303,7 +316,7 @@ func setDottedKey(root, active *model.Value, parts []string, val *model.Value) e
 
 func (j *tomlReader) readInlineTable(p *unstable.Parser, n *unstable.Node) (string, *model.Value, error) {
 	res := model.NewMapValue()
-	res.SetMetadataValue("toml_inline_table", true)
+	res.SetMetadataValue(tomlTableStyleKey, tomlTableStyleInline)
 
 	i := n.Children()
 	for i.Next() {
@@ -348,6 +361,8 @@ func (j *tomlReader) readArrayValue(p *unstable.Parser, n *unstable.Node) (*mode
 		if err != nil {
 			return nil, err
 		}
+
+		val.SetMetadataValue(tomlTableStyleKey, tomlTableStyleArray)
 
 		if err := res.Append(val); err != nil {
 			return nil, err

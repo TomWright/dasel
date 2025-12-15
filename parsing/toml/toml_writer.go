@@ -1,9 +1,11 @@
 package toml
 
 import (
+	"bytes"
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 
 	pkg "github.com/pelletier/go-toml/v2"
 	"github.com/tomwright/dasel/v3/model"
@@ -13,7 +15,6 @@ import (
 var _ parsing.Writer = (*tomlWriter)(nil)
 
 func newTOMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
-	// Default to double quotes unless overridden.
 	w := &tomlWriter{}
 	return w, nil
 }
@@ -24,16 +25,18 @@ type tomlWriter struct {
 // Write converts the dasel model.Value into Go values backed by dynamically
 // generated struct types (reflect.StructOf) that preserve key ordering, then
 // delegates to go-toml Marshal to produce canonical TOML output.
+// This implementation doesn't preserve all formatting metadata (multiline strings, etc)
+// and needs some work to do so.
 func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 	if value == nil {
 		return nil, fmt.Errorf("nil value")
 	}
 
-	var gv interface{}
+	var goValue interface{}
 	var err error
 
 	if value.IsMap() {
-		gv, err = buildGoValueForMap(value)
+		goValue, err = buildGoValueForMap(value)
 		if err != nil {
 			return nil, fmt.Errorf("failed to construct go value: %w", err)
 		}
@@ -45,16 +48,21 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 		}
 		// For nil/zero interface, ensure we pass nil interface rather than a typed zero.
 		if typ.Kind() == reflect.Interface && rv.IsZero() {
-			gv = nil
+			goValue = nil
 		} else {
-			gv = rv.Interface()
+			goValue = rv.Interface()
 		}
 	}
 
-	outBytes, err := pkg.Marshal(gv)
-	if err != nil {
-		return nil, fmt.Errorf("toml marshal failed: %w", err)
+	// We currently encode the top level value directly. We have little control over nested values.
+	// Perhaps it would be better to implement a custom Encoder that respects metadata on nested values?
+	var buf bytes.Buffer
+	encoder := pkg.NewEncoder(&buf)
+
+	if err := encoder.Encode(goValue); err != nil {
+		return nil, fmt.Errorf("toml encode failed: %w", err)
 	}
+	outBytes := buf.Bytes()
 
 	// Ensure trailing newline for consistency with other format writers/tests.
 	if len(outBytes) == 0 || outBytes[len(outBytes)-1] != '\n' {
@@ -84,11 +92,31 @@ func buildGoValueForMap(v *model.Value) (interface{}, error) {
 			return nil, fmt.Errorf("error converting key %q: %w", kv.Key, err)
 		}
 
+		tomlTagContents := []string{kv.Key}
+
+		//  These currently do not take effect. They are placeholders for future functionality.
+		if v, ok := kv.Value.MetadataValue(tomlStringStyleKey); ok {
+			if style, ok := v.(string); ok && style != "" {
+				switch style {
+				case tomlStringStyleMultilineBasic, tomlStringStyleMultilineLiteral:
+					tomlTagContents = append(tomlTagContents, "multiline")
+				}
+			}
+		}
+		if v, ok := kv.Value.MetadataValue(tomlTableStyleKey); ok {
+			if style, ok := v.(string); ok && style != "" {
+				switch style {
+				case tomlTableStyleInline:
+					tomlTagContents = append(tomlTagContents, "inline")
+				}
+			}
+		}
+
 		// create exported field name (F0, F1...) and set tag to preserve toml key
 		field := reflect.StructField{
 			Name: "F" + strconv.Itoa(i),
 			Type: ft,
-			Tag:  reflect.StructTag(`toml:"` + kv.Key + `"`),
+			Tag:  reflect.StructTag(fmt.Sprintf(`toml:"%s"`, strings.Join(tomlTagContents, ","))),
 		}
 		fields = append(fields, field)
 		fieldValues = append(fieldValues, fv)

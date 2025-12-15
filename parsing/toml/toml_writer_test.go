@@ -85,7 +85,7 @@ func TestTomlWriter_OrderPreserved(t *testing.T) {
 	if ia == -1 || ib == -1 || ic == -1 {
 		t.Fatalf("expected keys missing in output: %s", outStr)
 	}
-	if !(ia < ib && ib < ic) {
+	if ia >= ib || ib >= ic {
 		t.Fatalf("expected order a,b,c in output; got:\n%s", outStr)
 	}
 }
@@ -204,7 +204,7 @@ func TestTomlWriter_MoreCases(t *testing.T) {
 
 	// Complex example file round-trip
 	t.Run("complex example file", func(t *testing.T) {
-		t.Skip("Multiline string formatting not yet preserved")
+		//t.Skip("Multiline string formatting not yet preserved")
 		dataPath := "testdata/complex_example.toml"
 		b, err := os.ReadFile(dataPath)
 		if err != nil {
