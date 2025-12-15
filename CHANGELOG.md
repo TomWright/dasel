@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet
 
-## [v3.0.0] - 2025-12-13
+## [v3.0.0] - 2025-12-15
 
 ### Added
 - Major new version release.
@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Variables can now be passed to dasel from the command line.
 - Support for comments in queries.
 - Dasel config file to define default file format.
+- Interactive mode for dasel CLI (alpha).
 
 ### Changed
 - Go module path changed to `github.com/tomwright/dasel/v3`.
