@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Added
-- `sum` function to sum numeric values in an array. [See docs](https://daseldocs.tomwright.me/functions/sum).
+- `sum` function to sum numeric values in an array. [See docs](httpsg://daseldocs.tomwright.me/functions/sum).
 
 ## [v3.0.0] - 2025-12-15
 
