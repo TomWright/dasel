@@ -486,3 +486,101 @@ func TestTomlReader_EdgeCases(t *testing.T) {
 		}
 	})
 }
+
+func TestTomlReader_TimeStrings(t *testing.T) {
+	// Local date
+	t.Run("local date string", func(t *testing.T) {
+		src := []byte("d = 1979-05-27")
+		r, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error creating reader: %v", err)
+		}
+		val, err := r.Read(src)
+		if err != nil {
+			t.Fatalf("unexpected error parsing: %v", err)
+		}
+		v, err := val.GetMapKey("d")
+		if err != nil {
+			t.Fatalf("missing key d: %v", err)
+		}
+		s, err := v.StringValue()
+		if err != nil {
+			t.Fatalf("value not string: %v", err)
+		}
+		if s != "1979-05-27" {
+			t.Fatalf("expected %q got %q", "1979-05-27", s)
+		}
+	})
+
+	// Local time
+	t.Run("local time string", func(t *testing.T) {
+		src := []byte("t = 07:32:00")
+		r, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error creating reader: %v", err)
+		}
+		val, err := r.Read(src)
+		if err != nil {
+			t.Fatalf("unexpected error parsing: %v", err)
+		}
+		v, err := val.GetMapKey("t")
+		if err != nil {
+			t.Fatalf("missing key t: %v", err)
+		}
+		s, err := v.StringValue()
+		if err != nil {
+			t.Fatalf("value not string: %v", err)
+		}
+		if s != "07:32:00" {
+			t.Fatalf("expected %q got %q", "07:32:00", s)
+		}
+	})
+
+	// Local date-time
+	t.Run("local datetime string", func(t *testing.T) {
+		src := []byte("dt = 1979-05-27T07:32:00")
+		r, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error creating reader: %v", err)
+		}
+		val, err := r.Read(src)
+		if err != nil {
+			t.Fatalf("unexpected error parsing: %v", err)
+		}
+		v, err := val.GetMapKey("dt")
+		if err != nil {
+			t.Fatalf("missing key dt: %v", err)
+		}
+		s, err := v.StringValue()
+		if err != nil {
+			t.Fatalf("value not string: %v", err)
+		}
+		if s != "1979-05-27T07:32:00" {
+			t.Fatalf("expected %q got %q", "1979-05-27T07:32:00", s)
+		}
+	})
+
+	// DateTime with timezone (RFC3339)
+	t.Run("datetime with tz string", func(t *testing.T) {
+		src := []byte("dt = 1979-05-27T07:32:00-08:00")
+		r, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error creating reader: %v", err)
+		}
+		val, err := r.Read(src)
+		if err != nil {
+			t.Fatalf("unexpected error parsing: %v", err)
+		}
+		v, err := val.GetMapKey("dt")
+		if err != nil {
+			t.Fatalf("missing key dt: %v", err)
+		}
+		s, err := v.StringValue()
+		if err != nil {
+			t.Fatalf("value not string: %v", err)
+		}
+		if s != "1979-05-27T07:32:00-08:00" {
+			t.Fatalf("expected %q got %q", "1979-05-27T07:32:00-08:00", s)
+		}
+	})
+}

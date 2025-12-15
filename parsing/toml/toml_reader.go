@@ -1,6 +1,7 @@
 package toml
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 
@@ -48,7 +49,7 @@ func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 			}
 
 		case unstable.Table:
-			parts, err := extractKeyFromTableNode(expr)
+			parts, quoted, err := extractKeyFromTableNode(p, expr)
 			if err != nil {
 				return nil, err
 			}
@@ -56,10 +57,14 @@ func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 			if err != nil {
 				return nil, err
 			}
+			// Record table header parts and quoting info on the map so the writer
+			// can reproduce the header exactly if needed.
+			m.SetMetadataValue("toml_table_header_parts", parts)
+			m.SetMetadataValue("toml_table_header_quoted", quoted)
 			active = m
 
 		case unstable.ArrayTable:
-			parts, err := extractKeyFromTableNode(expr)
+			parts, quoted, err := extractKeyFromTableNode(p, expr)
 			if err != nil {
 				return nil, err
 			}
@@ -68,6 +73,11 @@ func (j *tomlReader) Read(data []byte) (*model.Value, error) {
 				return nil, err
 			}
 			obj := model.NewMapValue()
+			// Mark this object as created via an array table so the writer can
+			// emit [[...]] headers for it.
+			obj.SetMetadataValue("toml_array_table", true)
+			obj.SetMetadataValue("toml_table_header_parts", parts)
+			obj.SetMetadataValue("toml_table_header_quoted", quoted)
 			if err := slice.Append(obj); err != nil {
 				return nil, err
 			}
@@ -101,7 +111,23 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 
 	// Values
 	case unstable.String:
-		return "", model.NewStringValue(string(n.Data)), nil
+		// Create string value and attach TOML-specific style metadata derived
+		// from the raw bytes so the writer can reproduce the original form.
+		raw := p.Raw(n.Raw)
+		v := model.NewStringValue(string(n.Data))
+		// Determine style based on raw delimiters
+		style := "basic"
+		if len(raw) >= 3 && bytes.HasPrefix(raw, []byte("''")) && bytes.HasPrefix(raw, []byte("'''")) {
+			style = "multiline_literal"
+		} else if len(raw) >= 3 && bytes.HasPrefix(raw, []byte("\"\"\"")) {
+			style = "multiline_basic"
+		} else if len(raw) >= 1 && raw[0] == '\'' {
+			style = "literal"
+		} else {
+			style = "basic"
+		}
+		v.SetMetadataValue("toml_style", style)
+		return "", v, nil
 	case unstable.Bool:
 		return "", model.NewBoolValue(string(n.Data) == "true"), nil
 	case unstable.Float:
@@ -117,9 +143,13 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 		}
 		return "", model.NewIntValue(int64(i64)), nil
 	case unstable.LocalDate:
+		return "", model.NewStringValue(string(n.Data)), nil
 	case unstable.LocalTime:
+		return "", model.NewStringValue(string(n.Data)), nil
 	case unstable.LocalDateTime:
+		return "", model.NewStringValue(string(n.Data)), nil
 	case unstable.DateTime:
+		return "", model.NewStringValue(string(n.Data)), nil
 	}
 
 	return "", nil, fmt.Errorf("unhandled node kind: %s", n.Kind.String())
@@ -155,21 +185,28 @@ func (j *tomlReader) parseKeyValueNode(p *unstable.Parser, n *unstable.Node) ([]
 }
 
 // extractKeyFromTableNode returns the key segments from a Table/ArrayTable node.
-func extractKeyFromTableNode(n *unstable.Node) ([]string, error) {
+func extractKeyFromTableNode(p *unstable.Parser, n *unstable.Node) ([]string, []bool, error) {
 	i := n.Children()
 	var parts []string
+	var quoted []bool
 	for i.Next() {
 		child := i.Node()
 		if child.Kind == unstable.Key {
 			parts = append(parts, string(child.Data))
+			raw := p.Raw(child.Raw)
+			isQuoted := false
+			if len(raw) > 0 && (raw[0] == '"' || raw[0] == '\'') {
+				isQuoted = true
+			}
+			quoted = append(quoted, isQuoted)
 			continue
 		}
-		return nil, fmt.Errorf("expected table child node, got %s", child.Kind.String())
+		return nil, nil, fmt.Errorf("expected table child node, got %s", child.Kind.String())
 	}
 	if len(parts) == 0 {
-		return nil, fmt.Errorf("missing table child key node")
+		return nil, nil, fmt.Errorf("missing table child key node")
 	}
-	return parts, nil
+	return parts, quoted, nil
 }
 
 // ensureMapAt ensures a map exists at the dotted path under root and returns it.

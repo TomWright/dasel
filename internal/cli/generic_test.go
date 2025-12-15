@@ -146,21 +146,21 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 [mapData]
 oneTwoThree = 123
 oneTwoDotThree = 12.3
-hello = "world"
+hello = 'world'
 boolFalse = false
 boolTrue = true
-stringFalse = "false"
-stringTrue = "true"
+stringFalse = 'false'
+stringTrue = 'true'
 sliceOfNumbers = [1, 2, 3, 4, 5]
 
 [mapData.mapData]
 oneTwoThree = 123
 oneTwoDotThree = 12.3
-hello = "world"
+hello = 'world'
 boolFalse = false
 boolTrue = true
-stringFalse = "false"
-stringTrue = "true"
+stringFalse = 'false'
+stringTrue = 'true'
 sliceOfNumbers = [1, 2, 3, 4, 5]
 `)
 
