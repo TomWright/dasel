@@ -11,7 +11,7 @@ type QueryCmd struct {
 	OutFormat         string            `flag:"" name:"out" short:"o" help:"The format of the output data."`
 	ReturnRoot        bool              `flag:"" name:"root" help:"Return the root value."`
 	Unstable          bool              `flag:"" name:"unstable" help:"Allow access to potentially unstable features."`
-	Interactive       bool              `flag:"" name:"it" help:"Run in interactive mode."`
+	Interactive       bool              `flag:"" name:"it" help:"Run in interactive mode (alpha)."`
 
 	ConfigPath string `name:"config" short:"c" help:"Path to config file" default:"~/dasel.yaml"`
 

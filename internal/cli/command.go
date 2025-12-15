@@ -23,7 +23,7 @@ type CLI struct {
 
 	Query       QueryCmd       `cmd:"" default:"withargs" help:"[default] Execute a query"`
 	Version     VersionCmd     `cmd:"" help:"Print the version"`
-	Interactive InteractiveCmd `cmd:"" help:"Start an interactive session"`
+	Interactive InteractiveCmd `cmd:"" help:"Start an interactive session (alpha)"`
 }
 
 func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
