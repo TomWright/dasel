@@ -21,8 +21,8 @@ func TestType_String(t *testing.T) {
 	t.Run("bool", run(model.TypeBool, "bool"))
 	t.Run("map", run(model.TypeMap, "map"))
 	t.Run("slice", run(model.TypeSlice, "array"))
-	t.Run("slice", run(model.TypeUnknown, "unknown"))
-	t.Run("slice", run(model.TypeNull, "null"))
+	t.Run("unknown", run(model.TypeUnknown, "unknown"))
+	t.Run("null", run(model.TypeNull, "null"))
 }
 
 func TestValue_Len(t *testing.T) {
