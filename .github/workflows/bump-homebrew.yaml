@@ -3,22 +3,65 @@ on:
     workflows: ["Build"]
     types:
       - completed
+
 name: Bump homebrew
+
 jobs:
   publish:
     name: Update homebrew-core
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v6
+      # Checkout your fork
+      - name: Checkout fork
+        uses: actions/checkout@v4
         with:
+          repository: TomWright/homebrew-core
+          token: ${{ secrets.GH_HOMEBREW_TOKEN }}
           fetch-depth: 0
-      - name: Set env
-        run: echo "RELEASE_VERSION=$(git describe --tags --abbrev=0)" >> $GITHUB_ENV
-      - name: Homebrew bump formula
-        uses: dawidd6/action-homebrew-bump-formula@v7
+
+      # Get latest release tag from upstream repo
+      - name: Set release version
+        run: |
+          RELEASE_VERSION=$(git describe --tags --abbrev=0)
+          echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
+          NUMERIC_VERSION="${RELEASE_VERSION#v}"
+          echo "NUMERIC_VERSION=$NUMERIC_VERSION" >> $GITHUB_ENV
+
+      # Fetch tarball and compute sha256
+      - name: Fetch tarball and checksum
+        run: |
+          URL="https://github.com/TomWright/dasel/archive/refs/tags/${RELEASE_VERSION}.tar.gz"
+          curl -L -o dasel.tar.gz "$URL"
+          SHA=$(sha256sum dasel.tar.gz | awk '{print $1}')
+          echo "SHA=$SHA" >> $GITHUB_ENV
+
+      # Update formula in-place
+      - name: Update formula
+        run: |
+          FORMULA="Formula/d/dasel.rb"
+          sed -i \
+            -e "s|refs/tags/v[0-9.]*|refs/tags/${RELEASE_VERSION}|" \
+            -e "s|sha256 \".*\"|sha256 \"$SHA\"|" \
+            "$FORMULA"
+
+      # Open PR from your fork to upstream
+      - name: Create PR
+        id: pr
+        uses: peter-evans/create-pull-request@v6
         with:
           token: ${{ secrets.GH_HOMEBREW_TOKEN }}
-          formula: dasel
-          tap: homebrew/core
-          tag: ${{ env.RELEASE_VERSION }}
-          force: true
+          branch: dasel-${{ env.NUMERIC_VERSION }}
+          base: main
+          title: "dasel ${{ env.NUMERIC_VERSION }}"
+          body: |
+            Automated bump to dasel ${{ env.NUMERIC_VERSION }}.
+
+            Release notes:
+            https://github.com/TomWright/dasel/releases/tag/${{ env.RELEASE_VERSION }}
+          repository: Homebrew/homebrew-core
+
+      # Print PR URL
+      - name: Print PR link
+        run: |
+          echo "PR created: ${{ steps.pr.outputs.pull-request-url }}"
