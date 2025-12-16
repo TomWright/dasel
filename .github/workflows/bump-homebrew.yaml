@@ -25,14 +25,13 @@ jobs:
           NUMERIC_VERSION="${RELEASE_VERSION#v}"
           echo "NUMERIC_VERSION=$NUMERIC_VERSION" >> $GITHUB_ENV
 
-      - name: Checkout fork
+      - name: Checkout brew
         uses: actions/checkout@v6
         with:
-          repository: TomWright/homebrew-core
+          repository: Homebrew/homebrew-core
           token: ${{ secrets.GH_HOMEBREW_TOKEN }}
           fetch-depth: 0
 
-      # Fetch tarball and compute sha256
       - name: Fetch tarball and checksum
         run: |
           URL="https://github.com/TomWright/dasel/archive/refs/tags/${RELEASE_VERSION}.tar.gz"
@@ -40,7 +39,6 @@ jobs:
           SHA=$(sha256sum dasel.tar.gz | awk '{print $1}')
           echo "SHA=$SHA" >> $GITHUB_ENV
 
-      # Update formula in-place
       - name: Update formula
         run: |
           FORMULA="Formula/d/dasel.rb"
@@ -49,10 +47,9 @@ jobs:
             -e "s|sha256 \".*\"|sha256 \"$SHA\"|" \
             "$FORMULA"
 
-      # Open PR from your fork to upstream
       - name: Create PR
         id: pr
-        uses: peter-evans/create-pull-request@v6
+        uses: peter-evans/create-pull-request@v8
         with:
           token: ${{ secrets.GH_HOMEBREW_TOKEN }}
           branch: dasel-${{ env.NUMERIC_VERSION }}
@@ -63,9 +60,8 @@ jobs:
 
             Release notes:
             https://github.com/TomWright/dasel/releases/tag/${{ env.RELEASE_VERSION }}
-          push-to-fork: true
+          push-to-fork: TomWright/homebrew-core
 
-      # Print PR URL
       - name: Print PR link
         run: |
           echo "PR created: ${{ steps.pr.outputs.pull-request-url }}"
