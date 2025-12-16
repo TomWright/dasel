@@ -63,7 +63,7 @@ jobs:
 
             Release notes:
             https://github.com/TomWright/dasel/releases/tag/${{ env.RELEASE_VERSION }}
-          repository: Homebrew/homebrew-core
+          push-to-fork: true
 
       # Print PR URL
       - name: Print PR link
