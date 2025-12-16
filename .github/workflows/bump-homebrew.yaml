@@ -12,21 +12,25 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout your fork
-      - name: Checkout fork
-        uses: actions/checkout@v4
+      - name: Checkout dasel
+        uses: actions/checkout@v6
         with:
-          repository: TomWright/homebrew-core
-          token: ${{ secrets.GH_HOMEBREW_TOKEN }}
+          repository: TomWright/dasel
           fetch-depth: 0
 
-      # Get latest release tag from upstream repo
       - name: Set release version
         run: |
           RELEASE_VERSION=$(git describe --tags --abbrev=0)
           echo "RELEASE_VERSION=$RELEASE_VERSION" >> $GITHUB_ENV
           NUMERIC_VERSION="${RELEASE_VERSION#v}"
           echo "NUMERIC_VERSION=$NUMERIC_VERSION" >> $GITHUB_ENV
+
+      - name: Checkout fork
+        uses: actions/checkout@v6
+        with:
+          repository: TomWright/homebrew-core
+          token: ${{ secrets.GH_HOMEBREW_TOKEN }}
+          fetch-depth: 0
 
       # Fetch tarball and compute sha256
       - name: Fetch tarball and checksum
