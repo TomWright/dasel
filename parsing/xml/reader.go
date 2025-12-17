@@ -50,6 +50,7 @@ func (e *xmlElement) toStructuredModel() (*model.Value, error) {
 		}
 	}
 	res := model.NewMapValue()
+	res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
 	if err := res.SetMapKey("name", model.NewStringValue(e.Name)); err != nil {
 		return nil, err
 	}
@@ -82,6 +83,7 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 	}
 
 	res := model.NewMapValue()
+	res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
 	for _, attr := range e.Attrs {
 		if err := res.SetMapKey("-"+attr.Name, model.NewStringValue(attr.Value)); err != nil {
 			return nil, err
@@ -141,9 +143,10 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 
 func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement) (*xmlElement, error) {
 	el := &xmlElement{
-		Name:     element.Name.Local,
-		Attrs:    make([]xmlAttr, 0),
-		Children: make([]*xmlElement, 0),
+		Name:                   element.Name.Local,
+		Attrs:                  make([]xmlAttr, 0),
+		Children:               make([]*xmlElement, 0),
+		ProcessingInstructions: make([]*xmlProcessingInstruction, 0),
 	}
 
 	for _, attr := range element.Attr {
@@ -176,6 +179,19 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 			el.Content += string(t)
 		case xml.EndElement:
 			return el, nil
+		case xml.Comment:
+			continue
+		case xml.ProcInst:
+			pi := &xmlProcessingInstruction{
+				Target: t.Target,
+				Value:  string(t.Inst),
+			}
+			el.ProcessingInstructions = append(el.ProcessingInstructions, pi)
+			continue
+		case xml.Directive:
+			continue
+		case xml.Attr:
+			continue
 		default:
 			return nil, fmt.Errorf("unexpected token: %v", t)
 		}
