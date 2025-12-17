@@ -24,6 +24,9 @@ type xmlWriter struct {
 func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 	buf := new(bytes.Buffer)
 	writer := xml.NewEncoder(buf)
+	defer func() {
+		_ = writer.Close()
+	}()
 	writer.Indent("", "  ")
 
 	element, err := j.toElement(value)
@@ -38,17 +41,30 @@ func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 	if err := writer.Flush(); err != nil {
 		return nil, err
 	}
-	return buf.Bytes(), nil
+	outBytes := buf.Bytes()
+	if !bytes.HasSuffix(outBytes, []byte("\n")) {
+		outBytes = append(outBytes, '\n')
+	}
+	return outBytes, nil
 }
 
 func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
+	readProcessingInstructions := func() []*xmlProcessingInstruction {
+		if piMeta, ok := value.MetadataValue("xml_processing_instructions"); ok && piMeta != nil {
+			if pis, ok := piMeta.([]*xmlProcessingInstruction); ok {
+				return pis
+			}
+		}
+		return nil
+	}
 	switch value.Type() {
 
 	case model.TypeString:
 		strVal, err := valueToString(value)
 		return &xmlElement{
-			Name:    "root",
-			Content: strVal,
+			Name:                   "root",
+			Content:                strVal,
+			ProcessingInstructions: readProcessingInstructions(),
 		}, err
 
 	case model.TypeMap:
@@ -58,7 +74,8 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 		}
 
 		el := &xmlElement{
-			Name: "root",
+			Name:                   "root",
+			ProcessingInstructions: readProcessingInstructions(),
 		}
 
 		for _, kv := range kvs {
@@ -93,7 +110,8 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 		return el, nil
 	case model.TypeSlice:
 		el := &xmlElement{
-			Name: "root",
+			Name:                   "root",
+			ProcessingInstructions: readProcessingInstructions(),
 		}
 		if err := value.RangeSlice(func(i int, value *model.Value) error {
 			childEl, err := j.toElement(value)
@@ -149,6 +167,19 @@ func valueToString(v *model.Value) (string, error) {
 }
 
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
+	if len(e.ProcessingInstructions) > 0 {
+		for _, pi := range e.ProcessingInstructions {
+			if err := enc.EncodeToken(xml.ProcInst{
+				Target: pi.Target,
+				Inst:   []byte(pi.Value),
+			}); err != nil {
+				return err
+			}
+			if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
+				return err
+			}
+		}
+	}
 	start.Name = xml.Name{Local: e.Name}
 	if err := enc.EncodeToken(start); err != nil {
 		return err

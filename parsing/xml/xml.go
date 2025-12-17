@@ -22,9 +22,15 @@ type xmlAttr struct {
 	Value string
 }
 
+type xmlProcessingInstruction struct {
+	Target string
+	Value  string
+}
+
 type xmlElement struct {
-	Name     string
-	Attrs    []xmlAttr
-	Children []*xmlElement
-	Content  string
+	Name                   string
+	Attrs                  []xmlAttr
+	Children               []*xmlElement
+	Content                string
+	ProcessingInstructions []*xmlProcessingInstruction
 }
