@@ -16,7 +16,7 @@ func Query(ctx context.Context, data any, selector string, opts ...execution.Exe
 		return nil, 0, err
 	}
 
-	if out.IsBranch() {
+	if out.IsBranch() || out.IsSpread() {
 		res := make([]*model.Value, 0)
 		if err := out.RangeSlice(func(i int, v *model.Value) error {
 			res = append(res, v)
@@ -30,6 +30,8 @@ func Query(ctx context.Context, data any, selector string, opts ...execution.Exe
 	return []*model.Value{out}, 1, nil
 }
 
+// Select queries the data using the selector and returns the results as native Go types.
+// Ordering within maps is not guaranteed.
 func Select(ctx context.Context, data any, selector string, opts ...execution.ExecuteOptionFn) (any, int, error) {
 	res, count, err := Query(ctx, data, selector, opts...)
 	if err != nil {
@@ -37,11 +39,17 @@ func Select(ctx context.Context, data any, selector string, opts ...execution.Ex
 	}
 	out := make([]any, 0)
 	for _, v := range res {
-		out = append(out, v.Interface())
+		goValue, err := v.GoValue()
+		if err != nil {
+			return nil, 0, err
+		}
+		out = append(out, goValue)
 	}
 	return out, count, err
 }
 
+// Modify runs the query against the given data and updates it in-place.
+// Given data must be a pointer to a mutable data structure.
 func Modify(ctx context.Context, data any, selector string, newValue any, opts ...execution.ExecuteOptionFn) (int, error) {
 	res, count, err := Query(ctx, data, selector, opts...)
 	if err != nil {

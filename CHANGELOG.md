@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Nothing yet.
 
+## [v3.1.4] - 2025-12-18
+
+### Fixed
+- `Select` func in the exposed go API now correctly maps return values to the respective types.
+
 ## [v3.1.3] - 2025-12-18
 
 ### Fixed
@@ -727,7 +732,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.1.3...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.1.4...HEAD
+[v3.1.4]: https://github.com/TomWright/dasel/compare/v3.1.3...v3.1.4
 [v3.1.3]: https://github.com/TomWright/dasel/compare/v3.1.2...v3.1.3
 [v3.1.2]: https://github.com/TomWright/dasel/compare/v3.1.1...v3.1.2
 [v3.1.1]: https://github.com/TomWright/dasel/compare/v3.1.0...v3.1.1

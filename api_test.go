@@ -28,6 +28,56 @@ func (tc modifyTestCase) run(t *testing.T) {
 	}
 }
 
+func TestQuery(t *testing.T) {
+	t.Run("basic query", func(t *testing.T) {
+		inputData := map[string]any{
+			"users": []map[string]any{
+				{"name": "Alice", "age": 30},
+				{"name": "Bob", "age": 25},
+			},
+		}
+		results, count, err := dasel.Query(t.Context(), inputData, "users.map(name)...")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 2 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []string{"Alice", "Bob"}
+		for i, r := range results {
+			strVal, err := r.StringValue()
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			if strVal != exp[i] {
+				t.Errorf("unexpected result at index %d: %s", i, strVal)
+			}
+		}
+	})
+}
+
+func TestSelect(t *testing.T) {
+	t.Run("basic select", func(t *testing.T) {
+		inputData := map[string]any{
+			"users": []map[string]any{
+				{"name": "Alice", "age": 30},
+				{"name": "Bob", "age": 25},
+			},
+		}
+		result, count, err := dasel.Select(t.Context(), inputData, "users.map(name)...")
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 2 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"Alice", "Bob"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+}
+
 func TestModify(t *testing.T) {
 	t.Run("index", func(t *testing.T) {
 		t.Run("int over int", modifyTestCase{
