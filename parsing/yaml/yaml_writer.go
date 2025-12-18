@@ -32,17 +32,13 @@ func (j *yamlWriter) Write(value *model.Value) ([]byte, error) {
 func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 	res := &yaml.Node{}
 
-	yamlAlias, ok := yv.value.Metadata["yaml-alias"].(string)
-	if ok {
-		//res.Kind = yaml.ScalarNode
-		res.Kind = yaml.AliasNode
-		res.Value = yamlAlias
-		//res.Alias = &yaml.Node{
-		//	Kind:  yaml.ScalarNode,
-		//	Value: yamlAlias,
-		//}
-		return res, nil
-	}
+	// TODO : Handle yaml aliases.
+	//yamlAlias, ok := yv.value.Metadata["yaml-alias"].(string)
+	//if ok {
+	//res.Kind = yaml.AliasNode
+	//res.Value = yamlAlias
+	//return res, nil
+	//}
 
 	switch yv.value.Type() {
 	case model.TypeString:

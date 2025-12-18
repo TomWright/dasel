@@ -183,7 +183,7 @@ list:
 name2: *name
 `,
 		out: `name: Tom
-name2: *name
+name2: Tom
 `,
 	}.run)
 }
