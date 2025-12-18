@@ -156,6 +156,8 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 		})
 	}
 
+	var processingInstructions []*xmlProcessingInstruction
+
 	for {
 		t, err := decoder.Token()
 		if errors.Is(err, io.EOF) {
@@ -171,6 +173,7 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 			if err != nil {
 				return nil, err
 			}
+			child.ProcessingInstructions = processingInstructions
 			el.Children = append(el.Children, child)
 		case xml.CharData:
 			if unicode.IsSpace([]rune(string(t))[0]) {
@@ -186,7 +189,7 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 				Target: t.Target,
 				Value:  string(t.Inst),
 			}
-			el.ProcessingInstructions = append(el.ProcessingInstructions, pi)
+			processingInstructions = append(processingInstructions, pi)
 			continue
 		case xml.Directive:
 			continue

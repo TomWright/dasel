@@ -79,7 +79,12 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 		return nil, SliceIndexOutOfRange{Index: i}
 	}
 
-	res := NewValue(unpacked.value.Index(i))
+	item := unpacked.value.Index(i)
+	if item.Kind() == reflect.Ptr && item.Type() == reflect.TypeFor[*Value]() {
+		return item.Interface().(*Value), nil
+	}
+
+	res := NewValue(item)
 	return res, nil
 }
 
@@ -95,7 +100,7 @@ func (v *Value) SetSliceIndex(i int, val *Value) error {
 	if i < 0 || i >= unpacked.value.Len() {
 		return SliceIndexOutOfRange{Index: i}
 	}
-	unpacked.value.Index(i).Set(val.value)
+	unpacked.value.Index(i).Set(reflect.ValueOf(val))
 	return nil
 }
 

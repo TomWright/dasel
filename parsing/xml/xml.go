@@ -33,4 +33,5 @@ type xmlElement struct {
 	Children               []*xmlElement
 	Content                string
 	ProcessingInstructions []*xmlProcessingInstruction
+	useChildrenOnly        bool
 }

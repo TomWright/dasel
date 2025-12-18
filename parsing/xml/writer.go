@@ -29,13 +29,17 @@ func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 	}()
 	writer.Indent("", "  ")
 
-	element, err := j.toElement(value)
+	element, err := j.toElement("root", value)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert to element: %w", err)
 	}
-
-	if err := writer.Encode(element); err != nil {
-		return nil, err
+	for _, c := range element.Children {
+		if err := writer.Encode(c); err != nil {
+			return nil, err
+		}
+		if err := writer.EncodeToken(xml.CharData("\n")); err != nil {
+			return nil, err
+		}
 	}
 
 	if err := writer.Flush(); err != nil {
@@ -48,7 +52,7 @@ func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 	return outBytes, nil
 }
 
-func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
+func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, error) {
 	readProcessingInstructions := func() []*xmlProcessingInstruction {
 		if piMeta, ok := value.MetadataValue("xml_processing_instructions"); ok && piMeta != nil {
 			if pis, ok := piMeta.([]*xmlProcessingInstruction); ok {
@@ -62,7 +66,7 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 	case model.TypeString:
 		strVal, err := valueToString(value)
 		return &xmlElement{
-			Name:                   "root",
+			Name:                   key,
 			Content:                strVal,
 			ProcessingInstructions: readProcessingInstructions(),
 		}, err
@@ -74,7 +78,7 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 		}
 
 		el := &xmlElement{
-			Name:                   "root",
+			Name:                   key,
 			ProcessingInstructions: readProcessingInstructions(),
 		}
 
@@ -99,12 +103,15 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 				continue
 			}
 
-			childEl, err := j.toElement(kv.Value)
+			childEl, err := j.toElement(kv.Key, kv.Value)
 			if err != nil {
 				return nil, fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, err)
 			}
-			childEl.Name = kv.Key
-			el.Children = append(el.Children, childEl)
+			if childEl.useChildrenOnly {
+				el.Children = append(el.Children, childEl.Children...)
+			} else {
+				el.Children = append(el.Children, childEl)
+			}
 		}
 
 		return el, nil
@@ -112,14 +119,18 @@ func (j *xmlWriter) toElement(value *model.Value) (*xmlElement, error) {
 		el := &xmlElement{
 			Name:                   "root",
 			ProcessingInstructions: readProcessingInstructions(),
+			useChildrenOnly:        true,
 		}
 		if err := value.RangeSlice(func(i int, value *model.Value) error {
-			childEl, err := j.toElement(value)
+			childEl, err := j.toElement(key, value)
 			if err != nil {
 				return err
 			}
-			childEl.Name = "item"
-			el.Children = append(el.Children, childEl)
+			if childEl.useChildrenOnly {
+				el.Children = append(el.Children, childEl.Children...)
+			} else {
+				el.Children = append(el.Children, childEl)
+			}
 
 			return nil
 		}); err != nil {
@@ -181,19 +192,18 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 		}
 	}
 	start.Name = xml.Name{Local: e.Name}
-	if err := enc.EncodeToken(start); err != nil {
-		return err
-	}
 
 	if len(e.Attrs) > 0 {
 		for _, attr := range e.Attrs {
-			if err := enc.EncodeToken(xml.Attr{
+			start.Attr = append(start.Attr, xml.Attr{
 				Name:  xml.Name{Local: attr.Name},
 				Value: attr.Value,
-			}); err != nil {
-				return err
-			}
+			})
 		}
+	}
+
+	if err := enc.EncodeToken(start); err != nil {
+		return err
 	}
 
 	if len(e.Content) > 0 {

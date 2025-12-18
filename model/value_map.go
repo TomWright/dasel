@@ -45,7 +45,7 @@ func (v *Value) SetMapKey(key string, value *Value) error {
 		if err != nil {
 			return fmt.Errorf("error getting map: %w", err)
 		}
-		m.Set(key, value.value.Interface())
+		m.Set(key, value)
 		return nil
 	case v.isStandardMap():
 		unpacked, err := v.UnpackUntilKind(reflect.Map)
@@ -93,9 +93,16 @@ func (v *Value) GetMapKey(key string) (*Value, error) {
 		if !ok {
 			return nil, MapKeyNotFound{Key: key}
 		}
+		if modelValue, isValue := val.(*Value); isValue {
+			modelValue.setFn = func(newValue *Value) error {
+				m.Set(key, newValue)
+				return nil
+			}
+			return modelValue, nil
+		}
 		res := NewValue(val)
 		res.setFn = func(newValue *Value) error {
-			m.Set(key, newValue.value.Interface())
+			m.Set(key, newValue)
 			return nil
 		}
 		return res, nil
