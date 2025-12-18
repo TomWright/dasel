@@ -12,9 +12,10 @@ Only the latest major version of Dasel is currently supported with security upda
 
 ## Reporting a Vulnerability
 
-If you believe you have found a security vulnerability in Dasel, please report it privately and directly to:
+If you believe you have found a security vulnerability in Dasel, please report it privately and directly via one of the following:
 
-**[contact@tomwright.me](mailto:contact@tomwright.me)**
+- [GitHub vulnerability submission](https://github.com/TomWright/dasel/security/advisories/new)
+- [contact@tomwright.me](mailto:contact@tomwright.me)
 
 Please do **not** create a public GitHub issue for security vulnerabilities.  
 This allows proper investigation and remediation before disclosure.
