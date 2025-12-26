@@ -29,6 +29,7 @@ var (
 		FuncGet,
 		FuncContains,
 		FuncSum,
+		FuncJoin,
 	)
 )
 
