@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+- `join` function to join array elements into a single string with a specified separator. [See docs](https://daseldocs.tomwright.me/functions/join).
 
 ## [v3.1.4] - 2025-12-18
 
