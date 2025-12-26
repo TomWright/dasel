@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v3.2.0] - 2025-12-26
+
 ### Added
 - `join` function to join array elements into a single string with a specified separator. [See docs](https://daseldocs.tomwright.me/functions/join).
 
@@ -733,7 +737,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.1.4...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.2.0...HEAD
+[v3.2.0]: https://github.com/TomWright/dasel/compare/v3.1.4...v3.2.0
 [v3.1.4]: https://github.com/TomWright/dasel/compare/v3.1.3...v3.1.4
 [v3.1.3]: https://github.com/TomWright/dasel/compare/v3.1.2...v3.1.3
 [v3.1.2]: https://github.com/TomWright/dasel/compare/v3.1.1...v3.1.2
