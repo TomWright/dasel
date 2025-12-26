@@ -8,7 +8,7 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 )
 
-// FuncJoin is a function that returns the joins the given data or args to a string.
+// FuncJoin is a function that joins the given data or args to a string.
 var FuncJoin = NewFunc(
 	"join",
 	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
