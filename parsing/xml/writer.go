@@ -206,6 +206,8 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 		return err
 	}
 
+	// TODO : Handle CDATA sections on write.
+
 	if len(e.Content) > 0 {
 		if err := enc.EncodeToken(xml.CharData(e.Content)); err != nil {
 			return err

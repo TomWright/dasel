@@ -150,4 +150,23 @@ func TestXmlReader_Write(t *testing.T) {
 			t.Errorf("Expected:\n%s\nGot:\n%s", string(exp), string(got))
 		}
 	})
+
+	t.Run("encode cdata", func(t *testing.T) {
+		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+		toEncode := model.NewMapValue()
+		_ = toEncode.SetMapKey("foo", model.NewStringValue("<bar>baz</bar>"))
+		got, err := w.Write(toEncode)
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+		// TODO : Change this to use CDATA sections rather than escaping.
+		exp := []byte(`<foo>&lt;bar&gt;baz&lt;/bar&gt;</foo>
+`)
+		if string(got) != string(exp) {
+			t.Errorf("Expected:\n%s\nGot:\n%s", string(exp), string(got))
+		}
+	})
 }

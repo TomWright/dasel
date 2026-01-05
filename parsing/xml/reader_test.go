@@ -119,4 +119,62 @@ func TestXmlReader_Read(t *testing.T) {
 			t.Fatalf("Expected:\n%s\nGot:\n%s", expected, string(jsonBytes))
 		}
 	})
+
+	t.Run("cdata tag", func(t *testing.T) {
+		r, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		data, err := r.Read([]byte(`<foo>
+	<![CDATA[<bar>baz</bar>]]>
+</foo>
+`))
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		x, err := data.GetMapKey("foo")
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+		got, err := x.StringValue()
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		exp := "<bar>baz</bar>"
+		if exp != got {
+			t.Fatalf("Expected value %q but got %q", exp, got)
+		}
+	})
+
+	t.Run("empty cdata tag", func(t *testing.T) {
+		r, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		data, err := r.Read([]byte(`<foo>
+	<![CDATA[]]>
+</foo>
+`))
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		x, err := data.GetMapKey("foo")
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+		got, err := x.StringValue()
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		exp := ""
+		if exp != got {
+			t.Fatalf("Expected value %q but got %q", exp, got)
+		}
+	})
 }
