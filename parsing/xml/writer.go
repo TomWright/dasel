@@ -177,10 +177,6 @@ func valueToString(v *model.Value) (string, error) {
 	}
 }
 
-type CDataString struct {
-	Text string `xml:",cdata"`
-}
-
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
 	if len(e.ProcessingInstructions) > 0 {
 		for _, pi := range e.ProcessingInstructions {
