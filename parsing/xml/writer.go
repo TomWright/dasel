@@ -177,6 +177,10 @@ func valueToString(v *model.Value) (string, error) {
 	}
 }
 
+type CDataString struct {
+	Text string `xml:",cdata"`
+}
+
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
 	if len(e.ProcessingInstructions) > 0 {
 		for _, pi := range e.ProcessingInstructions {
@@ -205,6 +209,8 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 	if err := enc.EncodeToken(start); err != nil {
 		return err
 	}
+
+	// TODO : Handle CDATA sections on write.
 
 	if len(e.Content) > 0 {
 		if err := enc.EncodeToken(xml.CharData(e.Content)); err != nil {

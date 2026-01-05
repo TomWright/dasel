@@ -5,11 +5,10 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"io"
-	"unicode"
-
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
+	"io"
+	"strings"
 )
 
 func newXMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
@@ -176,10 +175,11 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 			child.ProcessingInstructions = processingInstructions
 			el.Children = append(el.Children, child)
 		case xml.CharData:
-			if unicode.IsSpace([]rune(string(t))[0]) {
+			stringContent := string(t)
+			if strings.TrimSpace(stringContent) == "" {
 				continue
 			}
-			el.Content += string(t)
+			el.Content += stringContent
 		case xml.EndElement:
 			return el, nil
 		case xml.Comment:
