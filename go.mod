@@ -12,7 +12,7 @@ require (
 	github.com/pelletier/go-toml/v2 v2.2.5-0.20250826075308-a0e846496753
 	github.com/zclconf/go-cty v1.17.0
 	go.yaml.in/yaml/v4 v4.0.0-rc.3
-	gopkg.in/ini.v1 v1.67.0
+	gopkg.in/ini.v1 v1.67.1
 )
 
 require (
@@ -34,7 +34,6 @@ require (
 	github.com/muesli/cancelreader v0.2.2 // indirect
 	github.com/muesli/termenv v0.16.0 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
-	github.com/stretchr/testify v1.11.1 // indirect
 	github.com/xo/terminfo v0.0.0-20220910002029-abceb7e1c41e // indirect
 	golang.org/x/mod v0.26.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
