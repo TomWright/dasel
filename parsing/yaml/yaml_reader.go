@@ -122,7 +122,7 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 			return err
 		}
 		yv.value = newVal.value
-		yv.value.Metadata["yaml-alias"] = value.Value
+		yv.value.SetMetadataValue("yaml-alias", value.Value)
 	}
 	return nil
 }

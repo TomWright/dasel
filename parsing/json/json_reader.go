@@ -2,8 +2,9 @@ package json
 
 import (
 	"bytes"
-	"encoding/json"
+	// "encoding/json"
 	"fmt"
+	json "github.com/goccy/go-json"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"strings"
