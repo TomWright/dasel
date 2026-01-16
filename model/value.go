@@ -127,7 +127,7 @@ func NewValue(v any) *Value {
 	case reflect.Value:
 		return &Value{
 			value:    val,
-			Metadata: make(map[string]any),
+			Metadata: nil,
 		}
 	case nil:
 		return NewNullValue()
@@ -138,7 +138,7 @@ func NewValue(v any) *Value {
 		}
 		return &Value{
 			value:    res,
-			Metadata: make(map[string]any),
+			Metadata: nil,
 		}
 	}
 }
@@ -147,7 +147,7 @@ func NewValue(v any) *Value {
 func NewNestedValue(v *Value) *Value {
 	return &Value{
 		value:    reflect.ValueOf(v),
-		Metadata: make(map[string]any),
+		Metadata: nil,
 	}
 }
 
