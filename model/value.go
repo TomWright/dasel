@@ -302,18 +302,18 @@ func (v *Value) Type() Type {
 	}
 }
 
-// IsScalar returns true if the type is scalar.
 func (v *Value) IsScalar() bool {
-	switch {
-	case v.IsString():
+	// optimized version of IsScalar (instead of using IsString, IsFloat etc.)
+	// Unpack once to get the underlying concrete kind
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	kind := unpacked.Kind()
+
+	switch kind {
+	case reflect.String, reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 		return true
-	case v.IsInt():
-		return true
-	case v.IsFloat():
-		return true
-	case v.IsBool():
-		return true
-	case v.IsNull():
+	case reflect.Invalid: // This is usually what IsNull() checks
 		return true
 	default:
 		return false
