@@ -51,3 +51,33 @@ func TestValue_Len(t *testing.T) {
 		t.Run("non-empty", run(model.NewValue(map[string]any{"one": 1, "two": 2, "three": 3}), 3))
 	})
 }
+
+func TestValue_IsScalar(t *testing.T) {
+	run := func(v *model.Value, exp bool) func(*testing.T) {
+		return func(t *testing.T) {
+			got := v.IsScalar()
+			if got != exp {
+				t.Errorf("expected %v, got %v", exp, got)
+			}
+		}
+	}
+	t.Run("string", run(model.NewStringValue("foo"), true))
+	t.Run("bool", run(model.NewBoolValue(true), true))
+	t.Run("int", run(model.NewIntValue(1), true))
+	t.Run("float", run(model.NewFloatValue(1.0), true))
+	t.Run("null", run(model.NewNullValue(), true))
+	t.Run("map", run(model.NewMapValue(), false))
+	t.Run("slice", run(model.NewSliceValue(), false))
+
+	t.Run("nested", func(t *testing.T) {
+		t.Run("nested string", run(model.NewNestedValue(model.NewStringValue("foo")), true))
+		t.Run("nested bool", run(model.NewNestedValue(model.NewBoolValue(true)), true))
+		t.Run("nested int", run(model.NewNestedValue(model.NewIntValue(1)), true))
+		t.Run("nested float", run(model.NewNestedValue(model.NewFloatValue(1.0)), true))
+		t.Run("nested null", run(model.NewNestedValue(model.NewNullValue()), true))
+		t.Run("nested map", run(model.NewNestedValue(model.NewMapValue()), false))
+		t.Run("nested slice", run(model.NewNestedValue(model.NewSliceValue()), false))
+
+		t.Run("double nested string", run(model.NewNestedValue(model.NewNestedValue(model.NewStringValue("foo"))), true))
+	})
+}
