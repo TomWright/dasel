@@ -1,7 +1,7 @@
 package json
 
 import (
-	"encoding/json"
+	json "github.com/goccy/go-json"
 	"github.com/tomwright/dasel/v3/parsing"
 )
 
