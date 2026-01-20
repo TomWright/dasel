@@ -16,7 +16,7 @@ func NewNullValue() *Value {
 
 // IsNull returns true if the value is null.
 func (v *Value) IsNull() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isNull()
+	return v.UnpackKinds(reflect.Pointer, reflect.Interface).isNull()
 }
 
 func (v *Value) isNull() bool {
@@ -37,7 +37,7 @@ func NewStringValue(x string) *Value {
 
 // IsString returns true if the value is a string.
 func (v *Value) IsString() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isString()
+	return v.UnpackKinds(reflect.Pointer, reflect.Interface).isString()
 }
 
 func (v *Value) isString() bool {
@@ -46,7 +46,7 @@ func (v *Value) isString() bool {
 
 // StringValue returns the string value of the Value.
 func (v *Value) StringValue() (string, error) {
-	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
+	unpacked := v.UnpackKinds(reflect.Pointer, reflect.Interface)
 	if !unpacked.isString() {
 		return "", ErrUnexpectedType{
 			Expected: TypeString,
@@ -109,7 +109,7 @@ func NewIntValue(x int64) *Value {
 
 // IsInt returns true if the value is an int.
 func (v *Value) IsInt() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isInt()
+	return v.UnpackKinds(reflect.Pointer, reflect.Interface).isInt()
 }
 
 func (v *Value) isInt() bool {
@@ -118,7 +118,7 @@ func (v *Value) isInt() bool {
 
 // IntValue returns the int value of the Value.
 func (v *Value) IntValue() (int64, error) {
-	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
+	unpacked := v.UnpackKinds(reflect.Pointer, reflect.Interface)
 	if !unpacked.isInt() {
 		return 0, ErrUnexpectedType{
 			Expected: TypeInt,
@@ -137,7 +137,7 @@ func NewFloatValue(x float64) *Value {
 
 // IsFloat returns true if the value is a float.
 func (v *Value) IsFloat() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isFloat()
+	return v.UnpackKinds(reflect.Pointer, reflect.Interface).isFloat()
 }
 
 func (v *Value) isFloat() bool {
@@ -146,7 +146,7 @@ func (v *Value) isFloat() bool {
 
 // FloatValue returns the float value of the Value.
 func (v *Value) FloatValue() (float64, error) {
-	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
+	unpacked := v.UnpackKinds(reflect.Pointer, reflect.Interface)
 	if !unpacked.IsFloat() {
 		return 0, ErrUnexpectedType{
 			Expected: TypeFloat,
@@ -165,7 +165,7 @@ func NewBoolValue(x bool) *Value {
 
 // IsBool returns true if the value is a bool.
 func (v *Value) IsBool() bool {
-	return v.UnpackKinds(reflect.Ptr, reflect.Interface).isBool()
+	return v.UnpackKinds(reflect.Pointer, reflect.Interface).isBool()
 }
 
 func (v *Value) isBool() bool {
@@ -174,7 +174,7 @@ func (v *Value) isBool() bool {
 
 // BoolValue returns the bool value of the Value.
 func (v *Value) BoolValue() (bool, error) {
-	unpacked := v.UnpackKinds(reflect.Ptr, reflect.Interface)
+	unpacked := v.UnpackKinds(reflect.Pointer, reflect.Interface)
 	if !unpacked.IsBool() {
 		return false, ErrUnexpectedType{
 			Expected: TypeBool,
