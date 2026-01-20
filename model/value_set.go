@@ -14,7 +14,7 @@ func (v *Value) Set(newValue *Value) error {
 		}
 		return dv.Set(newValue)
 	}
-	
+
 	if v.setFn != nil {
 		return v.setFn(newValue)
 	}
@@ -24,13 +24,13 @@ func (v *Value) Set(newValue *Value) error {
 		return err
 	}
 
-	b := newValue.UnpackKinds(reflect.Ptr)
+	b := newValue.UnpackKinds(reflect.Pointer)
 	if a.Kind() == b.Kind() {
 		a.value.Set(b.value)
 		return nil
 	}
 
-	b = newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
+	b = newValue.UnpackKinds(reflect.Pointer, reflect.Interface)
 	if a.Kind() == b.Kind() {
 		a.value.Set(b.value)
 		return nil
@@ -49,7 +49,7 @@ func (v *Value) Set(newValue *Value) error {
 	//	return nil
 	//}
 
-	//b = newValue.UnpackKinds(reflect.Ptr, reflect.Interface)
+	//b = newValue.UnpackKinds(reflect.Pointer, reflect.Interface)
 	//if a.Kind() == b.Kind() {
 	//	a.Value.Set(b.Value)
 	//	return nil

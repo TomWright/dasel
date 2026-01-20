@@ -19,11 +19,11 @@ func (v *Value) IsMap() bool {
 }
 
 func (v *Value) isStandardMap() bool {
-	return v.UnpackKinds(reflect.Interface, reflect.Ptr).Kind() == reflect.Map
+	return v.UnpackKinds(reflect.Interface, reflect.Pointer).Kind() == reflect.Map
 }
 
 func (v *Value) isDencodingMap() bool {
-	return v.UnpackKinds(reflect.Interface, reflect.Ptr).value.Type() == reflect.TypeFor[orderedmap.Map]()
+	return v.UnpackKinds(reflect.Interface, reflect.Pointer).value.Type() == reflect.TypeFor[orderedmap.Map]()
 }
 
 func (v *Value) dencodingMapValue() (*orderedmap.Map, error) {

@@ -227,7 +227,7 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 			continue
 
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -242,7 +242,7 @@ func (v *Value) UnpackUntilAddressable() (*Value, error) {
 		if res.CanAddr() {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -257,7 +257,7 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 		if res.Kind() == k {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -272,7 +272,7 @@ func (v *Value) UnpackUntilKinds(kinds ...reflect.Kind) (*Value, error) {
 		if slices.Contains(kinds, res.Kind()) {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -303,9 +303,7 @@ func (v *Value) Type() Type {
 }
 
 func (v *Value) IsScalar() bool {
-	// optimized version of IsScalar (instead of using IsString, IsFloat etc.)
-	// Unpack once to get the underlying concrete kind
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
 	kind := unpacked.Kind()
 
 	switch kind {
@@ -313,10 +311,8 @@ func (v *Value) IsScalar() bool {
 		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
 		reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 		return true
-	case reflect.Invalid: // This is usually what IsNull() checks
-		return true
 	default:
-		return false
+		return unpacked.isNull()
 	}
 }
 
