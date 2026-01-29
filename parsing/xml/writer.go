@@ -61,6 +61,14 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 		}
 		return nil
 	}
+	readComments := func() []*xmlComment {
+		if commentMeta, ok := value.MetadataValue("xml_comments"); ok && commentMeta != nil {
+			if comments, ok := commentMeta.([]*xmlComment); ok {
+				return comments
+			}
+		}
+		return nil
+	}
 	switch value.Type() {
 
 	case model.TypeString:
@@ -69,6 +77,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 			Name:                   key,
 			Content:                strVal,
 			ProcessingInstructions: readProcessingInstructions(),
+			Comments:               readComments(),
 		}, err
 
 	case model.TypeMap:
@@ -80,6 +89,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 		el := &xmlElement{
 			Name:                   key,
 			ProcessingInstructions: readProcessingInstructions(),
+			Comments:               readComments(),
 		}
 
 		for _, kv := range kvs {
@@ -119,6 +129,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 		el := &xmlElement{
 			Name:                   "root",
 			ProcessingInstructions: readProcessingInstructions(),
+			Comments:               readComments(),
 			useChildrenOnly:        true,
 		}
 		if err := value.RangeSlice(func(i int, value *model.Value) error {
@@ -173,11 +184,17 @@ func valueToString(v *model.Value) (string, error) {
 		}
 		return fmt.Sprintf("%t", i), nil
 	default:
-		return "", fmt.Errorf("csv writer cannot format type %s to string", v.Type())
+		return "", fmt.Errorf("xml writer cannot format type %s to string", v.Type())
 	}
 }
 
+// indentString returns the indentation for a given depth level.
+func indentString(depth int) string {
+	return strings.Repeat("  ", depth)
+}
+
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
+	// Write processing instructions before the element (document-level)
 	if len(e.ProcessingInstructions) > 0 {
 		for _, pi := range e.ProcessingInstructions {
 			if err := enc.EncodeToken(xml.ProcInst{
@@ -185,6 +202,21 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 				Inst:   []byte(pi.Value),
 			}); err != nil {
 				return err
+			}
+			if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
+				return err
+			}
+		}
+	}
+	// Write comments before the element (document-level comments only)
+	// Child-level comments are written by the parent inside its body
+	if e.depth == 0 && len(e.Comments) > 0 {
+		for _, comment := range e.Comments {
+			if strings.Contains(comment.Text, "--") {
+				return fmt.Errorf("comment text cannot contain '--' sequence (invalid XML comment)")
+			}
+			if err := enc.EncodeToken(xml.Comment(comment.Text)); err != nil {
+				return fmt.Errorf("failed to encode comment: %w", err)
 			}
 			if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
 				return err
@@ -214,7 +246,28 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 		}
 	}
 
+	// Write children with their preceding comments
+	childDepth := e.depth + 1
 	for _, child := range e.Children {
+		// Write child's comments inside parent, before the child element
+		if len(child.Comments) > 0 {
+			for _, comment := range child.Comments {
+				if strings.Contains(comment.Text, "--") {
+					return fmt.Errorf("comment text cannot contain '--' sequence (invalid XML comment)")
+				}
+				// Add newline + indentation before comment
+				if err := enc.EncodeToken(xml.CharData("\n" + indentString(childDepth))); err != nil {
+					return err
+				}
+				if err := enc.EncodeToken(xml.Comment(comment.Text)); err != nil {
+					return fmt.Errorf("failed to encode comment: %w", err)
+				}
+			}
+			// Clear comments so child doesn't write them again
+			child.Comments = nil
+		}
+		// Set child depth for recursive calls
+		child.depth = childDepth
 		if err := enc.Encode(child); err != nil {
 			return err
 		}
