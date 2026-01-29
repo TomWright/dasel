@@ -8,6 +8,41 @@ import (
 	daselxml "github.com/tomwright/dasel/v3/parsing/xml"
 )
 
+// newTestReaderWriter creates a reader and writer for round-trip testing.
+func newTestReaderWriter(t *testing.T) (parsing.Reader, parsing.Writer) {
+	t.Helper()
+	r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error creating reader: %s", err)
+	}
+	w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error creating writer: %s", err)
+	}
+	return r, w
+}
+
+// assertRoundTrip performs a read-write round-trip and verifies expected strings are present.
+func assertRoundTrip(t *testing.T, r parsing.Reader, w parsing.Writer, input string, expected []string) {
+	t.Helper()
+	data, err := r.Read([]byte(input))
+	if err != nil {
+		t.Fatalf("Unexpected error reading XML: %s", err)
+	}
+
+	output, err := w.Write(data)
+	if err != nil {
+		t.Fatalf("Unexpected error writing XML: %s", err)
+	}
+
+	outputStr := string(output)
+	for _, exp := range expected {
+		if !strings.Contains(outputStr, exp) {
+			t.Errorf("Expected output to contain %q, got:\n%s", exp, outputStr)
+		}
+	}
+}
+
 // TestXmlReader_StructuredModeWithComments tests comment preservation in structured mode
 func TestXmlReader_StructuredModeWithComments(t *testing.T) {
 	t.Run("basic_comment_structured", func(t *testing.T) {
@@ -43,7 +78,6 @@ func TestXmlReader_StructuredModeWithComments(t *testing.T) {
 			t.Fatalf("Expected to get first child: %s", err)
 		}
 
-		// Verify comments metadata exists
 		comments, ok := rootElement.MetadataValue("xml_comments")
 		if !ok {
 			t.Errorf("Expected xml_comments metadata to exist")
@@ -57,165 +91,48 @@ func TestXmlReader_StructuredModeWithComments(t *testing.T) {
 
 // TestXmlRoundTrip_CommentPreservation tests round-trip preservation of XML comments
 func TestXmlRoundTrip_CommentPreservation(t *testing.T) {
-	t.Run("round trip with single comment", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<!--This is a comment-->
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name: "single comment",
+			input: `<!--This is a comment-->
 <root>
   <child>text</child>
 </root>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--This is a comment-->") {
-			t.Errorf("Expected output to contain comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<root>") {
-			t.Errorf("Expected output to contain root element, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<child>text</child>") {
-			t.Errorf("Expected output to contain child element, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with multiple comments before root", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<!--First comment-->
+`,
+			expected: []string{"<!--This is a comment-->", "<root>", "<child>text</child>"},
+		},
+		{
+			name: "multiple comments before root",
+			input: `<!--First comment-->
 <!--Second comment-->
 <root>
   <child>text</child>
 </root>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--First comment-->") {
-			t.Errorf("Expected output to contain first comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<!--Second comment-->") {
-			t.Errorf("Expected output to contain second comment, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with comment before complex child element", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		// Comment before a complex child element (one with nested children) gets preserved
-		// because complex elements become map values which can hold metadata
-		input := `<root><!--Section comment--><section><item>text</item></section></root>`
-
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--Section comment-->") {
-			t.Errorf("Expected output to contain section comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<section>") {
-			t.Errorf("Expected output to contain section element, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with processing instruction and comments", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<?xml version="1.0" encoding="UTF-8"?>
+`,
+			expected: []string{"<!--First comment-->", "<!--Second comment-->"},
+		},
+		{
+			name:     "comment before complex child element",
+			input:    `<root><!--Section comment--><section><item>text</item></section></root>`,
+			expected: []string{"<!--Section comment-->", "<section>"},
+		},
+		{
+			name: "processing instruction and comments",
+			input: `<?xml version="1.0" encoding="UTF-8"?>
 <!--Document comment-->
 <root>
   <child>text</child>
 </root>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, `<?xml version="1.0" encoding="UTF-8"?>`) {
-			t.Errorf("Expected output to contain processing instruction, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<!--Document comment-->") {
-			t.Errorf("Expected output to contain comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<root>") {
-			t.Errorf("Expected output to contain root element, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with nested elements and comments", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<!--Root level comment-->
+`,
+			expected: []string{`<?xml version="1.0" encoding="UTF-8"?>`, "<!--Document comment-->", "<root>"},
+		},
+		{
+			name: "nested elements and comments",
+			input: `<!--Root level comment-->
 <Document>
   <!--Section comment-->
   <Section>
@@ -223,154 +140,96 @@ func TestXmlRoundTrip_CommentPreservation(t *testing.T) {
     <Item>value2</Item>
   </Section>
 </Document>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
+`,
+			expected: []string{"<!--Root level comment-->", "<!--Section comment-->", "<Document>", "<Section>"},
+		},
+	}
 
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--Root level comment-->") {
-			t.Errorf("Expected output to contain root level comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<!--Section comment-->") {
-			t.Errorf("Expected output to contain section comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<Document>") {
-			t.Errorf("Expected output to contain Document element, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<Section>") {
-			t.Errorf("Expected output to contain Section element, got:\n%s", outputStr)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newTestReaderWriter(t)
+			assertRoundTrip(t, r, w, tt.input, tt.expected)
+		})
+	}
 }
 
 // TestXmlRoundTrip_EdgeCases tests edge cases for comment handling
 func TestXmlRoundTrip_EdgeCases(t *testing.T) {
-	t.Run("round trip with empty comment", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "empty comment",
+			input:    `<!----><root><child>text</child></root>`,
+			expected: []string{"<!---->", "<root>"},
+		},
+		{
+			name:     "whitespace-only comment",
+			input:    `<!--   --><root><child>text</child></root>`,
+			expected: []string{"<!--   -->"},
+		},
+		{
+			name:     "comment between sibling elements",
+			input:    `<root><first>one</first><!--between siblings--><second>two</second></root>`,
+			expected: []string{"<!--between siblings-->", "<first>one</first>", "<second>two</second>"},
+		},
+		{
+			name:     "multiple comments between siblings",
+			input:    `<root><a>1</a><!--comment1--><!--comment2--><b>2</b></root>`,
+			expected: []string{"<!--comment1-->", "<!--comment2-->"},
+		},
+		{
+			name:     "trailing comment after last child",
+			input:    `<root><child>text</child><!--trailing comment--></root>`,
+			expected: []string{"<!--trailing comment-->", "<child>text</child>"},
+		},
+		{
+			name:     "multiple trailing comments",
+			input:    `<root><child>text</child><!--trailing1--><!--trailing2--></root>`,
+			expected: []string{"<!--trailing1-->", "<!--trailing2-->"},
+		},
+		{
+			name:     "trailing comment in nested structure",
+			input:    `<root><parent><child>text</child><!--inner trailing--></parent><!--outer trailing--></root>`,
+			expected: []string{"<!--inner trailing-->", "<!--outer trailing-->"},
+		},
+	}
 
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<!----><root><child>text</child></root>`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!---->") {
-			t.Errorf("Expected output to contain empty comment, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, "<root>") {
-			t.Errorf("Expected output to contain root element, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with whitespace-only comment", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<!--   --><root><child>text</child></root>`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--   -->") {
-			t.Errorf("Expected output to contain whitespace comment, got:\n%s", outputStr)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newTestReaderWriter(t)
+			assertRoundTrip(t, r, w, tt.input, tt.expected)
+		})
+	}
 }
 
 // TestXmlRoundTrip_SpecialCommentContent tests comments with special but valid content
 func TestXmlRoundTrip_SpecialCommentContent(t *testing.T) {
-	t.Run("round trip with comment containing special characters", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name:     "special characters",
+			input:    `<!--Comment with <special> & "characters" 'here'--><root><child>text</child></root>`,
+			expected: []string{"<!--Comment with <special>"},
+		},
+		{
+			name:     "single dash",
+			input:    `<!--Comment with a-single-dash--><root><child>text</child></root>`,
+			expected: []string{"<!--Comment with a-single-dash-->"},
+		},
+	}
 
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		// Comments with special but valid characters (no -- sequence)
-		input := `<!--Comment with <special> & "characters" 'here'--><root><child>text</child></root>`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--Comment with <special>") {
-			t.Errorf("Expected output to contain comment with special characters, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with comment containing single dash", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		// Single dashes are valid in comments
-		input := `<!--Comment with a-single-dash--><root><child>text</child></root>`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, "<!--Comment with a-single-dash-->") {
-			t.Errorf("Expected output to contain comment with single dashes, got:\n%s", outputStr)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newTestReaderWriter(t)
+			assertRoundTrip(t, r, w, tt.input, tt.expected)
+		})
+	}
 }
 
 // TestXmlReader_SecurityLimits tests error handling for security limits
@@ -381,7 +240,6 @@ func TestXmlReader_SecurityLimits(t *testing.T) {
 			t.Fatalf("Unexpected error creating reader: %s", err)
 		}
 
-		// Create XML input larger than 10MB limit
 		largeContent := strings.Repeat("x", 10_000_001)
 		input := "<root>" + largeContent + "</root>"
 
@@ -400,7 +258,6 @@ func TestXmlReader_SecurityLimits(t *testing.T) {
 			t.Fatalf("Unexpected error creating reader: %s", err)
 		}
 
-		// Create comment larger than 10KB limit
 		largeComment := strings.Repeat("x", 10_001)
 		input := "<!--" + largeComment + "--><root><child>text</child></root>"
 
@@ -419,7 +276,6 @@ func TestXmlReader_SecurityLimits(t *testing.T) {
 			t.Fatalf("Unexpected error creating reader: %s", err)
 		}
 
-		// Create document with more than 1000 comments
 		var builder strings.Builder
 		builder.WriteString("<root>")
 		for i := 0; i < 1001; i++ {
@@ -438,22 +294,11 @@ func TestXmlReader_SecurityLimits(t *testing.T) {
 	})
 }
 
-
 // TestXmlRoundTrip_ProcessingInstructionReset tests that processing instructions are not duplicated across siblings
 func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 	t.Run("processing instructions not duplicated to siblings", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
+		r, w := newTestReaderWriter(t)
 
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		// PI at document level (before root) should appear once in output
-		// PI inside element is attached to following sibling, not duplicated
 		input := `<?xml version="1.0"?><root><first>one</first><second>two</second></root>`
 
 		data, err := r.Read([]byte(input))
@@ -468,13 +313,11 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 
 		outputStr := string(output)
 
-		// Count occurrences of the PI - should appear exactly once
 		piCount := strings.Count(outputStr, `<?xml version="1.0"?>`)
 		if piCount != 1 {
 			t.Errorf("Expected PI to appear exactly once, but found %d occurrences in:\n%s", piCount, outputStr)
 		}
 
-		// Verify the structure is preserved
 		if !strings.Contains(outputStr, "<first>one</first>") {
 			t.Errorf("Expected first element to be preserved in:\n%s", outputStr)
 		}
@@ -491,7 +334,6 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 			t.Fatalf("Unexpected error creating reader: %s", err)
 		}
 
-		// In structured mode, we can verify that PI is only attached to the first sibling
 		input := `<root><?target instruction?><first>one</first><second>two</second></root>`
 
 		data, err := r.Read([]byte(input))
@@ -499,7 +341,6 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 			t.Fatalf("Unexpected error reading XML: %s", err)
 		}
 
-		// Get children
 		children, err := data.GetMapKey("children")
 		if err != nil {
 			t.Fatalf("Expected children key: %s", err)
@@ -510,13 +351,11 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 			t.Fatalf("Expected at least one child")
 		}
 
-		// Get root element (first child of virtual root)
 		rootEl, err := children.GetSliceIndex(0)
 		if err != nil {
 			t.Fatalf("Expected to get root element: %s", err)
 		}
 
-		// Get root's children
 		rootChildren, err := rootEl.GetMapKey("children")
 		if err != nil {
 			t.Fatalf("Expected root children: %s", err)
@@ -527,14 +366,12 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 			t.Fatalf("Expected at least two children in root, got %d", rootChildLen)
 		}
 
-		// First child should have PI
 		firstChild, _ := rootChildren.GetSliceIndex(0)
 		_, hasPI := firstChild.MetadataValue("xml_processing_instructions")
 		if !hasPI {
 			t.Log("First child does not have PI (which is expected behavior after fix)")
 		}
 
-		// Second child should NOT have PI
 		secondChild, _ := rootChildren.GetSliceIndex(1)
 		_, secondHasPI := secondChild.MetadataValue("xml_processing_instructions")
 		if secondHasPI {
@@ -545,71 +382,36 @@ func TestXmlRoundTrip_ProcessingInstructionReset(t *testing.T) {
 
 // TestXmlRoundTrip_ProcessingInstructions tests round-trip preservation of processing instructions
 func TestXmlRoundTrip_ProcessingInstructions(t *testing.T) {
-	t.Run("round trip with xml declaration", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+	tests := []struct {
+		name     string
+		input    string
+		expected []string
+	}{
+		{
+			name: "xml declaration",
+			input: `<?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <root>
   <child>text</child>
 </root>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
-
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, `<?xml version="1.0" encoding="utf-8" standalone="yes"?>`) {
-			t.Errorf("Expected output to contain XML declaration, got:\n%s", outputStr)
-		}
-	})
-
-	t.Run("round trip with multiple processing instructions", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating reader: %s", err)
-		}
-
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error creating writer: %s", err)
-		}
-
-		input := `<?xml version="1.0" encoding="UTF-8"?>
+`,
+			expected: []string{`<?xml version="1.0" encoding="utf-8" standalone="yes"?>`},
+		},
+		{
+			name: "multiple processing instructions",
+			input: `<?xml version="1.0" encoding="UTF-8"?>
 <?xml-stylesheet type="text/xsl" href="style.xsl"?>
 <root>
   <child>text</child>
 </root>
-`
-		data, err := r.Read([]byte(input))
-		if err != nil {
-			t.Fatalf("Unexpected error reading XML: %s", err)
-		}
+`,
+			expected: []string{`<?xml version="1.0" encoding="UTF-8"?>`, `<?xml-stylesheet type="text/xsl" href="style.xsl"?>`},
+		},
+	}
 
-		output, err := w.Write(data)
-		if err != nil {
-			t.Fatalf("Unexpected error writing XML: %s", err)
-		}
-
-		outputStr := string(output)
-		if !strings.Contains(outputStr, `<?xml version="1.0" encoding="UTF-8"?>`) {
-			t.Errorf("Expected output to contain XML declaration, got:\n%s", outputStr)
-		}
-		if !strings.Contains(outputStr, `<?xml-stylesheet type="text/xsl" href="style.xsl"?>`) {
-			t.Errorf("Expected output to contain stylesheet processing instruction, got:\n%s", outputStr)
-		}
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r, w := newTestReaderWriter(t)
+			assertRoundTrip(t, r, w, tt.input, tt.expected)
+		})
+	}
 }
