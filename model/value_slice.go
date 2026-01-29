@@ -42,13 +42,8 @@ func (v *Value) Append(val *Value) error {
 		}
 	}
 
-	valToAppend := val.value
-	// Wrap the value if it has a set function. This helps ensures sets are made correctly.
-	// This was first noticed as an issue with the recursive descent response slice.
-	// We could always wrap, but that would be less efficient.
-	if val.isDaselValue() || val.setFn != nil || val.IsScalar() {
-		valToAppend = reflect.ValueOf(val)
-	}
+	// Wrap the value to preserve metadata and set functions.
+	valToAppend := reflect.ValueOf(val)
 	newVal := reflect.Append(unpacked.value, valToAppend)
 	unpacked.value.Set(newVal)
 	return nil
@@ -82,6 +77,12 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 	item := unpacked.value.Index(i)
 	if item.Kind() == reflect.Ptr && item.Type() == reflect.TypeFor[*Value]() {
 		return item.Interface().(*Value), nil
+	}
+	if item.Kind() == reflect.Interface && !item.IsNil() {
+		interfaceVal := item.Interface()
+		if val, ok := interfaceVal.(*Value); ok {
+			return val, nil
+		}
 	}
 
 	res := NewValue(item)
