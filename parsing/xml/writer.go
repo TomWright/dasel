@@ -190,11 +190,7 @@ func valueToString(v *model.Value) (string, error) {
 
 // indentString returns the indentation for a given depth level.
 func indentString(depth int) string {
-	indent := ""
-	for i := 0; i < depth; i++ {
-		indent += "  "
-	}
-	return indent
+	return strings.Repeat("  ", depth)
 }
 
 func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error {
