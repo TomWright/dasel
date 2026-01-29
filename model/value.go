@@ -127,7 +127,7 @@ func NewValue(v any) *Value {
 	case reflect.Value:
 		return &Value{
 			value:    val,
-			Metadata: make(map[string]any),
+			Metadata: nil,
 		}
 	case nil:
 		return NewNullValue()
@@ -138,7 +138,7 @@ func NewValue(v any) *Value {
 		}
 		return &Value{
 			value:    res,
-			Metadata: make(map[string]any),
+			Metadata: nil,
 		}
 	}
 }
@@ -147,7 +147,7 @@ func NewValue(v any) *Value {
 func NewNestedValue(v *Value) *Value {
 	return &Value{
 		value:    reflect.ValueOf(v),
-		Metadata: make(map[string]any),
+		Metadata: nil,
 	}
 }
 
@@ -227,7 +227,7 @@ func (v *Value) UnpackUntilType(t reflect.Type) (*Value, error) {
 			continue
 
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -242,7 +242,7 @@ func (v *Value) UnpackUntilAddressable() (*Value, error) {
 		if res.CanAddr() {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -257,7 +257,7 @@ func (v *Value) UnpackUntilKind(k reflect.Kind) (*Value, error) {
 		if res.Kind() == k {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -272,7 +272,7 @@ func (v *Value) UnpackUntilKinds(kinds ...reflect.Kind) (*Value, error) {
 		if slices.Contains(kinds, res.Kind()) {
 			return NewValue(res), nil
 		}
-		if res.Kind() == reflect.Interface || res.Kind() == reflect.Ptr && !res.IsNil() {
+		if res.Kind() == reflect.Interface || res.Kind() == reflect.Pointer && !res.IsNil() {
 			res = res.Elem()
 			continue
 		}
@@ -302,21 +302,17 @@ func (v *Value) Type() Type {
 	}
 }
 
-// IsScalar returns true if the type is scalar.
 func (v *Value) IsScalar() bool {
-	switch {
-	case v.IsString():
-		return true
-	case v.IsInt():
-		return true
-	case v.IsFloat():
-		return true
-	case v.IsBool():
-		return true
-	case v.IsNull():
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
+	kind := unpacked.Kind()
+
+	switch kind {
+	case reflect.String, reflect.Bool, reflect.Int, reflect.Int8, reflect.Int16,
+		reflect.Int32, reflect.Int64, reflect.Uint, reflect.Uint8, reflect.Uint16,
+		reflect.Uint32, reflect.Uint64, reflect.Float32, reflect.Float64:
 		return true
 	default:
-		return false
+		return unpacked.isNull()
 	}
 }
 

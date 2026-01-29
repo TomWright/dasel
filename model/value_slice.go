@@ -17,7 +17,7 @@ func NewSliceValue() *Value {
 
 // IsSlice returns true if the value is a slice.
 func (v *Value) IsSlice() bool {
-	return v.UnpackKinds(reflect.Interface, reflect.Ptr).isSlice()
+	return v.UnpackKinds(reflect.Interface, reflect.Pointer).isSlice()
 }
 
 func (v *Value) isSlice() bool {
@@ -34,7 +34,7 @@ func (v *Value) Append(val *Value) error {
 		})
 	}
 
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
 	if !unpacked.isSlice() {
 		return ErrUnexpectedType{
 			Expected: TypeSlice,
@@ -51,7 +51,7 @@ func (v *Value) Append(val *Value) error {
 
 // SliceLen returns the length of the slice.
 func (v *Value) SliceLen() (int, error) {
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
 	if !unpacked.isSlice() {
 		return 0, ErrUnexpectedType{
 			Expected: TypeSlice,
@@ -63,7 +63,7 @@ func (v *Value) SliceLen() (int, error) {
 
 // GetSliceIndex returns the value at the specified index in the slice.
 func (v *Value) GetSliceIndex(i int) (*Value, error) {
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
 	if !unpacked.isSlice() {
 		return nil, ErrUnexpectedType{
 			Expected: TypeSlice,
@@ -75,7 +75,7 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 	}
 
 	item := unpacked.value.Index(i)
-	if item.Kind() == reflect.Ptr && item.Type() == reflect.TypeFor[*Value]() {
+	if item.Kind() == reflect.Pointer && item.Type() == reflect.TypeFor[*Value]() {
 		return item.Interface().(*Value), nil
 	}
 	if item.Kind() == reflect.Interface && !item.IsNil() {
@@ -91,7 +91,7 @@ func (v *Value) GetSliceIndex(i int) (*Value, error) {
 
 // SetSliceIndex sets the value at the specified index in the slice.
 func (v *Value) SetSliceIndex(i int, val *Value) error {
-	unpacked := v.UnpackKinds(reflect.Interface, reflect.Ptr)
+	unpacked := v.UnpackKinds(reflect.Interface, reflect.Pointer)
 	if !unpacked.isSlice() {
 		return ErrUnexpectedType{
 			Expected: TypeSlice,
