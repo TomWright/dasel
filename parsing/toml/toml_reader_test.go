@@ -259,7 +259,11 @@ name = "Hammer"
 sku = 738594937
 
 [products.appearance]
-color = "red"`), func() *model.Value {
+color = "red"
+
+[[products]]
+name = "Screwdriver"
+sku = 12341234`), func() *model.Value {
 		res := model.NewMapValue()
 		products := model.NewSliceValue()
 		hammer := model.NewMapValue()
@@ -269,6 +273,10 @@ color = "red"`), func() *model.Value {
 		_ = appearance.SetMapKey("color", model.NewStringValue("red"))
 		_ = hammer.SetMapKey("appearance", appearance)
 		_ = products.Append(hammer)
+		screwdriver := model.NewMapValue()
+		_ = screwdriver.SetMapKey("name", model.NewStringValue("Screwdriver"))
+		_ = screwdriver.SetMapKey("sku", model.NewIntValue(12341234))
+		_ = products.Append(screwdriver)
 		_ = res.SetMapKey("products", products)
 		return res
 	}))
