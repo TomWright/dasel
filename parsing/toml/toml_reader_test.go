@@ -263,13 +263,13 @@ color = "red"`), func() *model.Value {
 		res := model.NewMapValue()
 		products := model.NewSliceValue()
 		hammer := model.NewMapValue()
-		hammer.SetMapKey("name", model.NewStringValue("Hammer"))
-		hammer.SetMapKey("sku", model.NewIntValue(738594937))
+		_ = hammer.SetMapKey("name", model.NewStringValue("Hammer"))
+		_ = hammer.SetMapKey("sku", model.NewIntValue(738594937))
 		appearance := model.NewMapValue()
-		appearance.SetMapKey("color", model.NewStringValue("red"))
-		hammer.SetMapKey("appearance", appearance)
+		_ = appearance.SetMapKey("color", model.NewStringValue("red"))
+		_ = hammer.SetMapKey("appearance", appearance)
 		_ = products.Append(hammer)
-		res.SetMapKey("products", products)
+		_ = res.SetMapKey("products", products)
 		return res
 	}))
 }
