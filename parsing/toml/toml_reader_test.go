@@ -253,6 +253,33 @@ name = "maindb"`), func() *model.Value {
 		_ = res.SetMapKey("server", server)
 		return res
 	}))
+
+	t.Run("sub-table in array of tables", tomlReaderTest([]byte(`[[products]]
+name = "Hammer"
+sku = 738594937
+
+[products.appearance]
+color = "red"
+
+[[products]]
+name = "Screwdriver"
+sku = 12341234`), func() *model.Value {
+		res := model.NewMapValue()
+		products := model.NewSliceValue()
+		hammer := model.NewMapValue()
+		_ = hammer.SetMapKey("name", model.NewStringValue("Hammer"))
+		_ = hammer.SetMapKey("sku", model.NewIntValue(738594937))
+		appearance := model.NewMapValue()
+		_ = appearance.SetMapKey("color", model.NewStringValue("red"))
+		_ = hammer.SetMapKey("appearance", appearance)
+		_ = products.Append(hammer)
+		screwdriver := model.NewMapValue()
+		_ = screwdriver.SetMapKey("name", model.NewStringValue("Screwdriver"))
+		_ = screwdriver.SetMapKey("sku", model.NewIntValue(12341234))
+		_ = products.Append(screwdriver)
+		_ = res.SetMapKey("products", products)
+		return res
+	}))
 }
 
 func TestTomlReader_QuotedKeys(t *testing.T) {

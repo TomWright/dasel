@@ -245,6 +245,16 @@ func ensureMapAt(root *model.Value, path []string) (*model.Value, error) {
 		if err != nil {
 			return nil, err
 		}
+		if next.IsSlice() {
+			sliceLen, err := next.Len()
+			if err != nil {
+				return nil, err
+			}
+			next, err = next.GetSliceIndex(sliceLen - 1)
+			if err != nil {
+				return nil, err
+			}
+		}
 		if !next.IsMap() {
 			return nil, fmt.Errorf("conflicting types at path '%s': expected map", seg)
 		}

@@ -50,6 +50,9 @@ items = [{a = 1}, {a = 2}]
 name = "Hammer"
 sku = 738594937
 
+[products.appearance]
+color = "red"
+
 [[products]]
 name = "Screwdriver"
 sku = 12341234
