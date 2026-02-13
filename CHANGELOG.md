@@ -10,9 +10,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - XML parser now preserves comments and processing instructions during round-trip (#175).
 
+## [v3.2.2] - 2026-02-13
+
 ### Changed
 - Swapped to use goccy/go-json for improved performance. Thanks @imix
 - Updated model `IsScalar` internals to improve efficiency. Thanks @imix
+- General dependency updates.
+
+### Fixed
+- TOML parser sub table parsing. Thanks @pmeier
 
 ## [v3.2.1] - 2026-01-05
 
@@ -747,7 +753,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.2.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.2.2...HEAD
+[v3.2.2]: https://github.com/TomWright/dasel/compare/v3.2.1...v3.2.2
 [v3.2.1]: https://github.com/TomWright/dasel/compare/v3.2.0...v3.2.1
 [v3.2.0]: https://github.com/TomWright/dasel/compare/v3.1.4...v3.2.0
 [v3.1.4]: https://github.com/TomWright/dasel/compare/v3.1.3...v3.1.4
