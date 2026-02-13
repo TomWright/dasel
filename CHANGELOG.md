@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+- XML parser now preserves comments and processing instructions during round-trip (#175).
 
 ## [v3.2.2] - 2026-02-13
 
