@@ -92,6 +92,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 			Comments:               readComments(),
 		}
 
+		// Pass 1: Extract attributes and #text from the map.
 		for _, kv := range kvs {
 			if strings.HasPrefix(kv.Key, "-") {
 				attr := xmlAttr{
@@ -112,15 +113,93 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 				}
 				continue
 			}
+		}
 
-			childEl, err := j.toElement(kv.Key, kv.Value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, err)
-			}
-			if childEl.useChildrenOnly {
-				el.Children = append(el.Children, childEl.Children...)
+		// Pass 2: Reconstruct children in the correct order.
+		orderMeta, hasOrder := value.MetadataValue(xmlChildOrderKey)
+		if hasOrder {
+			childOrder, ok := orderMeta.([]string)
+			if !ok {
+				hasOrder = false
 			} else {
-				el.Children = append(el.Children, childEl)
+				// Build local map for fast lookups without GetMapKey overhead.
+				childValues := make(map[string]*model.Value, len(kvs))
+				for _, kv := range kvs {
+					if !strings.HasPrefix(kv.Key, "-") && kv.Key != "#text" {
+						childValues[kv.Key] = kv.Value
+					}
+				}
+
+				counters := make(map[string]int, len(childValues))
+				seen := make(map[string]bool, len(childValues))
+
+				for _, name := range childOrder {
+					seen[name] = true
+					childVal, exists := childValues[name]
+					if !exists {
+						// Key not in map (stale metadata after delete), skip.
+						counters[name]++
+						continue
+					}
+
+					index := counters[name]
+					counters[name]++
+
+					if childVal.Type() == model.TypeSlice {
+						// SliceLen error is impossible after TypeSlice type check above.
+						sliceLen, _ := childVal.SliceLen()
+						if index >= sliceLen {
+							// Counter overflow (more metadata entries than actual values), skip.
+							continue
+						}
+						item, sliceErr := childVal.GetSliceIndex(index)
+						if sliceErr != nil {
+							// Should not happen after bounds check; skip gracefully if model is inconsistent.
+							continue
+						}
+						childEl, childErr := j.toElement(name, item)
+						if childErr != nil {
+							return nil, fmt.Errorf("failed to convert child element %q to element: %w", name, childErr)
+						}
+						el.appendChild(childEl)
+					} else {
+						if index >= 1 {
+							// Scalar value, can only be emitted once.
+							continue
+						}
+						childEl, childErr := j.toElement(name, childVal)
+						if childErr != nil {
+							return nil, fmt.Errorf("failed to convert child element %q to element: %w", name, childErr)
+						}
+						el.appendChild(childEl)
+					}
+				}
+
+				// Append any map keys not in the ordering (new keys from mutations).
+				for _, kv := range kvs {
+					if strings.HasPrefix(kv.Key, "-") || kv.Key == "#text" || seen[kv.Key] {
+						continue
+					}
+					childEl, childErr := j.toElement(kv.Key, kv.Value)
+					if childErr != nil {
+						return nil, fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, childErr)
+					}
+					el.appendChild(childEl)
+				}
+			}
+		}
+
+		if !hasOrder {
+			// Fallback: iterate map keys in insertion order (backward-compatible).
+			for _, kv := range kvs {
+				if strings.HasPrefix(kv.Key, "-") || kv.Key == "#text" {
+					continue
+				}
+				childEl, childErr := j.toElement(kv.Key, kv.Value)
+				if childErr != nil {
+					return nil, fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, childErr)
+				}
+				el.appendChild(childEl)
 			}
 		}
 
@@ -137,11 +216,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 			if err != nil {
 				return err
 			}
-			if childEl.useChildrenOnly {
-				el.Children = append(el.Children, childEl.Children...)
-			} else {
-				el.Children = append(el.Children, childEl)
-			}
+			el.appendChild(childEl)
 
 			return nil
 		}); err != nil {
