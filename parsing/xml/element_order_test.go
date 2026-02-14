@@ -5,8 +5,6 @@ import (
 	"testing"
 
 	"github.com/tomwright/dasel/v3/model"
-	"github.com/tomwright/dasel/v3/parsing"
-	daselxml "github.com/tomwright/dasel/v3/parsing/xml"
 )
 
 // TestXmlRoundTrip_ElementOrdering tests that interleaved same-named siblings
@@ -220,19 +218,8 @@ func TestXmlRoundTrip_ElementOrdering(t *testing.T) {
 				}
 			}
 
-			// Verify element ordering for contains-based tests.
 			if len(tt.orderedContains) > 1 {
-				for i := 1; i < len(tt.orderedContains); i++ {
-					prevIdx := strings.Index(outputStr, tt.orderedContains[i-1])
-					currIdx := strings.Index(outputStr, tt.orderedContains[i])
-					if prevIdx < 0 || currIdx < 0 {
-						continue
-					}
-					if prevIdx >= currIdx {
-						t.Errorf("Expected %q before %q in output, got:\n%s",
-							tt.orderedContains[i-1], tt.orderedContains[i], outputStr)
-					}
-				}
+				assertOrderedContains(t, outputStr, tt.orderedContains)
 			}
 		})
 	}
@@ -242,10 +229,7 @@ func TestXmlRoundTrip_ElementOrdering(t *testing.T) {
 // is correctly populated during read.
 func TestXmlRoundTrip_ElementOrderingMetadata(t *testing.T) {
 	t.Run("metadata records full child order", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		r, _ := newTestReaderWriter(t)
 
 		data, err := r.Read([]byte(`<root>
   <a>1</a>
@@ -283,10 +267,7 @@ func TestXmlRoundTrip_ElementOrderingMetadata(t *testing.T) {
 	})
 
 	t.Run("metadata set on elements with children", func(t *testing.T) {
-		r, err := daselxml.XML.NewReader(parsing.DefaultReaderOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		r, _ := newTestReaderWriter(t)
 
 		data, err := r.Read([]byte(`<root><leaf>text</leaf></root>`))
 		if err != nil {
@@ -310,10 +291,7 @@ func TestXmlRoundTrip_ElementOrderingMetadata(t *testing.T) {
 // falls back to insertion-order iteration when xml_child_order is absent.
 func TestXmlRoundTrip_FallbackWithoutMetadata(t *testing.T) {
 	t.Run("programmatically constructed value without metadata", func(t *testing.T) {
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		// Build a map without xml_child_order metadata (simulating non-XML source).
 		root := model.NewMapValue()
@@ -345,10 +323,7 @@ func TestXmlRoundTrip_FallbackWithoutMetadata(t *testing.T) {
 func TestXmlWriter_OrderingEdgeCases(t *testing.T) {
 	t.Run("stale metadata - deleted key", func(t *testing.T) {
 		// Build a Value with xml_child_order referencing a key not in the map.
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		root := model.NewMapValue()
 		inner := model.NewMapValue()
@@ -371,10 +346,7 @@ func TestXmlWriter_OrderingEdgeCases(t *testing.T) {
 	})
 
 	t.Run("counter overflow - more metadata entries than slice values", func(t *testing.T) {
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		root := model.NewMapValue()
 		inner := model.NewMapValue()
@@ -399,10 +371,7 @@ func TestXmlWriter_OrderingEdgeCases(t *testing.T) {
 	})
 
 	t.Run("new keys not in ordering - appended at end", func(t *testing.T) {
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		root := model.NewMapValue()
 		inner := model.NewMapValue()
@@ -435,10 +404,7 @@ func TestXmlWriter_OrderingEdgeCases(t *testing.T) {
 	})
 
 	t.Run("invalid metadata type - fallback to insertion order", func(t *testing.T) {
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		root := model.NewMapValue()
 		inner := model.NewMapValue()
@@ -466,10 +432,7 @@ func TestXmlWriter_OrderingEdgeCases(t *testing.T) {
 	})
 
 	t.Run("scalar duplicate guard - emit only once", func(t *testing.T) {
-		w, err := daselxml.XML.NewWriter(parsing.DefaultWriterOptions())
-		if err != nil {
-			t.Fatalf("Unexpected error: %s", err)
-		}
+		_, w := newTestReaderWriter(t)
 
 		root := model.NewMapValue()
 		inner := model.NewMapValue()
