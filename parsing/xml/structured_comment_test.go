@@ -43,6 +43,26 @@ func assertRoundTrip(t *testing.T, r parsing.Reader, w parsing.Writer, input str
 	}
 }
 
+// assertOrderedContains verifies that the given strings appear in the specified order in output.
+func assertOrderedContains(t *testing.T, output string, ordered []string) {
+	t.Helper()
+	for i := 1; i < len(ordered); i++ {
+		prevIdx := strings.Index(output, ordered[i-1])
+		currIdx := strings.Index(output, ordered[i])
+		if prevIdx < 0 {
+			t.Errorf("Expected %q to be present in output, got:\n%s", ordered[i-1], output)
+			continue
+		}
+		if currIdx < 0 {
+			t.Errorf("Expected %q to be present in output, got:\n%s", ordered[i], output)
+			continue
+		}
+		if prevIdx >= currIdx {
+			t.Errorf("Expected %q before %q in output, got:\n%s", ordered[i-1], ordered[i], output)
+		}
+	}
+}
+
 // TestXmlReader_StructuredModeWithComments tests comment preservation in structured mode
 func TestXmlReader_StructuredModeWithComments(t *testing.T) {
 	t.Run("basic_comment_structured", func(t *testing.T) {
