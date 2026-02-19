@@ -5,10 +5,19 @@ import (
 	"encoding/xml"
 	"errors"
 	"fmt"
-	"github.com/tomwright/dasel/v3/model"
-	"github.com/tomwright/dasel/v3/parsing"
 	"io"
 	"strings"
+
+	"github.com/tomwright/dasel/v3/model"
+	"github.com/tomwright/dasel/v3/parsing"
+)
+
+// Security limits for XML parsing to prevent DoS attacks.
+// These limits are intentionally conservative to balance usability and safety.
+const (
+	maxCommentLength = 10_000     // Maximum bytes per comment (10KB) - prevents memory exhaustion from single large comments
+	maxTotalComments = 1_000      // Maximum comments per document - prevents abuse via comment flooding
+	maxXMLSize       = 10_000_000 // Maximum XML input size (10MB) - prevents processing of excessively large files
 )
 
 func newXMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
@@ -23,14 +32,19 @@ type xmlReader struct {
 
 // Read reads a value from a byte slice.
 func (j *xmlReader) Read(data []byte) (*model.Value, error) {
+	if len(data) > maxXMLSize {
+		return nil, fmt.Errorf("XML input exceeds maximum size of %d bytes", maxXMLSize)
+	}
+
 	decoder := xml.NewDecoder(bytes.NewReader(data))
 	decoder.Strict = true
 
+	totalComments := 0
 	el, err := j.parseElement(decoder, xml.StartElement{
 		Name: xml.Name{
 			Local: "root",
 		},
-	})
+	}, &totalComments)
 	if err != nil {
 		return nil, err
 	}
@@ -49,7 +63,12 @@ func (e *xmlElement) toStructuredModel() (*model.Value, error) {
 		}
 	}
 	res := model.NewMapValue()
-	res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
+	if len(e.ProcessingInstructions) > 0 {
+		res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
+	}
+	if len(e.Comments) > 0 {
+		res.SetMetadataValue("xml_comments", e.Comments)
+	}
 	if err := res.SetMapKey("name", model.NewStringValue(e.Name)); err != nil {
 		return nil, err
 	}
@@ -77,12 +96,17 @@ func (e *xmlElement) toStructuredModel() (*model.Value, error) {
 }
 
 func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
-	if len(e.Attrs) == 0 && len(e.Children) == 0 {
+	if len(e.Attrs) == 0 && len(e.Children) == 0 && len(e.Comments) == 0 {
 		return model.NewStringValue(e.Content), nil
 	}
 
 	res := model.NewMapValue()
-	res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
+	if len(e.ProcessingInstructions) > 0 {
+		res.SetMetadataValue("xml_processing_instructions", e.ProcessingInstructions)
+	}
+	if len(e.Comments) > 0 {
+		res.SetMetadataValue("xml_comments", e.Comments)
+	}
 	for _, attr := range e.Attrs {
 		if err := res.SetMapKey("-"+attr.Name, model.NewStringValue(attr.Value)); err != nil {
 			return nil, err
@@ -140,12 +164,13 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 	return res, nil
 }
 
-func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement) (*xmlElement, error) {
+func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement, totalComments *int) (*xmlElement, error) {
 	el := &xmlElement{
 		Name:                   element.Name.Local,
 		Attrs:                  make([]xmlAttr, 0),
 		Children:               make([]*xmlElement, 0),
 		ProcessingInstructions: make([]*xmlProcessingInstruction, 0),
+		Comments:               make([]*xmlComment, 0),
 	}
 
 	for _, attr := range element.Attr {
@@ -156,6 +181,7 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 	}
 
 	var processingInstructions []*xmlProcessingInstruction
+	var comments []*xmlComment
 
 	for {
 		t, err := decoder.Token()
@@ -165,14 +191,30 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 			}
 			return nil, fmt.Errorf("unexpected EOF")
 		}
+		if err != nil {
+			return nil, fmt.Errorf("failed to read token: %w", err)
+		}
+		if t == nil {
+			if el.Name == "root" {
+				return el, nil
+			}
+			return nil, fmt.Errorf("unexpected nil token")
+		}
 
 		switch t := t.(type) {
 		case xml.StartElement:
-			child, err := j.parseElement(decoder, t)
+			child, err := j.parseElement(decoder, t, totalComments)
 			if err != nil {
 				return nil, err
 			}
-			child.ProcessingInstructions = processingInstructions
+			if len(comments) > 0 {
+				child.Comments = append(comments, child.Comments...)
+				comments = nil
+			}
+			if len(processingInstructions) > 0 {
+				child.ProcessingInstructions = processingInstructions
+				processingInstructions = nil
+			}
 			el.Children = append(el.Children, child)
 		case xml.CharData:
 			stringContent := string(t)
@@ -181,8 +223,23 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement)
 			}
 			el.Content += stringContent
 		case xml.EndElement:
+			if len(comments) > 0 {
+				el.Comments = append(el.Comments, comments...)
+			}
 			return el, nil
 		case xml.Comment:
+			commentText := string(t)
+			if len(commentText) > maxCommentLength {
+				return nil, fmt.Errorf("comment exceeds maximum length of %d bytes", maxCommentLength)
+			}
+			if *totalComments >= maxTotalComments {
+				return nil, fmt.Errorf("document exceeds maximum comment count of %d", maxTotalComments)
+			}
+			comment := &xmlComment{
+				Text: commentText,
+			}
+			comments = append(comments, comment)
+			*totalComments++
 			continue
 		case xml.ProcInst:
 			pi := &xmlProcessingInstruction{

@@ -27,11 +27,17 @@ type xmlProcessingInstruction struct {
 	Value  string
 }
 
+type xmlComment struct {
+	Text string
+}
+
 type xmlElement struct {
 	Name                   string
 	Attrs                  []xmlAttr
 	Children               []*xmlElement
 	Content                string
 	ProcessingInstructions []*xmlProcessingInstruction
+	Comments               []*xmlComment
 	useChildrenOnly        bool
+	depth                  int // Tracks nesting depth for proper indentation
 }
