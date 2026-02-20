@@ -9,6 +9,10 @@ const (
 	XML parsing.Format = "xml"
 )
 
+// xmlChildOrderKey is the metadata key for preserving child element
+// document order during XML round-trips. Value type: []string.
+const xmlChildOrderKey = "xml_child_order"
+
 var _ parsing.Reader = (*xmlReader)(nil)
 var _ parsing.Writer = (*xmlWriter)(nil)
 
@@ -40,4 +44,13 @@ type xmlElement struct {
 	Comments               []*xmlComment
 	useChildrenOnly        bool
 	depth                  int // Tracks nesting depth for proper indentation
+}
+
+// appendChild appends child's children (if useChildrenOnly) or the child itself.
+func (el *xmlElement) appendChild(child *xmlElement) {
+	if child.useChildrenOnly {
+		el.Children = append(el.Children, child.Children...)
+	} else {
+		el.Children = append(el.Children, child)
+	}
 }
