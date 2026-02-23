@@ -46,7 +46,7 @@ func (tc testCase) run(t *testing.T) {
 		t.Fatal(err)
 	}
 	if !equal {
-		t.Errorf("unexpected output: %v\nexp: %s\ngot: %s", cmp.Diff(exp.Interface(), res.Interface()), exp.String(), res.String())
+		t.Errorf("unexpected output:\nexp: %s\ngot: %s", exp.String(), res.String())
 	}
 
 	expMeta := exp.Metadata

@@ -18,8 +18,20 @@ func arrayExprExecutor(e ast.ArrayExpr) (expressionExecutor, error) {
 			if err != nil {
 				return nil, err
 			}
-			if err := res.Append(el); err != nil {
-				return nil, err
+
+			if el.IsSpread() {
+				if err := el.RangeSlice(func(_ int, value *model.Value) error {
+					if err := res.Append(value); err != nil {
+						return err
+					}
+					return nil
+				}); err != nil {
+					return nil, err
+				}
+			} else {
+				if err := res.Append(el); err != nil {
+					return nil, err
+				}
 			}
 		}
 

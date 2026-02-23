@@ -10,6 +10,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - XML parser now preserves comments and processing instructions during round-trip (#175).
 
+### Fixed
+- Spread operator within array construction is now honoured.
+
 ## [v3.2.2] - 2026-02-13
 
 ### Changed
