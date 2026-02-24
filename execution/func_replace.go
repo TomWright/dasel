@@ -11,12 +11,10 @@ import (
 var FuncReplace = NewFunc(
 	"replace",
 	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
-		argLen := len(args)
 		inputData := data
-		if argLen%2 != 0 {
+		if len(args)%2 != 0 {
 			inputData = args[0]
 			args = args[1:]
-			argLen--
 		}
 
 		argStrings := make([]string, len(args))
