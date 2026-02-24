@@ -30,6 +30,7 @@ var (
 		FuncContains,
 		FuncSum,
 		FuncJoin,
+		FuncReplace,
 	)
 )
 

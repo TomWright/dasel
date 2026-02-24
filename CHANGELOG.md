@@ -6,7 +6,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
-- Nothing yet.
+
+### Added
+- `replace` function to replace occurrences of a substring in a string with another string. [See docs](https://daseldocs.tomwright.me/functions/replace).
 
 ## [v3.2.3] - 2026-02-23
 
