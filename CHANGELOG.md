@@ -7,8 +7,20 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet
+
+## [v3.3.0] - 2026-02-25
+
+### Added
+- `replace` function to replace occurrences of a substring in a string with another string. [See docs](https://daseldocs.tomwright.me/functions/replace).
+
+## [v3.2.3] - 2026-02-23
+
 ### Added
 - XML parser now preserves comments and processing instructions during round-trip (#175).
+
+### Fixed
+- Spread operator within array construction is now honoured.
 
 ## [v3.2.2] - 2026-02-13
 
@@ -753,7 +765,9 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.2.2...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.3.0...HEAD
+[v3.3.0]: https://github.com/TomWright/dasel/compare/v3.2.3...v3.3.0
+[v3.2.3]: https://github.com/TomWright/dasel/compare/v3.2.2...v3.2.3
 [v3.2.2]: https://github.com/TomWright/dasel/compare/v3.2.1...v3.2.2
 [v3.2.1]: https://github.com/TomWright/dasel/compare/v3.2.0...v3.2.1
 [v3.2.0]: https://github.com/TomWright/dasel/compare/v3.1.4...v3.2.0
