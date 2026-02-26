@@ -92,35 +92,25 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 			Comments:               readComments(),
 		}
 
-		for _, kv := range kvs {
-			if strings.HasPrefix(kv.Key, "-") {
-				attr := xmlAttr{
-					Name: kv.Key[1:],
-				}
-				attr.Value, err = valueToString(kv.Value)
-				if err != nil {
-					return nil, fmt.Errorf("failed to convert attribute %q to string: %w", attr.Name, err)
-				}
-				el.Attrs = append(el.Attrs, attr)
-				continue
-			}
+		if err := extractAttrsAndText(kvs, el); err != nil {
+			return nil, err
+		}
 
-			if kv.Key == "#text" {
-				el.Content, err = valueToString(kv.Value)
-				if err != nil {
-					return nil, fmt.Errorf("failed to convert content to string: %w", err)
-				}
-				continue
-			}
-
-			childEl, err := j.toElement(kv.Key, kv.Value)
-			if err != nil {
-				return nil, fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, err)
-			}
-			if childEl.useChildrenOnly {
-				el.Children = append(el.Children, childEl.Children...)
+		orderMeta, hasOrder := value.MetadataValue(xmlChildOrderKey)
+		if hasOrder {
+			childOrder, ok := orderMeta.([]string)
+			if !ok {
+				hasOrder = false
 			} else {
-				el.Children = append(el.Children, childEl)
+				if err := j.buildChildrenOrdered(kvs, el, childOrder); err != nil {
+					return nil, err
+				}
+			}
+		}
+
+		if !hasOrder {
+			if err := j.buildChildrenUnordered(kvs, el); err != nil {
+				return nil, err
 			}
 		}
 
@@ -137,11 +127,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 			if err != nil {
 				return err
 			}
-			if childEl.useChildrenOnly {
-				el.Children = append(el.Children, childEl.Children...)
-			} else {
-				el.Children = append(el.Children, childEl)
-			}
+			el.appendChild(childEl)
 
 			return nil
 		}); err != nil {
@@ -151,6 +137,122 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 	default:
 		return nil, fmt.Errorf("xml writer does not support value type: %s", value.Type())
 	}
+}
+
+// extractAttrsAndText iterates kvs and extracts "-" prefixed attributes into
+// el.Attrs and "#text" into el.Content.
+func extractAttrsAndText(kvs []model.KeyValue, el *xmlElement) error {
+	for _, kv := range kvs {
+		if strings.HasPrefix(kv.Key, "-") {
+			attr := xmlAttr{
+				Name: kv.Key[1:],
+			}
+			var err error
+			attr.Value, err = valueToString(kv.Value)
+			if err != nil {
+				return fmt.Errorf("failed to convert attribute %q to string: %w", attr.Name, err)
+			}
+			el.Attrs = append(el.Attrs, attr)
+			continue
+		}
+
+		if kv.Key == "#text" {
+			var err error
+			el.Content, err = valueToString(kv.Value)
+			if err != nil {
+				return fmt.Errorf("failed to convert content to string: %w", err)
+			}
+			continue
+		}
+	}
+	return nil
+}
+
+// buildChildrenOrdered reconstructs child elements using counter-based ordering
+// from the childOrder metadata slice.
+func (j *xmlWriter) buildChildrenOrdered(kvs []model.KeyValue, el *xmlElement, childOrder []string) error {
+	// Build local map for fast lookups without GetMapKey overhead.
+	childValues := make(map[string]*model.Value, len(kvs))
+	for _, kv := range kvs {
+		if !strings.HasPrefix(kv.Key, "-") && kv.Key != "#text" {
+			childValues[kv.Key] = kv.Value
+		}
+	}
+
+	counters := make(map[string]int, len(childValues))
+	seen := make(map[string]bool, len(childValues))
+
+	for _, name := range childOrder {
+		seen[name] = true
+		childVal, exists := childValues[name]
+		if !exists {
+			// Key not in map (stale metadata after delete), skip.
+			counters[name]++
+			continue
+		}
+
+		index := counters[name]
+		counters[name]++
+
+		if childVal.Type() == model.TypeSlice {
+			// SliceLen error is impossible after TypeSlice type check above.
+			sliceLen, _ := childVal.SliceLen()
+			if index >= sliceLen {
+				// Counter overflow (more metadata entries than actual values), skip.
+				continue
+			}
+			item, sliceErr := childVal.GetSliceIndex(index)
+			if sliceErr != nil {
+				// Should not happen after bounds check; skip gracefully if model is inconsistent.
+				continue
+			}
+			childEl, childErr := j.toElement(name, item)
+			if childErr != nil {
+				return fmt.Errorf("failed to convert child element %q to element: %w", name, childErr)
+			}
+			el.appendChild(childEl)
+		} else {
+			if index >= 1 {
+				// Scalar value, can only be emitted once.
+				continue
+			}
+			childEl, childErr := j.toElement(name, childVal)
+			if childErr != nil {
+				return fmt.Errorf("failed to convert child element %q to element: %w", name, childErr)
+			}
+			el.appendChild(childEl)
+		}
+	}
+
+	// Append any map keys not in the ordering (new keys from mutations).
+	for _, kv := range kvs {
+		if strings.HasPrefix(kv.Key, "-") || kv.Key == "#text" || seen[kv.Key] {
+			continue
+		}
+		childEl, childErr := j.toElement(kv.Key, kv.Value)
+		if childErr != nil {
+			return fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, childErr)
+		}
+		el.appendChild(childEl)
+	}
+
+	return nil
+}
+
+// buildChildrenUnordered iterates map keys in insertion order, skipping
+// attributes and #text (backward-compatible fallback).
+func (j *xmlWriter) buildChildrenUnordered(kvs []model.KeyValue, el *xmlElement) error {
+	for _, kv := range kvs {
+		if strings.HasPrefix(kv.Key, "-") || kv.Key == "#text" {
+			continue
+		}
+		childEl, childErr := j.toElement(kv.Key, kv.Value)
+		if childErr != nil {
+			return fmt.Errorf("failed to convert child element %q to element: %w", kv.Key, childErr)
+		}
+		el.appendChild(childEl)
+	}
+	return nil
 }
 
 func valueToString(v *model.Value) (string, error) {
