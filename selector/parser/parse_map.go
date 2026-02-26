@@ -22,7 +22,14 @@ func parseMap(p *Parser) (ast.Expr, error) {
 		return nil, err
 	}
 
-	return ast.MapExpr{
+	mapExpr := ast.MapExpr{
 		Expr: expr,
-	}, nil
+	}
+
+	res, err := parseFollowingSymbol(p, mapExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
