@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet
+### Fixed
+
+- Fixed query selector parsing issue that incorrectly parsed array accessors when they followed a `filter` or `map` call.
 
 ## [v3.3.0] - 2026-02-25
 
