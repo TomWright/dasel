@@ -204,6 +204,43 @@ name2: Tom
 `,
 	}.run)
 
+	t.Run("base numbers", func(t *testing.T) {
+		t.Run("standard", rwTestCase{
+			in: `10
+`,
+			out: `10
+`,
+		}.run)
+
+		t.Run("hex", rwTestCase{
+			in: `0x10
+`,
+			out: `16
+`,
+		}.run)
+
+		t.Run("octal", rwTestCase{
+			in: `0o10
+`,
+			out: `8
+`,
+		}.run)
+
+		t.Run("binary", rwTestCase{
+			in: `0b10
+`,
+			out: `2
+`,
+		}.run)
+
+		t.Run("leading zero", rwTestCase{
+			in: `010
+`,
+			out: `8
+`,
+		}.run)
+	})
+
 	t.Run("bounded yaml expansion", func(t *testing.T) {
 		in := `a: &a ["lol","lol","lol","lol","lol","lol","lol","lol","lol"]
 b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]
