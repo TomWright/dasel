@@ -7,7 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Fixed
+- Fixed a bug that caused the `get` function to return `false` instead of an error when doing an invalid lookup.
 
 ## [v3.3.1] - 2026-02-26
 
@@ -111,7 +112,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed a bug that could cause a panic. 
+- Fixed a bug that could cause a panic.
 - `type()` now returns `null` instead of `unknown` for null values.
 - Added YAML support for merge tag/aliases. Thanks to [pmeier](https://github.com/pmeier). [Issue 285](https://github.com/TomWright/dasel/issues/285).
 
@@ -165,7 +166,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Resolved an issue with YAML parser that was causing strings to be read as booleans.
-- Fix a parsing issue with CSV types that forced you to expand and merge in order for it selects to work [Issue 364](https://github.com/TomWright/dasel/issues/364). 
+- Fix a parsing issue with CSV types that forced you to expand and merge in order for it selects to work [Issue 364](https://github.com/TomWright/dasel/issues/364).
 
 ## [v2.3.6] - 2023-08-30
 
@@ -276,7 +277,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 See [documentation](https://daseldocs.tomwright.me) for all changes.
 
-- Selector syntax 
+- Selector syntax
 
 ## [v1.27.3] - 2022-10-18
 
@@ -496,7 +497,7 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 ### Fixed
 
-- Fix an issue that stopped dasel being able to output CSV documents when parsed from JSON. 
+- Fix an issue that stopped dasel being able to output CSV documents when parsed from JSON.
 
 ## [v1.13.5] - 2021-03-22
 
@@ -556,7 +557,7 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 ### Changed
 
 - Build workflows now updated to run on ubuntu-latest and use a matrix to build assets for `linux`, `darwin` and
-`windows` for both `amd64` and `386`.
+  `windows` for both `amd64` and `386`.
 
 ### Fixed
 
