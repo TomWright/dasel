@@ -31,6 +31,12 @@ func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 			}
 			return nil, err
 		}
+		if unmarshalled == nil {
+			unmarshalled = &yamlValue{
+				node:  nil,
+				value: model.NewNullValue(),
+			}
+		}
 		res = append(res, unmarshalled)
 	}
 
@@ -73,6 +79,10 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 				return err
 			}
 			yv.value = model.NewFloatValue(f)
+		case "!!null":
+			yv.value = model.NewNullValue()
+		case "!!str":
+			yv.value = model.NewStringValue(value.Value)
 		default:
 			yv.value = model.NewStringValue(value.Value)
 		}

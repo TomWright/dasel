@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"fmt"
+
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"go.yaml.in/yaml/v4"
@@ -109,7 +110,9 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 			return nil, err
 		}
 	case model.TypeNull:
-		res.Kind = yaml.DocumentNode
+		res.Kind = yaml.ScalarNode
+		res.Value = "null"
+		res.Tag = "!!null"
 	case model.TypeUnknown:
 		return nil, fmt.Errorf("unknown type: %s", yv.value.Type())
 	}
