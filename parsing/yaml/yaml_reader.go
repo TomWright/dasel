@@ -73,6 +73,10 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 				return err
 			}
 			yv.value = model.NewFloatValue(f)
+		case "!!null":
+			yv.value = model.NewNullValue()
+		case "!!str":
+			yv.value = model.NewStringValue(value.Value)
 		default:
 			yv.value = model.NewStringValue(value.Value)
 		}

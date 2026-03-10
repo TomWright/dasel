@@ -186,4 +186,11 @@ name2: *name
 name2: Tom
 `,
 	}.run)
+
+	t.Run("null read write", rwTestCase{
+		in: `name: null
+`,
+		out: `name: null
+`,
+	}.run)
 }
