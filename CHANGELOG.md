@@ -11,6 +11,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed a bug that caused the `get` function to return `false` instead of an error when doing an invalid lookup.
 - Fixed an issue with reading/writing null values in YAML.
 - Fixed a nil pointer dereference when reading/writing null YAML documents.
+- Fixed a bug in YAML, TOML and dasel query parser that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
+- Fixed a bug in the `toInt` function that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 
 ## [v3.3.1] - 2026-02-26
 

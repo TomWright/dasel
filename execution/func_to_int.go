@@ -19,7 +19,7 @@ var FuncToInt = NewFunc(
 				return nil, err
 			}
 
-			i, err := strconv.ParseInt(stringValue, 10, 64)
+			i, err := strconv.ParseInt(stringValue, 0, 64)
 			if err != nil {
 				return nil, err
 			}

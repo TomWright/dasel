@@ -68,11 +68,11 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		case "!!bool":
 			yv.value = model.NewBoolValue(value.Value == "true")
 		case "!!int":
-			i, err := strconv.Atoi(value.Value)
+			i, err := strconv.ParseInt(value.Value, 0, 64)
 			if err != nil {
 				return err
 			}
-			yv.value = model.NewIntValue(int64(i))
+			yv.value = model.NewIntValue(i)
 		case "!!float":
 			f, err := strconv.ParseFloat(value.Value, 64)
 			if err != nil {
