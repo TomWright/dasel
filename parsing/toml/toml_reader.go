@@ -150,7 +150,7 @@ func (j *tomlReader) readNode(p *unstable.Parser, n *unstable.Node) (string, *mo
 		}
 		return "", model.NewFloatValue(f), nil
 	case unstable.Integer:
-		i64, err := strconv.ParseInt(string(n.Data), 10, 64)
+		i64, err := strconv.ParseInt(string(n.Data), 0, 64)
 		if err != nil {
 			return "", nil, err
 		}
