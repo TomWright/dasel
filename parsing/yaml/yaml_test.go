@@ -193,4 +193,11 @@ name2: Tom
 		out: `name: null
 `,
 	}.run)
+
+	t.Run("null document read write", rwTestCase{
+		in: `null
+`,
+		out: `null
+`,
+	}.run)
 }

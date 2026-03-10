@@ -31,6 +31,12 @@ func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 			}
 			return nil, err
 		}
+		if unmarshalled == nil {
+			unmarshalled = &yamlValue{
+				node:  nil,
+				value: model.NewNullValue(),
+			}
+		}
 		res = append(res, unmarshalled)
 	}
 
