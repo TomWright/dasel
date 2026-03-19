@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Added
+
+- `keys` func that returns the keys or indices of a node. [See docs](https://daseldocs.tomwright.me/functions/keys).
 
 ## [v3.3.2] - 2026-03-18
 

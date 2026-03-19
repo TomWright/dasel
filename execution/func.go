@@ -31,6 +31,7 @@ var (
 		FuncSum,
 		FuncJoin,
 		FuncReplace,
+		FuncKeys,
 	)
 )
 
