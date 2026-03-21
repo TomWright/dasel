@@ -122,12 +122,15 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 	if len(e.Children) > 0 {
 		childElementKeys := make([]string, 0)
 		childElements := make(map[string][]*xmlElement)
+		// childOrder records document-order child names for round-trip preservation.
+		childOrder := make([]string, 0, len(e.Children))
 
 		for _, child := range e.Children {
 			if _, ok := childElements[child.Name]; !ok {
 				childElementKeys = append(childElementKeys, child.Name)
 			}
 			childElements[child.Name] = append(childElements[child.Name], child)
+			childOrder = append(childOrder, child.Name)
 		}
 
 		for _, key := range childElementKeys {
@@ -159,6 +162,8 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 				}
 			}
 		}
+
+		res.SetMetadataValue(xmlChildOrderKey, childOrder)
 	}
 
 	return res, nil
