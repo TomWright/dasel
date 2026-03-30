@@ -212,10 +212,31 @@ name2: Tom
 `,
 		}.run)
 
-		t.Run("hex", rwTestCase{
+		t.Run("zero", rwTestCase{
+			in: `0
+`,
+			out: `0
+`,
+		}.run)
+
+		t.Run("negative", rwTestCase{
+			in: `-42
+`,
+			out: `-42
+`,
+		}.run)
+
+		t.Run("hex lowercase", rwTestCase{
 			in: `0x10
 `,
 			out: `16
+`,
+		}.run)
+
+		t.Run("hex uppercase letters", rwTestCase{
+			in: `0xff
+`,
+			out: `255
 `,
 		}.run)
 
@@ -233,10 +254,37 @@ name2: Tom
 `,
 		}.run)
 
-		t.Run("leading zero", rwTestCase{
+		t.Run("leading zero is decimal", rwTestCase{
 			in: `010
 `,
-			out: `8
+			out: `10
+`,
+		}.run)
+
+		t.Run("hex in map", rwTestCase{
+			in: `val: 0x10
+`,
+			out: `val: 16
+`,
+		}.run)
+
+		t.Run("octal in map", rwTestCase{
+			in: `val: 0o77
+`,
+			out: `val: 63
+`,
+		}.run)
+
+		t.Run("mixed types in map", rwTestCase{
+			in: `dec: 42
+hex: 0xff
+oct: 0o77
+bin: 0b1010
+`,
+			out: `dec: 42
+hex: 255
+oct: 63
+bin: 10
 `,
 		}.run)
 	})

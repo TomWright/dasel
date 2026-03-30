@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
@@ -96,7 +97,7 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		case "!!bool":
 			yv.value = model.NewBoolValue(value.Value == "true")
 		case "!!int":
-			i, err := strconv.ParseInt(value.Value, 0, 64)
+			i, err := parseYAMLInt(value.Value)
 			if err != nil {
 				return err
 			}
@@ -185,4 +186,23 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value.SetMetadataValue("yaml-alias", value.Value)
 	}
 	return nil
+}
+
+func parseYAMLInt(s string) (int64, error) {
+	// Strip leading sign for prefix detection.
+	clean := s
+	if len(clean) > 0 && (clean[0] == '+' || clean[0] == '-') {
+		clean = clean[1:]
+	}
+
+	switch {
+	case strings.HasPrefix(clean, "0x") || strings.HasPrefix(clean, "0X"):
+		return strconv.ParseInt(s, 0, 64)
+	case strings.HasPrefix(clean, "0o") || strings.HasPrefix(clean, "0O"):
+		return strconv.ParseInt(s, 0, 64)
+	case strings.HasPrefix(clean, "0b") || strings.HasPrefix(clean, "0B"):
+		return strconv.ParseInt(s, 0, 64)
+	default:
+		return strconv.ParseInt(s, 10, 64)
+	}
 }
