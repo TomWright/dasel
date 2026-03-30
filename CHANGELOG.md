@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing yet.
+
+## [v3.4.1] - 2026-03-30
+
 ### Fixed
 
 - Escape characters in query strings now work as expected, e.g. `\n` will be treated as a newline character instead of the literal string `\n`.
@@ -788,7 +792,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.4.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.4.1...HEAD
+[v3.4.1]: https://github.com/TomWright/dasel/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/TomWright/dasel/compare/v3.3.2...v3.4.0
 [v3.3.2]: https://github.com/TomWright/dasel/compare/v3.3.1...v3.3.2
 [v3.3.1]: https://github.com/TomWright/dasel/compare/v3.3.0...v3.3.1
