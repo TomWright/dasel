@@ -82,6 +82,18 @@ func TestTokenizer_Parse(t *testing.T) {
 		},
 	}.run)
 
+	t.Run("escaped strings", testCase{
+		in: `'a\'b' "a\"b" "a\nb" "a\rb" "a\tb" "a\\b"`,
+		out: []lexer.TokenKind{
+			lexer.String,
+			lexer.String,
+			lexer.String,
+			lexer.String,
+			lexer.String,
+			lexer.String,
+		},
+	}.run)
+
 	t.Run("if", testCase{
 		in: `if elseif else`,
 		out: []lexer.TokenKind{

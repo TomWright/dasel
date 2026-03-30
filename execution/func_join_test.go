@@ -20,4 +20,10 @@ func TestFuncJoin(t *testing.T) {
 		s:   `join(",", ["a", "b", "c"])`,
 		out: model.NewStringValue("a,b,c"),
 	}.run)
+	t.Run("array input newline", testCase{
+		s: `join("\n", ["a", "b", "c"])`,
+		out: model.NewStringValue(`a
+b
+c`),
+	}.run)
 }

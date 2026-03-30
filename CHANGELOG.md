@@ -7,7 +7,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-- Nothing yet.
+### Fixed
+
+- Escape characters in query strings now work as expected, e.g. `\n` will be treated as a newline character instead of the literal string `\n`.
 
 ## [v3.4.0] - 2026-03-19
 

@@ -181,6 +181,16 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 	case '"', '\'':
 		pos := p.i
 		buf := make([]rune, 0)
+
+		escapeCharacters := map[rune]bool{
+			// The closing quote character can be escaped.
+			rune(p.src[p.i]): true,
+			'\\':             true,
+			't':              true,
+			'r':              true,
+			'n':              true,
+		}
+
 		pos++
 		foundCloseRune := false
 		for pos < p.srcLen {
@@ -189,9 +199,32 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 				break
 			}
 			if p.src[pos] == '\\' {
+				// Handle escape characters.
 				pos++
-				buf = append(buf, rune(p.src[pos]))
-				pos++
+
+				if p.peekRuneMatches(pos, func(r rune) bool {
+					_, ok := escapeCharacters[r]
+					return ok
+				}) {
+					switch p.src[pos] {
+					case '\\':
+						buf = append(buf, '\\')
+					case 't':
+						buf = append(buf, '\t')
+					case 'r':
+						buf = append(buf, '\r')
+					case 'n':
+						buf = append(buf, '\n')
+					default:
+						// This must be the closing quote character.
+						buf = append(buf, rune(p.src[pos]))
+					}
+					pos++
+				} else {
+					buf = append(buf, rune(p.src[pos]))
+					pos++
+				}
+
 				continue
 			}
 			buf = append(buf, rune(p.src[pos]))
