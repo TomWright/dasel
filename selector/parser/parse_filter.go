@@ -22,7 +22,14 @@ func parseFilter(p *Parser) (ast.Expr, error) {
 		return nil, err
 	}
 
-	return ast.FilterExpr{
+	filterExpr := ast.FilterExpr{
 		Expr: expr,
-	}, nil
+	}
+
+	res, err := parseFollowingSymbol(p, filterExpr)
+	if err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }

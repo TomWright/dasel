@@ -2,7 +2,10 @@ package yaml_test
 
 import (
 	"bytes"
+	"errors"
+	"fmt"
 	"testing"
+	"time"
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/tomwright/dasel/v3/model"
@@ -186,4 +189,238 @@ name2: *name
 name2: Tom
 `,
 	}.run)
+
+	t.Run("null read write", rwTestCase{
+		in: `name: null
+`,
+		out: `name: null
+`,
+	}.run)
+
+	t.Run("null document read write", rwTestCase{
+		in: `null
+`,
+		out: `null
+`,
+	}.run)
+
+	t.Run("bounded yaml expansion", func(t *testing.T) {
+		in := `a: &a ["lol","lol","lol","lol","lol","lol","lol","lol","lol"]
+b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]
+c: &c [*b,*b,*b,*b,*b,*b,*b,*b,*b]
+d: &d [*c,*c,*c,*c,*c,*c,*c,*c,*c]
+e: &e [*d,*d,*d,*d,*d,*d,*d,*d,*d]
+f: &f [*e,*e,*e,*e,*e,*e,*e,*e,*e]
+g: &g [*f,*f,*f,*f,*f,*f,*f,*f,*f]
+h: &h [*g,*g,*g,*g,*g,*g,*g,*g,*g]
+i: &i [*h,*h,*h,*h,*h,*h,*h,*h,*h]
+`
+
+		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		var gotErr error
+
+		maxWaitTime := 10 * time.Second
+		gotErrCh := make(chan error)
+		go func() {
+			_, gotErr = reader.Read([]byte(in))
+			gotErrCh <- gotErr
+		}()
+
+		select {
+		case gotErr = <-gotErrCh:
+			if gotErr == nil {
+				t.Fatal("expected error, got nil")
+			}
+			if !errors.Is(gotErr, yaml.ErrYamlExpansionDepthExceeded) && !errors.Is(gotErr, yaml.ErrYamlExpansionBudgetExceeded) {
+				t.Fatalf("unexpected error: %s", gotErr)
+			}
+		case <-time.After(maxWaitTime):
+			t.Fatalf("expected error within %s, but did not get one", maxWaitTime)
+		}
+	})
+
+	t.Run("alias metadata is preserved", func(t *testing.T) {
+		r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		res, err := r.Read([]byte("name: &name Tom\nname2: *name\n"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		aliasValue, err := res.GetMapKey("name2")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		got, ok := aliasValue.MetadataValue("yaml-alias")
+		if !ok {
+			t.Fatal("expected yaml-alias metadata to be set")
+		}
+		if got != "name" {
+			t.Fatalf("unexpected yaml-alias metadata: %v", got)
+		}
+	})
+
+	t.Run("yaml expansion depth boundary", func(t *testing.T) {
+		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		makeDoc := func(depth int) string {
+			if depth == 0 {
+				return "root0: &root0 [value]\nresult: *root0\n"
+			}
+
+			res := "root0: &root0 [value]\n"
+			for i := 1; i <= depth; i++ {
+				res += fmt.Sprintf("root%d: &root%d [*root%d]\n", i, i, i-1)
+			}
+			res += fmt.Sprintf("result: *root%d\n", depth)
+			return res
+		}
+
+		depthLimit := 32
+		for _, tc := range []struct {
+			name    string
+			depth   int
+			wantErr bool
+		}{
+			{name: "within limit", depth: depthLimit - 2, wantErr: false},
+			{name: "at limit", depth: depthLimit - 1, wantErr: false},
+			{name: "over limit", depth: depthLimit, wantErr: true},
+		} {
+			t.Run(tc.name, func(t *testing.T) {
+				res, err := reader.Read([]byte(makeDoc(tc.depth)))
+				if tc.wantErr {
+					if err == nil {
+						t.Fatal("expected error, got nil")
+					}
+					if !errors.Is(err, yaml.ErrYamlExpansionDepthExceeded) {
+						t.Fatalf("unexpected error: %v", err)
+					}
+					return
+				}
+
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+
+				result, err := res.GetMapKey("result")
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				for i := 0; i <= tc.depth; i++ {
+					result, err = result.GetSliceIndex(0)
+					if err != nil {
+						t.Fatalf("unexpected error at nested index %d: %s", i, err)
+					}
+				}
+				got, err := result.StringValue()
+				if err != nil {
+					t.Fatalf("unexpected error: %s", err)
+				}
+				if got != "value" {
+					t.Fatalf("unexpected value: %s", got)
+				}
+			})
+		}
+	})
+
+	t.Run("yaml expansion budget boundary", func(t *testing.T) {
+		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		makeDoc := func(aliasCount int) string {
+			res := "root: &root value\nitems:\n"
+			for i := 0; i < aliasCount; i++ {
+				res += "  - *root\n"
+			}
+			return res
+		}
+
+		res, err := reader.Read([]byte(makeDoc(1000)))
+		if err != nil {
+			t.Fatalf("unexpected error at budget boundary: %s", err)
+		}
+		items, err := res.GetMapKey("items")
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		last, err := items.GetSliceIndex(999)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		got, err := last.StringValue()
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		if got != "value" {
+			t.Fatalf("unexpected value: %s", got)
+		}
+
+		_, err = reader.Read([]byte(makeDoc(1001)))
+		if err == nil {
+			t.Fatal("expected error, got nil")
+		}
+		if !errors.Is(err, yaml.ErrYamlExpansionBudgetExceeded) {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("yaml expansion budget resets per document", func(t *testing.T) {
+		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		makeDoc := func(aliasCount int) string {
+			res := "root: &root value\nitems:\n"
+			for i := 0; i < aliasCount; i++ {
+				res += "  - *root\n"
+			}
+			return res
+		}
+
+		multiDoc := makeDoc(1000) + "---\n" + makeDoc(1000)
+		res, err := reader.Read([]byte(multiDoc))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+
+		first, err := res.GetSliceIndex(0)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		second, err := res.GetSliceIndex(1)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		for _, doc := range []*model.Value{first, second} {
+			items, err := doc.GetMapKey("items")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			last, err := items.GetSliceIndex(999)
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			got, err := last.StringValue()
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if got != "value" {
+				t.Fatalf("unexpected value: %s", got)
+			}
+		}
+	})
 }

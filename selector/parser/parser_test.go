@@ -127,6 +127,33 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 	})
 
 	t.Run("array access", func(t *testing.T) {
+		t.Run("chained with filter", happyTestCase{
+			input: "filter(name == \"foo\")[0]",
+			expected: ast.ChainExprs(
+				ast.FilterExpr{
+					Expr: ast.BinaryExpr{
+						Left: ast.PropertyExpr{Property: ast.StringExpr{Value: "name"}},
+						Operator: lexer.Token{
+							Kind:  lexer.Equal,
+							Value: "==",
+							Pos:   12,
+							Len:   2,
+						},
+						Right: ast.StringExpr{Value: "foo"},
+					},
+				},
+				ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 0}},
+			),
+		}.run)
+		t.Run("chained with map", happyTestCase{
+			input: "map(foo)[0]",
+			expected: ast.ChainExprs(
+				ast.MapExpr{
+					Expr: ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+				},
+				ast.PropertyExpr{Property: ast.NumberIntExpr{Value: 0}},
+			),
+		}.run)
 		t.Run("root array", func(t *testing.T) {
 			t.Run("index", happyTestCase{
 				input: "$this[1]",

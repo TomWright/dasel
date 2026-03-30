@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -14,22 +15,52 @@ import (
 var _ parsing.Reader = (*yamlReader)(nil)
 
 func newYAMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
-	return &yamlReader{}, nil
+	return &yamlReader{
+		maxExpansionDepth:  maxExpansionDepth,
+		maxExpansionBudget: maxExpansionBudget,
+	}, nil
 }
 
-type yamlReader struct{}
+type yamlReader struct {
+	maxExpansionDepth  int
+	maxExpansionBudget int
+}
+
+// ErrYamlExpansionDepthExceeded is returned when the maximum expansion depth is exceeded.
+var ErrYamlExpansionDepthExceeded = errors.New("yaml expansion depth exceeded")
+
+// ErrYamlExpansionBudgetExceeded is returned when the maximum expansion budget is exceeded.
+var ErrYamlExpansionBudgetExceeded = errors.New("yaml expansion budget exceeded")
+
+const maxExpansionDepth = 32
+const maxExpansionBudget = 1000
 
 // Read reads a value from a byte slice.
 func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 	d := yaml.NewDecoder(bytes.NewReader(data))
 	res := make([]*yamlValue, 0)
 	for {
-		unmarshalled := &yamlValue{}
+		expansionBudget := j.maxExpansionBudget
+		unmarshalled := &yamlValue{
+			expansionDepth:    0,
+			maxExpansionDepth: j.maxExpansionDepth,
+			expansionBudget:   &expansionBudget,
+		}
 		if err := d.Decode(&unmarshalled); err != nil {
 			if err == io.EOF {
 				break
 			}
 			return nil, err
+		}
+		if unmarshalled == nil {
+			expansionBudget := j.maxExpansionBudget
+			unmarshalled = &yamlValue{
+				node:              nil,
+				value:             model.NewNullValue(),
+				expansionDepth:    0,
+				maxExpansionDepth: j.maxExpansionDepth,
+				expansionBudget:   &expansionBudget,
+			}
 		}
 		res = append(res, unmarshalled)
 	}
@@ -56,6 +87,9 @@ func (j *yamlReader) Read(data []byte) (*model.Value, error) {
 
 func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 	yv.node = value
+	if yv.expansionDepth > yv.maxExpansionDepth {
+		return ErrYamlExpansionDepthExceeded
+	}
 	switch value.Kind {
 	case yaml.ScalarNode:
 		switch value.Tag {
@@ -73,6 +107,10 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 				return err
 			}
 			yv.value = model.NewFloatValue(f)
+		case "!!null":
+			yv.value = model.NewNullValue()
+		case "!!str":
+			yv.value = model.NewStringValue(value.Value)
 		default:
 			yv.value = model.NewStringValue(value.Value)
 		}
@@ -81,7 +119,11 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 	case yaml.SequenceNode:
 		res := model.NewSliceValue()
 		for _, item := range value.Content {
-			newItem := &yamlValue{}
+			newItem := &yamlValue{
+				expansionDepth:    yv.expansionDepth,
+				maxExpansionDepth: yv.maxExpansionDepth,
+				expansionBudget:   yv.expansionBudget,
+			}
 			if err := newItem.UnmarshalYAML(item); err != nil {
 				return err
 			}
@@ -96,12 +138,20 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 			key := value.Content[i]
 			val := value.Content[i+1]
 
-			newKey := &yamlValue{}
+			newKey := &yamlValue{
+				expansionDepth:    yv.expansionDepth,
+				maxExpansionDepth: yv.maxExpansionDepth,
+				expansionBudget:   yv.expansionBudget,
+			}
 			if err := newKey.UnmarshalYAML(key); err != nil {
 				return err
 			}
 
-			newVal := &yamlValue{}
+			newVal := &yamlValue{
+				expansionDepth:    yv.expansionDepth,
+				maxExpansionDepth: yv.maxExpansionDepth,
+				expansionBudget:   yv.expansionBudget,
+			}
 			if err := newVal.UnmarshalYAML(val); err != nil {
 				return err
 			}
@@ -117,7 +167,17 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		}
 		yv.value = res
 	case yaml.AliasNode:
-		newVal := &yamlValue{}
+		if yv.expansionBudget != nil {
+			*yv.expansionBudget = *yv.expansionBudget - 1
+			if *yv.expansionBudget < 0 {
+				return ErrYamlExpansionBudgetExceeded
+			}
+		}
+		newVal := &yamlValue{
+			expansionDepth:    yv.expansionDepth + 1,
+			maxExpansionDepth: yv.maxExpansionDepth,
+			expansionBudget:   yv.expansionBudget,
+		}
 		if err := newVal.UnmarshalYAML(value.Alias); err != nil {
 			return err
 		}
