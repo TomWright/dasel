@@ -9,7 +9,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed a bug in YAML parser that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 - Fixed a bug in YAML, TOML and dasel query parser that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 - Fixed a bug in the `toInt` function that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 
@@ -796,7 +795,10 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.3.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.4.1...HEAD
+[v3.4.1]: https://github.com/TomWright/dasel/compare/v3.4.0...v3.4.1
+[v3.4.0]: https://github.com/TomWright/dasel/compare/v3.3.2...v3.4.0
+[v3.3.2]: https://github.com/TomWright/dasel/compare/v3.3.1...v3.3.2
 [v3.3.1]: https://github.com/TomWright/dasel/compare/v3.3.0...v3.3.1
 [v3.3.0]: https://github.com/TomWright/dasel/compare/v3.2.3...v3.3.0
 [v3.2.3]: https://github.com/TomWright/dasel/compare/v3.2.2...v3.2.3
