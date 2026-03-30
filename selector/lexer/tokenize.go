@@ -146,7 +146,7 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		return NewToken(GreaterThan, ">", p.i, 1), nil
 	case '<':
 		if p.peekRuneEqual(p.i+1, '=') {
-			return NewToken(LessThanOrEqual, "<>>=", p.i, 2), nil
+			return NewToken(LessThanOrEqual, "<=", p.i, 2), nil
 		}
 		return NewToken(LessThan, "<", p.i, 1), nil
 	case '!':
