@@ -70,6 +70,23 @@ func TestXmlWriter_CommentValidation(t *testing.T) {
 	})
 }
 
+// Test_isValidXMLName tests XML name validation per the XML 1.0 spec.
+func Test_isValidXMLName(t *testing.T) {
+	valid := []string{"foo", "Foo", "_bar", "ns:local", "a1", "a-b", "a.b", "über"}
+	for _, name := range valid {
+		if !isValidXMLName(name) {
+			t.Errorf("Expected %q to be a valid XML name", name)
+		}
+	}
+
+	invalid := []string{"", "<", ">", "&", "foo bar", "1abc", "-abc", ".abc", "a<b", "a>b", "a&b"}
+	for _, name := range invalid {
+		if isValidXMLName(name) {
+			t.Errorf("Expected %q to be an invalid XML name", name)
+		}
+	}
+}
+
 // Test_valueToString tests the valueToString function for all supported types
 func Test_valueToString(t *testing.T) {
 	t.Run("null value returns empty string", func(t *testing.T) {

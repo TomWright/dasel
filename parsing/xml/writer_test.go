@@ -151,6 +151,48 @@ func TestXmlReader_Write(t *testing.T) {
 		}
 	})
 
+	t.Run("invalid element name", func(t *testing.T) {
+		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		toEncode := model.NewMapValue()
+		_ = toEncode.SetMapKey("<", model.NewStringValue("value"))
+		_, err = w.Write(toEncode)
+		if err == nil {
+			t.Fatal("Expected error for invalid XML element name, got nil")
+		}
+	})
+
+	t.Run("invalid element name ampersand", func(t *testing.T) {
+		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		toEncode := model.NewMapValue()
+		_ = toEncode.SetMapKey("&", model.NewStringValue("value"))
+		_, err = w.Write(toEncode)
+		if err == nil {
+			t.Fatal("Expected error for invalid XML element name, got nil")
+		}
+	})
+
+	t.Run("invalid element name with space", func(t *testing.T) {
+		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		toEncode := model.NewMapValue()
+		_ = toEncode.SetMapKey("foo bar", model.NewStringValue("value"))
+		_, err = w.Write(toEncode)
+		if err == nil {
+			t.Fatal("Expected error for invalid XML element name, got nil")
+		}
+	})
+
 	t.Run("encode cdata", func(t *testing.T) {
 		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
 		if err != nil {
