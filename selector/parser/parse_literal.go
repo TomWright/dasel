@@ -68,7 +68,7 @@ func parseNumberLiteral(p *Parser) (ast.Expr, error) {
 		}, nil
 
 	default:
-		value, err := strconv.ParseInt(token.Value, 0, 64)
+		value, err := strconv.ParseInt(token.Value, 10, 64)
 		if err != nil {
 			return nil, err
 		}

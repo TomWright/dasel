@@ -287,6 +287,76 @@ oct: 63
 bin: 10
 `,
 		}.run)
+
+		t.Run("positive sign", rwTestCase{
+			in: `+42
+`,
+			out: `42
+`,
+		}.run)
+
+		t.Run("positive hex", rwTestCase{
+			in: `+0x10
+`,
+			out: `16
+`,
+		}.run)
+
+		t.Run("positive octal", rwTestCase{
+			in: `+0o10
+`,
+			out: `8
+`,
+		}.run)
+
+		t.Run("positive binary", rwTestCase{
+			in: `+0b10
+`,
+			out: `2
+`,
+		}.run)
+
+		t.Run("negative hex", rwTestCase{
+			in: `-0x10
+`,
+			out: `-16
+`,
+		}.run)
+
+		t.Run("negative octal", rwTestCase{
+			in: `-0o10
+`,
+			out: `-8
+`,
+		}.run)
+
+		t.Run("negative binary", rwTestCase{
+			in: `-0b10
+`,
+			out: `-2
+`,
+		}.run)
+
+		t.Run("underscore decimal", rwTestCase{
+			in: `1_000
+`,
+			out: `1000
+`,
+		}.run)
+
+		t.Run("underscore hex", rwTestCase{
+			in: `0xFF_FF
+`,
+			out: `65535
+`,
+		}.run)
+
+		t.Run("underscore binary", rwTestCase{
+			in: `0b1010_1010
+`,
+			out: `170
+`,
+		}.run)
 	})
 
 	t.Run("bounded yaml expansion", func(t *testing.T) {

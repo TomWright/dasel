@@ -203,6 +203,9 @@ func parseYAMLInt(s string) (int64, error) {
 	case strings.HasPrefix(clean, "0b") || strings.HasPrefix(clean, "0B"):
 		return strconv.ParseInt(s, 0, 64)
 	default:
-		return strconv.ParseInt(s, 10, 64)
+		// YAML 1.2 allows underscores in decimal integers (e.g. 1_000).
+		// strconv.ParseInt with base 10 does not support underscores,
+		// so we strip them before parsing.
+		return strconv.ParseInt(strings.ReplaceAll(s, "_", ""), 10, 64)
 	}
 }

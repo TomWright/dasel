@@ -514,6 +514,44 @@ func TestTomlReader_EdgeCases(t *testing.T) {
 	})
 }
 
+func TestTomlReader_NonBase10Numbers(t *testing.T) {
+	t.Run("hex", tomlReaderTest([]byte(`val = 0x12`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(18))
+		return res
+	}))
+
+	t.Run("octal", tomlReaderTest([]byte(`val = 0o7`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(7))
+		return res
+	}))
+
+	t.Run("binary", tomlReaderTest([]byte(`val = 0b111`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(7))
+		return res
+	}))
+
+	t.Run("underscore decimal", tomlReaderTest([]byte(`val = 12_000`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(12000))
+		return res
+	}))
+
+	t.Run("negative underscore decimal", tomlReaderTest([]byte(`val = -12_000`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(-12000))
+		return res
+	}))
+
+	t.Run("negative int", tomlReaderTest([]byte(`val = -42`), func() *model.Value {
+		res := model.NewMapValue()
+		_ = res.SetMapKey("val", model.NewIntValue(-42))
+		return res
+	}))
+}
+
 func TestTomlReader_TimeStrings(t *testing.T) {
 	// Local date
 	t.Run("local date string", func(t *testing.T) {
