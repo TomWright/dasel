@@ -9,7 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
-- Fixed a bug in YAML, TOML and dasel query parser that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
+- Fixed a bug in YAML and TOML parsers that caused them to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 - Fixed a bug in the `toInt` function that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 - XML child element ordering now has more comprehensive round-trip handling. Thanks @takeokunn.
 
