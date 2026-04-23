@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"strconv"
+	"strings"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
@@ -96,11 +97,11 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		case "!!bool":
 			yv.value = model.NewBoolValue(value.Value == "true")
 		case "!!int":
-			i, err := strconv.Atoi(value.Value)
+			i, err := parseYAMLInt(value.Value)
 			if err != nil {
 				return err
 			}
-			yv.value = model.NewIntValue(int64(i))
+			yv.value = model.NewIntValue(i)
 		case "!!float":
 			f, err := strconv.ParseFloat(value.Value, 64)
 			if err != nil {
@@ -185,4 +186,26 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value.SetMetadataValue("yaml-alias", value.Value)
 	}
 	return nil
+}
+
+func parseYAMLInt(s string) (int64, error) {
+	// Strip leading sign for prefix detection.
+	clean := s
+	if len(clean) > 0 && (clean[0] == '+' || clean[0] == '-') {
+		clean = clean[1:]
+	}
+
+	switch {
+	case strings.HasPrefix(clean, "0x") || strings.HasPrefix(clean, "0X"):
+		return strconv.ParseInt(s, 0, 64)
+	case strings.HasPrefix(clean, "0o") || strings.HasPrefix(clean, "0O"):
+		return strconv.ParseInt(s, 0, 64)
+	case strings.HasPrefix(clean, "0b") || strings.HasPrefix(clean, "0B"):
+		return strconv.ParseInt(s, 0, 64)
+	default:
+		// YAML 1.2 allows underscores in decimal integers (e.g. 1_000).
+		// strconv.ParseInt with base 10 does not support underscores,
+		// so we strip them before parsing.
+		return strconv.ParseInt(strings.ReplaceAll(s, "_", ""), 10, 64)
+	}
 }

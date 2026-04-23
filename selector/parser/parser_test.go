@@ -61,6 +61,10 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			input:    "42",
 			expected: ast.NumberIntExpr{Value: 42},
 		}.run)
+		t.Run("leading zero decimal", happyTestCase{
+			input:    "010",
+			expected: ast.NumberIntExpr{Value: 10},
+		}.run)
 		t.Run("float", happyTestCase{
 			input:    "42.1",
 			expected: ast.NumberFloatExpr{Value: 42.1},
