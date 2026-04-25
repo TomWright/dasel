@@ -41,6 +41,10 @@ var (
 		FuncStartsWith,
 		FuncEndsWith,
 		FuncIndexOf,
+		FuncAbs,
+		FuncFloor,
+		FuncCeil,
+		FuncRound,
 	)
 )
 

@@ -18,6 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `startsWith` function that checks if a string starts with a given prefix.
 - `endsWith` function that checks if a string ends with a given suffix.
 - `indexOf` function that returns the index of the first occurrence of a substring, or -1 if not found.
+- `abs` function that returns the absolute value of a number.
+- `floor` function that returns the largest integer less than or equal to the input.
+- `ceil` function that returns the smallest integer greater than or equal to the input.
+- `round` function that rounds a number to the nearest integer.
 
 ### Fixed
 
