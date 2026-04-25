@@ -23,6 +23,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ceil` function that returns the smallest integer greater than or equal to the input.
 - `round` function that rounds a number to the nearest integer.
 - `avg` function that returns the average of the given numbers.
+- `flatten` function that flattens a nested array by one level.
 
 ### Fixed
 

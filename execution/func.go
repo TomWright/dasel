@@ -46,6 +46,7 @@ var (
 		FuncCeil,
 		FuncRound,
 		FuncAvg,
+		FuncFlatten,
 	)
 )
 
