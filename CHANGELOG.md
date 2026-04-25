@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.8.0] - 2026-04-26
+
 ### Added
 
 - `dasel completion <shell>` subcommand to generate shell completion scripts for bash, zsh, fish, and powershell (#497).
@@ -857,7 +859,10 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.5.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.8.0...HEAD
+[v3.8.0]: https://github.com/TomWright/dasel/compare/v3.7.0...v3.8.0
+[v3.7.0]: https://github.com/TomWright/dasel/compare/v3.6.0...v3.7.0
+[v3.6.0]: https://github.com/TomWright/dasel/compare/v3.5.0...v3.6.0
 [v3.5.0]: https://github.com/TomWright/dasel/compare/v3.4.1...v3.5.0
 [v3.4.1]: https://github.com/TomWright/dasel/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/TomWright/dasel/compare/v3.3.2...v3.4.0
