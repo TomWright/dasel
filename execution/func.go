@@ -54,6 +54,7 @@ var (
 		FuncEntries,
 		FuncFromEntries,
 		FuncToBool,
+		FuncStringify,
 	)
 )
 
