@@ -40,6 +40,7 @@ var (
 		FuncTrimSuffix,
 		FuncStartsWith,
 		FuncEndsWith,
+		FuncIndexOf,
 	)
 )
 
