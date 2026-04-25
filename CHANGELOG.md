@@ -31,6 +31,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `entries` function that converts a map into an array of `{key, value}` objects.
 - `fromEntries` function that converts an array of `{key, value}` objects into a map.
 - `toBool` function that converts a value to a boolean.
+- `any` expression that returns true if any element in an array matches the predicate.
+- `all` expression that returns true if all elements in an array match the predicate.
+- `count` expression that counts the number of elements in an array that match the predicate.
 
 ### Fixed
 
