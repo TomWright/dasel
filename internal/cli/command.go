@@ -78,7 +78,7 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 		}),
 		kong.Help(cli.helpPrinter),
 	)
-	cli.Globals.Kong = ctx.Kong
+	cli.Kong = ctx.Kong
 	err := ctx.Run()
 	return ctx, err
 }
