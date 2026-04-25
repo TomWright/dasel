@@ -295,4 +295,52 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("any", func(t *testing.T) {
+		t.Run("true result", runTest(testCase{
+			args:   []string{"-i", "json", `users.any(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("true\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("false result", runTest(testCase{
+			args:   []string{"-i", "json", `users.any(age > 50)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("false\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
+	t.Run("all", func(t *testing.T) {
+		t.Run("true result", runTest(testCase{
+			args:   []string{"-i", "json", `users.all(age > 18)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("true\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("false result", runTest(testCase{
+			args:   []string{"-i", "json", `users.all(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("false\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
+	t.Run("count", func(t *testing.T) {
+		t.Run("some match", runTest(testCase{
+			args:   []string{"-i", "json", `users.count(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}, {"name": "Charlie", "age": 35}]}`),
+			stdout: []byte("2\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("none match", runTest(testCase{
+			args:   []string{"-i", "json", `users.count(age > 50)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("0\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
 }

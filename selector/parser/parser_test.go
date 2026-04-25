@@ -496,4 +496,67 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 			},
 		}.run)
 	})
+
+	t.Run("any", func(t *testing.T) {
+		t.Run("simple predicate", happyTestCase{
+			input: "foo.any($this > 2)",
+			expected: ast.ChainExprs(
+				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+				ast.AnyExpr{
+					Expr: ast.BinaryExpr{
+						Left: ast.VariableExpr{Name: "this"},
+						Operator: lexer.Token{
+							Kind:  lexer.GreaterThan,
+							Value: ">",
+							Pos:   14,
+							Len:   1,
+						},
+						Right: ast.NumberIntExpr{Value: 2},
+					},
+				},
+			),
+		}.run)
+	})
+
+	t.Run("all", func(t *testing.T) {
+		t.Run("simple predicate", happyTestCase{
+			input: "foo.all($this > 0)",
+			expected: ast.ChainExprs(
+				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+				ast.AllExpr{
+					Expr: ast.BinaryExpr{
+						Left: ast.VariableExpr{Name: "this"},
+						Operator: lexer.Token{
+							Kind:  lexer.GreaterThan,
+							Value: ">",
+							Pos:   14,
+							Len:   1,
+						},
+						Right: ast.NumberIntExpr{Value: 0},
+					},
+				},
+			),
+		}.run)
+	})
+
+	t.Run("count", func(t *testing.T) {
+		t.Run("simple predicate", happyTestCase{
+			input: "foo.count($this == 1)",
+			expected: ast.ChainExprs(
+				ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+				ast.CountExpr{
+					Expr: ast.BinaryExpr{
+						Left: ast.VariableExpr{Name: "this"},
+						Operator: lexer.Token{
+							Kind:  lexer.Equal,
+							Value: "==",
+							Pos:   16,
+							Len:   2,
+						},
+						Right: ast.NumberIntExpr{Value: 1},
+					},
+				},
+			),
+		}.run)
+	})
 }
