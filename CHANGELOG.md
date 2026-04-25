@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `round` function that rounds a number to the nearest integer.
 - `avg` function that returns the average of the given numbers.
 - `flatten` function that flattens a nested array by one level.
+- `unique` function that removes duplicate values from an array.
 
 ### Fixed
 

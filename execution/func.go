@@ -47,6 +47,7 @@ var (
 		FuncRound,
 		FuncAvg,
 		FuncFlatten,
+		FuncUnique,
 	)
 )
 
