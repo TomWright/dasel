@@ -53,6 +53,7 @@ var (
 		FuncValues,
 		FuncEntries,
 		FuncFromEntries,
+		FuncToBool,
 	)
 )
 

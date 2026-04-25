@@ -30,6 +30,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `values` function that returns the values of a map as an array.
 - `entries` function that converts a map into an array of `{key, value}` objects.
 - `fromEntries` function that converts an array of `{key, value}` objects into a map.
+- `toBool` function that converts a value to a boolean.
 
 ### Fixed
 
