@@ -251,7 +251,7 @@ _{{.Name}}() {
     esac
 }
 
-_{{.Name}}
+compdef _{{.Name}} {{.Name}}
 `
 
 const fishCompletionTmpl = `# Fish completion for {{.Name}}
