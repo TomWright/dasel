@@ -38,6 +38,8 @@ var (
 		FuncTrim,
 		FuncTrimPrefix,
 		FuncTrimSuffix,
+		FuncStartsWith,
+		FuncEndsWith,
 	)
 )
 

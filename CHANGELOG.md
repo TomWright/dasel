@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `trim` function that trims whitespace from both ends of a string.
 - `trimPrefix` function that trims a prefix from a string.
 - `trimSuffix` function that trims a suffix from a string.
+- `startsWith` function that checks if a string starts with a given prefix.
+- `endsWith` function that checks if a string ends with a given suffix.
 
 ### Fixed
 
