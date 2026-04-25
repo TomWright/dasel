@@ -48,6 +48,8 @@ var (
 		FuncAvg,
 		FuncFlatten,
 		FuncUnique,
+		FuncFirst,
+		FuncLast,
 	)
 )
 
