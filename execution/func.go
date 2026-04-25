@@ -32,6 +32,7 @@ var (
 		FuncJoin,
 		FuncReplace,
 		FuncKeys,
+		FuncSplit,
 	)
 )
 

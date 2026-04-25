@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `split` function that splits a string by a separator into an array of strings.
+
 ### Fixed
 
 - Fixed a bug in YAML and TOML parsers that caused them to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
