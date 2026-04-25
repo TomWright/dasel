@@ -50,6 +50,7 @@ var (
 		FuncUnique,
 		FuncFirst,
 		FuncLast,
+		FuncValues,
 	)
 )
 

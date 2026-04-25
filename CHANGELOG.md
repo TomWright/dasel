@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `unique` function that removes duplicate values from an array.
 - `first` function that returns the first element of an array.
 - `last` function that returns the last element of an array.
+- `values` function that returns the values of a map as an array.
 
 ### Fixed
 
