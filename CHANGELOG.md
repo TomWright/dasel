@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.5.0] - 2026-04-25
+
 ### Added
 
 - `split` function that splits a string by a separator into an array of strings.
@@ -826,7 +828,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.4.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.5.0...HEAD
+[v3.5.0]: https://github.com/TomWright/dasel/compare/v3.4.1...v3.5.0
 [v3.4.1]: https://github.com/TomWright/dasel/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/TomWright/dasel/compare/v3.3.2...v3.4.0
 [v3.3.2]: https://github.com/TomWright/dasel/compare/v3.3.1...v3.3.2
