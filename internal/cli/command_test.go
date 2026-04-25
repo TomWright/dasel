@@ -429,6 +429,14 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("merge", func(t *testing.T) {
+		t.Run("deep", runTest(testCase{
+			args: []string{"-i", "json", "-o", "json",
+				`merge({"a": {"x": 1, "y": 2}}, {"a": {"y": 3, "z": 4}})`},
+			in: []byte{},
+			stdout: []byte("{\n    \"a\": {\n        \"x\": 1,\n        \"y\": 3,\n        \"z\": 4\n    }\n}\n"),
+		}))
+	})
 	t.Run("count", func(t *testing.T) {
 		t.Run("some match", runTest(testCase{
 			args:   []string{"-i", "json", `users.count(age > 25)`},

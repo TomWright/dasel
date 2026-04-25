@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.7.0] - 2026-04-25
+
+### Changed
+
+- `merge` function now performs deep merge, recursively merging nested maps (#133).
+
 ## [v3.6.0] - 2026-04-25
 
 ### Added

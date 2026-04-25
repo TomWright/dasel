@@ -7,7 +7,32 @@ import (
 	"github.com/tomwright/dasel/v3/model"
 )
 
-// FuncMerge is a function that merges two or more items together.
+// deepMergeMap recursively merges next into base. When both base[key] and
+// next[key] are maps the merge recurses; otherwise next[key] overwrites.
+func deepMergeMap(base, next *model.Value) error {
+	nextKVs, err := next.MapKeyValues()
+	if err != nil {
+		return err
+	}
+	for _, kv := range nextKVs {
+		exists, _ := base.MapKeyExists(kv.Key)
+		if exists && kv.Value.IsMap() {
+			baseVal, _ := base.GetMapKey(kv.Key)
+			if baseVal.IsMap() {
+				if err := deepMergeMap(baseVal, kv.Value); err != nil {
+					return err
+				}
+				continue
+			}
+		}
+		if err := base.SetMapKey(kv.Key, kv.Value); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// FuncMerge is a function that deep-merges two or more maps together.
 var FuncMerge = NewFunc(
 	"merge",
 	func(ctx context.Context, data *model.Value, args model.Values) (*model.Value, error) {
@@ -21,7 +46,7 @@ var FuncMerge = NewFunc(
 		case model.TypeMap:
 			break
 		default:
-			return nil, fmt.Errorf("merge exects a map, found %s", expectedType)
+			return nil, fmt.Errorf("merge expects a map, found %s", expectedType)
 		}
 
 		// Validate types match
@@ -34,17 +59,8 @@ var FuncMerge = NewFunc(
 		base := model.NewMapValue()
 
 		for i := 0; i < len(args); i++ {
-			next := args[i]
-
-			nextKVs, err := next.MapKeyValues()
-			if err != nil {
-				return nil, fmt.Errorf("merge failed to extract key values for arg %d: %w", i, err)
-			}
-
-			for _, kv := range nextKVs {
-				if err := base.SetMapKey(kv.Key, kv.Value); err != nil {
-					return nil, fmt.Errorf("merge failed to set map key %s: %w", kv.Key, err)
-				}
+			if err := deepMergeMap(base, args[i]); err != nil {
+				return nil, fmt.Errorf("merge failed on arg %d: %w", i, err)
 			}
 		}
 
