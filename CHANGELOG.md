@@ -35,6 +35,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `all` expression that returns true if all elements in an array match the predicate.
 - `count` expression that counts the number of elements in an array that match the predicate.
 - `stringify` function that serializes a structured value into a format string (inverse of `parse`).
+- Ternary operator (`condition ? then : else`).
 
 ### Fixed
 

@@ -197,7 +197,11 @@ func (p *Parser) parseExpression(bp bindingPower) (left ast.Expr, err error) {
 
 	// Handle binding powers
 	for p.hasToken() && slices.Contains(leftDenotationTokens, p.current().Kind) && getTokenBindingPower(p.current().Kind) > bp {
-		left, err = parseBinary(p, left)
+		if p.current().IsKind(lexer.QuestionMark) {
+			left, err = parseTernary(p, left)
+		} else {
+			left, err = parseBinary(p, left)
+		}
 		if err != nil {
 			return
 		}

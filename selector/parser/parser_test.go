@@ -456,6 +456,176 @@ func TestParser_Parse_HappyPath(t *testing.T) {
 		}.run)
 	})
 
+	t.Run("ternary", func(t *testing.T) {
+		t.Run("simple bool", happyTestCase{
+			input: `true ? "yes" : "no"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}.run)
+		t.Run("with comparison condition", happyTestCase{
+			input: `foo == 1 ? "yes" : "no"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 4, Len: 2},
+					Right:    ast.NumberIntExpr{Value: 1},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}.run)
+		t.Run("with logical condition", happyTestCase{
+			input: `a > 1 && b > 2 ? "yes" : "no"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left: ast.BinaryExpr{
+						Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "a"}},
+						Operator: lexer.Token{Kind: lexer.GreaterThan, Value: ">", Pos: 2, Len: 1},
+						Right:    ast.NumberIntExpr{Value: 1},
+					},
+					Operator: lexer.Token{Kind: lexer.And, Value: "&&", Pos: 6, Len: 2},
+					Right: ast.BinaryExpr{
+						Left:     ast.PropertyExpr{Property: ast.StringExpr{Value: "b"}},
+						Operator: lexer.Token{Kind: lexer.GreaterThan, Value: ">", Pos: 11, Len: 1},
+						Right:    ast.NumberIntExpr{Value: 2},
+					},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}.run)
+		t.Run("property expressions", happyTestCase{
+			input: `active ? name : "unknown"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.PropertyExpr{Property: ast.StringExpr{Value: "active"}},
+				Then: ast.PropertyExpr{Property: ast.StringExpr{Value: "name"}},
+				Else: ast.StringExpr{Value: "unknown"},
+			},
+		}.run)
+		t.Run("nested in parentheses", happyTestCase{
+			input: `true ? (false ? "a" : "b") : "c"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.ConditionalExpr{
+					Cond: ast.BoolExpr{Value: false},
+					Then: ast.StringExpr{Value: "a"},
+					Else: ast.StringExpr{Value: "b"},
+				},
+				Else: ast.StringExpr{Value: "c"},
+			},
+		}.run)
+		t.Run("number expressions", happyTestCase{
+			input: `true ? 1 : 2`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.NumberIntExpr{Value: 1},
+				Else: ast.NumberIntExpr{Value: 2},
+			},
+		}.run)
+		t.Run("arithmetic in branches", happyTestCase{
+			input: `true ? 1 + 2 : 3 + 4`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.BinaryExpr{
+					Left:     ast.NumberIntExpr{Value: 1},
+					Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 9, Len: 1},
+					Right:    ast.NumberIntExpr{Value: 2},
+				},
+				Else: ast.BinaryExpr{
+					Left:     ast.NumberIntExpr{Value: 3},
+					Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 17, Len: 1},
+					Right:    ast.NumberIntExpr{Value: 4},
+				},
+			},
+		}.run)
+		t.Run("func call in branches", happyTestCase{
+			input: `true ? len("abc") : len("de")`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.CallExpr{Function: "len", Args: ast.Expressions{ast.StringExpr{Value: "abc"}}},
+				Else: ast.CallExpr{Function: "len", Args: ast.Expressions{ast.StringExpr{Value: "de"}}},
+			},
+		}.run)
+		t.Run("chained property in condition", happyTestCase{
+			input: `foo.bar == "x" ? "yes" : "no"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left: ast.ChainExprs(
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "foo"}},
+						ast.PropertyExpr{Property: ast.StringExpr{Value: "bar"}},
+					),
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 8, Len: 2},
+					Right:    ast.StringExpr{Value: "x"},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}.run)
+		t.Run("variable in condition", happyTestCase{
+			input: `$x > 5 ? "big" : "small"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left:     ast.VariableExpr{Name: "x"},
+					Operator: lexer.Token{Kind: lexer.GreaterThan, Value: ">", Pos: 3, Len: 1},
+					Right:    ast.NumberIntExpr{Value: 5},
+				},
+				Then: ast.StringExpr{Value: "big"},
+				Else: ast.StringExpr{Value: "small"},
+			},
+		}.run)
+		t.Run("null in else branch", happyTestCase{
+			input: `true ? "yes" : null`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BoolExpr{Value: true},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.NullExpr{},
+			},
+		}.run)
+		t.Run("group expression in condition", happyTestCase{
+			input: `(1 + 2) == 3 ? "yes" : "no"`,
+			expected: ast.ConditionalExpr{
+				Cond: ast.BinaryExpr{
+					Left: ast.BinaryExpr{
+						Left:     ast.NumberIntExpr{Value: 1},
+						Operator: lexer.Token{Kind: lexer.Plus, Value: "+", Pos: 3, Len: 1},
+						Right:    ast.NumberIntExpr{Value: 2},
+					},
+					Operator: lexer.Token{Kind: lexer.Equal, Value: "==", Pos: 8, Len: 2},
+					Right:    ast.NumberIntExpr{Value: 3},
+				},
+				Then: ast.StringExpr{Value: "yes"},
+				Else: ast.StringExpr{Value: "no"},
+			},
+		}.run)
+	})
+
+	t.Run("ternary errors", func(t *testing.T) {
+		errorCases := []struct {
+			name  string
+			input string
+		}{
+			{"missing colon and else", `true ? "yes"`},
+			{"missing else expression", `true ? "yes" :`},
+			{"missing then and else", `true ?`},
+			{"leading question mark", `? "yes" : "no"`},
+		}
+		for _, tc := range errorCases {
+			t.Run(tc.name, func(t *testing.T) {
+				tokens, err := lexer.NewTokenizer(tc.input).Tokenize()
+				if err != nil {
+					t.Fatal(err)
+				}
+				_, err = parser.NewParser(tokens).Parse()
+				if err == nil {
+					t.Errorf("expected error for input %q, got nil", tc.input)
+				}
+			})
+		}
+	})
+
 	t.Run("coalesce", func(t *testing.T) {
 		t.Run("chained on left side", happyTestCase{
 			input: `foo ?? bar ?? baz`,
