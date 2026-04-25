@@ -152,7 +152,7 @@ _{{.Name}}() {
     local cmd=""
     for ((i=1; i < cword; i++)); do
         case "${words[i]}" in
-            {{range .Subcommands}}{{.Name}}|{{end}}help)
+            {{range $i, $s := .Subcommands}}{{if $i}}|{{end}}{{$s.Name}}{{end}})
                 cmd="${words[i]}"
                 break
                 ;;
@@ -165,10 +165,6 @@ _{{.Name}}() {
             COMPREPLY=($(compgen -W "${formats}" -- "${cur}"))
             return
             ;;
-        --shell)
-            COMPREPLY=($(compgen -W "${shells}" -- "${cur}"))
-            return
-            ;;
     esac
 
     if [[ "${cur}" == -* ]]; then
@@ -177,11 +173,10 @@ _{{.Name}}() {
             "")
                 # No subcommand yet: offer global flags + query flags (default command)
                 flags="{{range .GlobalFlags}}--{{.Name}} {{end}}{{range .QueryFlags}}--{{.Name}} {{if .Short}}-{{.Short}} {{end}}{{end}}"
-                ;;
-            {{range .Subcommands}}{{.Name}})
+                ;;{{range .Subcommands}}
+            {{.Name}})
                 flags="{{range $.GlobalFlags}}--{{.Name}} {{end}}{{range .Flags}}--{{.Name}} {{if .Short}}-{{.Short}} {{end}}{{end}}"
-                ;;
-            {{end}})
+                ;;{{end}}
         esac
         COMPREPLY=($(compgen -W "${flags}" -- "${cur}"))
         return
@@ -199,13 +194,13 @@ complete -F _{{.Name}} {{.Name}}
 const zshCompletionTmpl = `#compdef {{.Name}}
 
 _{{.Name}}() {
-    local -a commands formats shells
+    local -a commands formats
     commands=(
-        {{range .Subcommands}}'{{.Name}}:{{.Help}}'
-        {{end}}
+{{- range .Subcommands}}
+        '{{.Name}}:{{.Help}}'
+{{- end}}
     )
     formats=({{range .Formats}}{{.}} {{end}})
-    shells=(bash zsh fish powershell)
 
     _arguments -C \
         '1:command:->command' \
@@ -214,21 +209,38 @@ _{{.Name}}() {
     case "${state}" in
         command)
             _describe 'command' commands
-            # Also offer query flags at the root level since query is the default command
             _arguments \
-                {{range .GlobalFlags}}'{{if .Short}}-{{.Short}}[{{.Help}}]{{end}}' '--{{.Name}}[{{.Help}}]' \
-                {{end}}{{range .QueryFlags}}'{{if .Short}}-{{.Short}}[{{.Help}}]{{end}}' '--{{.Name}}[{{.Help}}]' \
-                {{end}}
+{{- range .GlobalFlags}}
+                '--{{.Name}}[{{.Help}}]' \
+{{- if .Short}}
+                '-{{.Short}}[{{.Help}}]' \
+{{- end}}
+{{- end}}
+{{- range .QueryFlags}}
+                '--{{.Name}}[{{.Help}}]' \
+{{- if .Short}}
+                '-{{.Short}}[{{.Help}}]' \
+{{- end}}
+{{- end}}
+
             ;;
         args)
             case "${words[1]}" in
-                {{range .Subcommands}}{{.Name}})
+{{- range .Subcommands}}
+                {{.Name}})
                     _arguments \
-                        {{range .Flags}}'{{if .Short}}-{{.Short}}[{{.Help}}]{{end}}' '--{{.Name}}[{{.Help}}]' \
-                        {{end}}{{range $.GlobalFlags}}'--{{.Name}}[{{.Help}}]' \
-                        {{end}}
+{{- range .Flags}}
+                        '--{{.Name}}[{{.Help}}]' \
+{{- if .Short}}
+                        '-{{.Short}}[{{.Help}}]' \
+{{- end}}
+{{- end}}
+{{- range $.GlobalFlags}}
+                        '--{{.Name}}[{{.Help}}]' \
+{{- end}}
+
                     ;;
-                {{end}})
+{{- end}}
             esac
 
             # Complete format names for --in/--out
