@@ -33,6 +33,8 @@ var (
 		FuncReplace,
 		FuncKeys,
 		FuncSplit,
+		FuncToLower,
+		FuncToUpper,
 	)
 )
 
