@@ -59,6 +59,36 @@ See the [installation docs](https://daseldocs.tomwright.me/getting-started/insta
 
 ---
 
+## Shell Completion
+
+Dasel supports tab-completion for Bash, Zsh, Fish, and PowerShell. Generate and load the completion script for your shell:
+
+```sh
+# Bash
+source <(dasel completion bash)
+
+# Zsh
+source <(dasel completion zsh)
+
+# Fish
+dasel completion fish | source
+
+# PowerShell
+dasel completion powershell | Out-String | Invoke-Expression
+```
+
+See the [shell completion docs](https://daseldocs.tomwright.me/getting-started/shell-completion) for permanent installation instructions.
+
+## Man Page
+
+Generate and view the man page:
+
+```sh
+dasel man | man -l -
+```
+
+---
+
 ## Basic Usage
 
 ### Selecting Values
