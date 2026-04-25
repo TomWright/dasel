@@ -52,6 +52,11 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 		res.Kind = yaml.ScalarNode
 		res.Value = v
 		res.Tag = "!!str"
+		if styleVal, ok := yv.value.MetadataValue("yaml-style"); ok {
+			if style, ok := styleVal.(yaml.Style); ok {
+				res.Style = style
+			}
+		}
 	case model.TypeBool:
 		v, err := yv.value.BoolValue()
 		if err != nil {

@@ -590,6 +590,90 @@ i: &i [*h,*h,*h,*h,*h,*h,*h,*h,*h]
 		}
 	})
 
+	t.Run("double quoted string", rwTestCase{
+		in: `name: "Tom"
+`,
+	}.run)
+
+	t.Run("single quoted string", rwTestCase{
+		in: `name: 'Tom'
+`,
+	}.run)
+
+	t.Run("literal block scalar", rwTestCase{
+		in: `bio: |
+    line1
+    line2
+`,
+	}.run)
+
+	t.Run("folded block scalar", rwTestCase{
+		in: `bio: >
+    line1
+    line2
+`,
+		out: "bio: >\n    line1 line2\n\n",
+	}.run)
+
+	t.Run("mixed styles", rwTestCase{
+		in: `plain: Tom
+double: "Tom"
+single: 'Tom'
+`,
+	}.run)
+
+	t.Run("quoted timestamp string", rwTestCase{
+		in: `date: "2025-09-30T23:19:51Z"
+`,
+	}.run)
+
+	t.Run("plain string unchanged", rwTestCase{
+		in: `name: Tom
+`,
+	}.run)
+
+	t.Run("nested map with quoted values", rwTestCase{
+		in: `user:
+    name: "Tom"
+    nick: 'T'
+`,
+	}.run)
+
+	t.Run("quoted bool string", rwTestCase{
+		in: `enabled: "true"
+`,
+	}.run)
+
+	t.Run("single quoted bool string", rwTestCase{
+		in: `enabled: 'false'
+`,
+	}.run)
+
+	t.Run("quoted int string", rwTestCase{
+		in: `port: "8080"
+`,
+	}.run)
+
+	t.Run("quoted null string", rwTestCase{
+		in: `value: "null"
+`,
+	}.run)
+
+	t.Run("quoted float string", rwTestCase{
+		in: `ratio: "1.5"
+`,
+	}.run)
+
+	t.Run("quoted empty string", rwTestCase{
+		in: `name: ""
+`,
+	}.run)
+
+	t.Run("single quoted empty string", rwTestCase{
+		in: `name: ''
+`,
+	}.run)
+
 	t.Run("yaml expansion budget resets per document", func(t *testing.T) {
 		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
 		if err != nil {

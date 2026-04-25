@@ -112,8 +112,14 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 			yv.value = model.NewNullValue()
 		case "!!str":
 			yv.value = model.NewStringValue(value.Value)
+			if value.Style != 0 {
+				yv.value.SetMetadataValue("yaml-style", value.Style)
+			}
 		default:
 			yv.value = model.NewStringValue(value.Value)
+			if value.Style != 0 {
+				yv.value.SetMetadataValue("yaml-style", value.Style)
+			}
 		}
 	case yaml.DocumentNode:
 		yv.value = model.NewNullValue()
