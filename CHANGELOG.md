@@ -22,6 +22,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `floor` function that returns the largest integer less than or equal to the input.
 - `ceil` function that returns the smallest integer greater than or equal to the input.
 - `round` function that rounds a number to the nearest integer.
+- `avg` function that returns the average of the given numbers.
 
 ### Fixed
 

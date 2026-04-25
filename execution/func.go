@@ -45,6 +45,7 @@ var (
 		FuncFloor,
 		FuncCeil,
 		FuncRound,
+		FuncAvg,
 	)
 )
 
