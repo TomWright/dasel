@@ -28,6 +28,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `first` function that returns the first element of an array.
 - `last` function that returns the last element of an array.
 - `values` function that returns the values of a map as an array.
+- `entries` function that converts a map into an array of `{key, value}` objects.
+- `fromEntries` function that converts an array of `{key, value}` objects into a map.
 
 ### Fixed
 

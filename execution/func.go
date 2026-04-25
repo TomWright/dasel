@@ -51,6 +51,8 @@ var (
 		FuncFirst,
 		FuncLast,
 		FuncValues,
+		FuncEntries,
+		FuncFromEntries,
 	)
 )
 
