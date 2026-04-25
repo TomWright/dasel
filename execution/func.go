@@ -35,6 +35,9 @@ var (
 		FuncSplit,
 		FuncToLower,
 		FuncToUpper,
+		FuncTrim,
+		FuncTrimPrefix,
+		FuncTrimSuffix,
 	)
 )
 

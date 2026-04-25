@@ -12,6 +12,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `split` function that splits a string by a separator into an array of strings.
 - `toLower` function that converts a string to lowercase.
 - `toUpper` function that converts a string to uppercase.
+- `trim` function that trims whitespace from both ends of a string.
+- `trimPrefix` function that trims a prefix from a string.
+- `trimSuffix` function that trims a suffix from a string.
 
 ### Fixed
 
