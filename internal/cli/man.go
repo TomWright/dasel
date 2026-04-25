@@ -159,8 +159,7 @@ echo '{"name": "Tom"}' | {{.Name | toLower}} -i json -o yaml
 Query with compact output:
 echo '{"name": "Tom"}' | {{.Name | toLower}} -i json -o json --compact
 .SH SEE ALSO
-.UR https://dasel.tomwright.me
+.UR https://daseldocs.tomwright.me
 Dasel documentation
 .UE
 `
-
