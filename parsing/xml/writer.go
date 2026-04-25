@@ -27,18 +27,25 @@ func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 	defer func() {
 		_ = writer.Close()
 	}()
-	writer.Indent("", "  ")
+	if j.options.Compact {
+		writer.Indent("", "")
+	} else {
+		writer.Indent("", "  ")
+	}
 
 	element, err := j.toElement("root", value)
 	if err != nil {
 		return nil, fmt.Errorf("failed to convert to element: %w", err)
 	}
 	for _, c := range element.Children {
+		c.compact = j.options.Compact
 		if err := writer.Encode(c); err != nil {
 			return nil, err
 		}
-		if err := writer.EncodeToken(xml.CharData("\n")); err != nil {
-			return nil, err
+		if !j.options.Compact {
+			if err := writer.EncodeToken(xml.CharData("\n")); err != nil {
+				return nil, err
+			}
 		}
 	}
 
@@ -305,8 +312,10 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 			}); err != nil {
 				return err
 			}
-			if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
-				return err
+			if !e.compact {
+				if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -320,8 +329,10 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 			if err := enc.EncodeToken(xml.Comment(comment.Text)); err != nil {
 				return fmt.Errorf("failed to encode comment: %w", err)
 			}
-			if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
-				return err
+			if !e.compact {
+				if err := enc.EncodeToken(xml.CharData("\n")); err != nil {
+					return err
+				}
 			}
 		}
 	}
@@ -357,9 +368,11 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 				if strings.Contains(comment.Text, "--") {
 					return fmt.Errorf("comment text cannot contain '--' sequence (invalid XML comment)")
 				}
-				// Add newline + indentation before comment
-				if err := enc.EncodeToken(xml.CharData("\n" + indentString(childDepth))); err != nil {
-					return err
+				if !e.compact {
+					// Add newline + indentation before comment
+					if err := enc.EncodeToken(xml.CharData("\n" + indentString(childDepth))); err != nil {
+						return err
+					}
 				}
 				if err := enc.EncodeToken(xml.Comment(comment.Text)); err != nil {
 					return fmt.Errorf("failed to encode comment: %w", err)
@@ -368,8 +381,9 @@ func (e *xmlElement) MarshalXML(enc *xml.Encoder, start xml.StartElement) error 
 			// Clear comments so child doesn't write them again
 			child.Comments = nil
 		}
-		// Set child depth for recursive calls
+		// Set child depth and compact flag for recursive calls
 		child.depth = childDepth
+		child.compact = e.compact
 		if err := enc.Encode(child); err != nil {
 			return err
 		}

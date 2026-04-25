@@ -17,6 +17,7 @@ type runOpts struct {
 	ExtWriteFlags     extReadWriteFlags
 	InFormat          string
 	OutFormat         string
+	Compact           bool
 	ReturnRoot        bool
 	Unstable          bool
 	Query             string
@@ -54,6 +55,7 @@ func run(o runOpts) ([]byte, error) {
 	}
 
 	writerOptions := parsing.DefaultWriterOptions()
+	writerOptions.Compact = o.Compact
 	applyWriterFlags(&writerOptions, o.ExtWriteFlags, o.ExtReadWriteFlags)
 
 	writer, err := parsing.Format(o.OutFormat).NewWriter(writerOptions)

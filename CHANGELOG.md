@@ -7,6 +7,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `--compact` flag for compact output (no indentation/newlines).
+
+### Changed
+
+- `stringify` function now produces compact output.
+
+### Fixed
+
+- Compact/pretty output support for JSON, TOML, YAML, and XML writers (#457).
+
 ## [v3.5.0] - 2026-04-25
 
 ### Added

@@ -48,3 +48,47 @@ func TestJson(t *testing.T) {
 		t.Fatalf("expected %s, got %s...\n%s", string(doc), string(newDoc), cmp.Diff(string(doc), string(newDoc)))
 	}
 }
+
+func TestJsonCompact(t *testing.T) {
+	doc := []byte(`{
+    "string": "foo",
+    "int": 1,
+    "float": 1.1,
+    "bool": true,
+    "null": null,
+    "array": [
+        1,
+        2,
+        3
+    ],
+    "object": {
+        "key": "value"
+    }
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	writer, err := json.JSON.NewWriter(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := `{"string":"foo","int":1,"float":1.1,"bool":true,"null":null,"array":[1,2,3],"object":{"key":"value"}}` + "\n"
+	if string(newDoc) != expected {
+		t.Fatalf("expected %s, got %s...\n%s", expected, string(newDoc), cmp.Diff(expected, string(newDoc)))
+	}
+}

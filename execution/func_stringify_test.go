@@ -9,11 +9,11 @@ import (
 func TestFuncStringify(t *testing.T) {
 	t.Run("json with explicit value", testCase{
 		s:   `stringify("json", {"a": 1})`,
-		out: model.NewStringValue("{\n    \"a\": 1\n}"),
+		out: model.NewStringValue(`{"a":1}`),
 	}.run)
 	t.Run("json chained", testCase{
 		s:   `{"a": 1}.stringify("json")`,
-		out: model.NewStringValue("{\n    \"a\": 1\n}"),
+		out: model.NewStringValue(`{"a":1}`),
 	}.run)
 	t.Run("roundtrip", testCase{
 		s:   `parse("json", stringify("json", {"a": 1})).a`,

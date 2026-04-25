@@ -22,7 +22,9 @@ var FuncStringify = NewFunc(
 			input = args[1]
 		}
 
-		writer, err := format.NewWriter(parsing.DefaultWriterOptions())
+		opts := parsing.DefaultWriterOptions()
+		opts.Compact = true
+		writer, err := format.NewWriter(opts)
 		if err != nil {
 			return nil, err
 		}

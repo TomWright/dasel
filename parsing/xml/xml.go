@@ -43,6 +43,7 @@ type xmlElement struct {
 	ProcessingInstructions []*xmlProcessingInstruction
 	Comments               []*xmlComment
 	useChildrenOnly        bool
+	compact                bool
 	depth                  int // Tracks nesting depth for proper indentation
 }
 

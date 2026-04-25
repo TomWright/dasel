@@ -1,12 +1,121 @@
 package xml_test
 
 import (
-	"github.com/tomwright/dasel/v3/model"
+	"strings"
 	"testing"
 
+	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/xml"
 )
+
+func TestXmlWriter_Compact(t *testing.T) {
+	r, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	w, err := xml.XML.NewWriter(opts)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	data, err := r.Read([]byte(`<Document>
+  <Sender>Ivanov</Sender>
+  <Content>Hello</Content>
+</Document>
+`))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	xmlBytes, err := w.Write(data)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	expected := "<Document><Sender>Ivanov</Sender><Content>Hello</Content></Document>\n"
+	if string(xmlBytes) != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, string(xmlBytes))
+	}
+}
+
+func TestXmlWriter_CompactWithPI(t *testing.T) {
+	r, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	w, err := xml.XML.NewWriter(opts)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	data, err := r.Read([]byte(`<?xml version="1.0" encoding="utf-8"?>
+<Root>
+  <Name>Test</Name>
+</Root>
+`))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	xmlBytes, err := w.Write(data)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	expected := `<?xml version="1.0" encoding="utf-8"?><Root><Name>Test</Name></Root>` + "\n"
+	if string(xmlBytes) != expected {
+		t.Fatalf("Expected:\n%s\nGot:\n%s", expected, string(xmlBytes))
+	}
+}
+
+func TestXmlWriter_CompactWithComments(t *testing.T) {
+	r, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	w, err := xml.XML.NewWriter(opts)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	data, err := r.Read([]byte(`<!-- top comment -->
+<Root>
+  <!-- child comment -->
+  <Name>Test</Name>
+</Root>
+`))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	xmlBytes, err := w.Write(data)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	got := string(xmlBytes)
+	// Compact output should contain all elements and comments
+	for _, substr := range []string{"<!-- top comment -->", "<!-- child comment -->", "<Root>", "<Name>Test</Name>", "</Root>"} {
+		if !strings.Contains(got, substr) {
+			t.Fatalf("Expected output to contain %q, got:\n%s", substr, got)
+		}
+	}
+	// Should not contain indentation whitespace (check content before trailing newline)
+	trimmed := strings.TrimSuffix(got, "\n")
+	if strings.Contains(trimmed, "\n  ") {
+		t.Fatalf("Compact output should not contain indentation, got:\n%s", got)
+	}
+}
 
 func TestXmlReader_Write(t *testing.T) {
 	t.Run("nested xml elements", func(t *testing.T) {

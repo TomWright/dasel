@@ -62,6 +62,64 @@ func (tc rwTestCase) run(t *testing.T) {
 	}
 }
 
+func TestYamlWriter_Compact(t *testing.T) {
+	r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	w, err := yaml.YAML.NewWriter(opts)
+	if err != nil {
+		t.Fatalf("unexpected error: %s", err)
+	}
+
+	t.Run("map", func(t *testing.T) {
+		res, err := r.Read([]byte("a: 1\nb: 2\n"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		out, err := w.Write(res)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected := "{a: 1, b: 2}\n"
+		if string(out) != expected {
+			t.Errorf("expected %q, got %q", expected, string(out))
+		}
+	})
+
+	t.Run("sequence", func(t *testing.T) {
+		res, err := r.Read([]byte("- 1\n- 2\n- 3\n"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		out, err := w.Write(res)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected := "[1, 2, 3]\n"
+		if string(out) != expected {
+			t.Errorf("expected %q, got %q", expected, string(out))
+		}
+	})
+
+	t.Run("nested", func(t *testing.T) {
+		res, err := r.Read([]byte("map:\n  key: value\nlist:\n  - item1\n  - item2\n"))
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		out, err := w.Write(res)
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		expected := "{map: {key: value}, list: [item1, item2]}\n"
+		if string(out) != expected {
+			t.Errorf("expected %q, got %q", expected, string(out))
+		}
+	})
+}
+
 func TestYamlValue_UnmarshalYAML(t *testing.T) {
 	t.Run("simple key value", testCase{
 		in: `name: Tom`,

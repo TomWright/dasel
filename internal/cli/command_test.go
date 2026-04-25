@@ -415,6 +415,20 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("compact", func(t *testing.T) {
+		t.Run("json", runTest(testCase{
+			args:   []string{"-i", "json", "-o", "json", "--compact"},
+			in:     []byte(`{"name": "Tom", "age": 30}`),
+			stdout: []byte("{\"name\":\"Tom\",\"age\":30}\n"),
+			err:    nil,
+		}))
+		t.Run("json nested", runTest(testCase{
+			args:   []string{"-i", "json", "-o", "json", "--compact"},
+			in:     []byte(`{"user": {"name": "Tom"}, "items": [1, 2, 3]}`),
+			stdout: []byte("{\"user\":{\"name\":\"Tom\"},\"items\":[1,2,3]}\n"),
+			err:    nil,
+		}))
+	})
 	t.Run("count", func(t *testing.T) {
 		t.Run("some match", runTest(testCase{
 			args:   []string{"-i", "json", `users.count(age > 25)`},
