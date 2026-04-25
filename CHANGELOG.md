@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `dasel completion <shell>` subcommand to generate shell completion scripts for bash, zsh, fish, and powershell (#497).
+- `dasel man` subcommand to generate a man page (#497).
+
 ### Fixed
 
 - YAML string quote style (double, single, literal, folded) is now preserved on round-trip (#452).
