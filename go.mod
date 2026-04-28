@@ -10,7 +10,7 @@ require (
 	github.com/goccy/go-json v0.10.6
 	github.com/google/go-cmp v0.7.0
 	github.com/hashicorp/hcl/v2 v2.24.0
-	github.com/pelletier/go-toml/v2 v2.2.5-0.20250826075308-a0e846496753
+	github.com/pelletier/go-toml/v2 v2.3.0
 	github.com/zclconf/go-cty v1.17.0
 	go.yaml.in/yaml/v4 v4.0.0-rc.3
 	gopkg.in/ini.v1 v1.67.0
