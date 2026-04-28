@@ -5,10 +5,61 @@ import (
 	"encoding/xml"
 	"fmt"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 )
+
+// isValidXMLNameStartChar reports whether r is a valid first character of an
+// XML Name, per the XML 1.0 (Fifth Edition) specification §2.3.
+func isValidXMLNameStartChar(r rune) bool {
+	return r == ':' || r == '_' ||
+		(r >= 'A' && r <= 'Z') ||
+		(r >= 'a' && r <= 'z') ||
+		(r >= 0xC0 && r <= 0xD6) ||
+		(r >= 0xD8 && r <= 0xF6) ||
+		(r >= 0xF8 && r <= 0x2FF) ||
+		(r >= 0x370 && r <= 0x37D) ||
+		(r >= 0x37F && r <= 0x1FFF) ||
+		(r >= 0x200C && r <= 0x200D) ||
+		(r >= 0x2070 && r <= 0x218F) ||
+		(r >= 0x2C00 && r <= 0x2FEF) ||
+		(r >= 0x3001 && r <= 0xD7FF) ||
+		(r >= 0xF900 && r <= 0xFDCF) ||
+		(r >= 0xFDF0 && r <= 0xFFFD) ||
+		(r >= 0x10000 && r <= 0xEFFFF)
+}
+
+// isValidXMLNameChar reports whether r is a valid subsequent character of an
+// XML Name, per the XML 1.0 (Fifth Edition) specification §2.3.
+func isValidXMLNameChar(r rune) bool {
+	return isValidXMLNameStartChar(r) ||
+		r == '-' || r == '.' ||
+		(r >= '0' && r <= '9') ||
+		r == 0xB7 ||
+		(r >= 0x0300 && r <= 0x036F) ||
+		(r >= 0x203F && r <= 0x2040)
+}
+
+// isValidXMLName reports whether s is a valid XML element or attribute name.
+func isValidXMLName(s string) bool {
+	if s == "" {
+		return false
+	}
+	first, size := utf8.DecodeRuneInString(s)
+	if (first == utf8.RuneError && size == 1) || !isValidXMLNameStartChar(first) {
+		return false
+	}
+	for i := size; i < len(s); {
+		r, w := utf8.DecodeRuneInString(s[i:])
+		if (r == utf8.RuneError && w == 1) || !isValidXMLNameChar(r) {
+			return false
+		}
+		i += w
+	}
+	return true
+}
 
 func newXMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
 	return &xmlWriter{
@@ -60,6 +111,9 @@ func (j *xmlWriter) Write(value *model.Value) ([]byte, error) {
 }
 
 func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, error) {
+	if !isValidXMLName(key) {
+		return nil, fmt.Errorf("key %q is not a valid XML element name", key)
+	}
 	readProcessingInstructions := func() []*xmlProcessingInstruction {
 		if piMeta, ok := value.MetadataValue("xml_processing_instructions"); ok && piMeta != nil {
 			if pis, ok := piMeta.([]*xmlProcessingInstruction); ok {
@@ -151,8 +205,12 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 func extractAttrsAndText(kvs []model.KeyValue, el *xmlElement) error {
 	for _, kv := range kvs {
 		if strings.HasPrefix(kv.Key, "-") {
+			attrName := kv.Key[1:]
+			if !isValidXMLName(attrName) {
+				return fmt.Errorf("invalid XML attribute name %q from map key %q", attrName, kv.Key)
+			}
 			attr := xmlAttr{
-				Name: kv.Key[1:],
+				Name: attrName,
 			}
 			var err error
 			attr.Value, err = valueToString(kv.Value)
