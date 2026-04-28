@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- `dasel man` now generates a reproducible manpage based on [SOURCE_DATE_EPOCH](https://reproducible-builds.org/specs/source-date-epoch).
+
 ## [v3.8.0] - 2026-04-26
 
 ### Added
