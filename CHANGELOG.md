@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - XML child element ordering now has more comprehensive round-trip handling. Thanks @takeokunn.
+- XML writer now validates element and attribute names per the XML 1.0 spec, returning a clear error for invalid names instead of producing malformed XML. Thanks @lawrence3699.
 
 ## [v3.4.1] - 2026-03-30
 

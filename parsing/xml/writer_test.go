@@ -1,9 +1,10 @@
 package xml_test
 
 import (
-	"github.com/tomwright/dasel/v3/model"
+	"strings"
 	"testing"
 
+	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/xml"
 )
@@ -163,6 +164,9 @@ func TestXmlReader_Write(t *testing.T) {
 		if err == nil {
 			t.Fatal("Expected error for invalid XML element name, got nil")
 		}
+		if !strings.Contains(err.Error(), `"<"`) || !strings.Contains(err.Error(), "not a valid XML element name") {
+			t.Fatalf("Expected error to mention the offending key, got: %s", err)
+		}
 	})
 
 	t.Run("invalid element name ampersand", func(t *testing.T) {
@@ -177,6 +181,9 @@ func TestXmlReader_Write(t *testing.T) {
 		if err == nil {
 			t.Fatal("Expected error for invalid XML element name, got nil")
 		}
+		if !strings.Contains(err.Error(), `"&"`) || !strings.Contains(err.Error(), "not a valid XML element name") {
+			t.Fatalf("Expected error to mention the offending key, got: %s", err)
+		}
 	})
 
 	t.Run("invalid element name with space", func(t *testing.T) {
@@ -190,6 +197,28 @@ func TestXmlReader_Write(t *testing.T) {
 		_, err = w.Write(toEncode)
 		if err == nil {
 			t.Fatal("Expected error for invalid XML element name, got nil")
+		}
+		if !strings.Contains(err.Error(), `"foo bar"`) || !strings.Contains(err.Error(), "not a valid XML element name") {
+			t.Fatalf("Expected error to mention the offending key, got: %s", err)
+		}
+	})
+
+	t.Run("invalid attribute name", func(t *testing.T) {
+		w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("Unexpected error: %s", err)
+		}
+
+		toEncode := model.NewMapValue()
+		child := model.NewMapValue()
+		_ = child.SetMapKey("-<", model.NewStringValue("value"))
+		_ = toEncode.SetMapKey("foo", child)
+		_, err = w.Write(toEncode)
+		if err == nil {
+			t.Fatal("Expected error for invalid XML attribute name, got nil")
+		}
+		if !strings.Contains(err.Error(), "invalid XML attribute name") || !strings.Contains(err.Error(), `"-<"`) {
+			t.Fatalf("Expected error to mention the offending attribute key, got: %s", err)
 		}
 	})
 

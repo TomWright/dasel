@@ -200,7 +200,7 @@ func extractAttrsAndText(kvs []model.KeyValue, el *xmlElement) error {
 		if strings.HasPrefix(kv.Key, "-") {
 			attrName := kv.Key[1:]
 			if !isValidXMLName(attrName) {
-				return fmt.Errorf("key %q is not a valid XML attribute name", attrName)
+				return fmt.Errorf("invalid XML attribute name %q from map key %q", attrName, kv.Key)
 			}
 			attr := xmlAttr{
 				Name: attrName,
