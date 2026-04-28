@@ -15,6 +15,7 @@ type Globals struct {
 	Stdin       io.Reader        `kong:"-"`
 	Stdout      io.Writer        `kong:"-"`
 	Stderr      io.Writer        `kong:"-"`
+	Kong        *kong.Kong       `kong:"-"`
 	helpPrinter kong.HelpPrinter `kong:"-"`
 }
 
@@ -24,6 +25,8 @@ type CLI struct {
 	Query       QueryCmd       `cmd:"" default:"withargs" help:"[default] Execute a query"`
 	Version     VersionCmd     `cmd:"" help:"Print the version"`
 	Interactive InteractiveCmd `cmd:"" help:"Start an interactive session (alpha)"`
+	Completion  CompletionCmd  `cmd:"" help:"Generate shell completion script"`
+	Man         ManCmd         `cmd:"" help:"Generate man page"`
 }
 
 func MustRun(stdin io.Reader, stdout, stderr io.Writer) {
@@ -75,6 +78,7 @@ func Run(stdin io.Reader, stdout, stderr io.Writer) (*kong.Context, error) {
 		}),
 		kong.Help(cli.helpPrinter),
 	)
+	cli.Kong = ctx.Kong
 	err := ctx.Run()
 	return ctx, err
 }

@@ -11,10 +11,12 @@ import (
 var _ parsing.Writer = (*yamlWriter)(nil)
 
 func newYAMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
-	return &yamlWriter{}, nil
+	return &yamlWriter{options: options}, nil
 }
 
-type yamlWriter struct{}
+type yamlWriter struct {
+	options parsing.WriterOptions
+}
 
 func (j *yamlWriter) Separator() []byte {
 	return []byte("---\n")
@@ -22,7 +24,7 @@ func (j *yamlWriter) Separator() []byte {
 
 // Write writes a value to a byte slice.
 func (j *yamlWriter) Write(value *model.Value) ([]byte, error) {
-	yv := &yamlValue{value: value}
+	yv := &yamlValue{value: value, compact: j.options.Compact}
 	res, err := yv.ToNode()
 	if err != nil {
 		return nil, err
@@ -50,6 +52,11 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 		res.Kind = yaml.ScalarNode
 		res.Value = v
 		res.Tag = "!!str"
+		if styleVal, ok := yv.value.MetadataValue("yaml-style"); ok {
+			if style, ok := styleVal.(yaml.Style); ok {
+				res.Style = style
+			}
+		}
 	case model.TypeBool:
 		v, err := yv.value.BoolValue()
 		if err != nil {
@@ -76,9 +83,12 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 		res.Tag = "!!float"
 	case model.TypeMap:
 		res.Kind = yaml.MappingNode
+		if yv.compact {
+			res.Style = yaml.FlowStyle
+		}
 		if err := yv.value.RangeMap(func(key string, val *model.Value) error {
-			keyNode := &yamlValue{value: model.NewStringValue(key)}
-			valNode := &yamlValue{value: val}
+			keyNode := &yamlValue{value: model.NewStringValue(key), compact: yv.compact}
+			valNode := &yamlValue{value: val, compact: yv.compact}
 
 			marshalledKey, err := keyNode.ToNode()
 			if err != nil {
@@ -98,8 +108,11 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 		}
 	case model.TypeSlice:
 		res.Kind = yaml.SequenceNode
+		if yv.compact {
+			res.Style = yaml.FlowStyle
+		}
 		if err := yv.value.RangeSlice(func(i int, val *model.Value) error {
-			valNode := &yamlValue{value: val}
+			valNode := &yamlValue{value: val, compact: yv.compact}
 			marshalledVal, err := valNode.ToNode()
 			if err != nil {
 				return err

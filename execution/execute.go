@@ -143,6 +143,12 @@ func exprExecutor(options *Options, expr ast.Expr) (expressionExecutor, error) {
 		}, nil
 	case ast.SortByExpr:
 		return sortByExprExecutor(e)
+	case ast.AnyExpr:
+		return anyExprExecutor(e)
+	case ast.AllExpr:
+		return allExprExecutor(e)
+	case ast.CountExpr:
+		return countExprExecutor(e)
 	case ast.NullExpr:
 		return func(ctx context.Context, options *Options, data *model.Value) (*model.Value, error) {
 			//ctx = WithExecutorID(ctx, "nullExpr")

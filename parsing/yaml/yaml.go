@@ -17,6 +17,7 @@ func init() {
 type yamlValue struct {
 	node              *yaml.Node
 	value             *model.Value
+	compact           bool
 	expansionDepth    int
 	maxExpansionDepth int
 	expansionBudget   *int

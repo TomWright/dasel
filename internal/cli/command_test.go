@@ -295,4 +295,162 @@ func TestRun(t *testing.T) {
 			err:    nil,
 		}))
 	})
+	t.Run("any", func(t *testing.T) {
+		t.Run("true result", runTest(testCase{
+			args:   []string{"-i", "json", `users.any(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("true\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("false result", runTest(testCase{
+			args:   []string{"-i", "json", `users.any(age > 50)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("false\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
+	t.Run("all", func(t *testing.T) {
+		t.Run("true result", runTest(testCase{
+			args:   []string{"-i", "json", `users.all(age > 18)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("true\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("false result", runTest(testCase{
+			args:   []string{"-i", "json", `users.all(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("false\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
+	t.Run("ternary", func(t *testing.T) {
+		t.Run("true literal", runTest(testCase{
+			args:   []string{`true ? "yes" : "no"`},
+			in:     []byte{},
+			stdout: []byte("\"yes\"\n"),
+			err:    nil,
+		}))
+		t.Run("false literal", runTest(testCase{
+			args:   []string{`false ? "yes" : "no"`},
+			in:     []byte{},
+			stdout: []byte("\"no\"\n"),
+			err:    nil,
+		}))
+		t.Run("with json data true", runTest(testCase{
+			args:   []string{"-i", "json", `age >= 18 ? "adult" : "minor"`},
+			in:     []byte(`{"age": 25}`),
+			stdout: []byte("\"adult\"\n"),
+			err:    nil,
+		}))
+		t.Run("with json data false", runTest(testCase{
+			args:   []string{"-i", "json", `age >= 18 ? "adult" : "minor"`},
+			in:     []byte(`{"age": 10}`),
+			stdout: []byte("\"minor\"\n"),
+			err:    nil,
+		}))
+		t.Run("nested ternary", runTest(testCase{
+			args:   []string{`true ? (false ? "a" : "b") : "c"`},
+			in:     []byte{},
+			stdout: []byte("\"b\"\n"),
+			err:    nil,
+		}))
+		t.Run("with comparison", runTest(testCase{
+			args:   []string{"-i", "json", `score >= 90 ? "A" : (score >= 80 ? "B" : "C")`},
+			in:     []byte(`{"score": 85}`),
+			stdout: []byte("\"B\"\n"),
+			err:    nil,
+		}))
+		t.Run("ternary in map", runTest(testCase{
+			args: []string{"-i", "json", `items.map(val >= 5 ? "big" : "small")`},
+			in:   []byte(`{"items": [{"val": 10}, {"val": 3}, {"val": 7}]}`),
+			stdout: []byte(`[
+    "big",
+    "small",
+    "big"
+]
+`),
+			err: nil,
+		}))
+		t.Run("ternary returns number", runTest(testCase{
+			args:   []string{`true ? 42 : 0`},
+			in:     []byte{},
+			stdout: []byte("42\n"),
+			err:    nil,
+		}))
+		t.Run("ternary with arithmetic", runTest(testCase{
+			args:   []string{`true ? 1 + 2 : 3 + 4`},
+			in:     []byte{},
+			stdout: []byte("3\n"),
+			err:    nil,
+		}))
+		t.Run("ternary with logical operators", runTest(testCase{
+			args:   []string{"-i", "json", `a > 1 && b > 5 ? "both" : "nope"`},
+			in:     []byte(`{"a": 5, "b": 10}`),
+			stdout: []byte("\"both\"\n"),
+			err:    nil,
+		}))
+		t.Run("chained property in condition", runTest(testCase{
+			args:   []string{"-i", "json", `user.active ? "yes" : "no"`},
+			in:     []byte(`{"user": {"active": true}}`),
+			stdout: []byte("\"yes\"\n"),
+			err:    nil,
+		}))
+		t.Run("ternary with json output", runTest(testCase{
+			args: []string{"-i", "json", "-o", "json", `active ? {status: "on"} : {status: "off"}`},
+			in:   []byte(`{"active": true}`),
+			stdout: []byte(`{
+    "status": "on"
+}
+`),
+			err: nil,
+		}))
+		t.Run("ternary returns true", runTest(testCase{
+			args:   []string{`true ? true : false`},
+			in:     []byte{},
+			stdout: []byte("true\n"),
+			err:    nil,
+		}))
+	})
+	t.Run("compact", func(t *testing.T) {
+		t.Run("json", runTest(testCase{
+			args:   []string{"-i", "json", "-o", "json", "--compact"},
+			in:     []byte(`{"name": "Tom", "age": 30}`),
+			stdout: []byte("{\"name\":\"Tom\",\"age\":30}\n"),
+			err:    nil,
+		}))
+		t.Run("json nested", runTest(testCase{
+			args:   []string{"-i", "json", "-o", "json", "--compact"},
+			in:     []byte(`{"user": {"name": "Tom"}, "items": [1, 2, 3]}`),
+			stdout: []byte("{\"user\":{\"name\":\"Tom\"},\"items\":[1,2,3]}\n"),
+			err:    nil,
+		}))
+	})
+	t.Run("merge", func(t *testing.T) {
+		t.Run("deep", runTest(testCase{
+			args: []string{"-i", "json", "-o", "json",
+				`merge({"a": {"x": 1, "y": 2}}, {"a": {"y": 3, "z": 4}})`},
+			in: []byte{},
+			stdout: []byte("{\n    \"a\": {\n        \"x\": 1,\n        \"y\": 3,\n        \"z\": 4\n    }\n}\n"),
+		}))
+	})
+	t.Run("count", func(t *testing.T) {
+		t.Run("some match", runTest(testCase{
+			args:   []string{"-i", "json", `users.count(age > 25)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}, {"name": "Charlie", "age": 35}]}`),
+			stdout: []byte("2\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+		t.Run("none match", runTest(testCase{
+			args:   []string{"-i", "json", `users.count(age > 50)`},
+			in:     []byte(`{"users": [{"name": "Alice", "age": 20}, {"name": "Bob", "age": 30}]}`),
+			stdout: []byte("0\n"),
+			stderr: nil,
+			err:    nil,
+		}))
+	})
 }

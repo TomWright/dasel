@@ -7,8 +7,73 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.8.0] - 2026-04-26
+
+### Added
+
+- `dasel completion <shell>` subcommand to generate shell completion scripts for bash, zsh, fish, and powershell (#497).
+- `dasel man` subcommand to generate a man page (#497).
+
 ### Fixed
 
+- YAML string quote style (double, single, literal, folded) is now preserved on round-trip (#452).
+
+## [v3.7.0] - 2026-04-25
+
+### Changed
+
+- `merge` function now performs deep merge, recursively merging nested maps (#133).
+
+## [v3.6.0] - 2026-04-25
+
+### Added
+
+- `--compact` flag for compact output (no indentation/newlines).
+
+### Changed
+
+- `stringify` function now produces compact output.
+
+### Fixed
+
+- Compact/pretty output support for JSON, TOML, YAML, and XML writers (#457).
+
+## [v3.5.0] - 2026-04-25
+
+### Added
+
+- `split` function that splits a string by a separator into an array of strings.
+- `toLower` function that converts a string to lowercase.
+- `toUpper` function that converts a string to uppercase.
+- `trim` function that trims whitespace from both ends of a string.
+- `trimPrefix` function that trims a prefix from a string.
+- `trimSuffix` function that trims a suffix from a string.
+- `startsWith` function that checks if a string starts with a given prefix.
+- `endsWith` function that checks if a string ends with a given suffix.
+- `indexOf` function that returns the index of the first occurrence of a substring, or -1 if not found.
+- `abs` function that returns the absolute value of a number.
+- `floor` function that returns the largest integer less than or equal to the input.
+- `ceil` function that returns the smallest integer greater than or equal to the input.
+- `round` function that rounds a number to the nearest integer.
+- `avg` function that returns the average of the given numbers.
+- `flatten` function that flattens a nested array by one level.
+- `unique` function that removes duplicate values from an array.
+- `first` function that returns the first element of an array.
+- `last` function that returns the last element of an array.
+- `values` function that returns the values of a map as an array.
+- `entries` function that converts a map into an array of `{key, value}` objects.
+- `fromEntries` function that converts an array of `{key, value}` objects into a map.
+- `toBool` function that converts a value to a boolean.
+- `any` expression that returns true if any element in an array matches the predicate.
+- `all` expression that returns true if all elements in an array match the predicate.
+- `count` expression that counts the number of elements in an array that match the predicate.
+- `stringify` function that serializes a structured value into a format string (inverse of `parse`).
+- Ternary operator (`condition ? then : else`).
+
+### Fixed
+
+- Fixed a bug in YAML and TOML parsers that caused them to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
+- Fixed a bug in the `toInt` function that caused it to fail when parsing non-base10 numbers (e.g. hex, binary, octal).
 - XML child element ordering now has more comprehensive round-trip handling. Thanks @takeokunn.
 - XML writer now validates element and attribute names per the XML 1.0 spec, returning a clear error for invalid names instead of producing malformed XML. Thanks @lawrence3699.
 
@@ -795,7 +860,11 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.4.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.8.0...HEAD
+[v3.8.0]: https://github.com/TomWright/dasel/compare/v3.7.0...v3.8.0
+[v3.7.0]: https://github.com/TomWright/dasel/compare/v3.6.0...v3.7.0
+[v3.6.0]: https://github.com/TomWright/dasel/compare/v3.5.0...v3.6.0
+[v3.5.0]: https://github.com/TomWright/dasel/compare/v3.4.1...v3.5.0
 [v3.4.1]: https://github.com/TomWright/dasel/compare/v3.4.0...v3.4.1
 [v3.4.0]: https://github.com/TomWright/dasel/compare/v3.3.2...v3.4.0
 [v3.3.2]: https://github.com/TomWright/dasel/compare/v3.3.1...v3.3.2

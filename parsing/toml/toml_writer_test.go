@@ -241,6 +241,66 @@ func TestTomlWriter_MoreCases(t *testing.T) {
 	})
 }
 
+func TestTomlWriter_Compact(t *testing.T) {
+	doc := []byte(`title = "TOML Example"
+[owner]
+name = "Tom Preston-Werner"
+
+[database]
+ports = [8001, 8001, 8002]
+enabled = true
+`)
+
+	reader, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("unexpected error creating reader: %v", err)
+	}
+	opts := parsing.DefaultWriterOptions()
+	opts.Compact = true
+	writer, err := toml.TOML.NewWriter(opts)
+	if err != nil {
+		t.Fatalf("unexpected error creating writer: %v", err)
+	}
+
+	v, err := reader.Read(doc)
+	if err != nil {
+		t.Fatalf("failed to read doc: %v", err)
+	}
+
+	out, err := writer.Write(v)
+	if err != nil {
+		t.Fatalf("failed to write doc: %v", err)
+	}
+
+	outStr := string(out)
+
+	// Compact TOML should use inline tables and not have table headers
+	if strings.Contains(outStr, "[owner]") {
+		t.Errorf("compact output should not contain table headers, got:\n%s", outStr)
+	}
+	if strings.Contains(outStr, "[database]") {
+		t.Errorf("compact output should not contain table headers, got:\n%s", outStr)
+	}
+
+	// Verify the output can still be parsed back correctly
+	v2, err := reader.Read(out)
+	if err != nil {
+		t.Fatalf("failed to read compact output: %v\noutput was:\n%s", err, outStr)
+	}
+
+	res, err := v.Equal(v2)
+	if err != nil {
+		t.Fatalf("failed to compare values: %v", err)
+	}
+	b, err := res.BoolValue()
+	if err != nil {
+		t.Fatalf("failed to get bool from equal result: %v", err)
+	}
+	if !b {
+		t.Fatalf("compact round-trip value mismatch\norig:\n%s\ncompact:\n%s", string(doc), outStr)
+	}
+}
+
 func TestTomlWriter_StrictOutput(t *testing.T) {
 	reader, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
 	if err != nil {

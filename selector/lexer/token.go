@@ -62,6 +62,9 @@ const (
 	Search
 	RegexPattern
 	SortBy
+	Any
+	All
+	Count
 	Asc
 	Desc
 	QuestionMark

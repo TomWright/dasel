@@ -10,6 +10,7 @@ type QueryCmd struct {
 	InFormat          string            `flag:"" name:"in" short:"i" help:"The format of the input data."`
 	OutFormat         string            `flag:"" name:"out" short:"o" help:"The format of the output data."`
 	ReturnRoot        bool              `flag:"" name:"root" help:"Return the root value."`
+	Compact           bool              `flag:"" name:"compact" help:"Output in compact mode (no indentation/newlines)."`
 	Unstable          bool              `flag:"" name:"unstable" help:"Allow access to potentially unstable features."`
 	Interactive       bool              `flag:"" name:"it" help:"Run in interactive mode (alpha)."`
 
@@ -44,6 +45,7 @@ func (c *QueryCmd) Run(ctx *Globals) error {
 		ExtWriteFlags:     c.ExtWriteFlags,
 		InFormat:          c.InFormat,
 		OutFormat:         c.OutFormat,
+		Compact:           c.Compact,
 		ReturnRoot:        c.ReturnRoot,
 		Unstable:          c.Unstable,
 		Query:             c.Query,

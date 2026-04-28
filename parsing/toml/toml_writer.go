@@ -15,11 +15,12 @@ import (
 var _ parsing.Writer = (*tomlWriter)(nil)
 
 func newTOMLWriter(options parsing.WriterOptions) (parsing.Writer, error) {
-	w := &tomlWriter{}
+	w := &tomlWriter{options: options}
 	return w, nil
 }
 
 type tomlWriter struct {
+	options parsing.WriterOptions
 }
 
 // Write converts the dasel model.Value into Go values backed by dynamically
@@ -58,6 +59,11 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 	// Perhaps it would be better to implement a custom Encoder that respects metadata on nested values?
 	var buf bytes.Buffer
 	encoder := pkg.NewEncoder(&buf)
+	if j.options.Compact {
+		encoder.SetIndentTables(false)
+		encoder.SetTablesInline(true)
+		encoder.SetArraysMultiline(false)
+	}
 
 	if err := encoder.Encode(goValue); err != nil {
 		return nil, fmt.Errorf("toml encode failed: %w", err)

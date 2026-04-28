@@ -28,6 +28,10 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 	buf := new(bytes.Buffer)
 
 	es := encoderState{indentStr: "    "}
+	if j.options.Compact {
+		es.indentStr = ""
+		es.compact = true
+	}
 
 	encoderFn := func(v any) error {
 		res, err := json.Marshal(v)
@@ -52,6 +56,7 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 type encoderState struct {
 	indent    int
 	indentStr string
+	compact   bool
 }
 
 func (es encoderState) inc() encoderState {
@@ -120,18 +125,27 @@ func (j *jsonWriter) writeMap(w io.Writer, encoder encoderFn, es encoderState, v
 	}
 
 	if len(kvs) > 0 {
-		if _, err := w.Write([]byte("\n")); err != nil {
-			return err
+		if !es.compact {
+			if _, err := w.Write([]byte("\n")); err != nil {
+				return err
+			}
 		}
 
 		incEs := es.inc()
 		for i, kv := range kvs {
-			if err := incEs.writeIndent(w); err != nil {
-				return err
+			if !es.compact {
+				if err := incEs.writeIndent(w); err != nil {
+					return err
+				}
 			}
 
-			if _, err := fmt.Fprintf(w, `"%s": `, kv.Key); err != nil {
+			if _, err := fmt.Fprintf(w, `"%s":`, kv.Key); err != nil {
 				return err
+			}
+			if !es.compact {
+				if _, err := w.Write([]byte(" ")); err != nil {
+					return err
+				}
 			}
 
 			if err := j.write(w, encoder, incEs, kv.Value); err != nil {
@@ -144,12 +158,16 @@ func (j *jsonWriter) writeMap(w io.Writer, encoder encoderFn, es encoderState, v
 				}
 			}
 
-			if _, err := w.Write([]byte("\n")); err != nil {
-				return err
+			if !es.compact {
+				if _, err := w.Write([]byte("\n")); err != nil {
+					return err
+				}
 			}
 		}
-		if err := es.writeIndent(w); err != nil {
-			return err
+		if !es.compact {
+			if err := es.writeIndent(w); err != nil {
+				return err
+			}
 		}
 	}
 
@@ -171,13 +189,17 @@ func (j *jsonWriter) writeSlice(w io.Writer, encoder encoderFn, es encoderState,
 	}
 
 	if length > 0 {
-		if _, err := w.Write([]byte("\n")); err != nil {
-			return err
+		if !es.compact {
+			if _, err := w.Write([]byte("\n")); err != nil {
+				return err
+			}
 		}
 		incEs := es.inc()
 		for i := 0; i < length; i++ {
-			if err := incEs.writeIndent(w); err != nil {
-				return err
+			if !es.compact {
+				if err := incEs.writeIndent(w); err != nil {
+					return err
+				}
 			}
 			va, err := value.GetSliceIndex(i)
 			if err != nil {
@@ -191,12 +213,16 @@ func (j *jsonWriter) writeSlice(w io.Writer, encoder encoderFn, es encoderState,
 					return err
 				}
 			}
-			if _, err := w.Write([]byte("\n")); err != nil {
-				return err
+			if !es.compact {
+				if _, err := w.Write([]byte("\n")); err != nil {
+					return err
+				}
 			}
 		}
-		if err := es.writeIndent(w); err != nil {
-			return err
+		if !es.compact {
+			if err := es.writeIndent(w); err != nil {
+				return err
+			}
 		}
 	}
 

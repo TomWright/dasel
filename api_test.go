@@ -78,6 +78,150 @@ func TestSelect(t *testing.T) {
 	})
 }
 
+func TestTernary(t *testing.T) {
+	t.Run("true literal", func(t *testing.T) {
+		result, count, err := dasel.Select(t.Context(), nil, `true ? "yes" : "no"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"yes"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("false literal", func(t *testing.T) {
+		result, count, err := dasel.Select(t.Context(), nil, `false ? "yes" : "no"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"no"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("condition with comparison", func(t *testing.T) {
+		inputData := map[string]any{"score": 85}
+		result, count, err := dasel.Select(t.Context(), inputData, `score >= 70 ? "pass" : "fail"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"pass"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("condition with comparison false", func(t *testing.T) {
+		inputData := map[string]any{"score": 50}
+		result, count, err := dasel.Select(t.Context(), inputData, `score >= 70 ? "pass" : "fail"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"fail"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("nested ternary", func(t *testing.T) {
+		result, count, err := dasel.Select(t.Context(), nil, `true ? (false ? "a" : "b") : "c"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"b"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("ternary returns number", func(t *testing.T) {
+		result, count, err := dasel.Select(t.Context(), nil, `true ? 42 : 0`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{int64(42)}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("ternary with arithmetic", func(t *testing.T) {
+		result, count, err := dasel.Select(t.Context(), nil, `true ? 1 + 2 : 3 + 4`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{int64(3)}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("ternary with property lookup", func(t *testing.T) {
+		inputData := map[string]any{"active": true, "name": "Alice"}
+		result, count, err := dasel.Select(t.Context(), inputData, `active ? name : "unknown"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"Alice"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("ternary in map", func(t *testing.T) {
+		inputData := map[string]any{
+			"items": []any{
+				map[string]any{"val": 10},
+				map[string]any{"val": 3},
+				map[string]any{"val": 7},
+			},
+		}
+		result, count, err := dasel.Select(t.Context(), inputData, `items.map(val >= 5 ? "big" : "small")...`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 3 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"big", "small", "big"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+	t.Run("ternary with logical operators", func(t *testing.T) {
+		inputData := map[string]any{"a": 5, "b": 10}
+		result, count, err := dasel.Select(t.Context(), inputData, `a > 1 && b > 5 ? "both" : "nope"`)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		if count != 1 {
+			t.Errorf("unexpected count: %d", count)
+		}
+		exp := []any{"both"}
+		if !cmp.Equal(exp, result) {
+			t.Errorf("unexpected result: %s", cmp.Diff(exp, result))
+		}
+	})
+}
+
 func TestModify(t *testing.T) {
 	t.Run("index", func(t *testing.T) {
 		t.Run("int over int", modifyTestCase{
