@@ -3,6 +3,8 @@ package cli
 import (
 	"bytes"
 	"fmt"
+	"os"
+	"strconv"
 	"strings"
 	"text/template"
 	"time"
@@ -35,6 +37,24 @@ type manData struct {
 	QueryFlags  []manFlag
 }
 
+const dateFormat = "2006-01-02"
+
+func getReproducibleDate() (string, error) {
+	sourceDateEpochEnv, ok := os.LookupEnv("SOURCE_DATE_EPOCH")
+
+	// Fallback to current date if SOURCE_DATE_EPOCH is unset or empty.
+	if !ok || sourceDateEpochEnv == "" {
+		return time.Now().Format(dateFormat), nil
+	}
+
+	sde, err := strconv.ParseInt(sourceDateEpochEnv, 10, 64)
+	if err != nil {
+		return "", fmt.Errorf("invalid SOURCE_DATE_EPOCH: %q", sourceDateEpochEnv)
+	}
+
+	return time.Unix(sde, 0).UTC().Format(dateFormat), nil
+}
+
 func extractManData(k *kong.Kong) manData {
 	app := k.Model
 
@@ -42,7 +62,6 @@ func extractManData(k *kong.Kong) manData {
 		Name:        strings.ToUpper(app.Name),
 		Description: app.Help,
 		Version:     internal.Version,
-		Date:        time.Now().Format("2006-01-02"),
 	}
 
 	for _, flag := range app.Flags {
@@ -94,6 +113,12 @@ func extractManData(k *kong.Kong) manData {
 
 func (c *ManCmd) Run(ctx *Globals) error {
 	data := extractManData(ctx.Kong)
+
+	date, err := getReproducibleDate()
+	if err != nil {
+		return fmt.Errorf("error extracting man page data: %w", err)
+	}
+	data.Date = date
 
 	tmpl, err := template.New("man").Funcs(template.FuncMap{
 		"toLower": strings.ToLower,
