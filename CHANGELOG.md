@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+- Nothing.
+
+## [v3.8.1] - 2026-04-30
+
 - `dasel man` now generates a reproducible manpage based on [SOURCE_DATE_EPOCH](https://reproducible-builds.org/specs/source-date-epoch).
 
 ## [v3.8.0] - 2026-04-26
@@ -862,7 +866,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.8.0...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.8.1...HEAD
+[v3.8.1]: https://github.com/TomWright/dasel/compare/v3.8.0...v3.8.1
 [v3.8.0]: https://github.com/TomWright/dasel/compare/v3.7.0...v3.8.0
 [v3.7.0]: https://github.com/TomWright/dasel/compare/v3.6.0...v3.7.0
 [v3.6.0]: https://github.com/TomWright/dasel/compare/v3.5.0...v3.6.0
