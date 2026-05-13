@@ -366,7 +366,9 @@ func (p *Parser) expectNodeEnd() error {
 	}
 	if tok.Type == TokenNewline || tok.Type == TokenSemicolon || tok.Type == TokenEOF || tok.Type == TokenCloseBrace {
 		if tok.Type == TokenSemicolon {
-			p.tok.NextToken()
+			if _, err := p.tok.NextToken(); err != nil {
+				return err
+			}
 		}
 		return nil
 	}
@@ -379,7 +381,7 @@ func (p *Parser) skipNewlines() {
 		if err != nil || tok.Type != TokenNewline {
 			return
 		}
-		p.tok.NextToken()
+		_, _ = p.tok.NextToken()
 	}
 }
 
