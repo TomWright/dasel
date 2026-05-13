@@ -24,12 +24,20 @@ func (w *kdlWriter) Write(value *model.Value) ([]byte, error) {
 		return nil, fmt.Errorf("kdl: %w", err)
 	}
 
-	opts := internal.GenerateOptions{
-		Indent:  "    ",
-		Compact: w.options.Compact,
-	}
+	opts := internal.DefaultGenerateOptions()
+	opts.Compact = w.options.Compact
 	if w.options.Indent != "" {
 		opts.Indent = w.options.Indent
+	}
+	if v, ok := w.options.Ext["kdl-version"]; ok {
+		switch v {
+		case "1":
+			opts.Version = internal.Version1
+		case "2":
+			opts.Version = internal.Version2
+		default:
+			return nil, fmt.Errorf("kdl: unsupported output version %q (use 1 or 2)", v)
+		}
 	}
 
 	result, err := internal.GenerateString(doc, opts)

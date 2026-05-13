@@ -236,3 +236,138 @@ func TestGenerator_BoolFalse(t *testing.T) {
 		t.Errorf("expected 'node #false', got %q", strings.TrimSpace(result))
 	}
 }
+
+func TestGenerator_V1Output(t *testing.T) {
+	doc := &Document{
+		Nodes: []*Node{
+			{
+				Name: "node",
+				Arguments: []*Value{
+					{Value: true},
+					{Value: false},
+					{Value: nil},
+				},
+			},
+		},
+	}
+	opts := DefaultGenerateOptions()
+	opts.Version = Version1
+	result, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "node true false null"
+	if strings.TrimSpace(result) != expected {
+		t.Errorf("expected %q, got %q", expected, strings.TrimSpace(result))
+	}
+}
+
+func TestGenerator_V2Output(t *testing.T) {
+	doc := &Document{
+		Nodes: []*Node{
+			{
+				Name: "node",
+				Arguments: []*Value{
+					{Value: true},
+					{Value: false},
+					{Value: nil},
+				},
+			},
+		},
+	}
+	opts := DefaultGenerateOptions()
+	opts.Version = Version2
+	result, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "node #true #false #null"
+	if strings.TrimSpace(result) != expected {
+		t.Errorf("expected %q, got %q", expected, strings.TrimSpace(result))
+	}
+}
+
+func TestGenerator_V1DefaultsToV2(t *testing.T) {
+	doc := &Document{
+		Nodes: []*Node{
+			{Name: "node", Arguments: []*Value{{Value: true}}},
+		},
+	}
+	// Zero-value Version should default to v2
+	opts := GenerateOptions{Indent: "    "}
+	result, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(result) != "node #true" {
+		t.Errorf("expected v2 output by default, got %q", strings.TrimSpace(result))
+	}
+}
+
+func TestGenerator_V1Properties(t *testing.T) {
+	doc := &Document{
+		Nodes: []*Node{
+			{
+				Name: "node",
+				Properties: []*Property{
+					{Key: "active", Value: &Value{Value: true}},
+					{Key: "empty", Value: &Value{Value: nil}},
+				},
+			},
+		},
+	}
+	opts := DefaultGenerateOptions()
+	opts.Version = Version1
+	result, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := "node active=true empty=null"
+	if strings.TrimSpace(result) != expected {
+		t.Errorf("expected %q, got %q", expected, strings.TrimSpace(result))
+	}
+}
+
+func TestGenerator_V1Children(t *testing.T) {
+	doc := &Document{
+		Nodes: []*Node{
+			{
+				Name: "parent",
+				Children: []*Node{
+					{Name: "enabled", Arguments: []*Value{{Value: true}}},
+					{Name: "data", Arguments: []*Value{{Value: nil}}},
+				},
+			},
+		},
+	}
+	opts := DefaultGenerateOptions()
+	opts.Version = Version1
+	result, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(result, "enabled true") {
+		t.Errorf("expected v1 'enabled true' in output, got:\n%s", result)
+	}
+	if !strings.Contains(result, "data null") {
+		t.Errorf("expected v1 'data null' in output, got:\n%s", result)
+	}
+}
+
+func TestGenerator_V1RoundTrip(t *testing.T) {
+	// Parse v1 input, generate as v1, re-parse — should match
+	input := "node true false null"
+	doc, err := Parse(input)
+	if err != nil {
+		t.Fatal(err)
+	}
+	opts := DefaultGenerateOptions()
+	opts.Version = Version1
+	output, err := GenerateString(doc, opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if strings.TrimSpace(output) != input {
+		t.Errorf("expected %q, got %q", input, strings.TrimSpace(output))
+	}
+}

@@ -181,3 +181,126 @@ func TestWriter_MapWithArgsAndChildren(t *testing.T) {
 		t.Errorf("expected tls child, got:\n%s", result)
 	}
 }
+
+func TestWriter_V1Output(t *testing.T) {
+	val := model.NewMapValue()
+	_ = val.SetMapKey("active", model.NewBoolValue(true))
+	_ = val.SetMapKey("disabled", model.NewBoolValue(false))
+	_ = val.SetMapKey("empty", model.NewNullValue())
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Ext["kdl-version"] = "1"
+	w, err := newKDLWriter(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := w.Write(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := string(data)
+	if !strings.Contains(result, "active true") {
+		t.Errorf("expected v1 'active true', got:\n%s", result)
+	}
+	if !strings.Contains(result, "disabled false") {
+		t.Errorf("expected v1 'disabled false', got:\n%s", result)
+	}
+	// null node has no args in v1 or v2, so just check it exists
+	if !strings.Contains(result, "empty") {
+		t.Errorf("expected 'empty' node, got:\n%s", result)
+	}
+}
+
+func TestWriter_V2Output(t *testing.T) {
+	val := model.NewMapValue()
+	_ = val.SetMapKey("active", model.NewBoolValue(true))
+	_ = val.SetMapKey("disabled", model.NewBoolValue(false))
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Ext["kdl-version"] = "2"
+	w, err := newKDLWriter(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := w.Write(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := string(data)
+	if !strings.Contains(result, "active #true") {
+		t.Errorf("expected v2 'active #true', got:\n%s", result)
+	}
+	if !strings.Contains(result, "disabled #false") {
+		t.Errorf("expected v2 'disabled #false', got:\n%s", result)
+	}
+}
+
+func TestWriter_DefaultIsV2(t *testing.T) {
+	val := model.NewMapValue()
+	_ = val.SetMapKey("flag", model.NewBoolValue(true))
+
+	w := newTestWriter(t)
+	data, err := w.Write(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	result := string(data)
+	if !strings.Contains(result, "#true") {
+		t.Errorf("expected v2 output by default, got:\n%s", result)
+	}
+}
+
+func TestWriter_InvalidVersion(t *testing.T) {
+	val := model.NewMapValue()
+	_ = val.SetMapKey("x", model.NewBoolValue(true))
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Ext["kdl-version"] = "3"
+	w, err := newKDLWriter(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	_, err = w.Write(val)
+	if err == nil {
+		t.Fatal("expected error for invalid version")
+	}
+	if !strings.Contains(err.Error(), "unsupported output version") {
+		t.Errorf("expected unsupported version error, got: %v", err)
+	}
+}
+
+func TestWriter_V1RoundTrip(t *testing.T) {
+	val := model.NewMapValue()
+	_ = val.SetMapKey("name", model.NewStringValue("Bob"))
+	_ = val.SetMapKey("active", model.NewBoolValue(true))
+	_ = val.SetMapKey("count", model.NewIntValue(42))
+
+	opts := parsing.DefaultWriterOptions()
+	opts.Ext["kdl-version"] = "1"
+	w, err := newKDLWriter(opts)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	data, err := w.Write(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// Re-read and verify
+	r := newTestReader(t)
+	val2, err := r.Read(data)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	assertMapStringValue(t, val2, "name", "Bob")
+	assertMapBoolValue(t, val2, "active", true)
+	assertMapIntValue(t, val2, "count", 42)
+}
