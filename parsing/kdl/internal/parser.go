@@ -187,7 +187,9 @@ func (p *Parser) parseNodeEntries(node *Node) error {
 
 			if next.Type == TokenOpenBrace {
 				// Slashdash children
-				p.tok.NextToken() // consume {
+				if _, err := p.tok.NextToken(); err != nil {
+					return err
+				}
 				if _, err := p.parseDocument(); err != nil {
 					return err
 				}
@@ -244,7 +246,9 @@ func (p *Parser) parseEntry(node *Node) error {
 			return err
 		}
 		if next.Type == TokenEquals {
-			p.tok.NextToken() // consume =
+			if _, err := p.tok.NextToken(); err != nil {
+				return err
+			}
 			val, err := p.parseValue()
 			if err != nil {
 				return err
@@ -292,7 +296,9 @@ func (p *Parser) skipEntry() error {
 			return err
 		}
 		if next.Type == TokenEquals {
-			p.tok.NextToken() // consume =
+			if _, err := p.tok.NextToken(); err != nil {
+				return err
+			}
 			if _, err := p.parseValue(); err != nil {
 				return err
 			}
