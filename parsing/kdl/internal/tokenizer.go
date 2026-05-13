@@ -241,13 +241,13 @@ func (t *Tokenizer) readNewline() (Token, error) {
 }
 
 func (t *Tokenizer) skipNewline() {
-	ch := t.peek()
-	if ch == '\r' {
+	switch t.peek() {
+	case '\r':
 		t.advance()
 		if t.peek() == '\n' {
 			t.advance()
 		}
-	} else if ch == '\n' {
+	case '\n':
 		t.advance()
 	}
 }

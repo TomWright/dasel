@@ -627,13 +627,7 @@ func TestSpecV2_RawStringProp(t *testing.T) {
 }
 
 func TestSpecV2_RawStringBackslash(t *testing.T) {
-	doc, err := Parse("#\"\n\"#")
-	if err != nil {
-		t.Fatal(err)
-	}
-	// This is a node named with a raw string containing "\n"
-	// Actually, let me parse it properly
-	doc, err = Parse("node #\"\n\"#")
+	doc, err := Parse("node #\"\n\"#")
 	if err != nil {
 		t.Fatal(err)
 	}

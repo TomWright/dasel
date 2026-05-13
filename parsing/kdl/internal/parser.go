@@ -69,7 +69,9 @@ func (p *Parser) parseDocument() (*Document, error) {
 
 		// Check for slashdash before node
 		if tok.Type == TokenSlashDash {
-			p.tok.NextToken() // consume /-
+			if _, err := p.tok.NextToken(); err != nil {
+				return nil, err
+			}
 			// Skip the next node
 			_, err := p.parseNode()
 			if err != nil {
@@ -139,14 +141,18 @@ func (p *Parser) parseNodeEntries(node *Node) error {
 		// Node terminators
 		if tok.Type == TokenNewline || tok.Type == TokenSemicolon || tok.Type == TokenEOF || tok.Type == TokenCloseBrace {
 			if tok.Type == TokenSemicolon {
-				p.tok.NextToken() // consume ;
+				if _, err := p.tok.NextToken(); err != nil {
+					return err
+				}
 			}
 			return nil
 		}
 
 		// Children block
 		if tok.Type == TokenOpenBrace {
-			p.tok.NextToken() // consume {
+			if _, err := p.tok.NextToken(); err != nil {
+				return err
+			}
 			children, err := p.parseDocument()
 			if err != nil {
 				return err
@@ -169,7 +175,9 @@ func (p *Parser) parseNodeEntries(node *Node) error {
 
 		// Slashdash before entry
 		if tok.Type == TokenSlashDash {
-			p.tok.NextToken() // consume /-
+			if _, err := p.tok.NextToken(); err != nil {
+				return err
+			}
 
 			// Peek what follows to know if we're slashdashing an arg, prop, or children
 			next, err := p.tok.PeekToken()

@@ -39,12 +39,13 @@ func nodesToValue(nodes []*internal.Node) (*model.Value, error) {
 		count := seen[node.Name]
 		seen[node.Name] = count + 1
 
-		if count == 0 {
+		switch count {
+		case 0:
 			// First time seeing this name
 			if err := result.SetMapKey(node.Name, val); err != nil {
 				return nil, err
 			}
-		} else if count == 1 {
+		case 1:
 			// Second time — promote existing value to slice
 			existing, err := result.GetMapKey(node.Name)
 			if err != nil {
@@ -60,7 +61,7 @@ func nodesToValue(nodes []*internal.Node) (*model.Value, error) {
 			if err := result.SetMapKey(node.Name, slice); err != nil {
 				return nil, err
 			}
-		} else {
+		default:
 			// Third+ time — append to existing slice
 			existing, err := result.GetMapKey(node.Name)
 			if err != nil {
