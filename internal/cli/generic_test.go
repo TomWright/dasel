@@ -7,6 +7,7 @@ import (
 
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/json"
+	"github.com/tomwright/dasel/v3/parsing/kdl"
 	"github.com/tomwright/dasel/v3/parsing/toml"
 	"github.com/tomwright/dasel/v3/parsing/yaml"
 )
@@ -263,4 +264,140 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 		t.Run("nested once", newTestsWithPrefix("mapData."))
 		t.Run("nested twice", newTestsWithPrefix("mapData.mapData."))
 	})
+}
+
+func TestKDLCrossFormat(t *testing.T) {
+	kdlInputData := newStringWithFormat(kdl.KDL, `hello "world"
+oneTwoThree 123
+oneTwoDotThree 12.3
+boolTrue #true
+boolFalse #false`)
+
+	jsonInputData := newStringWithFormat(json.JSON, `{
+	"hello": "world",
+	"oneTwoThree": 123,
+	"oneTwoDotThree": 12.3,
+	"boolTrue": true,
+	"boolFalse": false
+}`)
+
+	yamlInputData := newStringWithFormat(yaml.YAML, `hello: world
+oneTwoThree: 123
+oneTwoDotThree: 12.3
+boolTrue: true
+boolFalse: false`)
+
+	t.Run("select string", testCases{
+		selector: "hello",
+		in: []bytesWithFormat{
+			kdlInputData,
+			jsonInputData,
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `"world"`),
+			newStringWithFormat(yaml.YAML, `world`),
+			newStringWithFormat(toml.TOML, `'world'`),
+		},
+	}.run)
+
+	t.Run("select int", testCases{
+		selector: "oneTwoThree",
+		in: []bytesWithFormat{
+			kdlInputData,
+			jsonInputData,
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `123`),
+			newStringWithFormat(yaml.YAML, `123`),
+			newStringWithFormat(toml.TOML, `123`),
+		},
+	}.run)
+
+	t.Run("select float", testCases{
+		selector: "oneTwoDotThree",
+		in: []bytesWithFormat{
+			kdlInputData,
+			jsonInputData,
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `12.3`),
+			newStringWithFormat(yaml.YAML, `12.3`),
+			newStringWithFormat(toml.TOML, `12.3`),
+		},
+	}.run)
+
+	t.Run("select bool true", testCases{
+		selector: "boolTrue",
+		in: []bytesWithFormat{
+			kdlInputData,
+			jsonInputData,
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `true`),
+			newStringWithFormat(yaml.YAML, `true`),
+			newStringWithFormat(toml.TOML, `true`),
+		},
+	}.run)
+
+	t.Run("select bool false", testCases{
+		selector: "boolFalse",
+		in: []bytesWithFormat{
+			kdlInputData,
+			jsonInputData,
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `false`),
+			newStringWithFormat(yaml.YAML, `false`),
+			newStringWithFormat(toml.TOML, `false`),
+		},
+	}.run)
+
+	t.Run("KDL to JSON full document", testCases{
+		selector: "$root",
+		in: []bytesWithFormat{
+			kdlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(json.JSON, `{
+    "hello": "world",
+    "oneTwoThree": 123,
+    "oneTwoDotThree": 12.3,
+    "boolTrue": true,
+    "boolFalse": false
+}`),
+		},
+	}.run)
+
+	t.Run("JSON to KDL full document", testCases{
+		selector: "$root",
+		in: []bytesWithFormat{
+			jsonInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(kdl.KDL, `hello "world"
+oneTwoThree 123
+oneTwoDotThree 12.3
+boolTrue #true
+boolFalse #false`),
+		},
+	}.run)
+
+	t.Run("YAML to KDL full document", testCases{
+		selector: "$root",
+		in: []bytesWithFormat{
+			yamlInputData,
+		},
+		out: []bytesWithFormat{
+			newStringWithFormat(kdl.KDL, `hello "world"
+oneTwoThree 123
+oneTwoDotThree 12.3
+boolTrue #true
+boolFalse #false`),
+		},
+	}.run)
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- KDL format support (`-i kdl` / `-o kdl`) for reading and writing [KDL](https://kdl.dev/) configuration files (#504). Supports both v1 and v2 syntax with automatic version detection.
+
 ## [v3.9.0] - 2026-05-13
 
 ### Added
