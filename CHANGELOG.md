@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Support for newline-delimited JSON (NDJSON) input. Multiple JSON values in a single input are now parsed as a multi-document branch, matching the existing YAML multi-document behaviour.
+
 ### Fixed
 
 - Strip leading "v" from version output for consistency across build methods (Docker vs Homebrew).

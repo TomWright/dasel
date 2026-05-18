@@ -18,36 +18,61 @@ func newJSONReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 type jsonReader struct{}
 
 // Read reads a value from a byte slice.
+// When the input contains multiple JSON values (NDJSON), they are returned
+// as a branch-marked slice, mirroring the YAML multi-document behaviour.
 func (j *jsonReader) Read(data []byte) (*model.Value, error) {
 	decoder := json.NewDecoder(bytes.NewReader(data))
 	decoder.UseNumber()
 
+	var results []*model.Value
+
+	for decoder.More() {
+		v, err := j.decodeValue(decoder)
+		if err != nil {
+			return nil, err
+		}
+		results = append(results, v)
+	}
+
+	switch len(results) {
+	case 0:
+		return model.NewNullValue(), nil
+	case 1:
+		return results[0], nil
+	default:
+		slice := model.NewSliceValue()
+		slice.MarkAsBranch()
+		for _, v := range results {
+			if err := slice.Append(v); err != nil {
+				return nil, err
+			}
+		}
+		return slice, nil
+	}
+}
+
+func (j *jsonReader) decodeValue(decoder *json.Decoder) (*model.Value, error) {
 	t, err := decoder.Token()
 	if err != nil {
 		return nil, err
 	}
 
-	var res *model.Value
-
 	switch t {
 	case jsonOpenObject:
-		res, err = j.decodeObject(decoder)
+		res, err := j.decodeObject(decoder)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode object: %w", err)
 		}
+		return res, nil
 	case jsonOpenArray:
-		res, err = j.decodeArray(decoder)
+		res, err := j.decodeArray(decoder)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode array: %w", err)
 		}
+		return res, nil
 	default:
-		res, err = j.decodeToken(decoder, t)
-		if err != nil {
-			return nil, err
-		}
+		return j.decodeToken(decoder, t)
 	}
-
-	return res, nil
 }
 
 func (j *jsonReader) decodeObject(decoder *json.Decoder) (*model.Value, error) {
