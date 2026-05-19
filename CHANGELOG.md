@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.11.0] - 2026-05-19
+
 ### Added
 
 - Support for newline-delimited JSON (NDJSON) input. Multiple JSON values in a single input are now parsed as a multi-document branch, matching the existing YAML multi-document behaviour.
@@ -894,7 +896,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.10.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.11.0...HEAD
+[v3.11.0]: https://github.com/TomWright/dasel/compare/v3.10.1...v3.11.0
 [v3.10.1]: https://github.com/TomWright/dasel/compare/v3.10.0...v3.10.1
 [v3.10.0]: https://github.com/TomWright/dasel/compare/v3.9.0...v3.10.0
 [v3.9.0]: https://github.com/TomWright/dasel/compare/v3.8.1...v3.9.0
