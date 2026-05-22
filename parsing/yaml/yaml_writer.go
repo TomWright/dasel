@@ -1,7 +1,10 @@
 package yaml
 
 import (
+	"bytes"
+	"encoding/hex"
 	"fmt"
+	"unicode/utf8"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
@@ -29,7 +32,52 @@ func (j *yamlWriter) Write(value *model.Value) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return yaml.Marshal(res)
+	out, err := yaml.Marshal(res)
+	if err != nil {
+		return nil, err
+	}
+	return unescapeYAMLUnicode(out), nil
+}
+
+// unescapeYAMLUnicode replaces \UNNNNNNNN escape sequences (8 hex digits) with
+// the corresponding UTF-8 bytes. The yaml library incorrectly escapes
+// supplementary-plane characters (U+10000–U+10FFFF) because its isPrintable
+// function does not handle 4-byte UTF-8 sequences.
+func unescapeYAMLUnicode(data []byte) []byte {
+	marker := []byte(`\U`)
+	var result []byte
+	for {
+		idx := bytes.Index(data, marker)
+		if idx == -1 {
+			break
+		}
+		// Need exactly 8 hex digits after \U
+		if idx+10 > len(data) {
+			result = append(result, data[:idx+2]...)
+			data = data[idx+2:]
+			continue
+		}
+		hexBytes := data[idx+2 : idx+10]
+		decoded, err := hex.DecodeString(string(hexBytes))
+		if err != nil || len(decoded) != 4 {
+			result = append(result, data[:idx+2]...)
+			data = data[idx+2:]
+			continue
+		}
+		r := rune(decoded[0])<<24 | rune(decoded[1])<<16 | rune(decoded[2])<<8 | rune(decoded[3])
+		if r < 0x10000 || r > 0x10FFFF || !utf8.ValidRune(r) {
+			result = append(result, data[:idx+10]...)
+			data = data[idx+10:]
+			continue
+		}
+		result = append(result, data[:idx]...)
+		var buf [4]byte
+		n := utf8.EncodeRune(buf[:], r)
+		result = append(result, buf[:n]...)
+		data = data[idx+10:]
+	}
+	result = append(result, data...)
+	return result
 }
 
 func (yv *yamlValue) ToNode() (*yaml.Node, error) {

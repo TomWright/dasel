@@ -674,6 +674,22 @@ single: 'Tom'
 `,
 	}.run)
 
+	t.Run("emoji preserved as UTF-8", rwTestCase{
+		in: "US: \"\U0001F1FA\U0001F1F8\"\n",
+	}.run)
+
+	t.Run("simple emoji preserved", rwTestCase{
+		in: "face: \"\U0001F600\"\n",
+	}.run)
+
+	t.Run("mixed ASCII and emoji", rwTestCase{
+		in: "msg: \"hello \U0001F30D world\"\n",
+	}.run)
+
+	t.Run("supplementary plane unicode", rwTestCase{
+		in: "clef: \"\U0001D11E\"\ncjk: \"\U00020000\"\nmath: \"\U0001D54F\"\n",
+	}.run)
+
 	t.Run("yaml expansion budget resets per document", func(t *testing.T) {
 		reader, err := parsing.Format("yaml").NewReader(parsing.DefaultReaderOptions())
 		if err != nil {
