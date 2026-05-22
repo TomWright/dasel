@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix YAML output escaping emoji and supplementary-plane Unicode characters (U+10000–U+10FFFF) to `\UNNNNNNNN` sequences instead of preserving UTF-8 ([#437](https://github.com/TomWright/dasel/issues/437)).
+
 ## [v3.11.0] - 2026-05-19
 
 ### Added
