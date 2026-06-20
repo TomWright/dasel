@@ -18,7 +18,11 @@ const (
 	maxCommentLength = 10_000     // Maximum bytes per comment (10KB) - prevents memory exhaustion from single large comments
 	maxTotalComments = 1_000      // Maximum comments per document - prevents abuse via comment flooding
 	maxXMLSize       = 10_000_000 // Maximum XML input size (10MB) - prevents processing of excessively large files
+	maxXMLDepth      = 10_000     // Maximum element nesting depth - prevents stack overflow from deeply nested documents
 )
+
+// ErrXMLMaxDepthExceeded is returned when XML nesting depth exceeds maxXMLDepth.
+var ErrXMLMaxDepthExceeded = errors.New("xml nesting depth exceeded")
 
 func newXMLReader(options parsing.ReaderOptions) (parsing.Reader, error) {
 	return &xmlReader{
@@ -44,7 +48,7 @@ func (j *xmlReader) Read(data []byte) (*model.Value, error) {
 		Name: xml.Name{
 			Local: "root",
 		},
-	}, &totalComments)
+	}, &totalComments, 0)
 	if err != nil {
 		return nil, err
 	}
@@ -169,7 +173,11 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 	return res, nil
 }
 
-func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement, totalComments *int) (*xmlElement, error) {
+func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement, totalComments *int, depth int) (*xmlElement, error) {
+	if depth > maxXMLDepth {
+		return nil, ErrXMLMaxDepthExceeded
+	}
+
 	el := &xmlElement{
 		Name:                   element.Name.Local,
 		Attrs:                  make([]xmlAttr, 0),
@@ -208,7 +216,7 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement,
 
 		switch t := t.(type) {
 		case xml.StartElement:
-			child, err := j.parseElement(decoder, t, totalComments)
+			child, err := j.parseElement(decoder, t, totalComments, depth+1)
 			if err != nil {
 				return nil, err
 			}

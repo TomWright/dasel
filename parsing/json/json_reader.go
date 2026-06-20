@@ -2,12 +2,18 @@ package json
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	json "github.com/goccy/go-json"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"strings"
 )
+
+// ErrJSONMaxDepthExceeded is returned when JSON nesting depth exceeds maxJSONDepth.
+var ErrJSONMaxDepthExceeded = errors.New("json nesting depth exceeded")
+
+const maxJSONDepth = 10_000
 
 var _ parsing.Reader = (*jsonReader)(nil)
 
@@ -27,7 +33,7 @@ func (j *jsonReader) Read(data []byte) (*model.Value, error) {
 	var results []*model.Value
 
 	for decoder.More() {
-		v, err := j.decodeValue(decoder)
+		v, err := j.decodeValue(decoder, 0)
 		if err != nil {
 			return nil, err
 		}
@@ -51,7 +57,7 @@ func (j *jsonReader) Read(data []byte) (*model.Value, error) {
 	}
 }
 
-func (j *jsonReader) decodeValue(decoder *json.Decoder) (*model.Value, error) {
+func (j *jsonReader) decodeValue(decoder *json.Decoder, depth int) (*model.Value, error) {
 	t, err := decoder.Token()
 	if err != nil {
 		return nil, err
@@ -59,13 +65,13 @@ func (j *jsonReader) decodeValue(decoder *json.Decoder) (*model.Value, error) {
 
 	switch t {
 	case jsonOpenObject:
-		res, err := j.decodeObject(decoder)
+		res, err := j.decodeObject(decoder, depth+1)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode object: %w", err)
 		}
 		return res, nil
 	case jsonOpenArray:
-		res, err := j.decodeArray(decoder)
+		res, err := j.decodeArray(decoder, depth+1)
 		if err != nil {
 			return nil, fmt.Errorf("could not decode array: %w", err)
 		}
@@ -75,7 +81,11 @@ func (j *jsonReader) decodeValue(decoder *json.Decoder) (*model.Value, error) {
 	}
 }
 
-func (j *jsonReader) decodeObject(decoder *json.Decoder) (*model.Value, error) {
+func (j *jsonReader) decodeObject(decoder *json.Decoder, depth int) (*model.Value, error) {
+	if depth > maxJSONDepth {
+		return nil, ErrJSONMaxDepthExceeded
+	}
+
 	res := model.NewMapValue()
 
 	var key any = nil
@@ -92,7 +102,7 @@ func (j *jsonReader) decodeObject(decoder *json.Decoder) (*model.Value, error) {
 			if key == nil {
 				return res, fmt.Errorf("unexpected token: %v", t)
 			}
-			value, err := j.decodeArray(decoder)
+			value, err := j.decodeArray(decoder, depth+1)
 			if err != nil {
 				return res, err
 			}
@@ -108,7 +118,7 @@ func (j *jsonReader) decodeObject(decoder *json.Decoder) (*model.Value, error) {
 			if key == nil {
 				return res, fmt.Errorf("unexpected token: %v", t)
 			}
-			value, err := j.decodeObject(decoder)
+			value, err := j.decodeObject(decoder, depth+1)
 			if err != nil {
 				return res, err
 			}
@@ -137,7 +147,11 @@ func (j *jsonReader) decodeObject(decoder *json.Decoder) (*model.Value, error) {
 	}
 }
 
-func (j *jsonReader) decodeArray(decoder *json.Decoder) (*model.Value, error) {
+func (j *jsonReader) decodeArray(decoder *json.Decoder, depth int) (*model.Value, error) {
+	if depth > maxJSONDepth {
+		return nil, ErrJSONMaxDepthExceeded
+	}
+
 	res := model.NewSliceValue()
 	for {
 		t, err := decoder.Token()
@@ -148,7 +162,7 @@ func (j *jsonReader) decodeArray(decoder *json.Decoder) (*model.Value, error) {
 
 		switch t {
 		case jsonOpenArray:
-			value, err := j.decodeArray(decoder)
+			value, err := j.decodeArray(decoder, depth+1)
 			if err != nil {
 				return res, err
 			}
@@ -160,7 +174,7 @@ func (j *jsonReader) decodeArray(decoder *json.Decoder) (*model.Value, error) {
 		case jsonCloseObject:
 			return res, fmt.Errorf("unexpected token: %t", t)
 		case jsonOpenObject:
-			value, err := j.decodeObject(decoder)
+			value, err := j.decodeObject(decoder, depth+1)
 			if err != nil {
 				return res, err
 			}

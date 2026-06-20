@@ -1,6 +1,8 @@
 package json_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/google/go-cmp/cmp"
@@ -615,5 +617,39 @@ func TestNDJSON(t *testing.T) {
 				t.Fatalf("expected 100 documents, got %d", length)
 			}
 		})
+	})
+}
+
+func TestJSONReader_DepthLimit(t *testing.T) {
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("nested arrays exceeding limit return error", func(t *testing.T) {
+		// 10_001 levels of nested arrays — one past the 10_000 limit.
+		const depth = 10_001
+		data := []byte(strings.Repeat("[", depth) + strings.Repeat("]", depth))
+		_, err := reader.Read(data)
+		if !errors.Is(err, json.ErrJSONMaxDepthExceeded) {
+			t.Fatalf("expected ErrJSONMaxDepthExceeded, got %v", err)
+		}
+	})
+
+	t.Run("nested objects exceeding limit return error", func(t *testing.T) {
+		const depth = 10_001
+		data := []byte(strings.Repeat(`{"x":`, depth) + `"v"` + strings.Repeat("}", depth))
+		_, err := reader.Read(data)
+		if !errors.Is(err, json.ErrJSONMaxDepthExceeded) {
+			t.Fatalf("expected ErrJSONMaxDepthExceeded, got %v", err)
+		}
+	})
+
+	t.Run("normal nesting within limit succeeds", func(t *testing.T) {
+		data := []byte(`{"a":{"b":{"c":"d"}}}`)
+		_, err := reader.Read(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
 	})
 }

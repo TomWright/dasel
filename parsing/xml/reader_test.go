@@ -1,6 +1,8 @@
 package xml_test
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/tomwright/dasel/v3/parsing"
@@ -175,6 +177,33 @@ func TestXmlReader_Read(t *testing.T) {
 		exp := ""
 		if exp != got {
 			t.Fatalf("Expected value %q but got %q", exp, got)
+		}
+	})
+}
+
+func TestXMLReader_DepthLimit(t *testing.T) {
+	reader, err := xml.XML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	t.Run("deeply nested elements exceeding limit return error", func(t *testing.T) {
+		// 10_001 levels — one past the 10_000 limit. Each open tag is 3 bytes (<a>),
+		// so total ~60 KB, well under the 10 MB size cap.
+		const depth = 10_001
+		open := strings.Repeat("<a>", depth)
+		close := strings.Repeat("</a>", depth)
+		_, err := reader.Read([]byte(open + close))
+		if !errors.Is(err, xml.ErrXMLMaxDepthExceeded) {
+			t.Fatalf("expected ErrXMLMaxDepthExceeded, got %v", err)
+		}
+	})
+
+	t.Run("normal nesting within limit succeeds", func(t *testing.T) {
+		data := []byte(`<root><a><b><c>hello</c></b></a></root>`)
+		_, err := reader.Read(data)
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
 		}
 	})
 }

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Fixed stack overflow (unrecoverable `fatal error`) in the JSON and XML readers when parsing deeply nested input ([GHSA-cqxr-jxr2-85pq](https://github.com/TomWright/dasel/security/advisories/GHSA-cqxr-jxr2-85pq)). Both readers now enforce a 10,000-level nesting depth limit and return a clean error (`ErrJSONMaxDepthExceeded` / `ErrXMLMaxDepthExceeded`) instead of crashing the process.
+
 ## [v3.11.0] - 2026-05-19
 
 ### Added
