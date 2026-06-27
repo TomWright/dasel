@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [v3.11.2] - 2026-06-27
+
 ### Security
 
 - Fixed panic (index out of range) in the selector lexer when the input ends with whitespace, e.g. `dasel query 'a '` ([GHSA-65gg-g7rw-6cpc](https://github.com/TomWright/dasel/security/advisories/GHSA-65gg-g7rw-6cpc)). The whitespace-skip loop could advance the position to the end of input, after which the next character access had no bounds check.
@@ -906,7 +908,8 @@ See [documentation](https://daseldocs.tomwright.me) for all changes.
 
 - Everything!
 
-[unreleased]: https://github.com/TomWright/dasel/compare/v3.11.1...HEAD
+[unreleased]: https://github.com/TomWright/dasel/compare/v3.11.2...HEAD
+[v3.11.2]: https://github.com/TomWright/dasel/compare/v3.11.1...v3.11.2
 [v3.11.1]: https://github.com/TomWright/dasel/compare/v3.11.0...v3.11.1
 [v3.11.0]: https://github.com/TomWright/dasel/compare/v3.10.1...v3.11.0
 [v3.10.1]: https://github.com/TomWright/dasel/compare/v3.10.0...v3.10.1
