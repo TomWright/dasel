@@ -190,4 +190,31 @@ func TestTokenizer_Parse(t *testing.T) {
 			match: matchUnexpectedEOFError(2),
 		}.run)
 	})
+
+	t.Run("trailing whitespace", func(t *testing.T) {
+		t.Run("symbol with trailing space", testCase{
+			in:  "a ",
+			out: []lexer.TokenKind{lexer.Symbol},
+		}.run)
+		t.Run("symbol with trailing tab", testCase{
+			in:  "a\t",
+			out: []lexer.TokenKind{lexer.Symbol},
+		}.run)
+		t.Run("symbol with trailing newline", testCase{
+			in:  "a\n",
+			out: []lexer.TokenKind{lexer.Symbol},
+		}.run)
+		t.Run("expression with trailing space", testCase{
+			in:  "a.b ",
+			out: []lexer.TokenKind{lexer.Symbol, lexer.Dot, lexer.Symbol},
+		}.run)
+		t.Run("whitespace only", testCase{
+			in:  " ",
+			out: []lexer.TokenKind{},
+		}.run)
+		t.Run("empty string", testCase{
+			in:  "",
+			out: []lexer.TokenKind{},
+		}.run)
+	})
 }

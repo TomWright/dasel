@@ -56,6 +56,10 @@ func (p *Tokenizer) parseCurRune() (Token, error) {
 		p.i++
 	}
 
+	if p.i >= p.srcLen {
+		return NewToken(EOF, "", p.i, 0), nil
+	}
+
 	// Skip over comments
 	if p.src[p.i] == '/' && p.i+1 < p.srcLen && p.src[p.i+1] == '/' {
 		p.i += 2
