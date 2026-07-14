@@ -47,12 +47,20 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 		if err != nil {
 			return nil, fmt.Errorf("failed to convert non-map top-level value: %w", err)
 		}
+
+		var inner interface{}
+
 		// For nil/zero interface, ensure we pass nil interface rather than a typed zero.
 		if typ.Kind() == reflect.Interface && rv.IsZero() {
-			goValue = nil
+			inner = nil
 		} else {
-			goValue = rv.Interface()
+			inner = rv.Interface()
 		}
+
+		// go-toml requires a table at the document root; a bare scalar or
+		// array at the root is not valid TOML. Wrap non-map top-level values
+		// in a single-key map.
+		goValue = map[string]interface{}{"value": inner}
 	}
 
 	// We currently encode the top level value directly. We have little control over nested values.

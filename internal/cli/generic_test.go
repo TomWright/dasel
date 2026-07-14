@@ -178,7 +178,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 					out: []bytesWithFormat{
 						newStringWithFormat(json.JSON, `"world"`),
 						newStringWithFormat(yaml.YAML, `world`),
-						newStringWithFormat(toml.TOML, `'world'`),
+						newStringWithFormat(toml.TOML, `value = 'world'`),
 					},
 				}.run)
 				t.Run("int", testCases{
@@ -191,7 +191,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 					out: []bytesWithFormat{
 						newStringWithFormat(json.JSON, `123`),
 						newStringWithFormat(yaml.YAML, `123`),
-						newStringWithFormat(toml.TOML, `123`),
+						newStringWithFormat(toml.TOML, `value = 123`),
 					},
 				}.run)
 				t.Run("float", testCases{
@@ -204,7 +204,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 					out: []bytesWithFormat{
 						newStringWithFormat(json.JSON, `12.3`),
 						newStringWithFormat(yaml.YAML, `12.3`),
-						newStringWithFormat(toml.TOML, `12.3`),
+						newStringWithFormat(toml.TOML, `value = 12.3`),
 					},
 				}.run)
 				t.Run("bool", func(t *testing.T) {
@@ -217,7 +217,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						out: []bytesWithFormat{
 							newStringWithFormat(json.JSON, `true`),
 							newStringWithFormat(yaml.YAML, `true`),
-							newStringWithFormat(toml.TOML, `true`),
+							newStringWithFormat(toml.TOML, `value = true`),
 						},
 					}.run)
 					t.Run("false", testCases{
@@ -229,7 +229,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						out: []bytesWithFormat{
 							newStringWithFormat(json.JSON, `false`),
 							newStringWithFormat(yaml.YAML, `false`),
-							newStringWithFormat(toml.TOML, `false`),
+							newStringWithFormat(toml.TOML, `value = false`),
 						},
 					}.run)
 					t.Run("true string", testCases{
@@ -241,7 +241,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						out: []bytesWithFormat{
 							newStringWithFormat(json.JSON, `"true"`),
 							newStringWithFormat(yaml.YAML, `"true"`),
-							newStringWithFormat(toml.TOML, `'true'`),
+							newStringWithFormat(toml.TOML, `value = 'true'`),
 						},
 					}.run)
 					t.Run("false string", testCases{
@@ -253,7 +253,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						out: []bytesWithFormat{
 							newStringWithFormat(json.JSON, `"false"`),
 							newStringWithFormat(yaml.YAML, `"false"`),
-							newStringWithFormat(toml.TOML, `'false'`),
+							newStringWithFormat(toml.TOML, `value = 'false'`),
 						},
 					}.run)
 				})
@@ -297,7 +297,7 @@ boolFalse: false`)
 		out: []bytesWithFormat{
 			newStringWithFormat(json.JSON, `"world"`),
 			newStringWithFormat(yaml.YAML, `world`),
-			newStringWithFormat(toml.TOML, `'world'`),
+			newStringWithFormat(toml.TOML, `value = 'world'`),
 		},
 	}.run)
 
@@ -311,7 +311,7 @@ boolFalse: false`)
 		out: []bytesWithFormat{
 			newStringWithFormat(json.JSON, `123`),
 			newStringWithFormat(yaml.YAML, `123`),
-			newStringWithFormat(toml.TOML, `123`),
+			newStringWithFormat(toml.TOML, `value = 123`),
 		},
 	}.run)
 
@@ -325,7 +325,7 @@ boolFalse: false`)
 		out: []bytesWithFormat{
 			newStringWithFormat(json.JSON, `12.3`),
 			newStringWithFormat(yaml.YAML, `12.3`),
-			newStringWithFormat(toml.TOML, `12.3`),
+			newStringWithFormat(toml.TOML, `value = 12.3`),
 		},
 	}.run)
 
@@ -339,7 +339,7 @@ boolFalse: false`)
 		out: []bytesWithFormat{
 			newStringWithFormat(json.JSON, `true`),
 			newStringWithFormat(yaml.YAML, `true`),
-			newStringWithFormat(toml.TOML, `true`),
+			newStringWithFormat(toml.TOML, `value = true`),
 		},
 	}.run)
 
@@ -353,7 +353,7 @@ boolFalse: false`)
 		out: []bytesWithFormat{
 			newStringWithFormat(json.JSON, `false`),
 			newStringWithFormat(yaml.YAML, `false`),
-			newStringWithFormat(toml.TOML, `false`),
+			newStringWithFormat(toml.TOML, `value = false`),
 		},
 	}.run)
 

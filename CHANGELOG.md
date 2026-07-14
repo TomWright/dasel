@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- TOML writer now wraps non-map root values (scalars, slices) in a single-key map (`value = ...`) so the output is valid TOML. Previously it emitted bare values which are not valid TOML at the document root.
+
 ## [v3.11.2] - 2026-06-27
 
 ### Security
