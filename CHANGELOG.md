@@ -7,6 +7,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated `github.com/pelletier/go-toml/v2` to v2.4.3, which includes the fixes from [GHSA-frc4-6h9q-39fq](https://github.com/pelletier/go-toml/security/advisories/GHSA-frc4-6h9q-39fq) ([#550](https://github.com/TomWright/dasel/issues/550)).
+
+### Fixed
+
+- The TOML writer no longer relies on go-toml encoding a bare value as a document root, which go-toml v2.4 rejects. Selecting a scalar or list and writing it as TOML (e.g. `dasel -i json -o toml 'hello'`) works again.
+- Writing a list of tables as the top level value now emits a valid inline array of tables (e.g. `[{a = 1}, {a = 2}]`) instead of table headers with an empty key.
+
 ## [v3.11.2] - 2026-06-27
 
 ### Security

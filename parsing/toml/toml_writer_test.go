@@ -5,6 +5,7 @@ import (
 	"strings"
 	"testing"
 
+	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/toml"
 )
@@ -237,6 +238,79 @@ func TestTomlWriter_MoreCases(t *testing.T) {
 		if !b2 {
 			// Print original and written output for debugging.
 			t.Fatalf("complex-example round-trip mismatch\n--- ORIGINAL ---\n%s\n--- WRITTEN ---\n%s\n", string(b), string(out))
+		}
+	})
+}
+
+// TestTomlWriter_RootValue covers top level values that aren't tables, e.g. the
+// result of selecting a single scalar or list out of a document. A TOML document
+// root must be a table, so these are written as bare values.
+func TestTomlWriter_RootValue(t *testing.T) {
+	slice := func(vals ...*model.Value) *model.Value {
+		s := model.NewSliceValue()
+		for _, v := range vals {
+			if err := s.Append(v); err != nil {
+				t.Fatalf("failed to append to slice: %v", err)
+			}
+		}
+		return s
+	}
+	kvMap := func(k string, v *model.Value) *model.Value {
+		m := model.NewMapValue()
+		if err := m.SetMapKey(k, v); err != nil {
+			t.Fatalf("failed to set map key: %v", err)
+		}
+		return m
+	}
+
+	tests := map[string]struct {
+		in  *model.Value
+		exp string
+	}{
+		"string":          {in: model.NewStringValue("world"), exp: "'world'\n"},
+		"string quoting":  {in: model.NewStringValue(`it's "here"`), exp: "\"it's \\\"here\\\"\"\n"},
+		"int":             {in: model.NewIntValue(123), exp: "123\n"},
+		"negative int":    {in: model.NewIntValue(-5), exp: "-5\n"},
+		"float":           {in: model.NewFloatValue(12.3), exp: "12.3\n"},
+		"bool true":       {in: model.NewBoolValue(true), exp: "true\n"},
+		"bool false":      {in: model.NewBoolValue(false), exp: "false\n"},
+		"empty slice":     {in: slice(), exp: "[]\n"},
+		"int slice":       {in: slice(model.NewIntValue(1), model.NewIntValue(2)), exp: "[1, 2]\n"},
+		"string slice":    {in: slice(model.NewStringValue("a")), exp: "['a']\n"},
+		"nested slice":    {in: slice(slice(model.NewIntValue(1)), slice()), exp: "[[1], []]\n"},
+		"slice of tables": {in: slice(kvMap("a", model.NewIntValue(1)), kvMap("a", model.NewIntValue(2))), exp: "[{a = 1}, {a = 2}]\n"},
+	}
+
+	for name, tc := range tests {
+		name := name
+		tc := tc
+		t.Run(name, func(t *testing.T) {
+			for _, compact := range []bool{false, true} {
+				opts := parsing.DefaultWriterOptions()
+				opts.Compact = compact
+				writer, err := toml.TOML.NewWriter(opts)
+				if err != nil {
+					t.Fatalf("unexpected error creating writer: %v", err)
+				}
+
+				out, err := writer.Write(tc.in)
+				if err != nil {
+					t.Fatalf("writer error (compact=%v): %v", compact, err)
+				}
+				if got := string(out); got != tc.exp {
+					t.Fatalf("root value output mismatch (compact=%v)\nexpected:\n%s\ngot:\n%s", compact, tc.exp, got)
+				}
+			}
+		})
+	}
+
+	t.Run("null", func(t *testing.T) {
+		writer, err := toml.TOML.NewWriter(parsing.DefaultWriterOptions())
+		if err != nil {
+			t.Fatalf("unexpected error creating writer: %v", err)
+		}
+		if _, err := writer.Write(model.NewNullValue()); err == nil {
+			t.Fatal("expected an error writing a null root value, got none")
 		}
 	})
 }

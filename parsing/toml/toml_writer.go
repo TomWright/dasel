@@ -33,28 +33,6 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 		return nil, fmt.Errorf("nil value")
 	}
 
-	var goValue interface{}
-	var err error
-
-	if value.IsMap() {
-		goValue, err = buildGoValueForMap(value)
-		if err != nil {
-			return nil, fmt.Errorf("failed to construct go value: %w", err)
-		}
-	} else {
-		// handle scalars, slices, etc. Use goTypeAndValue to get a concrete reflect.Value
-		typ, rv, err := goTypeAndValue(value)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert non-map top-level value: %w", err)
-		}
-		// For nil/zero interface, ensure we pass nil interface rather than a typed zero.
-		if typ.Kind() == reflect.Interface && rv.IsZero() {
-			goValue = nil
-		} else {
-			goValue = rv.Interface()
-		}
-	}
-
 	// We currently encode the top level value directly. We have little control over nested values.
 	// Perhaps it would be better to implement a custom Encoder that respects metadata on nested values?
 	var buf bytes.Buffer
@@ -65,10 +43,25 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 		encoder.SetArraysMultiline(false)
 	}
 
-	if err := encoder.Encode(goValue); err != nil {
-		return nil, fmt.Errorf("toml encode failed: %w", err)
+	var outBytes []byte
+
+	if value.IsMap() {
+		goValue, err := buildGoValueForMap(value)
+		if err != nil {
+			return nil, fmt.Errorf("failed to construct go value: %w", err)
+		}
+		if err := encoder.Encode(goValue); err != nil {
+			return nil, fmt.Errorf("toml encode failed: %w", err)
+		}
+		outBytes = buf.Bytes()
+	} else {
+		// handle scalars, slices, etc.
+		var err error
+		outBytes, err = encodeRootValue(encoder, &buf, value)
+		if err != nil {
+			return nil, err
+		}
 	}
-	outBytes := buf.Bytes()
 
 	// Ensure trailing newline for consistency with other format writers/tests.
 	if len(outBytes) == 0 || outBytes[len(outBytes)-1] != '\n' {
@@ -76,6 +69,51 @@ func (j *tomlWriter) Write(value *model.Value) ([]byte, error) {
 	}
 
 	return outBytes, nil
+}
+
+// rootValueKey is the placeholder key used when encoding a non-table document root.
+const rootValueKey = "v"
+
+// encodeRootValue encodes a top level value that isn't a map, e.g. the result of
+// selecting a single scalar or list out of a document.
+// A TOML document root must be a table, so go-toml will only encode these values
+// as part of a key/value pair. We encode against a placeholder key and strip the
+// `<key> = ` prefix back off, leaving go-toml in charge of formatting the value.
+func encodeRootValue(encoder *pkg.Encoder, buf *bytes.Buffer, value *model.Value) ([]byte, error) {
+	typ, rv, err := goTypeAndValue(value)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert non-map top-level value: %w", err)
+	}
+
+	// A null root has no TOML representation at all. Pass the nil interface
+	// through so go-toml reports it rather than silently writing nothing.
+	if typ.Kind() == reflect.Interface && rv.IsZero() {
+		if err := encoder.Encode(nil); err != nil {
+			return nil, fmt.Errorf("toml encode failed: %w", err)
+		}
+		return buf.Bytes(), nil
+	}
+
+	// The inline option keeps maps and lists of maps as inline tables, rather than
+	// go-toml emitting table headers built from the placeholder key.
+	wrapperType := reflect.StructOf([]reflect.StructField{{
+		Name: "F0",
+		Type: typ,
+		Tag:  reflect.StructTag(fmt.Sprintf(`toml:"%s,inline"`, rootValueKey)),
+	}})
+	wrapper := reflect.New(wrapperType).Elem()
+	wrapper.Field(0).Set(rv)
+
+	if err := encoder.Encode(wrapper.Interface()); err != nil {
+		return nil, fmt.Errorf("toml encode failed: %w", err)
+	}
+
+	prefix := []byte(rootValueKey + " = ")
+	out := buf.Bytes()
+	if !bytes.HasPrefix(out, prefix) {
+		return nil, fmt.Errorf("toml encode failed: unexpected encoding of top-level value: %s", string(out))
+	}
+	return out[len(prefix):], nil
 }
 
 // buildGoValueForMap constructs a reflect.Value that is a struct with fields in
