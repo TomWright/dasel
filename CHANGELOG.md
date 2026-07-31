@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Security
+
+- Fixed stack overflow (unrecoverable `fatal error`) in the KDL reader when parsing deeply nested children blocks ([GHSA-v72w-jh9m-fv4r](https://github.com/TomWright/dasel/security/advisories/GHSA-v72w-jh9m-fv4r)). The KDL parser is mutually recursive over children blocks (`parseDocument` -> `parseNode` -> `parseNodeEntries` -> `parseDocument`) and was missed when the JSON and XML readers gained depth caps. It now enforces the same 10,000-level nesting limit and returns a clean error (`ErrKDLMaxDepthExceeded`) instead of crashing the process. Both recursion sites are covered, including the slashdashed (`/-{ }`) children block.
+
 ## [v3.11.2] - 2026-06-27
 
 ### Security

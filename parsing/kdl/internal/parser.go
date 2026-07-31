@@ -1,11 +1,18 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
 	"strings"
 )
+
+// maxKDLDepth is the maximum children block nesting depth - prevents stack overflow from deeply nested documents.
+const maxKDLDepth = 10_000
+
+// ErrMaxDepthExceeded is returned when KDL nesting depth exceeds maxKDLDepth.
+var ErrMaxDepthExceeded = errors.New("kdl nesting depth exceeded")
 
 // Parser parses KDL tokens into a Document.
 type Parser struct {
@@ -22,7 +29,7 @@ func Parse(input string) (*Document, error) {
 		return nil, err
 	}
 
-	return p.parseDocument()
+	return p.parseDocument(0)
 }
 
 func (p *Parser) detectVersionMarker(input string) error {
@@ -48,7 +55,13 @@ func (p *Parser) detectVersionMarker(input string) error {
 	return nil
 }
 
-func (p *Parser) parseDocument() (*Document, error) {
+// parseDocument parses a node list. depth is the children block nesting level,
+// 0 for the top level document, incremented for each nested children block.
+func (p *Parser) parseDocument(depth int) (*Document, error) {
+	if depth > maxKDLDepth {
+		return nil, ErrMaxDepthExceeded
+	}
+
 	doc := &Document{}
 
 	for {
@@ -73,14 +86,14 @@ func (p *Parser) parseDocument() (*Document, error) {
 				return nil, err
 			}
 			// Skip the next node
-			_, err := p.parseNode()
+			_, err := p.parseNode(depth)
 			if err != nil {
 				return nil, err
 			}
 			continue
 		}
 
-		node, err := p.parseNode()
+		node, err := p.parseNode(depth)
 		if err != nil {
 			return nil, err
 		}
@@ -92,7 +105,7 @@ func (p *Parser) parseDocument() (*Document, error) {
 	return doc, nil
 }
 
-func (p *Parser) parseNode() (*Node, error) {
+func (p *Parser) parseNode(depth int) (*Node, error) {
 	p.skipNewlines()
 
 	node := &Node{}
@@ -124,14 +137,14 @@ func (p *Parser) parseNode() (*Node, error) {
 	}
 
 	// Parse entries (arguments and properties) and optional children
-	if err := p.parseNodeEntries(node); err != nil {
+	if err := p.parseNodeEntries(node, depth); err != nil {
 		return nil, err
 	}
 
 	return node, nil
 }
 
-func (p *Parser) parseNodeEntries(node *Node) error {
+func (p *Parser) parseNodeEntries(node *Node, depth int) error {
 	for {
 		tok, err := p.tok.PeekToken()
 		if err != nil {
@@ -153,7 +166,7 @@ func (p *Parser) parseNodeEntries(node *Node) error {
 			if _, err := p.tok.NextToken(); err != nil {
 				return err
 			}
-			children, err := p.parseDocument()
+			children, err := p.parseDocument(depth + 1)
 			if err != nil {
 				return err
 			}
@@ -190,7 +203,7 @@ func (p *Parser) parseNodeEntries(node *Node) error {
 				if _, err := p.tok.NextToken(); err != nil {
 					return err
 				}
-				if _, err := p.parseDocument(); err != nil {
+				if _, err := p.parseDocument(depth + 1); err != nil {
 					return err
 				}
 				p.skipNewlines()
