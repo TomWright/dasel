@@ -8,6 +8,7 @@ import (
 	"github.com/tomwright/dasel/v3/parsing"
 	"github.com/tomwright/dasel/v3/parsing/json"
 	"github.com/tomwright/dasel/v3/parsing/kdl"
+	"github.com/tomwright/dasel/v3/parsing/plain"
 	"github.com/tomwright/dasel/v3/parsing/toml"
 	"github.com/tomwright/dasel/v3/parsing/yaml"
 )
@@ -179,6 +180,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						newStringWithFormat(json.JSON, `"world"`),
 						newStringWithFormat(yaml.YAML, `world`),
 						newStringWithFormat(toml.TOML, `'world'`),
+						newStringWithFormat(plain.Plain, `world`),
 					},
 				}.run)
 				t.Run("int", testCases{
@@ -192,6 +194,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						newStringWithFormat(json.JSON, `123`),
 						newStringWithFormat(yaml.YAML, `123`),
 						newStringWithFormat(toml.TOML, `123`),
+						newStringWithFormat(plain.Plain, `123`),
 					},
 				}.run)
 				t.Run("float", testCases{
@@ -205,6 +208,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 						newStringWithFormat(json.JSON, `12.3`),
 						newStringWithFormat(yaml.YAML, `12.3`),
 						newStringWithFormat(toml.TOML, `12.3`),
+						newStringWithFormat(plain.Plain, `12.3`),
 					},
 				}.run)
 				t.Run("bool", func(t *testing.T) {
@@ -218,6 +222,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							newStringWithFormat(json.JSON, `true`),
 							newStringWithFormat(yaml.YAML, `true`),
 							newStringWithFormat(toml.TOML, `true`),
+							newStringWithFormat(plain.Plain, `true`),
 						},
 					}.run)
 					t.Run("false", testCases{
@@ -230,6 +235,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							newStringWithFormat(json.JSON, `false`),
 							newStringWithFormat(yaml.YAML, `false`),
 							newStringWithFormat(toml.TOML, `false`),
+							newStringWithFormat(plain.Plain, `false`),
 						},
 					}.run)
 					t.Run("true string", testCases{
@@ -242,6 +248,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							newStringWithFormat(json.JSON, `"true"`),
 							newStringWithFormat(yaml.YAML, `"true"`),
 							newStringWithFormat(toml.TOML, `'true'`),
+							newStringWithFormat(plain.Plain, `true`),
 						},
 					}.run)
 					t.Run("false string", testCases{
@@ -254,6 +261,7 @@ sliceOfNumbers = [1, 2, 3, 4, 5]
 							newStringWithFormat(json.JSON, `"false"`),
 							newStringWithFormat(yaml.YAML, `"false"`),
 							newStringWithFormat(toml.TOML, `'false'`),
+							newStringWithFormat(plain.Plain, `false`),
 						},
 					}.run)
 				})

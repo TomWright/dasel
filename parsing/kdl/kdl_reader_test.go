@@ -1,6 +1,8 @@
 package kdl
 
 import (
+	"errors"
+	"strings"
 	"testing"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -203,6 +205,46 @@ func TestReader_MultipleArguments(t *testing.T) {
 	if length != 3 {
 		t.Fatalf("expected 3 args, got %d", length)
 	}
+}
+
+func TestReader_DepthLimit(t *testing.T) {
+	r := newTestReader(t)
+
+	t.Run("deeply nested children blocks exceeding limit return error", func(t *testing.T) {
+		// 10_001 levels — one past the 10_000 limit.
+		const depth = 10_001
+		data := []byte(strings.Repeat("node { ", depth) + strings.Repeat(" }", depth))
+		_, err := r.Read(data)
+		if !errors.Is(err, ErrKDLMaxDepthExceeded) {
+			t.Fatalf("expected ErrKDLMaxDepthExceeded, got %v", err)
+		}
+	})
+
+	// The slashdashed children block is a second recursion site into
+	// parseDocument, so it needs the same limit.
+	t.Run("deeply nested slashdashed children exceeding limit return error", func(t *testing.T) {
+		const depth = 10_001
+		data := []byte(strings.Repeat("node /-{ ", depth) + strings.Repeat(" }", depth))
+		_, err := r.Read(data)
+		if !errors.Is(err, ErrKDLMaxDepthExceeded) {
+			t.Fatalf("expected ErrKDLMaxDepthExceeded, got %v", err)
+		}
+	})
+
+	t.Run("nesting at the limit succeeds", func(t *testing.T) {
+		const depth = 10_000
+		data := []byte(strings.Repeat("node { ", depth) + strings.Repeat(" }", depth))
+		if _, err := r.Read(data); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+
+	t.Run("normal nesting within limit succeeds", func(t *testing.T) {
+		data := []byte("a { b { c \"hello\" } }")
+		if _, err := r.Read(data); err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+	})
 }
 
 // Helpers
