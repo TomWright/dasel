@@ -34,11 +34,17 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 	}
 
 	encoderFn := func(v any) error {
-		res, err := json.Marshal(v)
-		if err != nil {
+		// json.Marshal escapes <, > and & as \u003c, \u003e and \u0026.
+		// That is only required when embedding JSON in HTML, so use an
+		// encoder with HTML escaping disabled to keep the output readable.
+		valBuf := new(bytes.Buffer)
+		enc := json.NewEncoder(valBuf)
+		enc.SetEscapeHTML(false)
+		if err := enc.Encode(v); err != nil {
 			return err
 		}
-		_, err = buf.Write(res)
+		// Encode appends a trailing newline that we do not want here.
+		_, err := buf.Write(bytes.TrimSuffix(valBuf.Bytes(), []byte("\n")))
 		return err
 	}
 
