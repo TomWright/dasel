@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
+	"unicode/utf8"
 )
 
 // CSV represents the CSV file format.
@@ -17,14 +18,27 @@ func init() {
 	parsing.RegisterWriter(CSV, newCSVWriter)
 }
 
+// separatorFromOption decodes the csv-delimiter option as a rune. Taking
+// v[0] gives the first byte, so a multi-byte delimiter such as § became the
+// first half of its encoding and silently matched nothing.
+func separatorFromOption(ext map[string]string, def rune) (rune, error) {
+	v, ok := ext["csv-delimiter"]
+	if !ok || v == "" {
+		return def, nil
+	}
+	r, size := utf8.DecodeRuneInString(v)
+	if r == utf8.RuneError || size != len(v) {
+		return 0, fmt.Errorf("csv-delimiter must be a single character, got %q", v)
+	}
+	return r, nil
+}
+
 func newCSVWriter(options parsing.WriterOptions) (parsing.Writer, error) {
-	w := &csvWriter{
-		separator: ',',
+	separator, err := separatorFromOption(options.Ext, ',')
+	if err != nil {
+		return nil, err
 	}
-	if v, ok := options.Ext["csv-delimiter"]; ok && v != "" {
-		w.separator = rune(v[0])
-	}
-	return w, nil
+	return &csvWriter{separator: separator}, nil
 }
 
 func valueFromString(s string) (*model.Value, error) {

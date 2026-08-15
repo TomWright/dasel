@@ -11,13 +11,11 @@ import (
 )
 
 func newCSVReader(options parsing.ReaderOptions) (parsing.Reader, error) {
-	r := &csvReader{
-		separator: ',',
+	separator, err := separatorFromOption(options.Ext, ',')
+	if err != nil {
+		return nil, err
 	}
-	if v, ok := options.Ext["csv-delimiter"]; ok && v != "" {
-		r.separator = rune(v[0])
-	}
-	return r, nil
+	return &csvReader{separator: separator}, nil
 }
 
 type csvReader struct {
