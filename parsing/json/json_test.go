@@ -653,3 +653,58 @@ func TestJSONReader_DepthLimit(t *testing.T) {
 		}
 	})
 }
+
+func TestJSONReader_ExponentNumbers(t *testing.T) {
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name  string
+		in    string
+		value float64
+	}{
+		{name: "positive exponent", in: `{"a":1e3}`, value: 1000},
+		{name: "negative exponent", in: `{"a":1E-2}`, value: 0.01},
+		{name: "signed positive exponent", in: `{"a":2e+2}`, value: 200},
+		{name: "fraction and exponent", in: `{"a":1.5e3}`, value: 1500},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			v, err := reader.Read([]byte(tc.in))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			a, err := v.GetMapKey("a")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if a.Type() != model.TypeFloat {
+				t.Fatalf("expected float, got %s", a.Type())
+			}
+			got, err := a.FloatValue()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tc.value {
+				t.Fatalf("expected %v, got %v", tc.value, got)
+			}
+		})
+	}
+
+	t.Run("integers remain ints", func(t *testing.T) {
+		v, err := reader.Read([]byte(`{"a":3}`))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		a, err := v.GetMapKey("a")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a.Type() != model.TypeInt {
+			t.Fatalf("expected int, got %s", a.Type())
+		}
+	})
+}

@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - The TOML writer no longer relies on go-toml encoding a bare value as a document root, which go-toml v2.4 rejects. Selecting a scalar or list and writing it as TOML (e.g. `dasel -i json -o toml 'hello'`) works again.
 - Writing a list of tables as the top level value now emits a valid inline array of tables (e.g. `[{a = 1}, {a = 2}]`) instead of table headers with an empty key.
+- The JSON reader accepts numbers written in exponent notation without a fraction, e.g. `1e3` or `1E-2`. These are valid JSON but the reader only treated a number as a float when it contained a `.`, so it tried to parse the exponent form as an integer and failed with `strconv.ParseInt: invalid syntax`.
 - A multi-byte `csv-delimiter` is decoded as a rune rather than a byte. `--rw-flag csv-delimiter=§` used to take the first byte of the encoding, so nothing split on read and the write side emitted a mangled separator. A delimiter that isn't exactly one character is now rejected instead of silently truncated.
 
 ### Security
