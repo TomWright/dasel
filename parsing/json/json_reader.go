@@ -197,7 +197,9 @@ func (j *jsonReader) decodeToken(decoder *json.Decoder, t json.Token) (*model.Va
 	switch tv := t.(type) {
 	case json.Number:
 		strNum := tv.String()
-		if strings.Contains(strNum, ".") {
+		// Numbers with a fraction or an exponent are floats.
+		// E.g. 1.5, 1e3, 1E-2.
+		if strings.ContainsAny(strNum, ".eE") {
 			floatNum, err := tv.Float64()
 			if err == nil {
 				return model.NewFloatValue(floatNum), nil
