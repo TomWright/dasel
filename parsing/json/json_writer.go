@@ -16,11 +16,16 @@ var _ parsing.Writer = (*jsonWriter)(nil)
 func newJSONWriter(options parsing.WriterOptions) (parsing.Writer, error) {
 	return &jsonWriter{
 		options: options,
+		// HTML escaping of <, > and & is disabled by default; the
+		// `json-escape` format flag re-enables it when set to `html`
+		// (e.g. for JSON embedded in HTML documents).
+		escapeHTML: options.Ext["json-escape"] == "html",
 	}, nil
 }
 
 type jsonWriter struct {
-	options parsing.WriterOptions
+	options    parsing.WriterOptions
+	escapeHTML bool
 }
 
 // Write writes a value to a byte slice.
@@ -34,11 +39,18 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 	}
 
 	encoderFn := func(v any) error {
-		res, err := json.Marshal(v)
-		if err != nil {
+		// json.Marshal escapes <, > and & as \u003c, \u003e and \u0026.
+		// That is only required when embedding JSON in HTML, so HTML
+		// escaping stays disabled unless the `json-escape=html` format
+		// flag requests it.
+		valBuf := new(bytes.Buffer)
+		enc := json.NewEncoder(valBuf)
+		enc.SetEscapeHTML(j.escapeHTML)
+		if err := enc.Encode(v); err != nil {
 			return err
 		}
-		_, err = buf.Write(res)
+		// Encode appends a trailing newline that we do not want here.
+		_, err := buf.Write(bytes.TrimSuffix(valBuf.Bytes(), []byte("\n")))
 		return err
 	}
 
