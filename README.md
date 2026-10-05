@@ -37,6 +37,94 @@ It provides a consistent, powerful syntax to traverse and update data — making
 
 ## Installation
 
+### Automated Script
+
+Download and install the appropriate binary for your system architecture:
+
+```sh
+curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
+```
+
+Pass options through environment variables:
+
+```sh
+# Custom installation directory
+BINDIR=~/.local/bin curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
+
+# Specific release version
+VERSION=v3.11.2 curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
+```
+
+### Manual Binary Download
+
+Download prebuilt binaries directly from GitHub releases using `curl`:
+
+#### Linux (aarch64 / arm64, e.g. Amazon Linux 2023, Ubuntu ARM)
+
+```sh
+curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_linux_arm64 -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+Using the GitHub API:
+
+```sh
+curl -sSLf "$(curl -sSLf https://api.github.com/repos/TomWright/dasel/releases/latest | grep browser_download_url | grep linux_arm64 | grep -v '\.gz' | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+#### Linux (x86_64 / amd64)
+
+```sh
+curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_linux_amd64 -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+Using the GitHub API:
+
+```sh
+curl -sSLf "$(curl -sSLf https://api.github.com/repos/TomWright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | grep -v '\.gz' | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+#### macOS (Apple Silicon / arm64)
+
+```sh
+curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_darwin_arm64 -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+#### macOS (Intel / amd64)
+
+```sh
+curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_darwin_amd64 -o dasel && chmod +x dasel
+sudo mv ./dasel /usr/local/bin/dasel
+```
+
+### Release Asset Target Mapping
+
+Each release provides standalone binaries and gzip archives for supported operating systems and CPU architectures:
+
+| Operating System | Architecture | Kernel / Machine (`uname -m`) | Release Binary Asset |
+| :--- | :--- | :--- | :--- |
+| Linux | ARM64 | `aarch64`, `arm64` | `dasel_linux_arm64` |
+| Linux | AMD64 | `x86_64`, `amd64` | `dasel_linux_amd64` |
+| Linux | ARM32 | `armv7l`, `armv6l`, `arm` | `dasel_linux_arm32` |
+| Linux | 386 | `i386`, `i686` | `dasel_linux_386` |
+| macOS | ARM64 | `arm64`, `aarch64` | `dasel_darwin_arm64` |
+| macOS | AMD64 | `x86_64` | `dasel_darwin_amd64` |
+| Windows | AMD64 | `x86_64`, `amd64` | `dasel_windows_amd64.exe` |
+| Windows | 386 | `i386`, `i686` | `dasel_windows_386.exe` |
+
+### Architecture Verification
+
+After downloading, verify the binary format and version:
+
+```sh
+file /usr/local/bin/dasel
+dasel --version
+```
+
 ### Homebrew (macOS/Linux)
 
 ```sh
@@ -53,9 +141,9 @@ go install github.com/tomwright/dasel/v3/cmd/dasel@master
 
 Prebuilt binaries are available on the [Releases](https://github.com/TomWright/dasel/releases) page for Linux, macOS, and Windows.
 
-### None of the above?
+### Documentation
 
-See the [installation docs](https://daseldocs.tomwright.me/getting-started/installation) for more options.
+See the [installation docs](https://daseldocs.tomwright.me/getting-started/installation) for package manager alternatives and container images.
 
 ---
 
