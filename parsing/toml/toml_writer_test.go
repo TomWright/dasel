@@ -442,3 +442,41 @@ sku = 12341234
 		})
 	}
 }
+
+func TestTomlWriter_TopLevelKeysNeedingQuotes(t *testing.T) {
+	reader, err := toml.TOML.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("unexpected error creating reader: %v", err)
+	}
+	writer, err := toml.TOML.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatalf("unexpected error creating writer: %v", err)
+	}
+
+	for _, doc := range []string{
+		"z = 1\n- = 2\n'q\"x\\y' = 3\n",
+		"'' = 1\n'a,b' = 2\n'c,omitempty' = 3\nd = 4\n",
+	} {
+		t.Run(doc, func(t *testing.T) {
+			v, err := reader.Read([]byte(doc))
+			if err != nil {
+				t.Fatalf("failed to read doc: %v", err)
+			}
+			out, err := writer.Write(v)
+			if err != nil {
+				t.Fatalf("failed to write doc: %v", err)
+			}
+			v2, err := reader.Read(out)
+			if err != nil {
+				t.Fatalf("failed to read generated doc: %v\n%s", err, out)
+			}
+			res, err := v.Equal(v2)
+			if err != nil {
+				t.Fatalf("failed to compare values: %v", err)
+			}
+			if b, err := res.BoolValue(); err != nil || !b {
+				t.Fatalf("round-trip value mismatch\norig:\n%s\nnew:\n%s", doc, out)
+			}
+		})
+	}
+}
