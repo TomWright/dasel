@@ -417,6 +417,23 @@ bin: 10
 		}.run)
 	})
 
+	t.Run("core schema bools", func(t *testing.T) {
+		t.Run("capitalised", rwTestCase{
+			in:  "a: True\nb: TRUE\nc: False\nd: FALSE\n",
+			out: "a: true\nb: true\nc: false\nd: false\n",
+		}.run)
+	})
+
+	t.Run("core schema special floats", func(t *testing.T) {
+		t.Run("lowercase", rwTestCase{
+			in: "a: .inf\nb: -.inf\nc: .nan\n",
+		}.run)
+		t.Run("other spellings", rwTestCase{
+			in:  "a: +.inf\nb: .Inf\nc: -.INF\nd: .NaN\ne: .NAN\n",
+			out: "a: .inf\nb: .inf\nc: -.inf\nd: .nan\ne: .nan\n",
+		}.run)
+	})
+
 	t.Run("bounded yaml expansion", func(t *testing.T) {
 		in := `a: &a ["lol","lol","lol","lol","lol","lol","lol","lol","lol"]
 b: &b [*a,*a,*a,*a,*a,*a,*a,*a,*a]

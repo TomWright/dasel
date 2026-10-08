@@ -95,7 +95,11 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 	case yaml.ScalarNode:
 		switch value.Tag {
 		case "!!bool":
-			yv.value = model.NewBoolValue(value.Value == "true")
+			var b bool
+			if err := value.Decode(&b); err != nil {
+				return err
+			}
+			yv.value = model.NewBoolValue(b)
 		case "!!int":
 			i, err := parseYAMLInt(value.Value)
 			if err != nil {
@@ -103,8 +107,8 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 			}
 			yv.value = model.NewIntValue(i)
 		case "!!float":
-			f, err := strconv.ParseFloat(value.Value, 64)
-			if err != nil {
+			var f float64
+			if err := value.Decode(&f); err != nil {
 				return err
 			}
 			yv.value = model.NewFloatValue(f)
