@@ -48,7 +48,7 @@ func (j *xmlReader) Read(data []byte) (*model.Value, error) {
 		Name: xml.Name{
 			Local: "root",
 		},
-	}, &totalComments, 0)
+	}, &totalComments, 0, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -173,13 +173,98 @@ func (e *xmlElement) toFriendlyModel() (*model.Value, error) {
 	return res, nil
 }
 
-func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement, totalComments *int, depth int) (*xmlElement, error) {
+// nsScope tracks the namespace prefixes in scope for an element so that
+// qualified names can be reconstructed on read.
+//
+// encoding/xml resolves a prefixed name into a Name{Space: <uri>, Local: <local>}
+// and drops the prefix that was written in the document. Without this mapping,
+// `<soap:Envelope xmlns:soap="...">` would be read back as `Envelope` and the
+// prefix lost on write.
+type nsScope struct {
+	parent *nsScope
+	// uriToPrefix maps a namespace URI to the prefix declared for it in this
+	// scope. The default namespace is recorded with an empty prefix.
+	uriToPrefix map[string]string
+}
+
+// xmlNamespaceURI is bound to the `xml` prefix implicitly in every document,
+// so no declaration for it ever appears in the input.
+const xmlNamespaceURI = "http://www.w3.org/XML/1998/namespace"
+
+// prefixFor returns the prefix bound to the given namespace URI in this scope
+// or any enclosing scope, and whether such a binding exists.
+func (s *nsScope) prefixFor(uri string) (string, bool) {
+	for scope := s; scope != nil; scope = scope.parent {
+		if prefix, ok := scope.uriToPrefix[uri]; ok {
+			return prefix, true
+		}
+	}
+	if uri == xmlNamespaceURI {
+		return "xml", true
+	}
+	return "", false
+}
+
+// qualify rebuilds the name as it was written in the document.
+func (s *nsScope) qualify(name xml.Name) string {
+	if name.Space == "" {
+		return name.Local
+	}
+	prefix, ok := s.prefixFor(name.Space)
+	if !ok {
+		// The prefix was never declared, so encoding/xml leaves it in Space
+		// verbatim rather than resolving it to a URI.
+		prefix = name.Space
+	}
+	if prefix == "" {
+		// Default namespace: the name was written without a prefix.
+		return name.Local
+	}
+	return prefix + ":" + name.Local
+}
+
+// isNamespaceDeclaration reports whether the attribute declares a namespace,
+// and returns the prefix it binds ("" for the default namespace).
+func isNamespaceDeclaration(name xml.Name) (string, bool) {
+	switch {
+	case name.Space == "xmlns":
+		return name.Local, true
+	case name.Space == "" && name.Local == "xmlns":
+		return "", true
+	default:
+		return "", false
+	}
+}
+
+// pushNamespaceScope builds the scope for an element from its namespace
+// declaration attributes, chained to the enclosing scope.
+func pushNamespaceScope(parent *nsScope, attrs []xml.Attr) *nsScope {
+	var declared map[string]string
+	for _, attr := range attrs {
+		prefix, ok := isNamespaceDeclaration(attr.Name)
+		if !ok {
+			continue
+		}
+		if declared == nil {
+			declared = make(map[string]string)
+		}
+		declared[attr.Value] = prefix
+	}
+	if declared == nil {
+		return parent
+	}
+	return &nsScope{parent: parent, uriToPrefix: declared}
+}
+
+func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement, totalComments *int, depth int, parentScope *nsScope) (*xmlElement, error) {
 	if depth > maxXMLDepth {
 		return nil, ErrXMLMaxDepthExceeded
 	}
 
+	scope := pushNamespaceScope(parentScope, element.Attr)
+
 	el := &xmlElement{
-		Name:                   element.Name.Local,
+		Name:                   scope.qualify(element.Name),
 		Attrs:                  make([]xmlAttr, 0),
 		Children:               make([]*xmlElement, 0),
 		ProcessingInstructions: make([]*xmlProcessingInstruction, 0),
@@ -187,8 +272,21 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement,
 	}
 
 	for _, attr := range element.Attr {
+		var name string
+		if prefix, ok := isNamespaceDeclaration(attr.Name); ok {
+			// Re-emit the declaration itself so the namespace survives a
+			// round-trip. Go reports `xmlns:soap` as {Space: "xmlns", Local: "soap"}
+			// and the default `xmlns` as {Space: "", Local: "xmlns"}.
+			if prefix != "" {
+				name = "xmlns:" + prefix
+			} else {
+				name = "xmlns"
+			}
+		} else {
+			name = scope.qualify(attr.Name)
+		}
 		el.Attrs = append(el.Attrs, xmlAttr{
-			Name:  attr.Name.Local,
+			Name:  name,
 			Value: attr.Value,
 		})
 	}
@@ -216,7 +314,7 @@ func (j *xmlReader) parseElement(decoder *xml.Decoder, element xml.StartElement,
 
 		switch t := t.(type) {
 		case xml.StartElement:
-			child, err := j.parseElement(decoder, t, totalComments, depth+1)
+			child, err := j.parseElement(decoder, t, totalComments, depth+1, scope)
 			if err != nil {
 				return nil, err
 			}
