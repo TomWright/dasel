@@ -34,7 +34,7 @@ func (j *jsonWriter) Write(value *model.Value) ([]byte, error) {
 	}
 
 	encoderFn := func(v any) error {
-		res, err := json.Marshal(v)
+		res, err := json.MarshalWithOption(v, json.DisableHTMLEscape())
 		if err != nil {
 			return err
 		}

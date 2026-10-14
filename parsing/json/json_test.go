@@ -653,3 +653,20 @@ func TestJSONReader_DepthLimit(t *testing.T) {
 		}
 	})
 }
+
+func TestJSONWriter_NoHTMLEscape(t *testing.T) {
+	val := model.NewValue("setuptools>=77.0.3 & <80.0")
+	writer, err := json.JSON.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	res, err := writer.Write(val)
+	if err != nil {
+		t.Fatal(err)
+	}
+	expected := `"setuptools>=77.0.3 & <80.0"` + "\n"
+	if string(res) != expected {
+		t.Fatalf("expected %s, got %s", expected, string(res))
+	}
+}
+
