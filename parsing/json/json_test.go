@@ -96,6 +96,70 @@ func TestJsonCompact(t *testing.T) {
 	}
 }
 
+func TestJsonDoesNotEscapeHTMLCharacters(t *testing.T) {
+	doc := []byte(`{
+    "string": "setuptools>=77.0.3 & <b>"
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer, err := json.JSON.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(doc) != string(newDoc) {
+		t.Fatalf("expected %s, got %s...\n%s", string(doc), string(newDoc), cmp.Diff(string(doc), string(newDoc)))
+	}
+}
+
+func TestJsonEscapeHTMLCharactersWithFlag(t *testing.T) {
+	doc := []byte(`{
+    "string": "setuptools>=77.0.3 & <b>"
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writerOptions := parsing.DefaultWriterOptions()
+	writerOptions.Ext["json-escape"] = "html"
+	writer, err := json.JSON.NewWriter(writerOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []byte(`{
+    "string": "setuptools` + "\\u003e" + `=77.0.3 ` + "\\u0026" + ` ` + "\\u003c" + `b` + "\\u003e" + `"
+}
+`)
+	if string(expected) != string(newDoc) {
+		t.Fatalf("expected %s, got %s...\n%s", string(expected), string(newDoc), cmp.Diff(string(expected), string(newDoc)))
+	}
+}
+
 func TestNDJSON(t *testing.T) {
 	newReader := func(t *testing.T) parsing.Reader {
 		t.Helper()

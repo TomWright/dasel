@@ -17,6 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- The JSON writer no longer escapes `<`, `>` and `&` as `\u003c`, `\u003e` and `\u0026`. That escaping is only needed when embedding JSON in HTML, so e.g. `dasel -i toml -o json` now emits `"setuptools>=77.0.3"` rather than `"setuptools\u003e=77.0.3"` ([#552](https://github.com/TomWright/dasel/issues/552)). The previous behaviour can be restored with the `json-escape=html` write flag.
 - The TOML writer no longer relies on go-toml encoding a bare value as a document root, which go-toml v2.4 rejects. Selecting a scalar or list and writing it as TOML (e.g. `dasel -i json -o toml 'hello'`) works again.
 - Writing a list of tables as the top level value now emits a valid inline array of tables (e.g. `[{a = 1}, {a = 2}]`) instead of table headers with an empty key.
 - A multi-byte `csv-delimiter` is decoded as a rune rather than a byte. `--rw-flag csv-delimiter=§` used to take the first byte of the encoding, so nothing split on read and the write side emitted a mangled separator. A delimiter that isn't exactly one character is now rejected instead of silently truncated.
