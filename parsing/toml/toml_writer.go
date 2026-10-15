@@ -126,6 +126,19 @@ func buildGoValueForMap(v *model.Value) (interface{}, error) {
 		return nil, err
 	}
 
+	// go-toml reads a struct tag name up to the first comma, and falls back to the
+	// Go field name for an empty one, so such keys can't be carried by a tag.
+	// Encode the map as a plain map instead, giving up key order rather than keys.
+	for _, kv := range kvs {
+		if kv.Key == "" || strings.Contains(kv.Key, ",") {
+			_, rv, err := goTypeAndValue(v)
+			if err != nil {
+				return nil, err
+			}
+			return rv.Interface(), nil
+		}
+	}
+
 	// Build struct fields in order
 	fields := make([]reflect.StructField, 0, len(kvs))
 	fieldValues := make([]reflect.Value, 0, len(kvs))
@@ -156,11 +169,17 @@ func buildGoValueForMap(v *model.Value) (interface{}, error) {
 			}
 		}
 
-		// create exported field name (F0, F1...) and set tag to preserve toml key
+		// A lone "-" tag tells go-toml to skip the field, while "-," names it "-".
+		if len(tomlTagContents) == 1 && kv.Key == "-" {
+			tomlTagContents = append(tomlTagContents, "")
+		}
+
+		// create exported field name (F0, F1...) and set tag to preserve toml key.
+		// The tag value is quoted so keys containing quotes or backslashes survive.
 		field := reflect.StructField{
 			Name: "F" + strconv.Itoa(i),
 			Type: ft,
-			Tag:  reflect.StructTag(fmt.Sprintf(`toml:"%s"`, strings.Join(tomlTagContents, ","))),
+			Tag:  reflect.StructTag("toml:" + strconv.Quote(strings.Join(tomlTagContents, ","))),
 		}
 		fields = append(fields, field)
 		fieldValues = append(fieldValues, fv)
