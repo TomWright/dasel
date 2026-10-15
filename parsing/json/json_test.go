@@ -96,6 +96,70 @@ func TestJsonCompact(t *testing.T) {
 	}
 }
 
+func TestJsonDoesNotEscapeHTMLCharacters(t *testing.T) {
+	doc := []byte(`{
+    "string": "setuptools>=77.0.3 & <b>"
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer, err := json.JSON.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(doc) != string(newDoc) {
+		t.Fatalf("expected %s, got %s...\n%s", string(doc), string(newDoc), cmp.Diff(string(doc), string(newDoc)))
+	}
+}
+
+func TestJsonEscapeHTMLCharactersWithFlag(t *testing.T) {
+	doc := []byte(`{
+    "string": "setuptools>=77.0.3 & <b>"
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writerOptions := parsing.DefaultWriterOptions()
+	writerOptions.Ext["json-escape"] = "html"
+	writer, err := json.JSON.NewWriter(writerOptions)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	expected := []byte(`{
+    "string": "setuptools` + "\\u003e" + `=77.0.3 ` + "\\u0026" + ` ` + "\\u003c" + `b` + "\\u003e" + `"
+}
+`)
+	if string(expected) != string(newDoc) {
+		t.Fatalf("expected %s, got %s...\n%s", string(expected), string(newDoc), cmp.Diff(string(expected), string(newDoc)))
+	}
+}
+
 func TestNDJSON(t *testing.T) {
 	newReader := func(t *testing.T) parsing.Reader {
 		t.Helper()
@@ -650,6 +714,61 @@ func TestJSONReader_DepthLimit(t *testing.T) {
 		_, err := reader.Read(data)
 		if err != nil {
 			t.Fatalf("unexpected error: %v", err)
+		}
+	})
+}
+
+func TestJSONReader_ExponentNumbers(t *testing.T) {
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	tests := []struct {
+		name  string
+		in    string
+		value float64
+	}{
+		{name: "positive exponent", in: `{"a":1e3}`, value: 1000},
+		{name: "negative exponent", in: `{"a":1E-2}`, value: 0.01},
+		{name: "signed positive exponent", in: `{"a":2e+2}`, value: 200},
+		{name: "fraction and exponent", in: `{"a":1.5e3}`, value: 1500},
+	}
+
+	for _, tc := range tests {
+		t.Run(tc.name, func(t *testing.T) {
+			v, err := reader.Read([]byte(tc.in))
+			if err != nil {
+				t.Fatalf("unexpected error: %v", err)
+			}
+			a, err := v.GetMapKey("a")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if a.Type() != model.TypeFloat {
+				t.Fatalf("expected float, got %s", a.Type())
+			}
+			got, err := a.FloatValue()
+			if err != nil {
+				t.Fatal(err)
+			}
+			if got != tc.value {
+				t.Fatalf("expected %v, got %v", tc.value, got)
+			}
+		})
+	}
+
+	t.Run("integers remain ints", func(t *testing.T) {
+		v, err := reader.Read([]byte(`{"a":3}`))
+		if err != nil {
+			t.Fatalf("unexpected error: %v", err)
+		}
+		a, err := v.GetMapKey("a")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if a.Type() != model.TypeInt {
+			t.Fatalf("expected int, got %s", a.Type())
 		}
 	})
 }
