@@ -37,25 +37,7 @@ It provides a consistent, powerful syntax to traverse and update data — making
 
 ## Installation
 
-### Automated Script
-
-Download and install the appropriate binary for your system architecture:
-
-```sh
-curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
-```
-
-Pass options through environment variables:
-
-```sh
-# Custom installation directory
-BINDIR=~/.local/bin curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
-
-# Specific release version
-VERSION=v3.11.2 curl -sSLf https://raw.githubusercontent.com/TomWright/dasel/master/install.sh | sh
-```
-
-### Manual Binary Download
+### Direct Download
 
 Download prebuilt binaries directly from GitHub releases using `curl`:
 
@@ -66,24 +48,10 @@ curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_lin
 sudo mv ./dasel /usr/local/bin/dasel
 ```
 
-Using the GitHub API:
-
-```sh
-curl -sSLf "$(curl -sSLf https://api.github.com/repos/TomWright/dasel/releases/latest | grep browser_download_url | grep linux_arm64 | grep -v '\.gz' | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
-sudo mv ./dasel /usr/local/bin/dasel
-```
-
 #### Linux (x86_64 / amd64)
 
 ```sh
 curl -sSLf https://github.com/TomWright/dasel/releases/latest/download/dasel_linux_amd64 -o dasel && chmod +x dasel
-sudo mv ./dasel /usr/local/bin/dasel
-```
-
-Using the GitHub API:
-
-```sh
-curl -sSLf "$(curl -sSLf https://api.github.com/repos/TomWright/dasel/releases/latest | grep browser_download_url | grep linux_amd64 | grep -v '\.gz' | cut -d\" -f 4)" -L -o dasel && chmod +x dasel
 sudo mv ./dasel /usr/local/bin/dasel
 ```
 
@@ -122,7 +90,7 @@ After downloading, verify the binary format and version:
 
 ```sh
 file /usr/local/bin/dasel
-dasel --version
+dasel version
 ```
 
 ### Homebrew (macOS/Linux)
