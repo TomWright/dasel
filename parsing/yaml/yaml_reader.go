@@ -97,7 +97,14 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		case "!!bool":
 			var b bool
 			if err := value.Decode(&b); err != nil {
-				return err
+				// Accept the YAML 1.1 spellings (yes/no/on/off) when the value
+				// is explicitly tagged !!bool, as documents written for YAML 1.1
+				// parsers commonly use them.
+				yaml11, ok := parseYAML11Bool(value.Value)
+				if !ok {
+					return err
+				}
+				b = yaml11
 			}
 			yv.value = model.NewBoolValue(b)
 		case "!!int":
@@ -109,7 +116,15 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		case "!!float":
 			var f float64
 			if err := value.Decode(&f); err != nil {
-				return err
+				// Older versions of dasel wrote infinity and NaN as
+				// "!!float +Inf", "!!float -Inf" and "!!float NaN", which the
+				// YAML library rejects. Fall back to strconv.ParseFloat so
+				// those documents stay readable.
+				parsed, parseErr := strconv.ParseFloat(value.Value, 64)
+				if parseErr != nil {
+					return err
+				}
+				f = parsed
 			}
 			yv.value = model.NewFloatValue(f)
 		case "!!null":
@@ -196,6 +211,19 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value.SetMetadataValue("yaml-alias", value.Value)
 	}
 	return nil
+}
+
+// parseYAML11Bool parses the YAML 1.1 boolean spellings yes, no, on and off,
+// case-insensitively. The second return value is false if s is not one of them.
+func parseYAML11Bool(s string) (bool, bool) {
+	switch strings.ToLower(s) {
+	case "yes", "on":
+		return true, true
+	case "no", "off":
+		return false, true
+	default:
+		return false, false
+	}
 }
 
 func parseYAMLInt(s string) (int64, error) {

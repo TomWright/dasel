@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"math"
 	"testing"
 	"time"
 
@@ -432,6 +433,63 @@ bin: 10
 			in:  "a: +.inf\nb: .Inf\nc: -.INF\nd: .NaN\ne: .NAN\n",
 			out: "a: .inf\nb: .inf\nc: -.inf\nd: .nan\ne: .nan\n",
 		}.run)
+	})
+
+	t.Run("old dasel special floats", func(t *testing.T) {
+		t.Run("tagged", rwTestCase{
+			in:  "a: !!float +Inf\nb: !!float -Inf\nc: !!float NaN\n",
+			out: "a: .inf\nb: -.inf\nc: .nan\n",
+		}.run)
+		t.Run("values", testCase{
+			in: "a: !!float +Inf\nb: !!float -Inf\nc: !!float NaN\n",
+			assert: func(t *testing.T, res *model.Value) {
+				for key, check := range map[string]func(float64) bool{
+					"a": func(f float64) bool { return math.IsInf(f, 1) },
+					"b": func(f float64) bool { return math.IsInf(f, -1) },
+					"c": math.IsNaN,
+				} {
+					v, err := res.GetMapKey(key)
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err)
+					}
+					f, err := v.FloatValue()
+					if err != nil {
+						t.Fatalf("unexpected error: %s", err)
+					}
+					if !check(f) {
+						t.Errorf("unexpected value for %s: %v", key, f)
+					}
+				}
+			},
+		}.run)
+		t.Run("invalid", func(t *testing.T) {
+			r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if _, err := r.Read([]byte("a: !!float abc\n")); err == nil {
+				t.Errorf("expected error")
+			}
+		})
+	})
+
+	t.Run("yaml 1.1 bools tagged !!bool", func(t *testing.T) {
+		t.Run("yes no on off", rwTestCase{
+			in:  "a: !!bool yes\nb: !!bool Yes\nc: !!bool YES\nd: !!bool no\ne: !!bool NO\nf: !!bool on\ng: !!bool ON\nh: !!bool off\ni: !!bool Off\n",
+			out: "a: true\nb: true\nc: true\nd: false\ne: false\nf: true\ng: true\nh: false\ni: false\n",
+		}.run)
+		t.Run("untagged stays a string", rwTestCase{
+			in: "a: yes\nb: off\n",
+		}.run)
+		t.Run("invalid", func(t *testing.T) {
+			r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if _, err := r.Read([]byte("a: !!bool maybe\n")); err == nil {
+				t.Errorf("expected error")
+			}
+		})
 	})
 
 	t.Run("bounded yaml expansion", func(t *testing.T) {
