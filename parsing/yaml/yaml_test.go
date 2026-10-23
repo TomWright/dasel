@@ -886,8 +886,8 @@ bar:
 		if !errors.Is(err, yaml.ErrYamlDuplicateMergeKey) {
 			t.Fatalf("expected ErrYamlDuplicateMergeKey, got %v", err)
 		}
-		if !strings.Contains(err.Error(), "line 5") {
-			t.Errorf("expected the error to name line 5, got %q", err)
+		if want := "already defined at line 4 (duplicate at line 5)"; !strings.Contains(err.Error(), want) {
+			t.Errorf("expected the error to contain %q, got %q", want, err)
 		}
 	})
 }

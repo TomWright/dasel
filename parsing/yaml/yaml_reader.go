@@ -148,17 +148,17 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value = res
 	case yaml.MappingNode:
 		res := model.NewMapValue()
-		merged := false
+		mergeLine := 0
 		for i := 0; i < len(value.Content); i += 2 {
 			key := value.Content[i]
 			val := value.Content[i+1]
 
 			if key.Kind == yaml.ScalarNode && key.ShortTag() == "!!merge" {
 				// go-yaml rejects a second merge key in the same mapping too.
-				if merged {
-					return fmt.Errorf("%w at line %d", ErrYamlDuplicateMergeKey, key.Line)
+				if mergeLine != 0 {
+					return fmt.Errorf("%w at line %d (duplicate at line %d)", ErrYamlDuplicateMergeKey, mergeLine, key.Line)
 				}
-				merged = true
+				mergeLine = key.Line
 				if err := yv.mergeInto(res, val); err != nil {
 					return err
 				}
