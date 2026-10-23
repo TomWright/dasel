@@ -33,6 +33,13 @@ var ErrYamlExpansionDepthExceeded = errors.New("yaml expansion depth exceeded")
 // ErrYamlExpansionBudgetExceeded is returned when the maximum expansion budget is exceeded.
 var ErrYamlExpansionBudgetExceeded = errors.New("yaml expansion budget exceeded")
 
+// ErrYamlInvalidMergeValue is returned when the value of a merge key (<<) is not a map or a sequence of maps.
+var ErrYamlInvalidMergeValue = errors.New("yaml merge value must be a map or a sequence of maps")
+
+// ErrYamlDuplicateMergeKey is returned when a mapping has more than one merge key (<<).
+// Merging several maps is written as a sequence, as in <<: [*a, *b].
+var ErrYamlDuplicateMergeKey = errors.New("yaml mapping key \"<<\" already defined")
+
 const maxExpansionDepth = 32
 const maxExpansionBudget = 1000
 
@@ -141,9 +148,22 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value = res
 	case yaml.MappingNode:
 		res := model.NewMapValue()
+		mergeLine := 0
 		for i := 0; i < len(value.Content); i += 2 {
 			key := value.Content[i]
 			val := value.Content[i+1]
+
+			if key.Kind == yaml.ScalarNode && key.ShortTag() == "!!merge" {
+				// go-yaml rejects a second merge key in the same mapping too.
+				if mergeLine != 0 {
+					return fmt.Errorf("%w at line %d (duplicate at line %d)", ErrYamlDuplicateMergeKey, mergeLine, key.Line)
+				}
+				mergeLine = key.Line
+				if err := yv.mergeInto(res, val); err != nil {
+					return err
+				}
+				continue
+			}
 
 			newKey := &yamlValue{
 				expansionDepth:    yv.expansionDepth,
@@ -190,6 +210,47 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		}
 		yv.value = newVal.value
 		yv.value.SetMetadataValue("yaml-alias", value.Value)
+	}
+	return nil
+}
+
+// mergeInto copies the keys of a merge key's (<<) value into res.
+// The value must be a map, an alias to a map, or a sequence of those.
+// A key that is already in res is not replaced, so explicit keys written before
+// the merge key and keys from earlier maps in a sequence win. Explicit keys written
+// after the merge key replace merged keys when they are set.
+// See https://yaml.org/type/merge.html.
+func (yv *yamlValue) mergeInto(res *model.Value, node *yaml.Node) error {
+	sources := []*yaml.Node{node}
+	if node.Kind == yaml.SequenceNode {
+		sources = node.Content
+	}
+
+	for _, source := range sources {
+		newVal := &yamlValue{
+			expansionDepth:    yv.expansionDepth,
+			maxExpansionDepth: yv.maxExpansionDepth,
+			expansionBudget:   yv.expansionBudget,
+		}
+		if err := newVal.UnmarshalYAML(source); err != nil {
+			return err
+		}
+		if !newVal.value.IsMap() {
+			return fmt.Errorf("%w: got %s", ErrYamlInvalidMergeValue, newVal.value.Type())
+		}
+
+		if err := newVal.value.RangeMap(func(key string, val *model.Value) error {
+			exists, err := res.MapKeyExists(key)
+			if err != nil {
+				return err
+			}
+			if exists {
+				return nil
+			}
+			return res.SetMapKey(key, val)
+		}); err != nil {
+			return err
+		}
 	}
 	return nil
 }
