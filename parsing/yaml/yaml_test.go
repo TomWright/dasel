@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -872,6 +873,21 @@ bar:
 			if !errors.Is(err, yaml.ErrYamlInvalidMergeValue) {
 				t.Errorf("expected ErrYamlInvalidMergeValue for %q, got %v", in, err)
 			}
+		}
+	})
+
+	t.Run("a second merge key in a mapping is rejected", func(t *testing.T) {
+		r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		in := "a: &a {x: 1}\nb: &b {x: 2, z: 3}\nc:\n  <<: *a\n  <<: *b\n"
+		_, err = r.Read([]byte(in))
+		if !errors.Is(err, yaml.ErrYamlDuplicateMergeKey) {
+			t.Fatalf("expected ErrYamlDuplicateMergeKey, got %v", err)
+		}
+		if !strings.Contains(err.Error(), "line 5") {
+			t.Errorf("expected the error to name line 5, got %q", err)
 		}
 	})
 }

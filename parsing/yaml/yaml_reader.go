@@ -36,6 +36,10 @@ var ErrYamlExpansionBudgetExceeded = errors.New("yaml expansion budget exceeded"
 // ErrYamlInvalidMergeValue is returned when the value of a merge key (<<) is not a map or a sequence of maps.
 var ErrYamlInvalidMergeValue = errors.New("yaml merge value must be a map or a sequence of maps")
 
+// ErrYamlDuplicateMergeKey is returned when a mapping has more than one merge key (<<).
+// Merging several maps is written as a sequence, as in <<: [*a, *b].
+var ErrYamlDuplicateMergeKey = errors.New("yaml mapping key \"<<\" already defined")
+
 const maxExpansionDepth = 32
 const maxExpansionBudget = 1000
 
@@ -144,11 +148,17 @@ func (yv *yamlValue) UnmarshalYAML(value *yaml.Node) error {
 		yv.value = res
 	case yaml.MappingNode:
 		res := model.NewMapValue()
+		merged := false
 		for i := 0; i < len(value.Content); i += 2 {
 			key := value.Content[i]
 			val := value.Content[i+1]
 
 			if key.Kind == yaml.ScalarNode && key.ShortTag() == "!!merge" {
+				// go-yaml rejects a second merge key in the same mapping too.
+				if merged {
+					return fmt.Errorf("%w at line %d", ErrYamlDuplicateMergeKey, key.Line)
+				}
+				merged = true
 				if err := yv.mergeInto(res, val); err != nil {
 					return err
 				}
