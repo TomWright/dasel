@@ -1,6 +1,12 @@
 package model
 
-import "fmt"
+import (
+	"errors"
+	"fmt"
+)
+
+// ErrDivisionByZero is returned when an integer is divided by zero.
+var ErrDivisionByZero = errors.New("integer division by zero")
 
 // MapKeyNotFound is returned when a key is not found in a map.
 type MapKeyNotFound struct {

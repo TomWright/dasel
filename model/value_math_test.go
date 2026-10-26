@@ -1,6 +1,7 @@
 package model_test
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/tomwright/dasel/v3/model"
@@ -146,5 +147,20 @@ func TestValue_Modulo(t *testing.T) {
 	t.Run("float", func(t *testing.T) {
 		t.Run("int", run(model.NewFloatValue(10), model.NewIntValue(3), model.NewFloatValue(1)))
 		t.Run("float", run(model.NewFloatValue(10), model.NewFloatValue(3), model.NewFloatValue(1)))
+	})
+}
+
+func TestValue_IntegerDivisionByZero(t *testing.T) {
+	t.Run("divide", func(t *testing.T) {
+		_, err := model.NewIntValue(1).Divide(model.NewIntValue(0))
+		if !errors.Is(err, model.ErrDivisionByZero) {
+			t.Errorf("expected %v, got %v", model.ErrDivisionByZero, err)
+		}
+	})
+	t.Run("modulo", func(t *testing.T) {
+		_, err := model.NewIntValue(1).Modulo(model.NewIntValue(0))
+		if !errors.Is(err, model.ErrDivisionByZero) {
+			t.Errorf("expected %v, got %v", model.ErrDivisionByZero, err)
+		}
 	})
 }

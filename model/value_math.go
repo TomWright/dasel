@@ -174,6 +174,9 @@ func (v *Value) Divide(other *Value) (*Value, error) {
 		if err != nil {
 			return nil, err
 		}
+		if b == 0 {
+			return nil, ErrDivisionByZero
+		}
 		return NewValue(a / b), nil
 	}
 	if v.IsFloat() && other.IsFloat() {
@@ -222,6 +225,9 @@ func (v *Value) Modulo(other *Value) (*Value, error) {
 		b, err := other.IntValue()
 		if err != nil {
 			return nil, err
+		}
+		if b == 0 {
+			return nil, ErrDivisionByZero
 		}
 		return NewValue(a % b), nil
 	}
