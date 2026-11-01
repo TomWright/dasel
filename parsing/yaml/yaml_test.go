@@ -612,7 +612,7 @@ i: &i [*h,*h,*h,*h,*h,*h,*h,*h,*h]
     line1
     line2
 `,
-		out: "bio: >\n    line1 line2\n\n",
+		out: "bio: >\n    line1 line2\n",
 	}.run)
 
 	t.Run("mixed styles", rwTestCase{
