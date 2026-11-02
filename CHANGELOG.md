@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Updated `github.com/pelletier/go-toml/v2` to v2.4.3, which includes the fixes from [GHSA-frc4-6h9q-39fq](https://github.com/pelletier/go-toml/security/advisories/GHSA-frc4-6h9q-39fq) ([#550](https://github.com/TomWright/dasel/issues/550)).
+- Upgrade go-yaml from rc.3 to [rc.7](go.yaml.in/yaml/v4@v4.0.0-rc.7).
 
 ### Fixed
 
