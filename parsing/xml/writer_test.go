@@ -6,6 +6,7 @@ import (
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
+	jsonfmt "github.com/tomwright/dasel/v3/parsing/json"
 	"github.com/tomwright/dasel/v3/parsing/xml"
 )
 
@@ -348,4 +349,32 @@ func TestXmlReader_Write(t *testing.T) {
 			t.Errorf("Expected:\n%s\nGot:\n%s", string(exp), string(got))
 		}
 	})
+}
+
+func TestXmlWriter_Write_NonStringScalars(t *testing.T) {
+	r, err := jsonfmt.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	w, err := xml.XML.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	data, err := r.Read([]byte(`{"a":{"i":3,"f":1.5,"b":true,"s":"x","-n":7}}`))
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	got, err := w.Write(data)
+	if err != nil {
+		t.Fatalf("Unexpected error: %s", err)
+	}
+
+	for _, want := range []string{"<i>3</i>", "<f>1.5</f>", "<b>true</b>", "<s>x</s>", `n="7"`} {
+		if !strings.Contains(string(got), want) {
+			t.Errorf("expected output to contain %q, got:\n%s", want, got)
+		}
+	}
 }
