@@ -132,7 +132,7 @@ func (j *xmlWriter) toElement(key string, value *model.Value) (*xmlElement, erro
 	}
 	switch value.Type() {
 
-	case model.TypeString:
+	case model.TypeString, model.TypeInt, model.TypeFloat, model.TypeBool:
 		strVal, err := valueToString(value)
 		return &xmlElement{
 			Name:                   key,
