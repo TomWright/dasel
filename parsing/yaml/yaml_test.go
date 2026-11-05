@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -718,6 +719,175 @@ single: 'Tom'
 			if got != "value" {
 				t.Fatalf("unexpected value: %s", got)
 			}
+		}
+	})
+}
+
+func TestYamlReader_MergeKeys(t *testing.T) {
+	t.Run("merge an alias", rwTestCase{
+		in: `foo: &foo
+  one: 1
+bar:
+  <<: *foo
+  two: 2
+`,
+		out: `foo:
+    one: 1
+bar:
+    one: 1
+    two: 2
+`,
+	}.run)
+
+	t.Run("merge an inline map", rwTestCase{
+		in: `bar:
+  <<: {one: 1}
+  two: 2
+`,
+		out: `bar:
+    one: 1
+    two: 2
+`,
+	}.run)
+
+	t.Run("explicit keys take precedence over merged keys", rwTestCase{
+		in: `base: &base
+  a: 1
+  b: 2
+before:
+  b: 3
+  <<: *base
+after:
+  <<: *base
+  b: 3
+`,
+		out: `base:
+    a: 1
+    b: 2
+before:
+    b: 3
+    a: 1
+after:
+    a: 1
+    b: 3
+`,
+	}.run)
+
+	t.Run("earlier maps in a merge sequence take precedence", rwTestCase{
+		in: `a: &a {k: 1, x: a}
+b: &b {k: 2, y: b}
+c:
+  <<: [*a, *b]
+`,
+		out: `a:
+    k: 1
+    x: a
+b:
+    k: 2
+    y: b
+c:
+    k: 1
+    x: a
+    y: b
+`,
+	}.run)
+
+	t.Run("merged map containing a merge", rwTestCase{
+		in: `a: &a {x: 1}
+b: &b
+  <<: *a
+  y: 2
+c:
+  <<: *b
+  z: 3
+`,
+		out: `a:
+    x: 1
+b:
+    x: 1
+    y: 2
+c:
+    x: 1
+    y: 2
+    z: 3
+`,
+	}.run)
+
+	t.Run("quoted key is not a merge", testCase{
+		in: `"<<": {one: 1}
+`,
+		assert: func(t *testing.T, res *model.Value) {
+			keys, err := res.MapKeys()
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !cmp.Equal([]string{"<<"}, keys) {
+				t.Fatalf("unexpected keys: %v", keys)
+			}
+		},
+	}.run)
+
+	t.Run("merged values can be selected", testCase{
+		in: `foo: &foo
+  one: 1
+bar:
+  <<: *foo
+`,
+		assert: func(t *testing.T, res *model.Value) {
+			bar, err := res.GetMapKey("bar")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			keys, err := bar.MapKeys()
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if !cmp.Equal([]string{"one"}, keys) {
+				t.Fatalf("unexpected keys: %v", keys)
+			}
+			one, err := bar.GetMapKey("one")
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			got, err := one.IntValue()
+			if err != nil {
+				t.Fatalf("unexpected error: %s", err)
+			}
+			if got != 1 {
+				t.Fatalf("unexpected value: %d", got)
+			}
+		},
+	}.run)
+
+	t.Run("merge value must be a map", func(t *testing.T) {
+		r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		for _, in := range []string{
+			"a:\n  <<: 1\n",
+			"a:\n  <<: [1]\n",
+			"s: &s [1]\na:\n  <<: *s\n",
+		} {
+			_, err := r.Read([]byte(in))
+			if !errors.Is(err, yaml.ErrYamlInvalidMergeValue) {
+				t.Errorf("expected ErrYamlInvalidMergeValue for %q, got %v", in, err)
+			}
+		}
+	})
+
+	t.Run("a second merge key in a mapping is rejected", func(t *testing.T) {
+		r, err := yaml.YAML.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatalf("unexpected error: %s", err)
+		}
+		in := "a: &a {x: 1}\nb: &b {x: 2, z: 3}\nc:\n  <<: *a\n  <<: *b\n"
+		_, err = r.Read([]byte(in))
+		if !errors.Is(err, yaml.ErrYamlDuplicateMergeKey) {
+			t.Fatalf("expected ErrYamlDuplicateMergeKey, got %v", err)
+		}
+		if want := "already defined at line 4 (duplicate at line 5)"; !strings.Contains(err.Error(), want) {
+			t.Errorf("expected the error to contain %q, got %q", want, err)
 		}
 	})
 }
