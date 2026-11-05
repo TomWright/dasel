@@ -2,6 +2,7 @@ package yaml
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
@@ -79,7 +80,16 @@ func (yv *yamlValue) ToNode() (*yaml.Node, error) {
 			return nil, err
 		}
 		res.Kind = yaml.ScalarNode
-		res.Value = fmt.Sprintf("%g", v)
+		switch {
+		case math.IsInf(v, 1):
+			res.Value = ".inf"
+		case math.IsInf(v, -1):
+			res.Value = "-.inf"
+		case math.IsNaN(v):
+			res.Value = ".nan"
+		default:
+			res.Value = fmt.Sprintf("%g", v)
+		}
 		res.Tag = "!!float"
 	case model.TypeMap:
 		res.Kind = yaml.MappingNode
