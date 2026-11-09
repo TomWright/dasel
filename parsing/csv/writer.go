@@ -21,15 +21,28 @@ func (j *csvWriter) Write(value *model.Value) ([]byte, error) {
 	w := csv.NewWriter(buf)
 	w.Comma = j.separator
 
+	// Rows may have different keys, so the header is every key in first-seen order.
 	var headers []string
+	seen := make(map[string]struct{})
+
+	if err := value.RangeSlice(func(_ int, row *model.Value) error {
+		keys, err := row.MapKeys()
+		if err != nil {
+			return fmt.Errorf("error getting map keys: %w", err)
+		}
+		for _, key := range keys {
+			if _, ok := seen[key]; !ok {
+				seen[key] = struct{}{}
+				headers = append(headers, key)
+			}
+		}
+		return nil
+	}); err != nil {
+		return nil, fmt.Errorf("error ranging slice: %w", err)
+	}
 
 	if err := value.RangeSlice(func(i int, row *model.Value) error {
 		if i == 0 {
-			var err error
-			headers, err = row.MapKeys()
-			if err != nil {
-				return fmt.Errorf("error getting map keys: %w", err)
-			}
 			if err := w.Write(headers); err != nil {
 				return fmt.Errorf("error writing headers: %w", err)
 			}
@@ -38,6 +51,15 @@ func (j *csvWriter) Write(value *model.Value) ([]byte, error) {
 		var values []string
 
 		for _, headerKey := range headers {
+			exists, err := row.MapKeyExists(headerKey)
+			if err != nil {
+				return fmt.Errorf("error checking map key %q: %w", headerKey, err)
+			}
+			if !exists {
+				values = append(values, "")
+				continue
+			}
+
 			colV, err := row.GetMapKey(headerKey)
 			if err != nil {
 				return fmt.Errorf("error getting map key %q: %w", headerKey, err)
