@@ -777,6 +777,7 @@ func TestJSONReaderRejectsMalformedDocuments(t *testing.T) {
 	for _, input := range []string{
 		`]`, `}`, `{"a":1}]`, `{"a":1}} garbage`, `[]]`,
 		`null }`, `{} {} ]`, `{} garbage`, `{"a":`, `[1`, `{} {`, `{} [`,
+		`{"a":1},`, `{"a":1}:`, `[1],`, `1,`, `,`, `:`,
 	} {
 		t.Run(input, func(t *testing.T) {
 			reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())

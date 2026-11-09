@@ -33,15 +33,19 @@ func (j *jsonReader) Read(data []byte) (*model.Value, error) {
 
 	var results []*model.Value
 
-	for {
+	for decoder.More() {
 		v, err := j.decodeValue(decoder, 0)
-		if err == io.EOF {
-			break
-		}
 		if err != nil {
 			return nil, err
 		}
 		results = append(results, v)
+	}
+
+	if t, err := decoder.Token(); err != io.EOF {
+		if err != nil {
+			return nil, err
+		}
+		return nil, fmt.Errorf("unexpected token: %v", t)
 	}
 
 	switch len(results) {
@@ -68,8 +72,6 @@ func (j *jsonReader) decodeValue(decoder *json.Decoder, depth int) (*model.Value
 	}
 
 	switch t {
-	case jsonCloseObject, jsonCloseArray:
-		return nil, fmt.Errorf("unexpected token: %v", t)
 	case jsonOpenObject:
 		res, err := j.decodeObject(decoder, depth+1)
 		if err != nil {
