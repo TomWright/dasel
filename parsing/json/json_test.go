@@ -772,3 +772,20 @@ func TestJSONReader_ExponentNumbers(t *testing.T) {
 		}
 	})
 }
+
+func TestJSONReaderRejectsMalformedDocuments(t *testing.T) {
+	for _, input := range []string{
+		`]`, `}`, `{"a":1}]`, `{"a":1}} garbage`, `[]]`,
+		`null }`, `{} {} ]`, `{} garbage`, `{"a":`, `[1`, `{} {`, `{} [`,
+	} {
+		t.Run(input, func(t *testing.T) {
+			reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+			if err != nil {
+				t.Fatal(err)
+			}
+			if _, err := reader.Read([]byte(input)); err == nil {
+				t.Fatal("expected malformed JSON to return an error")
+			}
+		})
+	}
+}

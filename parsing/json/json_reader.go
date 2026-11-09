@@ -7,6 +7,7 @@ import (
 	json "github.com/goccy/go-json"
 	"github.com/tomwright/dasel/v3/model"
 	"github.com/tomwright/dasel/v3/parsing"
+	"io"
 	"strings"
 )
 
@@ -32,8 +33,11 @@ func (j *jsonReader) Read(data []byte) (*model.Value, error) {
 
 	var results []*model.Value
 
-	for decoder.More() {
+	for {
 		v, err := j.decodeValue(decoder, 0)
+		if err == io.EOF {
+			break
+		}
 		if err != nil {
 			return nil, err
 		}
@@ -64,6 +68,8 @@ func (j *jsonReader) decodeValue(decoder *json.Decoder, depth int) (*model.Value
 	}
 
 	switch t {
+	case jsonCloseObject, jsonCloseArray:
+		return nil, fmt.Errorf("unexpected token: %v", t)
 	case jsonOpenObject:
 		res, err := j.decodeObject(decoder, depth+1)
 		if err != nil {
