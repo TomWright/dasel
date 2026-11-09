@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Writing a list of tables as the top level value now emits a valid inline array of tables (e.g. `[{a = 1}, {a = 2}]`) instead of table headers with an empty key.
 - The JSON reader accepts numbers written in exponent notation without a fraction, e.g. `1e3` or `1E-2`. These are valid JSON but the reader only treated a number as a float when it contained a `.`, so it tried to parse the exponent form as an integer and failed with `strconv.ParseInt: invalid syntax`.
 - A multi-byte `csv-delimiter` is decoded as a rune rather than a byte. `--rw-flag csv-delimiter=§` used to take the first byte of the encoding, so nothing split on read and the write side emitted a mangled separator. A delimiter that isn't exactly one character is now rejected instead of silently truncated.
+- The JSON reader rejects unmatched closing delimiters at the document root, e.g. `]` or `{"a":1}]`. These used to be accepted silently, discarding any input after them.
 
 ### Security
 
