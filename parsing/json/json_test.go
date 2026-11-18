@@ -772,3 +772,71 @@ func TestJSONReader_ExponentNumbers(t *testing.T) {
 		}
 	})
 }
+
+func TestJSONReader_Separators(t *testing.T) {
+	read := func(t *testing.T, input string) (*model.Value, error) {
+		t.Helper()
+		reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+		if err != nil {
+			t.Fatal(err)
+		}
+		return reader.Read([]byte(input))
+	}
+
+	t.Run("invalid", func(t *testing.T) {
+		for _, input := range []string{
+			`[1 2]`,
+			`[1,,2]`,
+			`[,1]`,
+			`[1,]`,
+			`[1:2]`,
+			`[[1] [2]]`,
+			`[{"a":1} {"b":2}]`,
+			`{"a":1,}`,
+			`{,}`,
+			`{,"a":1}`,
+			`{"a" 1}`,
+			`{"a"::1}`,
+			`{"a":,1}`,
+			`{"a"}`,
+			`{"a":1,"b"}`,
+			`{"a":1 "b" "c"}`,
+			`{"a":1 "b":2}`,
+			`{"a":[1] "b":2}`,
+			`{"a":{} "b":2}`,
+			`{"a",1}`,
+			`{"a":1:2}`,
+			`{"a":1,,"b":2}`,
+		} {
+			t.Run(input, func(t *testing.T) {
+				if v, err := read(t, input); err == nil {
+					t.Fatalf("expected an error, got %s", v.String())
+				}
+			})
+		}
+	})
+
+	t.Run("valid", func(t *testing.T) {
+		for _, input := range []string{
+			`[]`,
+			`[ ]`,
+			`{}`,
+			"{\n}",
+			`[1,2]`,
+			" [ 1 ,\n\t2 ] ",
+			`[[],[1],{}]`,
+			`{"a":1,"b":[1,{"c":"d"}],"e":{}}`,
+			"{ \"a\" : 1 ,\r\n \"b\" : 2 }",
+			`["a,b", "c:d", "]", "}"]`,
+			`{"a,b":"c:d"}`,
+			`{"a\\":"b\\\"","c":["\\",1,"x\"y",2]}`,
+			"{\"a\":1}\n{\"a\":2}",
+		} {
+			t.Run(input, func(t *testing.T) {
+				if _, err := read(t, input); err != nil {
+					t.Fatalf("unexpected error: %v", err)
+				}
+			})
+		}
+	})
+}
