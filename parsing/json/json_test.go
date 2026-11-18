@@ -772,3 +772,50 @@ func TestJSONReader_ExponentNumbers(t *testing.T) {
 		}
 	})
 }
+
+func TestJsonEscapesMapKeys(t *testing.T) {
+	doc := []byte(`{
+    "a\"b": 1,
+    "c\\d": 2,
+    "e\nf\tg": 3,
+    "h\u0001i": 4,
+    "<j>": 5
+}
+`)
+	reader, err := json.JSON.NewReader(parsing.DefaultReaderOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+	writer, err := json.JSON.NewWriter(parsing.DefaultWriterOptions())
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	value, err := reader.Read(doc)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	newDoc, err := writer.Write(value)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if string(doc) != string(newDoc) {
+		t.Fatalf("expected %s, got %s...\n%s", string(doc), string(newDoc), cmp.Diff(string(doc), string(newDoc)))
+	}
+
+	// The output must be valid JSON that reads back to the same keys.
+	roundTrip, err := reader.Read(newDoc)
+	if err != nil {
+		t.Fatalf("output is not valid JSON: %v", err)
+	}
+	keys, err := roundTrip.MapKeys()
+	if err != nil {
+		t.Fatal(err)
+	}
+	expKeys := []string{"a\"b", "c\\d", "e\nf\tg", "h\x01i", "<j>"}
+	if !cmp.Equal(expKeys, keys) {
+		t.Fatalf("unexpected keys after round trip:\n%s", cmp.Diff(expKeys, keys))
+	}
+}
