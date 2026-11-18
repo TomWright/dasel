@@ -151,7 +151,12 @@ func (j *jsonWriter) writeMap(w io.Writer, encoder encoderFn, es encoderState, v
 				}
 			}
 
-			if _, err := fmt.Fprintf(w, `"%s":`, kv.Key); err != nil {
+			// Encode the key as a JSON string so quotes, backslashes and
+			// control characters in it are escaped.
+			if err := encoder(kv.Key); err != nil {
+				return err
+			}
+			if _, err := w.Write([]byte(`:`)); err != nil {
 				return err
 			}
 			if !es.compact {
